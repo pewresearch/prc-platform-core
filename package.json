@@ -1,6 +1,3 @@
 {
-	"name": "pewresearch/prc-platform-core",
-	"scripts": {
-		"subtree:platform": "git subtree push --prefix=client-mu-plugins/prc-platform-core git@github.com:pewresearch/prc-platform-core.git develop"
-	}
+	"name": "@pewresearch/prc-platform-core"
 }
