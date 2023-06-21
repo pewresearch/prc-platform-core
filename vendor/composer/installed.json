@@ -1,0 +1,57 @@
+{
+    "packages": [
+        {
+            "name": "10up/term-data-store",
+            "version": "dev-master",
+            "version_normalized": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/10up/term-data-store.git",
+                "reference": "ba244f3413055867b604d2743279aa8a0f098323"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/10up/term-data-store/zipball/ba244f3413055867b604d2743279aa8a0f098323",
+                "reference": "ba244f3413055867b604d2743279aa8a0f098323",
+                "shasum": ""
+            },
+            "require-dev": {
+                "10up/wp_mock": "1.0.x@dev"
+            },
+            "time": "2021-01-08T03:19:20+00:00",
+            "default-branch": true,
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "term-data-store.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "TDS\\Tools\\": "tests/Tools"
+                },
+                "classmap": [
+                    "tests/mocks"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "John P Bloch",
+                    "email": "john.bloch@10up.com"
+                }
+            ],
+            "description": "One-to-one relationships between posts and terms",
+            "support": {
+                "source": "https://github.com/10up/term-data-store/tree/master",
+                "issues": "https://github.com/10up/term-data-store/issues"
+            },
+            "install-path": "../10up/term-data-store"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}

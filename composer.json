@@ -1,0 +1,12 @@
+{
+	"name": "pewresearch/prc-platform-core",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/10up/term-data-store"
+		}
+	],
+	"require": {
+		"10up/term-data-store": "dev-master"
+	}
+}
