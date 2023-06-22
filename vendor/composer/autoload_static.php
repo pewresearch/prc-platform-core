@@ -10,6 +10,20 @@ class ComposerStaticInit0ff2e349af04c033a64b37dcdb9e537c
         '17a0762180b318f5741a1bdeeccacc8b' => __DIR__ . '/..' . '/10up/term-data-store/term-data-store.php',
     );
 
+    public static $prefixLengthsPsr4 = array (
+        'C' => 
+        array (
+            'Composer\\Installers\\' => 20,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'Composer\\Installers\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/composer/installers/src/Composer/Installers',
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -17,6 +31,8 @@ class ComposerStaticInit0ff2e349af04c033a64b37dcdb9e537c
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInit0ff2e349af04c033a64b37dcdb9e537c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit0ff2e349af04c033a64b37dcdb9e537c::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInit0ff2e349af04c033a64b37dcdb9e537c::$classMap;
 
         }, null, ClassLoader::class);
