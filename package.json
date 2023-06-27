@@ -1,3 +1,12 @@
 {
-	"name": "@pewresearch/prc-platform-core"
+	"name": "@pewresearch/prc-platform-core",
+	"devDependencies": {
+		"@wordpress/env": "^8.2.0"
+	},
+	"scripts": {
+		"env:start": "wp-env start",
+		"env:stop": "wp-env stop",
+		"env:clean": "wp-env clean-all; wp-env start",
+		"env:destroy": "wp-env destroy"
+	}
 }

@@ -7,8 +7,7 @@
 		}
 	],
 	"require": {
-		"10up/term-data-store": "dev-master",
-		"humanmade/hm-rewrite": "^1.1"
+		"10up/term-data-store": "dev-master"
 	},
 	"config": {
 		"allow-plugins": {
