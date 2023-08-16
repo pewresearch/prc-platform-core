@@ -86,6 +86,7 @@ class Platform_Bootstrap {
 		$this->define_housekeeping_hooks();
 		$this->define_jetpack_integration_hooks();
 		$this->define_convert_to_blocks();
+		$this->define_search_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -192,6 +193,8 @@ class Platform_Bootstrap {
 		$this->include('jetpack/class-jetpack.php');
 		// Load Convert To Block transforms and integration.
 		$this->include('convert-to-block/class-convert-to-block.php');
+		// Load Search customizations
+		$this->include('search/class-search.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -713,6 +716,17 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'prc_platform_on_publish', $bitly, 'update_post_with_shortlink', 10, 1 );
 		$this->loader->add_action( 'admin_bar_menu', $bitly, 'add_quick_edit', 100 );
 		$this->loader->add_filter( 'get_shortlink', $bitly, 'filter_get_shortlink', 100, 2 );
+	}
+
+	private function define_search_hooks() {
+		$search = new Search(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_filter( 'facetwp_use_search_relevancy', $search, 'facetwp_disable_search_relevancy' );
+		$this->loader->add_filter( 'pre_get_posts', $search, 'sanitize_search_term', 1, 1 );
+		$this->loader->add_filter( 'ep_set_sort', $search, 'ep_sort_by_date', 10, 2 );
+		$this->loader->add_filter( 'ep_highlight_should_add_clause', $search, 'ep_enable_highlighting', 10, 4);
 	}
 
 	/**

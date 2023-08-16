@@ -3,15 +3,19 @@
 	"description": "PRC Platform Core",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
+		"@playwright/test": "^1.37.0",
 		"@wordpress/e2e-test-utils-playwright": "^0.1.0",
+		"@wordpress/e2e-tests": "^7.10.0",
 		"@wordpress/env": "^8.3.0",
 		"@wordpress/scripts": "^26.1.0",
+		"eslint-plugin-playwright": "^0.15.3",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0"
 	},
 	"scripts": {
 		"env:start": "wp-env start",
+		"env:stop": "wp-env stop",
 		"env:destroy": "wp-env destroy",
-		"test": "wp-scripts test-e2e -- tests/action-scheduler.spec.js"
+		"test": "playwright test --config tests/playwright.config.ts"
 	}
 }

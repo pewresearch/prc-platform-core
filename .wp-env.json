@@ -8,5 +8,12 @@
 		"DEFAULT_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
 		"TAXONOMY_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
 		"PRC_MIGRATION_SITE": 1
+	},
+	"env": {
+		"tests": {
+			"mappings": {
+				"wp-content/plugins/gutenberg-test-plugins": "./node_modules/@wordpress/e2e-tests/plugins"
+			}
+		}
 	}
 }
