@@ -1,0 +1,5 @@
+{
+  "core": "WordPress/WordPress",
+  "plugins": [ ".", "../prc-scripts", "../prc-block-library", "../prc-icons"],
+	"phpVersion": "8.1.0"
+}

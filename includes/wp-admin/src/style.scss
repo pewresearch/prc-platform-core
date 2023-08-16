@@ -1,0 +1,22 @@
+#vip-non-prod-bar {
+	display: none!important;
+}
+
+.wp-list-table {
+	tr.type-post.level-1 {
+		* {
+			font-size: 12px!important;
+		}
+	}
+}
+
+
+body.taxonomy-category .ui-sortable .level-0 {
+    background: var(--ac-color-warning-alt);
+    color: var(--ac-color-warning)!important;
+
+	td,
+	a.row-title {
+		color: var(--ac-color-warning)!important;
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"name": "@pewresearch/prc-platform-embeds",
+	"description": "Supports '/iframe' embed functionality for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^26.1.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start"
+	},
+	"dependencies": {
+		"iframe-resizer": "^4.3.6"
+	}
+}

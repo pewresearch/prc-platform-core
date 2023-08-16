@@ -1,0 +1,18 @@
+{
+	"name": "@pewresearch/prc-platform-core",
+	"description": "PRC Platform Core",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/e2e-test-utils-playwright": "^0.1.0",
+		"@wordpress/env": "^8.3.0",
+		"@wordpress/scripts": "^26.1.0"
+	},
+	"scripts": {
+		"env:start": "wp-env start",
+		"test:env:start": "wp-env start",
+		"test:env:stop": "wp-env stop",
+		"test:env:clean": "wp-env clean",
+		"test:env:reset": "wp-env destroy; wp-env start",
+		"test": "wp-scripts test-e2e"
+	}
+}
