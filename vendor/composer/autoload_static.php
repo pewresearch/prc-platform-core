@@ -4,69 +4,10 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit015860fe1d91796efca66abe3b2503c3
+class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
 {
     public static $files = array (
-        '22177d82d05723dff5b1903f4496520e' => __DIR__ . '/..' . '/alleyinteractive/wordpress-autoloader/src/class-autoloader.php',
-        'c9d07b32a2e02bc0fc582d4f0c1b56cc' => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src/autoload.php',
-        'd0b4d9ff2237dcc1a532ae9d039c0c2c' => __DIR__ . '/..' . '/alleyinteractive/composer-wordpress-autoloader/src/autoload.php',
-        'b68c986d100cce58b4f7580a7ebd1ae7' => __DIR__ . '/..' . '/alleyinteractive/wp-block-converter/src/helpers.php',
-        'b4c1393590946316912f1825c4d559f0' => __DIR__ . '/..' . '/alleyinteractive/wp-match-blocks/src/alley/wp/match-blocks.php',
-        '34b197430e01f74411146b5dd772055d' => __DIR__ . '/..' . '/alleyinteractive/wp-match-blocks/src/alley/wp/internals/internals.php',
         'c34dc34eb7eec77023209fe27e4e18e8' => __DIR__ . '/..' . '/woocommerce/action-scheduler/action-scheduler.php',
-    );
-
-    public static $prefixLengthsPsr4 = array (
-        'P' => 
-        array (
-            'Psr\\Http\\Message\\' => 17,
-            'Psr\\Container\\' => 14,
-        ),
-        'L' => 
-        array (
-            'Laminas\\Validator\\' => 18,
-            'Laminas\\Stdlib\\' => 15,
-            'Laminas\\ServiceManager\\' => 23,
-        ),
-        'C' => 
-        array (
-            'ComposerWordPressAutoloader\\' => 28,
-        ),
-        'A' => 
-        array (
-            'Alley\\' => 6,
-        ),
-    );
-
-    public static $prefixDirsPsr4 = array (
-        'Psr\\Http\\Message\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-        ),
-        'Psr\\Container\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/container/src',
-        ),
-        'Laminas\\Validator\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/laminas/laminas-validator/src',
-        ),
-        'Laminas\\Stdlib\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/laminas/laminas-stdlib/src',
-        ),
-        'Laminas\\ServiceManager\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src',
-        ),
-        'ComposerWordPressAutoloader\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/alleyinteractive/composer-wordpress-autoloader/src',
-        ),
-        'Alley\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/alleyinteractive/laminas-validator-extensions/src/Alley',
-        ),
     );
 
     public static $classMap = array (
@@ -76,9 +17,7 @@ class ComposerStaticInit015860fe1d91796efca66abe3b2503c3
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit015860fe1d91796efca66abe3b2503c3::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit015860fe1d91796efca66abe3b2503c3::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit015860fe1d91796efca66abe3b2503c3::$classMap;
+            $loader->classMap = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$classMap;
 
         }, null, ClassLoader::class);
     }

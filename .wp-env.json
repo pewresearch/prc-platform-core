@@ -1,5 +1,12 @@
 {
-  "core": "WordPress/WordPress",
-  "plugins": [ ".", "../prc-scripts", "../prc-block-library", "../prc-icons"],
-	"phpVersion": "8.1.0"
+	"core": "WordPress/WordPress",
+	"plugins": [ ".", "../prc-scripts", "../prc-block-library", "../prc-icons"],
+	"mappings": {
+		"wp-content/mu-plugins": "~/dev/vip-go-mu-plugins-built"
+	},
+	"config": {
+		"DEFAULT_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
+		"TAXONOMY_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
+		"PRC_MIGRATION_SITE": 1
+	}
 }

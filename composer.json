@@ -1,9 +1,7 @@
 {
 	"name": "pewresearch/prc-platform",
 	"require": {
-		"woocommerce/action-scheduler": "^3.6",
-		"alleyinteractive/wp-match-blocks": "^2.0",
-		"alleyinteractive/wp-block-converter": "^1.0"
+		"woocommerce/action-scheduler": "^3.6"
 	},
 	"autoload": {
 		"files": [

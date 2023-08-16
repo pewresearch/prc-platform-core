@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use DEFAULT_TECHNICAL_CONTACT;
 
 /**
  * Let's keep things tidy! We're all working together here, right? Clealiness is next to... and all that.

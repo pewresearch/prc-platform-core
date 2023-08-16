@@ -1,4 +1,5 @@
 <?php
+use DEFAULT_TECHNICAL_CONTACT;
 
 class PRC_Platform_Activator {
 	public static function activate() {
