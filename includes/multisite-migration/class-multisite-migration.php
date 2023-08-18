@@ -73,6 +73,10 @@ class Multisite_Migration {
 	 * @hook prc_run_at_end_of_day
 	 */
 	public function schedule_midnight_distributor_push() {
+		// This shouldn't run on the migration site.
+		if ( PRC_MIGRATION_SITE === get_current_blog_id() ) {
+			return;
+		}
 		// At 6pm each day, lets get all the posts published today that dont have $migration_flag_key in their meta.
 		// Then we're going to schedule a distributor push for each of them at midnight.
 		// Let the date_query be looking for everything from 6pm yesterday to 6pm today.
