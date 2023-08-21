@@ -102,7 +102,7 @@ class Bitly {
 
 		$permalink = get_permalink( $post_id );
 
-		if ( prc_is_dev_env() ) {
+		if ( 'production' !== wp_get_environment_type() ) {
 			return $permalink;
 		}
 

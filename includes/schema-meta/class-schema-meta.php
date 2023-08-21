@@ -60,7 +60,7 @@ class Schema_Meta {
 		}
 
 		// If this is a dev environment then no index, no follow.
-		if ( true == prc_is_dev_env() ) {
+		if ( 'production' !== wp_get_environment_type() ) {
 			$robots = 'noindex,nofollow';
 		}
 
