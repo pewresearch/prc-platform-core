@@ -3,6 +3,8 @@ namespace PRC\Platform;
 
 use WPCOM_VIP_CLI_Command;
 use WP_CLI;
+use WP_Error;
+use wpcom_vip_get_page_by_title;
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	/**
@@ -542,6 +544,148 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 
 			$this->vip_inmemory_cleanup();
+
+			// Trigger a term count as well as trigger bulk indexing of Elasticsearch site.
+			$this->end_bulk_operation();
+		}
+
+		/**
+		 * A fix for the missing staff posts of old bylines.
+		 *
+		 * @subcommand bylines-fix
+		 * @synopsis [--dry-run]
+		 * @return void
+		 */
+		public function bylines_fix( $args, $assoc_args ) {
+			// Disable term counting, Elasticsearch indexing, and PushPress.
+			$this->start_bulk_operation();
+
+			if ( 20 !== get_current_blog_id() ) {
+				WP_CLI::error( 'This command must be run from the new pewresearch-org site, site 20.' );
+			}
+
+			// If --dry-run is not set, then it will default to true. Must set --dry-run explicitly to false to run this command.
+			if ( isset( $assoc_args['dry-run'] ) ) {
+				// Passing `--dry-run=false` to the command leads to the `false` value being set to string `'false'`, but casting `'false'` to bool produces `true`. Thus the special handling.
+				if ( 'false' === $assoc_args['dry-run'] ) {
+					$dry_run = false;
+				} else {
+					$dry_run = (bool) $assoc_args['dry-run'];
+				}
+			} else {
+				$dry_run = true;
+			}
+
+			if ( $dry_run ) {
+				WP_CLI::line( 'Running in dry-run mode.' );
+			} else {
+				WP_CLI::line( 'Live fire!' );
+			}
+
+			$posts_per_page = 100;
+			$count = 0; // We'll use this to count the number of posts we've migrated as we go.
+			$paged = 1;
+			$ignore = array();
+
+			do {
+				$query_args = array(
+					'taxonomy'         => 'bylines',
+					'posts_per_page'   => $posts_per_page,
+					'paged'            => $paged,
+					'hide_empty'       => false,
+					/// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					'meta_query' => array(
+						array(
+							'key' => 'tds_post_id',
+							'compare' => 'NOT EXISTS',
+						),
+					),
+					'exclude' => $ignore,
+				);
+
+				$terms = get_terms($query_args);
+
+				foreach ( $terms as $term ) {
+					// count the number of posts we've migrated as we go.
+					$count++;
+					WP_CLI::line("Count: $count");
+
+					$create_new = false;
+					// Check if a staff post exists with the same name
+					$staff_post = wpcom_vip_get_page_by_title( $term->name, OBJECT, 'staff' );
+					if ( ! $staff_post ) {
+						$create_new = true;
+					} else {
+						$tds_term_id = get_post_meta( $staff_post->ID, 'tds_term_id', true );
+						if ( $tds_term_id ) {
+							WP_CLI::line(
+								sprintf(
+									'%s cant connect to staff post %s (%s) because it is already connected to term %s (%s)',
+									WP_CLI::colorize( '%B' . $term->slug . '%n' ),
+									WP_CLI::colorize( '%B' . $staff_post->ID . '%n' ),
+									WP_CLI::colorize( '%G' . $staff_post->post_name . '%n' ),
+									WP_CLI::colorize( '%G' . $tds_term_id . '%n' ),
+									WP_CLI::colorize( '%G' . get_term( $tds_term_id )->slug . '%n' ),
+								)
+							);
+							$ignore[] = $term->term_id;
+							continue;
+							// return new WP_Error( 'term_already_connected', 'This staff post is already connected to a term. Requires further inspection. Term: ' . $term->name . ' Staff Post: ' . $staff_post->ID );
+						}
+					}
+					if ( ! $dry_run ) {
+						// Do bylines check and fix
+						if ( false === $create_new && isset($staff_post->ID) && isset($term->term_id) ) {
+							update_term_meta( $term->term_id, 'tds_post_id', $staff_post->ID );
+							update_post_meta( $staff_post->ID, 'tds_term_id', $term->term_id );
+							WP_CLI::success( sprintf(
+								'%s - %s connected to %s',
+								WP_CLI::colorize( '%B' . $staff_post->ID . '%n' ),
+								WP_CLI::colorize( '%G' . $term->name . '%n' ),
+							) );
+						}
+						if ( true === $create_new ) {
+							// Unhook the TDS post hook so we don't
+							remove_action( 'save_post', \TDS\get_save_post_hook( 'staff', 'bylines' ), 10, 2 );
+
+							// Create staff post
+							$staff_post = wp_insert_post( array(
+								'post_title' => $term->name,
+								'post_type' => 'staff',
+								'post_status' => 'publish',
+							) );
+
+							update_term_meta( $term->term_id, 'tds_post_id', $staff_post );
+							update_post_meta( $staff_post, 'tds_term_id', $term->term_id );
+
+							WP_CLI::success( sprintf(
+								'%s - %s created and connected to %s',
+								WP_CLI::colorize( '%B' . $staff_post . '%n' ),
+								WP_CLI::colorize( '%G' . $term->name . '%n' ),
+								WP_CLI::colorize( '%G' . $term->term_id . '%n' ),
+							) );
+
+							// Re-hook the action
+							add_action( 'save_post', \TDS\get_save_post_hook( 'staff', 'bylines' ), 10, 2 );
+						}
+					} else {
+						WP_CLI::success( sprintf(
+							'%s - %s will be created and connected to %s when run with dry-run trigger safety off.',
+							WP_CLI::colorize( '%B' . $staff_post . '%n' ),
+							WP_CLI::colorize( '%G' . $term->name . '%n' ),
+							WP_CLI::colorize( '%G' . $term->term_id . '%n' ),
+						) );
+					}
+				}
+
+				// Pause.
+				sleep( 5 );
+
+				// Free up memory.
+				$this->vip_inmemory_cleanup();
+
+				$paged++;
+			} while ( count( $terms ) );
 
 			// Trigger a term count as well as trigger bulk indexing of Elasticsearch site.
 			$this->end_bulk_operation();
