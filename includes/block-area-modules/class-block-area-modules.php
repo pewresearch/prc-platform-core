@@ -145,6 +145,10 @@ class Block_Area_Modules {
 		register_post_type( self::$post_type, $args );
 	}
 
+	public function block_init() {
+		register_block_type( __DIR__ . '/build' );
+	}
+
 	public function enable_gutenberg_ramp($post_types) {
 		array_push( $post_types, self::$post_type );
 		return $post_types;

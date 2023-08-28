@@ -13,8 +13,15 @@
 		"featured lede"
 	],
 	"attributes": {
-		"areaRef": {
-			"type": "number"
+		"blockAreaSlug": {
+			"type": "string"
+		},
+		"categorySlug": {
+			"type": "string"
+		},
+		"inheritCategory": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
@@ -24,7 +31,8 @@
 	"usesContext": [
 		"postId",
 		"query",
-		"queryId"
+		"queryId",
+		"templateSlug"
 	],
 	"textdomain": "prc-block-area",
 	"editorScript": "file:./index.js",

@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { withNotices } from '@wordpress/components';
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 import { useEntityBlockEditor, useEntityRecord } from '@wordpress/core-data';
 import {
 	useInnerBlocksProps,
@@ -20,6 +20,7 @@ import {
  */
 import Controls from './Controls';
 import Placeholder from './Placeholder';
+import useLatestBlockModule from './hooks/use-latest-block-module';
 import { POST_TYPE, ALLOWED_BLOCKS } from './constants';
 
 function SyncedEntityEdit({
@@ -30,24 +31,22 @@ function SyncedEntityEdit({
 	noticeUI,
 	context,
 }) {
-	const { ref } = attributes;
-	const isNew = !ref;
-	const hasAlreadyRendered = useHasRecursion(ref);
+	const { query, queryId, postId, templateSlug } = context;
+	const { blockAreaSlug, categorySlug } = attributes;
+	const isNew = !blockAreaSlug;
 
-	const { query, queryId, postId } = context;
+	const hasAlreadyRendered = useHasRecursion(blockAreaSlug);
 
-
-	// Using the wp rest api lets query the most recent post from POST_TYPE with the
-
-
-	const { record, hasResolved } = useEntityRecord('postType', POST_TYPE, ref);
+	const {records, hasResolved} = useLatestBlockModule(blockAreaSlug, categorySlug, {
+		enabled: !isNew,
+	});
 	const isResolving = !hasResolved;
-	const isMissing = hasResolved && !record && !isNew;
+	const isMissing = hasResolved && !records && !isNew;
 
 	const [blocks, onInput, onChange] = useEntityBlockEditor(
 		'postType',
 		POST_TYPE,
-		{ id: ref }
+		{ id: records?.[0]?.id }
 	);
 
 	const blockProps = useBlockProps();
@@ -56,7 +55,6 @@ function SyncedEntityEdit({
 		value: blocks,
 		onInput,
 		onChange,
-		allowedBlocks: ALLOWED_BLOCKS,
 		renderAppender: blocks?.length
 			? undefined
 			: InnerBlocks.ButtonBlockAppender,
@@ -83,7 +81,7 @@ function SyncedEntityEdit({
 	}
 
 	if (isResolving || isNew) {
-		return (
+		return(
 			<div {...blockProps}>
 				<Placeholder
 					{...{
@@ -92,6 +90,8 @@ function SyncedEntityEdit({
 						clientId,
 						isResolving,
 						isNew,
+						context,
+						noticeOperations,
 					}}
 				/>
 			</div>
@@ -99,7 +99,7 @@ function SyncedEntityEdit({
 	}
 
 	return (
-		<RecursionProvider uniqueId={ref}>
+		<RecursionProvider uniqueId={blockAreaSlug}>
 			<Controls
 				{...{
 					attributes,

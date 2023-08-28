@@ -546,6 +546,7 @@ class Platform_Bootstrap {
 
 		$this->loader->add_action( 'init', $block_area_modules, 'register_block_areas' );
 		$this->loader->add_action( 'init', $block_area_modules, 'register_block_modules' );
+		$this->loader->add_action( 'init', $block_area_modules, 'block_init' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $block_area_modules, 'enable_gutenberg_ramp' );
 	}
 

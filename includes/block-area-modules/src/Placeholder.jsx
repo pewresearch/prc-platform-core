@@ -2,6 +2,7 @@
  * External Dependencies
  */
 import styled from '@emotion/styled';
+import { symbolFilled as icon } from '@wordpress/icons';
 
 /**
  * WordPress Dependencies
@@ -17,9 +18,9 @@ import { Fragment, useState } from '@wordpress/element';
 /**
  * Internal Dependencies
  */
-import PlaceholderCreate from './PlaceholderCreate';
-import PlaceholderSearch from './PlaceholderSearch';
-import { POST_TYPE_LABEL } from './constants';
+// import PlaceholderCreate from './PlaceholderCreate';
+import PlaceholderWizard from './PlaceholderWizard';
+import { TAXONOMY_LABEL } from './constants';
 
 const LoadingIndicator = styled.div`
 	display: flex;
@@ -30,7 +31,7 @@ const LoadingIndicator = styled.div`
 const ToggleLink = ({ showCreateForm, toggleCreateForm }) => {
 	return (
 		<Button variant="link" onClick={toggleCreateForm}>
-			{showCreateForm ? __('Cancel') : __(`Create New ${POST_TYPE_LABEL}`)}
+			{showCreateForm ? __('Cancel') : __(`Create New ${TAXONOMY_LABEL}`)}
 		</Button>
 	);
 };
@@ -41,37 +42,27 @@ export default function Placeholder({
 	disableCreation = false,
 	isNew,
 	isResolving,
+	context,
+	noticeOperations,
 }) {
-	const [showCreateForm, setShowCreateForm] = useState(false);
-	const toggleCreateForm = () => setShowCreateForm(!showCreateForm);
-
+	const [instructions, setInstructions] = useState(
+		__(`Search for an existing ${TAXONOMY_LABEL.toLowerCase()} or create a new one`)
+	);
 	return (
 		<WPComPlaceholder
-			instructions={__(`Search for an existing ${POST_TYPE_LABEL} or create a new one`)}
-			label={__(`Synced ${POST_TYPE_LABEL}`)}
+			instructions={instructions}
+			label={__(`${TAXONOMY_LABEL}`)}
+			icon={icon}
 		>
 			<div style={{ width: '100%' }}>
 				{!isNew && isResolving && (
 					<LoadingIndicator>
-						<span>Loading {POST_TYPE_LABEL}... </span>
+						<span>Loading {TAXONOMY_LABEL}... </span>
 						<Spinner />
 					</LoadingIndicator>
 				)}
 				{isNew && (
-					<Fragment>
-						{!showCreateForm && (
-							<PlaceholderSearch setAttributes={setAttributes} />
-						)}
-						{showCreateForm && (
-							<PlaceholderCreate {...{ setAttributes }} />
-						)}
-						{false === disableCreation && (
-							<ToggleLink
-								showCreateForm={showCreateForm}
-								toggleCreateForm={toggleCreateForm}
-							/>
-						)}
-					</Fragment>
+					<PlaceholderWizard attributes={attributes} setAttributes={setAttributes} context={context} setInstructions={setInstructions} noticeOperations={noticeOperations} />
 				)}
 			</div>
 		</WPComPlaceholder>
