@@ -3,6 +3,7 @@
 	"description": "Supports '/iframe' embed functionality for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
+		"@wordpress/icons": "^9.31.0",
 		"@wordpress/scripts": "^26.1.0"
 	},
 	"scripts": {

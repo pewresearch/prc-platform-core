@@ -102,7 +102,6 @@ class Platform_Bootstrap {
 		$this->define_short_read_post_type_hooks();
 		$this->define_course_post_type_hooks();
 		$this->define_press_release_post_type_hooks();
-		$this->define_quiz_post_type_hooks();
 	}
 
 	/**
@@ -175,8 +174,6 @@ class Platform_Bootstrap {
 		$this->include('interactives/class-interactives.php');
 		// Load "homepages" post type
 		$this->include('homepages/class-homepages.php');
-		// Load "quiz" post type
-		$this->include('quizzes/class-quizzes.php');
 		// Load "mini-courses" post type
 		$this->include('courses/class-courses.php');
 		// Load "press-release" post type
@@ -307,6 +304,7 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'the_content', $embed, 'filter_content', 10, 1 );
 		$this->loader->add_action( 'rest_api_init', $embed, 'register_rest_fields' );
 		$this->loader->add_action( 'init', $embed, 'register_assets', 10, 1 );
+		$this->loader->add_filter( 'show_admin_bar', $embed, 'disable_admin_bar_on_iframes', 10, 1 );
 
 		// Block Modifications
 		$this->loader->add_filter( 'block_type_metadata', $embed, 'add_attributes', 100, 1 );
@@ -316,6 +314,7 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'enqueue_block_editor_assets', $embed, 'enqueue_editor_controls' );
 
 		// Iframe Template
+		$this->loader->add_filter('body_class', $embed, 'body_class', 99, 1);
 		$this->loader->add_action( 'template_include', $embed, 'template_include', 99, 1 );
 		$this->loader->add_action( 'template_redirect', $embed, 'template_default', 10, 1 );
 		$this->loader->add_action( 'wp_head', $embed, 'head', 10, 1 );
@@ -606,17 +605,6 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'init', $press_releases, 'register_type' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $press_releases, 'enable_gutenberg_ramp' );
 		$this->loader->add_filter( 'post_type_link', $press_releases, 'get_press_release_permalink', 10, 3);
-	}
-
-	/**
-	 * Define all the hooks related to the Quiz content type. (Not the builder)
-	 * @return void
-	 */
-	private function define_quiz_post_type_hooks() {
-		$quizzes = new Quizzes( $this->get_plugin_name(), $this->get_version() );
-
-		$this->loader->add_action( 'init', $quizzes, 'register_type' );
-		$this->loader->add_filter( 'prc_load_gutenberg', $quizzes, 'enable_gutenberg_ramp' );
 	}
 
 	/**

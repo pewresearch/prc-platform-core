@@ -4,6 +4,7 @@
   "editorScript": "file:./index.js",
   "viewScript": [
     "file:./view.js",
+    "file:./view-embed.js",
     "file:./iframe-resizer.js",
     "file:./iframe-resizer-content-window.js"
   ],

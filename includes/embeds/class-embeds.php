@@ -71,6 +71,26 @@ class Iframe_Embeds {
 		return true;
 	}
 
+	public function register_view_embed_handler() {
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/view-embed.asset.php' );
+		$view_embed_script_slug = self::$handle . '-view-embed';
+		$view_embed_script_src = plugins_url( 'build/view-embed.js', __FILE__ );
+
+		$script = wp_register_script(
+			$view_embed_script_slug,
+			$view_embed_script_src,
+			array_merge($asset_file['dependencies'], array(self::$handle . '-resizer-script')),
+			$asset_file['version'],
+			true
+		);
+
+		if ( ! $script ) {
+			return new WP_Error( self::$handle, 'Failed to register view embed handler asset' );
+		}
+
+		return true;
+	}
+
 	public function register_embed_footer_style() {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/view.asset.php' );
 		$embed_footer_slug = self::$handle . '-footer';
@@ -155,6 +175,7 @@ class Iframe_Embeds {
 	public function register_assets() {
 		$this->register_controls_asset();
 		$this->register_resizer_asset();
+		$this->register_view_embed_handler();
 		$this->register_resizer_window_asset();
 		$this->register_embed_footer_style();
 	}
@@ -168,6 +189,13 @@ class Iframe_Embeds {
 			)
 		);
 		wp_enqueue_script(self::$handle . '-controls');
+	}
+
+	public function body_class( $classes ) {
+		if ( $this->is_iframe() ) {
+			$classes[] = 'prc-platform__iframe';
+		}
+		return $classes;
 	}
 
 	public function iframe_qvar( $qvars ) {
@@ -189,13 +217,13 @@ class Iframe_Embeds {
 			'single-' . $post->post_type . '-iframe.php',
 			'single-iframe.php',
 		);
-		error_log("FIND TEMPLATE CHECK" . print_r($templates, true));
 		$template = locate_template($templates);
-		error_log("FOUND: " . $template);
 		return $template;
 	}
 
 	/**
+	 * @hook template_include
+	 *
 	 * Changes the default template file to be used if an alternative is found.
 	 *
 	 * If available, the following template files will be used, in order:
@@ -218,7 +246,21 @@ class Iframe_Embeds {
 	}
 
 	/**
+	 * @hook show_admin_bar
+	 * @param mixed $show_admin_bar
+	 * @return mixed
+	 */
+	public function disable_admin_bar_on_iframes( $show_admin_bar ) {
+		if ( $this->is_iframe() ) {
+			return false;
+		}
+		return $show_admin_bar;
+	}
+
+	/**
 	 * Default output for /iframe if no template is passed through the `prc_iframe_template` filter.
+	 * @hook template_redirect
+	 * @return void
 	 */
 	public function template_default() {
 		if ( $this->is_iframe() ) {
@@ -238,6 +280,14 @@ class Iframe_Embeds {
 				}
 				wp_reset_postdata();
 				?>
+				<style>
+					#wpadminbar {
+						display: none !important;
+					}
+					html {
+						margin: 0!important;
+					}
+				</style>
 				<?php
 				wp_footer();
 				exit();
@@ -491,7 +541,7 @@ class Iframe_Embeds {
 		return ob_get_clean();
 	}
 
-	public function get_iframe_code( $post_id, $src = null ) {
+	public function get_iframe_code( $post_id, $src = null, $output_as_iframe = false ) {
 		if ( empty( $src ) ) {
 			$src = get_permalink( $post_id ) . 'iframe/';
 		}
@@ -502,14 +552,25 @@ class Iframe_Embeds {
 		}
 		$script_url = wp_scripts()->registered[ self::$handle . '-resizer-script' ]->src;
 
+		if ( true === $output_as_iframe ) {
+			wp_enqueue_script(self::$handle . '-view-embed');
+		}
+
 		ob_start();
 		?>
+		<?php if ( true !== $output_as_iframe ): ?>
 		<textarea onClick="this.focus();this.select();">
-		<iframe id="pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>" src="<?php echo esc_url( $src ); ?>" height="<?php echo esc_attr( $height ); ?>px" width="100%" scrolling="no" frameborder="0"></iframe><script type='text/javascript' id='pew-iframe-resizer'>(function(){function async_load(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='<?php echo esc_url( $script_url ); ?>';s.onload=s.onreadystatechange=function(){var rs=this.readyState;try{iFrameResize([],'iframe#pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>')}catch(e){}};var embedder=document.getElementById('pew-iframe-resizer');embedder.parentNode.insertBefore(s,embedder)}if(window.attachEvent)window.attachEvent('onload',async_load);else window.addEventListener('load',async_load,false)})();</script>
+		<?php endif; ?>
+		<iframe id="pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>" src="<?php echo esc_url( $src ); ?>" height="<?php echo esc_attr( $height ); ?>px" width="100%" scrolling="no" frameborder="0"></iframe>
+		<?php if ( true !== $output_as_iframe ): ?>
+		<script type='text/javascript' id='pew-iframe-resizer'>(function(){function async_load(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='<?php echo esc_url( $script_url ); ?>';s.onload=s.onreadystatechange=function(){var rs=this.readyState;try{iFrameResize([],'iframe#pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>')}catch(e){}};var embedder=document.getElementById('pew-iframe-resizer');embedder.parentNode.insertBefore(s,embedder)}if(window.attachEvent)window.attachEvent('onload',async_load);else window.addEventListener('load',async_load,false)})();</script>
 		</textarea>
+		<?php endif;?>
 		<?php
 		$output = ob_get_clean();
-		$output = normalize_whitespace( $output );
+		if ( true !== $output_as_iframe ) {
+			$output = normalize_whitespace( $output );
+		}
 		return apply_filters( 'prc_iframe_embed_code', $output, $post_id );
 	}
 }
