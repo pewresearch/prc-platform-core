@@ -15,13 +15,14 @@ import { Button, TextControl, PanelBody } from '@wordpress/components';
  * Internal Dependencies
  */
 import DetachEntityMenuControl from './DetachEntityMenuControl';
-import { POST_TYPE, POST_TYPE_LABEL } from './constants';
+import { POST_TYPE, POST_TYPE_LABEL, TAXONOMY, TAXONOMY_LABEL } from './constants';
 
-export default function Controls({ attributes, clientId, blocks }) {
-	const { ref } = attributes;
+export default function Controls({ attributes, clientId, blocks, blockAreaId, blockModuleId }) {
+	// Block Area:
+	const [blockAreaName, setBlockAreaName] = useEntityProp('taxonomy', TAXONOMY, 'name', blockAreaId);
 
-	const [title, setTitle] = useEntityProp('postType', POST_TYPE, 'title', ref);
-	const [permalink] = useEntityProp('postType', POST_TYPE, 'link', ref);
+	// Block Module:
+	const [blockModuleTitle, setBlockModuleTitle] = useEntityProp('postType', POST_TYPE, 'title', blockModuleId);
 
 	return (
 		<Fragment>
@@ -30,19 +31,19 @@ export default function Controls({ attributes, clientId, blocks }) {
 				<PanelBody>
 					<div>
 						<TextControl
-							__nextHasNoMarginBottom
-							label={__(`${POST_TYPE_LABEL} Title}`)}
-							value={title}
-							onChange={setTitle}
+							label={__(`${TAXONOMY_LABEL} Name`)}
+							value={blockAreaName}
+							onChange={setBlockAreaName}
 						/>
-						<Button
-							variant="secondary"
-							onClick={() => {
-								window.open(permalink, '_blank');
-							}}
-						>
-							Open in new window
-						</Button>
+
+					</div>
+					<div>
+						<TextControl
+							__nextHasNoMarginBottom
+							label={__(`${POST_TYPE_LABEL} Title`)}
+							value={blockModuleTitle}
+							onChange={setBlockModuleTitle}
+						/>
 					</div>
 				</PanelBody>
 			</InspectorControls>

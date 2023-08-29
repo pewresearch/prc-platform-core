@@ -5,7 +5,7 @@
 import { __ } from '@wordpress/i18n';
 import { withNotices } from '@wordpress/components';
 import { useEffect, useState, useMemo } from '@wordpress/element';
-import { useEntityBlockEditor, useEntityRecord } from '@wordpress/core-data';
+import { useEntityBlockEditor } from '@wordpress/core-data';
 import {
 	useInnerBlocksProps,
 	__experimentalRecursionProvider as RecursionProvider,
@@ -20,8 +20,9 @@ import {
  */
 import Controls from './Controls';
 import Placeholder from './Placeholder';
-import useLatestBlockModule from './hooks/use-latest-block-module';
-import { POST_TYPE, ALLOWED_BLOCKS } from './constants';
+import { useLatestBlockModule, useTaxonomyInfo } from './hooks';
+import { LoadingIndicator } from './utils';
+import { POST_TYPE } from './constants';
 
 function SyncedEntityEdit({
 	attributes,
@@ -32,22 +33,41 @@ function SyncedEntityEdit({
 	context,
 }) {
 	const { query, queryId, postId, templateSlug } = context;
-	const { blockAreaSlug, categorySlug } = attributes;
+	const { blockAreaSlug, categorySlug, inheritCategory } = attributes;
 	const isNew = !blockAreaSlug;
+	let catSlug = categorySlug;
 
-	const hasAlreadyRendered = useHasRecursion(blockAreaSlug);
+	if (inheritCategory && !categorySlug) {
+		const { templateSlug } = context;
+		if ( templateSlug.includes('category') ) {
+			catSlug = templateSlug.replace('category-', '');
+		}
+	}
 
-	const {records, hasResolved} = useLatestBlockModule(blockAreaSlug, categorySlug, {
+	const { blockAreaName, blockAreaId, categoryName, categoryId } = useTaxonomyInfo(
+		blockAreaSlug,
+		catSlug
+	);
+
+	console.log("tax info...", {blockAreaName, blockAreaId, categoryName, categoryId});
+
+	const {blockModuleId, hasResolved } = useLatestBlockModule(blockAreaId, categoryId, {
 		enabled: !isNew,
 	});
 	const isResolving = !hasResolved;
-	const isMissing = hasResolved && !records && !isNew;
+	const isMissing = hasResolved && !blockModuleId && !isNew;
 
 	const [blocks, onInput, onChange] = useEntityBlockEditor(
 		'postType',
 		POST_TYPE,
-		{ id: records?.[0]?.id }
+		{ id: blockModuleId }
 	);
+
+	const recursionKey = useMemo(() => {
+		return JSON.stringify({blockModuleId, blockAreaSlug});
+	}, [blockModuleId, blockAreaSlug]);
+
+	const hasAlreadyRendered = useHasRecursion(recursionKey);
 
 	const blockProps = useBlockProps();
 
@@ -74,13 +94,23 @@ function SyncedEntityEdit({
 		return (
 			<div {...blockProps}>
 				<Warning>
-					{__(` ${POST_TYPE}as been deleted or is unavailable.`)}
+					{__(` ${POST_TYPE} been deleted or is unavailable.`)}
 				</Warning>
 			</div>
 		);
 	}
 
-	if (isResolving || isNew) {
+	if (isResolving && !isNew) {
+		return (
+			<div {...blockProps}>
+				<Warning>
+					<LoadingIndicator loading={true} label={__(`Loading ${blockAreaName} Block Area`, 'prc-platform-core')}/>
+				</Warning>
+			</div>
+		);
+	}
+
+	if (isResolving && isNew) {
 		return(
 			<div {...blockProps}>
 				<Placeholder
@@ -99,12 +129,14 @@ function SyncedEntityEdit({
 	}
 
 	return (
-		<RecursionProvider uniqueId={blockAreaSlug}>
+		<RecursionProvider uniqueId={recursionKey}>
 			<Controls
 				{...{
 					attributes,
 					clientId,
 					blocks,
+					blockAreaId,
+					blockModuleId,
 				}}
 			/>
 			<div {...innerBlocksProps} />

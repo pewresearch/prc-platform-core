@@ -29,10 +29,11 @@
 		"html": false
 	},
 	"usesContext": [
-		"postId",
-		"query",
 		"queryId",
-		"templateSlug"
+		"query",
+		"queryContext",
+		"templateSlug",
+		"previewPostType"
 	],
 	"textdomain": "prc-block-area",
 	"editorScript": "file:./index.js",

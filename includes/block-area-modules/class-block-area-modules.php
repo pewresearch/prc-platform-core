@@ -1,6 +1,9 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use WP_Query;
+use WP_Term;
+use WP_Post;
 
 class Block_Area_Modules {
 	public static $taxonomy = 'block_area';
@@ -146,7 +149,67 @@ class Block_Area_Modules {
 	}
 
 	public function block_init() {
-		register_block_type( __DIR__ . '/build' );
+		register_block_type( __DIR__ . '/build', array(
+			'render_callback' => array( $this, 'render_block_area' ),
+		) );
+	}
+
+	public function render_block_area($attributes, $content, $block) {
+		$context = $block->context;
+		$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
+		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
+		$inherit_category = array_key_exists('inheritCategory', $attributes) ? $attributes['inheritCategory'] : false;
+
+		if ( null === $block_area_slug ) {
+			return $content;
+		}
+
+		if ( true === $inherit_category && null === $category_slug ) {
+			global $wp_query;
+			if ( $wp_query->is_main_query() && $wp_query->is_category() ) {
+				$queried_object = $wp_query->get_queried_object();
+				$category_slug = $queried_object->slug;
+			}
+		}
+
+		$tax_query = array(
+			'relation' => 'AND',
+			array(
+				'taxonomy' => 'block_area',
+				'field' => 'slug',
+				'terms' => array($block_area_slug),
+			)
+		);
+
+		if ( null !== $category_slug ) {
+			array_push($tax_query, array(
+				'taxonomy' => 'category',
+				'field' => 'slug',
+				'terms' => array($category_slug),
+			));
+		}
+
+		$block_module_query_args = array(
+			'post_type' => 'block_module',
+			'posts_per_page' => 1,
+			'fields' => 'ids',
+			'tax_query' => $tax_query,
+		);
+
+		$block_modules = new WP_Query($block_module_query_args);
+
+		if ( $block_modules->have_posts() ) {
+			$block_module_id = $block_modules->posts[0];
+			$block_module = get_post($block_module_id);
+			$content = $block_module instanceof WP_Post ? apply_filters(
+				'the_content',
+				$block_module->post_content,
+			) : $content;
+		}
+
+		wp_reset_postdata();
+
+		return $content;
 	}
 
 	public function enable_gutenberg_ramp($post_types) {

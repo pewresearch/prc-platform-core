@@ -17,7 +17,7 @@ import { cloneBlock } from '@wordpress/blocks';
 /**
  * Internal Dependencies
  */
-import { POST_TYPE } from './constants';
+import { POST_TYPE_LABEL } from './constants';
 
 export default function DetachEntityMenuControl({ blocks, clientId }) {
 	const { insertBlock, removeBlock } = useDispatch(blockEditorStore);
@@ -45,7 +45,7 @@ export default function DetachEntityMenuControl({ blocks, clientId }) {
 							});
 							removeBlock(clientId);
 						}}
-						label={`Detach ${innerBlockCount} blocks from synced ${POST_TYPE}`}
+						label={`Detach ${innerBlockCount} blocks from synced ${POST_TYPE_LABEL.toLowerCase()}`}
 						icon={ungroup}
 						showTooltip
 					/>

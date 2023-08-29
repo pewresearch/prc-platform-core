@@ -69,7 +69,11 @@ export default function PlaceholderWizard({ attributes, setAttributes, context, 
 			// Create new term and wait...
 
 		} else if (blockAreaSlug) {
-			setAttributes({ blockAreaSlug, categorySlug });
+			const newAttrs = { blockAreaSlug };
+			if (categorySlug) {
+				newAttrs.categorySlug = categorySlug;
+			}
+			setAttributes(newAttrs);
 		}
 	}
 

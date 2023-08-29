@@ -36,7 +36,8 @@ export default function PlaceholderCategorySelect({ attributes, setAttributes, s
 		}
 	});
 
-	const onInheritChange = () => {
+	const onInheritChange = (newVal) => {
+		console.log('onInheritChange', newVal);
 		const newOption = ! inheritCategory;
 		// set attributes, but replace everything in there with the new option, this way if categorySlug is set it'll get removed.
 		setAttributes({
