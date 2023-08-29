@@ -21,6 +21,10 @@ export default function PlaceholderBlockAreaCreate({ setBlockAreaName, context }
 	const [newBlockAreaName, setNewBlockAreaName] = useState('');
 	const debouncedNewBlockAreaName = useDebounce(newBlockAreaName, 500);
 
+	// New entity provider that we can use to create a new POST_TYPE but assign it the block area and category. It'll give us an id, once we have an id we'll know it's created and continue.
+
+	// FOr the block module we should offer some patterns just for this post type that includes things like Grid Lede arrangements.
+
 	useEffect(() => {
 		if (debouncedNewBlockAreaName && debouncedNewBlockAreaName.length > 3) {
 			setBlockAreaName(debouncedNewBlockAreaName);
