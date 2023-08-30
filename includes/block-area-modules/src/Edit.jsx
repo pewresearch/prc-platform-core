@@ -22,7 +22,7 @@ import Controls from './Controls';
 import Placeholder from './Placeholder';
 import { useLatestBlockModule, useTaxonomyInfo } from './hooks';
 import { LoadingIndicator } from './utils';
-import { POST_TYPE } from './constants';
+import { POST_TYPE, POST_TYPE_LABEL } from './constants';
 
 function SyncedEntityEdit({
 	attributes,
@@ -94,7 +94,7 @@ function SyncedEntityEdit({
 		return (
 			<div {...blockProps}>
 				<Warning>
-					{__(` ${POST_TYPE} been deleted or is unavailable.`)}
+					{__(`A matching ${POST_TYPE_LABEL.toLowerCase()} could not be found. It may have been deleted or is unavailable at this time.`)}
 				</Warning>
 			</div>
 		);
