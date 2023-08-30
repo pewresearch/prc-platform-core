@@ -69,7 +69,10 @@ class Multisite_Migration_Tools {
 						},
 					),
 				),
-			)
+				'permission_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				}
+			),
 		);
 
 		register_rest_route(
@@ -98,6 +101,9 @@ class Multisite_Migration_Tools {
 						},
 					),
 				),
+				'permission_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
 			)
 		);
 	}

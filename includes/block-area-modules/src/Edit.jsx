@@ -32,7 +32,6 @@ function SyncedEntityEdit({
 	noticeUI,
 	context,
 }) {
-	const { query, queryId, postId, templateSlug } = context;
 	const { blockAreaSlug, categorySlug, inheritCategory } = attributes;
 	const isNew = !blockAreaSlug;
 	let catSlug = categorySlug;
