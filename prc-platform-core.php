@@ -23,7 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'PRC_PLATFORM_VERSION', '0.0.2' );
+define( 'PRC_PLATFORM_VERSION', '0.0.3' );
 
 /**
  * The code that runs during plugin activation.
