@@ -670,7 +670,9 @@ class Platform_Bootstrap {
 		);
 		// Clean up old drafts on a rolling 30 day basis, weekly. Move them to the trash.
 		// Let WordPress handle the trash.
-		$this->loader->add_action( 'prc_run_weekly', $housekeeping, 'prc_run_weekly' );
+		$this->loader->add_action( 'prc_run_weekly', $housekeeping, 'weekly_drafts_cleanup' );
+		// Clean up quiz archetypes with less than 100 hits.
+		$this->loader->add_action( 'prc_run_monthly', $housekeeping, 'monthly_quiz_cleanup' );
 	}
 
 	private function define_jetpack_integration_hooks() {

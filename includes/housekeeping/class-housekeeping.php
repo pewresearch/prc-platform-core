@@ -95,4 +95,20 @@ class Housekeeping {
 			);
 		}
 	}
+
+	/**
+	 * @hook prc_run_monthly
+	 * @return void
+	 */
+	public function monthly_quiz_cleanup() {
+		$hits_threshold = apply_filters( 'prc_quiz_reset_threshold', 100, null );
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'prc_quiz_archetype';
+		$query = $wpdb->prepare(
+			"DELETE FROM $table_name WHERE hits < %d",
+			(int) $hits_threshold
+		);
+		$result = $wpdb->query($query);
+	}
 }

@@ -59,6 +59,12 @@ class Action_Scheduler {
 			'interval' => WEEK_IN_SECONDS,
 			'args' => array(),
 		),
+		// Operations to run once a month.
+		'prc_run_monthly' => array(
+			'start_time' => '00:02:00',
+			'interval' => MONTH_IN_SECONDS,
+			'args' => array(),
+		),
 	);
 
 	/**
