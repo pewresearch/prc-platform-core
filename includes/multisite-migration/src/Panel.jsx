@@ -33,7 +33,7 @@ const PanelContent = styled.div`
 	display: block;
 `;
 
-const MigrationTool = ({title, label = "Run Report Package Verificaiton", tool = 'report-package-verification', postId}) => {
+const MigrationTool = ({title, label, tool, postId}) => {
 	const [displayAllowOverwrite, setDisplayAllowOverwrite] = useState(false);
 	const [allowDryRun, setAllowDryRun] = useState(true);
 	const [allowOverwrite, setAllowOverwrite] = useState(false);
@@ -74,7 +74,7 @@ const MigrationTool = ({title, label = "Run Report Package Verificaiton", tool =
 				}
 			);
 			console.error(error);
-			noticeOperations.createErrorNotice( error.message );
+			createErrorNotice( error.message );
 			if ( 'existing-data' === error.code ) {
 				setDisplayAllowOverwrite(true);
 			}
@@ -172,9 +172,11 @@ const MigrationPanel = ({noticeOperations, noticeUI, noticeList}) => {
 					)}
 				</PanelContent>
 			</PanelBody>
-
+			{hasSupports && hasSupports.topicCategories && (
+				<MigrationTool title="Topic Categories Verification" label="Run Topic Category Verification" tool="topic-categories" postId={postId} />
+			)}
 			{hasSupports && hasSupports.reportPackageConnection && (
-				<MigrationTool title="Report Package Verification" postId={postId} />
+				<MigrationTool title="Report Package Verification" label="Run Report Package Verification" tool="report-package-verification" postId={postId} />
 			)}
 			{hasSupports && hasSupports.attachments && (
 				<MigrationTool title="Attachments Verification" label="Run Attachments Verification" tool="attachments" postId={postId} />

@@ -614,6 +614,8 @@ class Distributor {
 
 	/**
 	 * The mis-management of the topics index via the stub index via Admin Columns has resulted in an unforseen endlees loop situation and applies all topic tags to a post under certain conditions. This cleanses posts of that issue if present.
+	 *
+	 * @TODO: @sethrubenstein make it so that if there are NO terms and the post is not a child it'll also look to the stub index for resolution. We should also look into a solution for primary topic for this.
 	 * @param mixed $taxonomy_terms
 	 * @param mixed $original_post_id
 	 * @return mixed

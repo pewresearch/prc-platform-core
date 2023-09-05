@@ -121,6 +121,7 @@ class Multisite_Migration_Tools {
 		$has = array(
 			'reportPackageMaterials' => get_post_meta( $post_id, '_reportMaterials', true ) ? true : false,
 			'reportPackageConnection' => get_post_meta( $post_id, '_multiSectionReport', true ) ? true : false,
+			'topicCategories' => true,
 			'bylines' => true,
 			'attachments' => get_post_meta( $post_id, '_artDirection', true ),
 		);
@@ -160,8 +161,62 @@ class Multisite_Migration_Tools {
 		return $this->$method( $post_id, $allow_overwrite, $dry_run );
 	}
 
-	public function verify_topics() {
+	public function verify_topic_categories($post_id, $allow_overwrite = false, $dry_run = true) {
 		// Go check stub index for this data?
+		// get existing terms and save them in post meta as a backup...
+		$existing_terms = wp_get_post_categories( $post_id, array('fields' => 'ids') );
+		$new_terms = false;
+
+		$original_post_id = $this->get_original_post_id($post_id);
+		$original_site_id = $this->get_original_blog_id($post_id);
+
+		switch_to_blog( $original_site_id );
+		$stub_post = get_post_meta( $original_post_id, '_stub_post', true );
+		restore_current_blog();
+		if ( !empty($stub_post) ) {
+			switch_to_blog(1);
+			$stub_post = get_post( $stub_post );
+			$temp_terms = false;
+			if ( !empty($stub_post) && !is_wp_error($stub_post) ) {
+				$temp_terms = wp_get_post_terms( $stub_post->ID, 'topic', array('fields' => 'slugs') );
+			}
+			restore_current_blog();
+
+			if ( false !== $temp_terms && !is_wp_error($temp_terms) ) {
+				$temp_terms = array_map( function($term) {
+					return get_term_by( 'slug', $term, 'topic' );
+				}, $temp_terms );
+				$new_terms = array_map( function($term) {
+					return $term->term_id;
+				}, $temp_terms );
+			}
+		}
+
+		if ( true !== $allow_overwrite && true === $dry_run ) {
+			return rest_ensure_response( array(
+				'existing_terms' => $existing_terms,
+				'new_terms' => $new_terms,
+				'processed' => false,
+			) );
+		}
+
+		if ( true === $allow_overwrite && false === $dry_run ) {
+			// Store existing terms for backup
+			if ($existing_terms) {
+				update_post_meta( $post_id, '_migration_verification_categories_backup', $existing_terms );
+			}
+			// Update the existing terms
+			$updated = wp_set_post_categories( $post_id, $new_terms, false );
+			if ( is_wp_error($updated) ) {
+				return $updated;
+			}
+
+			return rest_ensure_response( array(
+				'existing_terms' => $existing_terms,
+				'new_terms' => $new_terms,
+				'processed' => true,
+			) );
+		}
 	}
 
 	public function verify_bylines() {
