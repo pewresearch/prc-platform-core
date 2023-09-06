@@ -114,6 +114,6 @@ class Housekeeping {
 			"DELETE FROM $table_name WHERE hits < %d",
 			(int) $hits_threshold
 		);
-		$result = $wpdb->query($query);
+		return $wpdb->query($query);
 	}
 }
