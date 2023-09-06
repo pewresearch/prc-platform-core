@@ -3,6 +3,7 @@ namespace PRC\Platform;
 
 use WP_REST_Request;
 use WP_Error;
+use WP_REST_Response;
 
 /**
  * Panel and command line utility to run some follow up tools.
@@ -161,8 +162,14 @@ class Multisite_Migration_Tools {
 		return $this->$method( $post_id, $allow_overwrite, $dry_run );
 	}
 
+	/**
+	 * Verify the topic categories against the stub index.
+	 * @param mixed $post_id
+	 * @param bool $allow_overwrite
+	 * @param bool $dry_run
+	 * @return WP_REST_Response|WP_Error|array|false|void
+	 */
 	public function verify_topic_categories($post_id, $allow_overwrite = false, $dry_run = true) {
-		// Go check stub index for this data?
 		// get existing terms and save them in post meta as a backup...
 		$existing_terms = wp_get_post_categories( $post_id, array('fields' => 'ids') );
 		$new_terms = false;
@@ -184,7 +191,7 @@ class Multisite_Migration_Tools {
 
 			if ( false !== $temp_terms && !is_wp_error($temp_terms) ) {
 				$temp_terms = array_map( function($term) {
-					return get_term_by( 'slug', $term, 'topic' );
+					return get_term_by( 'slug', $term, 'category' );
 				}, $temp_terms );
 				$new_terms = array_map( function($term) {
 					return $term->term_id;
@@ -192,31 +199,15 @@ class Multisite_Migration_Tools {
 			}
 		}
 
-		if ( true !== $allow_overwrite && true === $dry_run ) {
-			return rest_ensure_response( array(
-				'existing_terms' => $existing_terms,
-				'new_terms' => $new_terms,
-				'processed' => false,
-			) );
+		if ($existing_terms) {
+			update_post_meta( $post_id, '_migration_verification_categories_backup', $existing_terms );
 		}
 
-		if ( true === $allow_overwrite && false === $dry_run ) {
-			// Store existing terms for backup
-			if ($existing_terms) {
-				update_post_meta( $post_id, '_migration_verification_categories_backup', $existing_terms );
-			}
-			// Update the existing terms
-			$updated = wp_set_post_categories( $post_id, $new_terms, false );
-			if ( is_wp_error($updated) ) {
-				return $updated;
-			}
-
-			return rest_ensure_response( array(
-				'existing_terms' => $existing_terms,
-				'new_terms' => $new_terms,
-				'processed' => true,
-			) );
-		}
+		return rest_ensure_response( array(
+			'status' => 200,
+			'existingTerms' => $existing_terms,
+			'newTerms' => $new_terms,
+		) );
 	}
 
 	public function verify_bylines() {
@@ -248,7 +239,7 @@ class Multisite_Migration_Tools {
 		);
 	}
 
-	public function verify_art_direction($post_id, $allow_overwrite = false, $dry_run = true) {
+	public function verify_attachments($post_id, $allow_overwrite = false, $dry_run = true) {
 		// Check for existing data...
 		$existing_data = get_post_meta( $post_id, '_artDirection', true );
 		if ( ! empty( $existing_data ) && true !== $allow_overwrite && true === $dry_run ) {

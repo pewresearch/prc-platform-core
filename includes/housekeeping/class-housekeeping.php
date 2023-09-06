@@ -94,6 +94,11 @@ class Housekeeping {
 				'The following posts were NOT trashed and require further inspection: ' . array_map(function($post_id) { return wp_sprintf('<a href="%s">%s</a>', get_permalink($post_id), $post_id);}, $posts_not_cleaned)
 			);
 		}
+
+		return array(
+			'posts_cleaned' => $posts_cleaned,
+			'posts_not_cleaned' => $posts_not_cleaned,
+		);
 	}
 
 	/**
