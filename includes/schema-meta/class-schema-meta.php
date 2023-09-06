@@ -35,7 +35,7 @@ class Schema_Meta {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
-		if ( class_exists( 'Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Abstract_Indexable_Presenter' ) ) {
+		if ( class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'class-parsely-meta.php';
 		}
 	}
@@ -135,7 +135,7 @@ class Schema_Meta {
 		if ( is_admin() ) {
 			return $presenters;
 		}
-		if ( ! class_exists( 'Abstract_Indexable_Tag_Presenter' ) && ! class_exists( 'Abstract_Indexable_Presenter' ) ) {
+		if ( ! class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && ! class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
 			return $presenters;
 		}
 		$presenters[] = new Parsely_Title();
