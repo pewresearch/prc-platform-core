@@ -10,6 +10,28 @@ class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
         'c34dc34eb7eec77023209fe27e4e18e8' => __DIR__ . '/..' . '/woocommerce/action-scheduler/action-scheduler.php',
     );
 
+    public static $prefixLengthsPsr4 = array (
+        'W' => 
+        array (
+            'Webmozart\\Assert\\' => 17,
+        ),
+        'L' => 
+        array (
+            'LanguageDetector\\' => 17,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'Webmozart\\Assert\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'LanguageDetector\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/landrok/language-detector/src/LanguageDetector',
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -17,6 +39,8 @@ class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$classMap;
 
         }, null, ClassLoader::class);

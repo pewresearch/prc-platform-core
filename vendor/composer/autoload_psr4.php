@@ -6,4 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Webmozart\\Assert\\' => array($vendorDir . '/webmozart/assert/src'),
+    'LanguageDetector\\' => array($vendorDir . '/landrok/language-detector/src/LanguageDetector'),
 );

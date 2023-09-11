@@ -88,6 +88,10 @@ class Schema_Meta {
 		add_filter( 'yoast_seo_development_mode', '__return_true' );
 	}
 
+	/**
+	 * @TODO: We should depreceate this in favor of the yoast json ld output.
+	 * @return void
+	 */
 	public function taxonomy_head_meta() {
 		if ( ! is_singular() ) {
 			return;
@@ -103,18 +107,18 @@ class Schema_Meta {
 		if ( taxonomy_exists( 'regions-countries' ) ) {
 			$taxonomies[] = 'regions-countries';
 		}
-		if ( taxonomy_exists( 'topic' ) ) {
-			$taxonomies[] = 'topic';
+		if ( taxonomy_exists( 'category' ) ) {
+			$taxonomies[] = 'category';
 		}
 		echo "\n<!-- Begin Taxonomy Meta -->\n";
 		foreach ( wp_get_object_terms( $post->ID, $taxonomies ) as $term ) {
 			echo "<meta name='$term->taxonomy' content='$term->name'>\n";
 		}
-		$primary_topic_id = get_post_meta( $post->ID, '_yoast_wpseo_primary_topic', true );
-		if ( $primary_topic_id ) {
-			$primary_topic = get_term_by( 'term_id', $primary_topic_id, 'topic' );
-			if ( $primary_topic ) {
-				echo "<meta name='_primary-topic' content='$primary_topic->name'>\n";
+		$primary_category_id = get_post_meta( $post->ID, '_yoast_wpseo_primary_category', true );
+		if ( $primary_category_id ) {
+			$primary_category = get_term_by( 'term_id', $primary_category_id, 'category' );
+			if ( $primary_category ) {
+				echo "<meta name='_primary-category' content='$primary_category->name'>\n";
 			}
 		}
 		echo "\n<!-- End Taxonomy Meta -->\n";
@@ -147,5 +151,20 @@ class Schema_Meta {
 		$presenters[] = new Parsely_Pub_Date();
 		$presenters[] = new Parsely_Authors();
 		return $presenters;
+	}
+
+	/**
+	 * Add a ASCII logo to the head of the site.
+	 * @return void
+	 */
+	public function ascii() {
+		?>
+	<!--
+	#   Pew Research Center Publishing Platform
+	#   Github: https://github.com/pewresearch/prc-platform-core
+	#   Version: <?php echo esc_html($this->version); ?> /\n
+	#
+	-->
+		<?php
 	}
 }

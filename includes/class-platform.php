@@ -102,6 +102,7 @@ class Platform_Bootstrap {
 		$this->define_short_read_post_type_hooks();
 		$this->define_course_post_type_hooks();
 		$this->define_press_release_post_type_hooks();
+		$this->define_page_type_hooks();
 	}
 
 	/**
@@ -336,6 +337,7 @@ class Platform_Bootstrap {
 		add_action( 'wp_head', array( $schema_meta, 'taxonomy_head_meta' ) );
 		add_filter( 'wpseo_frontend_presenters', array( $schema_meta, 'add_parsely_meta' ) );
 		add_filter( 'wp_parsely_metadata', array( $schema_meta, 'disable_parsely_json_ld'), 10, 3 );
+		$this->loader->add_action( 'wp_head', $schema_meta, 'ascii', 1 );
 	}
 
 	/**
@@ -350,6 +352,10 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'global_terms_enabled', $taxonomies, 'disable_global_terms', 10, 1 );
 		$this->loader->add_filter( 'wpseo_premium_term_redirect_slug_change', $taxonomies, 'yoast_enable_term_redirect_slug_change' );
 		$this->loader->add_filter( 'register_taxonomy_args', $taxonomies, 'modify_post_tag_taxonomy_args', 10, 2 );
+
+		$this->loader->add_action( 'init', $taxonomies, 'register_activity_trail_meta' );
+		$this->loader->add_action( 'create_term', $taxonomies, 'hook_on_to_term_update', 10, 3 );
+		$this->loader->add_action( 'edit_term', $taxonomies, 'hook_on_to_term_update', 10, 3 );
 
 		// "Topic" Category
 		// Begining with 5.0 we will be migrating away from the "Topic" taxonomy to the "Category" taxonomy.
@@ -606,6 +612,15 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'init', $press_releases, 'register_type' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $press_releases, 'enable_gutenberg_ramp' );
 		$this->loader->add_filter( 'post_type_link', $press_releases, 'get_press_release_permalink', 10, 3);
+	}
+
+	private function define_page_type_hooks() {
+		add_action(
+			'init',
+			function() {
+				add_post_type_support( 'page', 'custom-fields' );
+			}
+		);
 	}
 
 	/**

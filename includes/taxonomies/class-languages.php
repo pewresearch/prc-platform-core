@@ -1,6 +1,10 @@
 <?php
 namespace PRC\Platform;
 
+use InvalidArgumentException;
+use LanguageDetector\LanguageDetector;
+use TypeError;
+
 class Languages extends Taxonomies {
 	protected static $taxonomy = 'languages';
 
@@ -52,6 +56,29 @@ class Languages extends Taxonomies {
 		) );
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );
+	}
+
+	private function detect_language( string $text ) {
+		$detector = new LanguageDetector();
+		$language = $detector->evaluate( $text )->getLanguage();
+		return $language;
+	}
+
+	public function set_language_from_content( $post_id, $content ) {
+		$content = wp_strip_all_tags( strip_shortcodes( $content ) );
+		$lang    = $this->detect_language( $content );
+		wp_set_object_terms( $post_id, array( $lang ), self::$taxonomy, true );
+	}
+
+	/**
+	 * @hook prc_core_on_publish
+	 * @param mixed $post
+	 * @return void
+	 * @throws TypeError
+	 * @throws InvalidArgumentException
+	 */
+	public function set_language_on_pub( $post ) {
+		$this->set_language_from_content( $post->ID, $post->post_content );
 	}
 
 }

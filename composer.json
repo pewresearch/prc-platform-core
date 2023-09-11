@@ -1,7 +1,8 @@
 {
 	"name": "pewresearch/prc-platform",
 	"require": {
-		"woocommerce/action-scheduler": "^3.6"
+		"woocommerce/action-scheduler": "^3.6",
+		"landrok/language-detector": "^1.3"
 	},
 	"autoload": {
 		"files": [

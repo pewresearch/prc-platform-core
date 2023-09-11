@@ -108,16 +108,16 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id = $this->presentation->model->object_id;
 		if ( null !== $object_id && 'post' === $object_type ) {
-			$topic_tags = wp_get_post_terms( $object_id, 'topic' );
-			if ( ! $topic_tags ) {
+			$category_tags = wp_get_post_terms( $object_id, 'category' );
+			if ( ! $category_tags ) {
 				return '';
 			}
 
-			$topic_tags = array_map( function( $topic ) {
-				return $topic->name;
-			}, $topic_tags );
+			$category_tags = array_map( function( $category ) {
+				return $category->name;
+			}, $category_tags );
 
-			return implode( ',', $topic_tags );
+			return implode( ',', $category_tags );
 		}
     }
 }
@@ -143,7 +143,7 @@ class Parsely_Section extends Abstract_Indexable_Tag_Presenter {
 		$object_type = $this->presentation->model->object_type;
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id = $this->presentation->model->object_id;
-		return null !== $object_id && 'post' === $object_type ? yoast_get_primary_term( 'topic', $object_id ) : '';
+		return null !== $object_id && 'post' === $object_type ? yoast_get_primary_term( 'category', $object_id ) : '';
 	}
 }
 
