@@ -107,4 +107,33 @@ class Media_Settings {
 	public function handle_legacy_multisite_files_rewrites() {
 		return false;
 	}
+
+	/**
+	 * Remove "related" from Youtube embeds
+	 * @hook oembed_dataparse
+	 * @param mixed $return
+	 * @param mixed $data
+	 * @param mixed $url
+	 * @return mixed
+	 */
+	public function youtube_remove_related( $return, $data, $url ) {
+		$is_youtube = strpos( $data->provider_url, 'youtube.com' );
+		if ( $is_youtube && ! empty( $return ) && is_string( $return ) ) {
+			$return = str_replace( '?feature=oembed', '?feature=oembed&rel=0', $return );
+		}
+		return $return;
+	}
+
+	/**
+	 * We do not want images without captions to have <p> tags so we're going to be stripping those.
+	 * @hook the_content
+	 *
+	 * @param  $content = post content search for img tags.
+	 * @return filtered content with <p><img changed to <img> we'll manually be wrapping in a <figure> tag w JS.
+	 * @author Seth
+	 */
+	public function remove_p_around_img( $content ) {
+		$content = preg_replace( '/<p>\s*(<a .*>)?\s*(<img .* \/>)\s*(<\/a>)?\s*<\/p>/iU', '\1\2\3', $content );
+		return $content;
+	}
 }

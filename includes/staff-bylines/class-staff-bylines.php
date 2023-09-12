@@ -3,7 +3,12 @@ namespace PRC\Platform;
 
 use WP_Query;
 use WP_Error;
+use TDS;
 
+/**
+ * This class manages the combind staff and bylines data structure and functionality. For the staff post type controls and bylines controls see the individual staff and bylines classes.
+ * @package PRC\Platform
+ */
 class Staff_Bylines {
 	public static $post_object_name = 'staff';
 	public static $taxonomy_object_name = 'bylines';
@@ -59,7 +64,7 @@ class Staff_Bylines {
 		'show_in_rest'       => true,
 		'menu_icon'          => 'dashicons-groups',
 		'query_var'          => true,
-		// 'rewrite'            => false,
+		'rewrite'            => false,
 		'capability_type'    => 'post',
 		'has_archive'        => false,
 		'hierarchical'       => false,
@@ -138,12 +143,11 @@ class Staff_Bylines {
 		'show_in_rest'      => true,
 		'show_ui'           => true,
 		'query_var'         => true,
-		// @TODO: We'll re-add this rewrite rule when the time comes.
-		// 'rewrite'           => array(
-		// 	'slug'         => 'staff',
-		// 	'with_front'   => false,
-		// 	'hierarchical' => false,
-		// ),
+		'rewrite'           => array(
+			'slug'         => 'staff',
+			'with_front'   => false,
+			'hierarchical' => false,
+		),
 		'show_admin_column' => true,
 	);
 
@@ -165,8 +169,6 @@ class Staff_Bylines {
 	 */
 	private $version;
 
-	public static $handle = 'prc-platform-staff-bylines';
-
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -177,19 +179,27 @@ class Staff_Bylines {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+
+		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';
 	}
 
 	public function register_term_data_store() {
 		register_post_type( self::$post_object_name, self::$staff_post_type_args );
+
 		register_taxonomy( self::$taxonomy_object_name, self::$enabled_post_types, self::$byline_taxonomy_args );
+
 		register_taxonomy( 'areas-of-expertise', self::$post_object_name, self::$expertise_taxonomy_args );
+
 		register_taxonomy( 'staff-type', self::$post_object_name, self::$staff_type_taxonomy_args );
+
 		// Link the post object and taxonomy object into one entity.
-		\TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
+		TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 	}
 
-	public function determine_bylines_display( $args ) {
-		return get_post_meta( (int) $args['post_id'], 'displayBylines', true );
+	public function enable_gutenberg_ramp($post_types) {
+		array_push( $post_types, self::$post_object_name );
+		return $post_types;
 	}
 
 	/**
@@ -215,6 +225,65 @@ class Staff_Bylines {
 		return $orderby;
 	}
 
+	/**
+	 * Add menu_order to the list of permitted orderby values
+	 * @hook rest_staff_collection_params
+	 */
+	public function filter_add_rest_orderby_params( $params ) {
+		$params['orderby']['enum'][] = 'last_name';
+		return $params;
+	}
+
+	/**
+	 * Hide former staff from the staff archive and staff taxonomy archive
+	 * @hook pre_get_posts
+	 * @param mixed $query
+	 * @return void
+	 */
+	public function hide_former_staff( $query ) {
+		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {
+			$query->set(
+				'tax_query',
+				array(
+					array(
+						'taxonomy' => 'staff-type',
+						'field'    => 'slug',
+						'terms'    => array( 'staff', 'executive-team', 'managing-directors' ),
+					),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Modifies the staff title to indicate former staff.
+	 * @hook the_title
+	 * @param mixed $title
+	 * @return mixed
+	 */
+	public function indicate_former_staff( $title ) {
+		if ( ! is_admin() ) {
+			return $title;
+		}
+
+		global $post;
+		if ( self::$post_object_name !== get_post_type( $post ) ) {
+			return $title;
+		}
+
+		// $staff = new Staff( $post->ID );
+		// if ( is_wp_error( $staff ) ) {
+		// 	return $title;
+		// }
+		// if ( false === $staff->is_currently_employed ) {
+		// 	$title = 'FORMER: ' . $title;
+		// }
+		return $title;
+	}
+
+	/**
+	 * @return void
+	 */
 	public function tie_staff_to_user() {
 		// Link the staff taxonomy term to a user, when the user is created.
 		// If the user is updated update the staff taxonomy term.
@@ -222,6 +291,64 @@ class Staff_Bylines {
 	}
 
 	public function register_meta_fields() {
+		// Register staff meta.
+		register_post_meta(
+			self::$post_object_name,
+			'job_title',
+			array(
+				'description'   => 'This staff member\'s job title.',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'string',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			self::$post_object_name,
+			'job_title_mini_bio',
+			array(
+				'description'   => 'This staff member\'s shortened (mini) biography; e.g. ... "is a Senior Researcher focusing on Internet and Technology at the Pew Research Center."',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'string',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			self::$post_object_name,
+			'social_profiles',
+			array(
+				'description'   => 'Social profiles for this staff member.',
+				'show_in_rest'  => array(
+					'schema' => array(
+						'items' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'key'    => array(
+									'type' => 'string',
+								),
+								'url' => array(
+									'type' => 'string',
+								),
+							),
+						),
+					),
+				),
+				'single'        => true,
+				'type'          => 'array',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		// Register bylines, acknowledgements, and displayBylines toggle meta for posts.
 		foreach ( self::$enabled_post_types as $post_type ) {
 			register_post_meta(
 				$post_type,
@@ -269,7 +396,64 @@ class Staff_Bylines {
 		}
 	}
 
-	public function register_assets() {
+	/**
+	 * Modifies the staff permalink to point to the bylines term archive permalink.
+	 *
+	 * @hook post_link
+	 * @param string $url
+	 * @param WP_Post $post
+	 * @return string
+	 */
+	public function modify_staff_permalink( $url, $post ) {
+		error_log('modify_staff_permalink' . print_r($url, true));
+		if ( 'publish' !== $post->post_status ) {
+			return $url;
+		}
+		if ( self::$post_object_name === $post->post_type ) {
+			$staff = new Staff( $post->ID );
+			if ( is_wp_error( $staff ) ) {
+				return $url;
+			}
+			$matched_url = $staff->get_permalink();
+			if ( is_wp_error( $matched_url ) ) {
+				return $url;
+			}
+		}
+		return $url;
+	}
+
+	/**
+	 * @hook admin_bar_menu
+	 * @param mixed $admin_bar
+	 * @return void
+	 */
+	public function modify_admin_bar_edit_link( $admin_bar ) {
+		if ( ! is_tax( self::$taxonomy_object_name ) ) {
+			return;
+		}
+
+		$admin_bar->remove_menu( 'edit' );
+
+		$staff = new Staff(false, get_queried_object()->term_id);
+		if ( is_wp_error( $staff ) ) {
+			return;
+		}
+
+		$link     = get_edit_post_link( $staff->ID );
+		$admin_bar->add_menu(
+			array(
+				'parent' => false,
+				'id'     => 'edit_staff',
+				'title'  => __( 'Edit Staff' ),
+				'href'   => $link,
+				'meta'   => array(
+					'title' => __( 'Edit Staff' ),
+				),
+			)
+		);
+	}
+
+	public function register_assets($handle, $path) {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';

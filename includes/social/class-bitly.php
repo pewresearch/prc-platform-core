@@ -163,4 +163,9 @@ class Bitly {
 		);
 	}
 
+	// When the url for a post changes, yoast automatically creates redirects, on that action we should also generate a new bitly url (and maybe save the old ones for reference??)
+	public function watch_for_url_change() {
+
+	}
+
 }
