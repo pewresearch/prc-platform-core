@@ -18,6 +18,7 @@
  */
 namespace TDS;
 use WP_Error;
+use WP_Query;
 
 if ( ! function_exists( '\TDS\add_relationship' ) ) {
 
@@ -454,7 +455,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return null;
 		}
 
-		$posts = new \WP_Query( array(
+		$posts = new WP_Query( array(
 			'post_type'           => $post_type,
 			'posts_per_page'      => 1,
 			'tax_query'           => array( array(

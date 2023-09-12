@@ -1,6 +1,5 @@
 <?php
 namespace PRC\Platform;
-
 use WP_Error;
 use TDS;
 
@@ -24,13 +23,15 @@ class Staff {
 	public $social_profiles;
 	public $is_currently_employed = false;
 
+	protected static $cache_ttl = 1 * HOUR_IN_SECONDS;
+
 	public function __construct($post_id = false, $term_id = false) {
 		// if post id is not false then we'll check the staff post, if term id is not false then well check the term and get the staff post id from there and then continue...
 		if ( false === $post_id && false !== $term_id && is_int( $term_id ) ) {
 			$post_id = $this->get_staff_post_id_from_term_id( $term_id );
 		}
 
-		do_action('qm/debug', 'Staff post id: ' . $post_id);
+		do_action('qm/debug', 'Staff post id: ' . print_r($post_id, true));
 		if ( is_wp_error( $post_id ) ) {
 			return new WP_Error( '404', 'Staff post not found, ID value not found.' );
 		}
@@ -39,16 +40,20 @@ class Staff {
 	}
 
 	public function get_staff_post_id_from_term_id($term_id) {
-		$staff_post = TDS\get_related_post($term_id, 'bylines');
-		if ( ! is_a( $staff_post, 'WP_Post' ) || 'staff' !== $staff_post->post_type ) {
+		$staff_post_id = get_term_meta($term_id, 'tds_post_id', true);
+		if ( empty($staff_post_id) || false === $staff_post_id ) {
 			return new WP_Error( '404', 'This is not a staff post' );
 		}
-		return $staff_post->ID;
+		return $staff_post_id;
 	}
 
 	public function get_permalink() {
 		if ( empty($this->ID) || !is_int($this->ID) ) {
 			return new WP_Error( '404', 'Staff post not found, no ID value.' );
+		}
+		// if the use shouldnt have a byline link then dont display it.
+		if ( true !== get_post_meta($this->ID, 'promote_to_byline', true) ) {
+			return false;
 		}
 		$term = TDS\get_related_term( $this->ID );
 		if ( ! is_a( $term, 'WP_Term' ) ) {
@@ -74,7 +79,7 @@ class Staff {
 				'staff-cache-' . $this->ID,
 				get_object_vars( $this ),
 				'',
-				1 * HOUR_IN_SECONDS
+				self::$cache_ttl,
 			);
 		}
 	}
@@ -140,13 +145,5 @@ class Staff {
 
 	public function get_social_profiles() {
 		return array();
-	}
-
-	public function get(){
-
-	}
-
-	public function update() {
-
 	}
 }

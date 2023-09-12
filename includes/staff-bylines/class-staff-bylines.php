@@ -6,7 +6,7 @@ use WP_Error;
 use TDS;
 
 /**
- * This class manages the combind staff and bylines data structure and functionality. For the staff post type controls and bylines controls see the individual staff and bylines classes.
+ * This class manages the combind staff and bylines data structure and functionality.
  * @package PRC\Platform
  */
 class Staff_Bylines {
