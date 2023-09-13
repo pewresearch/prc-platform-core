@@ -656,6 +656,11 @@ class Platform_Bootstrap {
 
 		$staff_info_panel = new Staff_Info_Panel();
 
+		$bylines_acknowledgements_panel = new Bylines_Acknowledgements_Panel(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+
 		// Establish a bi-directional relationship between the "staff" post type and the "byline" taxonomy.
 		$this->loader->add_action( 'init', $staff_bylines, 'register_term_data_store' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $staff_bylines, 'enable_gutenberg_ramp' );
@@ -674,6 +679,7 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'wpseo_opengraph_author_facebook', $staff_bylines, 'generate_yoast_author_data', 10, 2 );
 
 		$this->loader->add_action('enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets');
+		$this->loader->add_action('enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets');
 	}
 
 	/**

@@ -184,6 +184,7 @@ class Staff_Bylines {
 		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';
 		require_once plugin_dir_path( __FILE__ ) . '/staff-info-panel/index.php';
+		require_once plugin_dir_path( __FILE__ ) . '/bylines-acknowledgements-panel/index.php';
 	}
 
 	public function register_term_data_store() {

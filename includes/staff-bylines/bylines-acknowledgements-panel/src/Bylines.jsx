@@ -1,7 +1,8 @@
 /**
  * External Dependencies
  */
-
+import { WPEntitySearch } from '@prc/components';
+import { List } from 'react-movable';
 
 /**
  * WordPress Dependencies
@@ -11,15 +12,10 @@ import { Fragment } from '@wordpress/element';
 import { FormToggle, PanelRow } from '@wordpress/components';
 
 /**
- * 3rd Party Dependencies
- */
-import { List } from 'react-movable';
-
-/**
  * Internal Dependencies
  */
 import { randomId } from './utils';
-import { ObjectSearchField } from '../_shared';
+// import { ObjectSearchField } from '../_shared';
 import { useBylines } from './context';
 import BylineItem from './BylineItem';
 
@@ -36,7 +32,7 @@ function Bylines() {
 	return (
 		<Fragment>
 			<PanelRow>
-				<ObjectSearchField
+				<WPEntitySearch
 					placeholder="Add new byline..."
 					entityType="taxonomy"
 					entitySubType="bylines"
@@ -66,7 +62,7 @@ function Bylines() {
 							)}
 						/>
 					</div>
-				</ObjectSearchField>
+				</WPEntitySearch>
 			</PanelRow>
 			<PanelRow>
 				<label>Display Bylines</label>

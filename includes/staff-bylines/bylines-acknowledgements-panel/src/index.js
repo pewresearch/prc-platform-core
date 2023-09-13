@@ -4,13 +4,14 @@
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 import { __ } from '@wordpress/i18n';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal Dependencies
  */
 import './style.scss';
 import { ProvideBylines } from './context';
-import Acknowledgements from './Acknowledgements';
+// import Acknowledgements from './Acknowledgements';
 import Bylines from './Bylines';
 
 // @TODO lets cosntruct  a new panel in place of the official bylines taxonomy panel
@@ -21,11 +22,13 @@ function BylinesAndAcknowledgementsPanel() {
 		<PluginDocumentSettingPanel name="prc-bylines" title={__('Bylines')}>
 			<ProvideBylines>
 				<Bylines />
-				<Acknowledgements />
+				{/* <Acknowledgements /> */}
 			</ProvideBylines>
 		</PluginDocumentSettingPanel>
 	);
 }
+
+dispatch('core/edit-post').removeEditorPanel('taxonomy-panel-bylines');
 
 registerPlugin('prc-bylines', {
 	render: BylinesAndAcknowledgementsPanel,
