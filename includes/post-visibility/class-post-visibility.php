@@ -52,29 +52,32 @@ class Post_Visibility {
 	 * @return void
 	 */
 	public function register_custom_visibility_statuses() {
-		register_post_meta(
-			'',
-			'_postVisibility',
-			array(
-				'show_in_rest'  => array(
-					'schema' => array(
-						'type' => 'string',
-						'default' => 'public',
-						'description' => 'The visibility of the post in the index and search. Defaults to public. **Private and password protected posts are not affected by this setting and this respects their statuses.**',
-						'enum' => array(
-							'public',
-							'hidden_from_search',
-							'hidden_from_index',
+		foreach( self::$enabled_post_types as $post_type ) {
+			register_post_meta(
+				$post_type,
+				'_postVisibility',
+				array(
+					'show_in_rest'  => array(
+						'schema' => array(
+							'type' => 'string',
+							'default' => 'public',
+							'description' => 'The visibility of the post in the index and search. Defaults to public. **Private and password protected posts are not affected by this setting and this respects their statuses.**',
+							'enum' => array(
+								null,
+								'public',
+								'hidden_from_search',
+								'hidden_from_index',
+							),
 						),
 					),
-				),
-				'single'        => true,
-				'type'          => 'string',
-				'auth_callback' => function() {
-					return current_user_can( 'edit_posts' );
-				},
-			)
-		);
+					'single'        => true,
+					'type'          => 'string',
+					'auth_callback' => function() {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 
 		register_post_status(
 			'hidden_from_search',
@@ -100,28 +103,31 @@ class Post_Visibility {
 	}
 
 	public function add_custom_visibility_statuses_to_rest() {
-		register_rest_field(
-			'',
-			'postVisibility',
-			array(
-				'get_callback'    => function( $object ) {
-					return get_post_meta( $object['id'], '_postVisibility', true );
-				},
-				'update_callback' => function( $value, $object ) {
-					return update_post_meta( $object->ID, '_postVisibility', $value );
-				},
-				'schema'          => array(
-					'description' => __( 'Post visibility', 'wp-statuses' ),
-					'type'        => 'string',
-					'context'     => array( 'edit' ),
-					'enum'        => array(
-						'public',
-						'hidden_from_search',
-						'hidden_from_index',
+		foreach( self::$enabled_post_types as $post_type ) {
+			register_rest_field(
+				$post_type,
+				'postVisibility',
+				array(
+					'get_callback'    => function( $object ) {
+						return get_post_meta( $object['id'], '_postVisibility', true );
+					},
+					'update_callback' => function( $value, $object ) {
+						return update_post_meta( $object->ID, '_postVisibility', $value );
+					},
+					'schema'          => array(
+						'description' => __( 'Post visibility', 'wp-statuses' ),
+						'type'        => 'string',
+						'context'     => array( 'edit' ),
+						'enum'        => array(
+							null,
+							'public',
+							'hidden_from_search',
+							'hidden_from_index',
+						),
 					),
-				),
-			)
-		);
+				)
+			);
+		}
 	}
 
 	public function register_assets() {

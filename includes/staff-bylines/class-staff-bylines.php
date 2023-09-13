@@ -61,6 +61,7 @@ class Staff_Bylines {
 		'publicly_queryable' => true,
 		'show_ui'            => true,
 		'show_in_menu'       => true,
+		'show_in_nav_menus'  => false,
 		'show_in_rest'       => true,
 		'menu_icon'          => 'dashicons-groups',
 		'query_var'          => true,
@@ -182,6 +183,7 @@ class Staff_Bylines {
 
 		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';
+		require_once plugin_dir_path( __FILE__ ) . '/staff-info-panel/index.php';
 	}
 
 	public function register_term_data_store() {
@@ -286,7 +288,7 @@ class Staff_Bylines {
 	 */
 	public function tie_staff_to_user() {
 		// Link the staff taxonomy term to a user, when the user is created.
-		// If the user is updated update the staff taxonomy term.
+		// If the user is updated update the staff taxonomy term and staff post.
 		// Eventually in this process we may vary well switch over from a staff post type to a user.
 	}
 
@@ -294,7 +296,7 @@ class Staff_Bylines {
 		// Register staff meta.
 		register_post_meta(
 			self::$post_object_name,
-			'job_title',
+			'jobTitle',
 			array(
 				'description'   => 'This staff member\'s job title.',
 				'show_in_rest'  => true,
@@ -308,9 +310,9 @@ class Staff_Bylines {
 
 		register_post_meta(
 			self::$post_object_name,
-			'job_title_mini_bio',
+			'jobTitleExtended',
 			array(
-				'description'   => 'This staff member\'s shortened (mini) biography; e.g. ... "is a Senior Researcher focusing on Internet and Technology at the Pew Research Center."',
+				'description'   => 'This staff member\'s extended job title, "mini biography"; e.g. ... "is a Senior Researcher focusing on Internet and Technology at the Pew Research Center."',
 				'show_in_rest'  => true,
 				'single'        => true,
 				'type'          => 'string',
@@ -322,7 +324,23 @@ class Staff_Bylines {
 
 		register_post_meta(
 			self::$post_object_name,
-			'social_profiles',
+			'bylineLinkEnabled',
+			array(
+				'description'   => 'Allow this staff member to have a byline link?',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'boolean',
+				'default'       => false,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+					//@TODO We should check for producers and up...
+				},
+			)
+		);
+
+		register_post_meta(
+			self::$post_object_name,
+			'socialProfiles',
 			array(
 				'description'   => 'Social profiles for this staff member.',
 				'show_in_rest'  => array(
@@ -405,7 +423,6 @@ class Staff_Bylines {
 	 * @return string
 	 */
 	public function modify_staff_permalink( $url, $post ) {
-		error_log('modify_staff_permalink' . print_r($url, true));
 		if ( 'publish' !== $post->post_status ) {
 			return $url;
 		}
@@ -414,7 +431,7 @@ class Staff_Bylines {
 			if ( is_wp_error( $staff ) ) {
 				return $url;
 			}
-			$matched_url = $staff->get_permalink();
+			$matched_url = $staff->link;
 			if ( is_wp_error( $matched_url ) ) {
 				return $url;
 			}
@@ -453,40 +470,119 @@ class Staff_Bylines {
 		);
 	}
 
-	public function register_assets($handle, $path) {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
-		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
-
-		$script = wp_register_script(
-			$asset_slug,
-			$script_src,
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
+	/**
+	 * Add constructed staff info to the byline term object and staff post object in the rest api.
+	 * @hook rest_api_init
+	 * @return void
+	 */
+	public function add_staff_info_term() {
+		register_rest_field(
+			self::$taxonomy_object_name,
+			'staffInfo',
+			array(
+				'get_callback' => array( $this, 'get_staff_info_for_byline_term' ),
+			)
 		);
-
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
+		// Currently this is only used on the mini staff block.
+		register_rest_field(
+			self::$post_object_name,
+			'staffInfo',
+			array(
+				'get_callback' => array( $this, 'get_staff_info_for_staff_post' ),
+			)
 		);
-
-		if ( ! $script || ! $style ) {
-			return new WP_Error( self::$handle, 'Failed to register all assets' );
-		}
-
-		return true;
 	}
 
-	public function enqueue_assets() {
-		$registered = $this->register_assets();
-		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
-		}
+	public function get_staff_info_for_byline_term( $object ) {
+		return $this->get_staff_info_for_api( $object, self::$taxonomy_object_name );
 	}
+
+	public function get_staff_info_for_staff_post( $object ) {
+		return $this->get_staff_info_for_api( $object, self::$post_object_name );
+	}
+
+	/**
+	 * Get staff info for the rest api.
+	 * @return void
+	 */
+	private function get_staff_info_for_api( $object, $type ) {
+		$byline_term_id = false;
+		$staff_post_id = false;
+		if ( $type && self::$post_object_name === $type ) {
+			$staff_post_id = $object['id'];
+		} else {
+			$byline_term_id = $object['id'];
+		}
+
+		$staff = new Staff( $staff_post_id, $byline_term_id );
+		if ( is_wp_error( $staff ) ) {
+			return $object;
+		}
+		$staff_data = get_object_vars( $staff );
+
+		$data = array(
+			'staffName'      => $staff_data['name'],
+			'staffJobTitle'  => $staff_data['job_title'],
+			'staffImage'     => false,
+			'staffTwitter'   => null, // @TODO need to re-think
+			'staffExpertise' => $staff_data['expertise'],
+			'staffBio'       => $staff_data['bio'],
+			'staffMiniBio'   => $staff_data['job_title_extended'],
+			'staffLink'		 => $staff_data['link'],
+		);
+
+		if ( false === $staff_data['is_currently_employed'] ) {
+			$data['staffJobTitle'] = 'Former ' . $data['staffJobTitle'];
+			// mini bio replace "a" or "an" with "a former"
+			$data['staffMiniBio'] = preg_replace( '/(a|an) /', 'a former ', $data['staffMiniBio'] );
+		}
+
+		if ( $staff_data['photo'] ) {
+			$data['staffImage'] = $staff_data['photo']['thumbnail'];
+		}
+
+		return $data;
+	}
+
+	// @hook wpseo_meta_author
+	// @hook wpseo_opengraph_author_facebook
+	public function generate_yoast_author_data( $data, $presentation ) {
+		$post_id = $presentation->model->object_id;
+		$bylines = new Bylines($post_id);
+		if ( is_wp_error($bylines->bylines) ) {
+			return $data; // Exit early and with no output if there are no bylines.
+		}
+
+		$bylines = $bylines->format('string');
+
+		if ( !empty($bylines) ) {
+			$data = $bylines;
+		}
+
+		return $data;
+	}
+
+	/**
+     * Change Enhanced Slack sharing data labels.
+     * @hook wpseo_enhanced_slack_data
+     * @param array                  $data         The Slack labels + data.
+     * @param Indexable_Presentation $presentation The indexable presentation object.
+     *
+     * @return array The Slack labels + data.
+     */
+    public function generate_yoast_slack_data( array $data, $presentation ) {
+		$post_id = $presentation->model->object_id;
+		$bylines = new Bylines($post_id);
+		if ( is_wp_error($bylines->bylines) ) {
+			return $data; // Exit early and with no output if there are no bylines.
+		}
+
+		$bylines = $bylines->format('string');
+
+		if ( !empty($bylines) ) {
+			$data[ __( 'Written by', 'wordpress-seo' ) ] = $bylines;
+		}
+
+        return $data;
+    }
 }

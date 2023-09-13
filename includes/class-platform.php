@@ -338,7 +338,9 @@ class Platform_Bootstrap {
 		add_action( 'wp_head', array( $schema_meta, 'taxonomy_head_meta' ) );
 		add_filter( 'wpseo_frontend_presenters', array( $schema_meta, 'add_parsely_meta' ) );
 		add_filter( 'wp_parsely_metadata', array( $schema_meta, 'disable_parsely_json_ld'), 10, 3 );
+
 		$this->loader->add_action( 'wp_head', $schema_meta, 'ascii', 1 );
+		$this->loader->add_filter( 'wpseo_twitter_creator_account', $schema_meta, 'yoast_seo_default_twitter' );
 	}
 
 	/**
@@ -652,6 +654,8 @@ class Platform_Bootstrap {
 			$this->get_version()
 		);
 
+		$staff_info_panel = new Staff_Info_Panel();
+
 		// Establish a bi-directional relationship between the "staff" post type and the "byline" taxonomy.
 		$this->loader->add_action( 'init', $staff_bylines, 'register_term_data_store' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $staff_bylines, 'enable_gutenberg_ramp' );
@@ -661,8 +665,15 @@ class Platform_Bootstrap {
 		$this->loader->add_action('pre_get_posts', $staff_bylines, 'hide_former_staff', 10, 1);
 		$this->loader->add_filter('the_title', $staff_bylines, 'indicate_former_staff', 10, 1);
 
-		$this->loader->add_filter( 'post_link', $staff_bylines, 'modify_staff_permalink', 10, 2 );
+		$this->loader->add_filter( 'post_link', $staff_bylines, 'modify_staff_permalink', 20, 2 );
 		$this->loader->add_action( 'admin_bar_menu', $staff_bylines, 'modify_admin_bar_edit_link', 100 );
+
+		$this->loader->add_action( 'rest_api_init', $staff_bylines, 'add_staff_info_term' );
+		$this->loader->add_filter( 'wpseo_enhanced_slack_data', $staff_bylines, 'generate_yoast_slack_data', 10, 2 );
+		$this->loader->add_filter( 'wpseo_meta_author', $staff_bylines, 'generate_yoast_author_data', 10, 2 );
+		$this->loader->add_filter( 'wpseo_opengraph_author_facebook', $staff_bylines, 'generate_yoast_author_data', 10, 2 );
+
+		$this->loader->add_action('enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets');
 	}
 
 	/**

@@ -59,6 +59,12 @@
         "crop": true,
         "label": "140 Square"
     },
+	"160-portrait": {
+		"width": 160,
+		"height": 320,
+		"crop": false,
+		"label": "Staff Portrait Thumbnail"
+	},
     "260-square": {
         "width": 260,
         "height": 260,

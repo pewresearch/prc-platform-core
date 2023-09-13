@@ -14,11 +14,9 @@ class Staff {
 	public $link;
 	public $user_id;
 	public $bio;
-	public $mini_bio;
 	public $job_title;
 	public $job_title_extended;
 	public $photo;
-	public $photo_high_res;
 	public $expertise;
 	public $social_profiles;
 	public $is_currently_employed = false;
@@ -47,12 +45,11 @@ class Staff {
 		return $staff_post_id;
 	}
 
-	public function get_permalink() {
+	public function get_staff_link() {
 		if ( empty($this->ID) || !is_int($this->ID) ) {
-			return new WP_Error( '404', 'Staff post not found, no ID value.' );
+			return false;
 		}
-		// if the use shouldnt have a byline link then dont display it.
-		if ( true !== get_post_meta($this->ID, 'promote_to_byline', true) ) {
+		if ( true !== get_post_meta($this->ID, 'bylineLinkEnabled', true) ) {
 			return false;
 		}
 		$term = TDS\get_related_term( $this->ID );
@@ -85,11 +82,13 @@ class Staff {
 	}
 
 	public function set_staff($post_id) {
-		error_log('staff post: ' . print_r($post_id, true));
 		if ( true === $this->get_cache($post_id) ) {
 			return;
 		}
-
+		$site_id = get_current_blog_id();
+		if ( 20 !== $site_id ) {
+			switch_to_blog( 20 );
+		}
 		$staff_post = get_post( $post_id );
 		// do a double check on post type...
 		if ( 'staff' !== $staff_post->post_type ) {
@@ -101,16 +100,22 @@ class Staff {
 
 		$this->name = $staff_post->post_title;
 		$this->slug = $staff_post->post_name;
-		$this->link = $this->get_permalink();
+		$this->link = $this->get_staff_link();
 		$this->user_id = get_post_meta( $staff_post_id, 'user_id', true );
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
-		$this->job_title = get_post_meta( $staff_post_id, 'job_title', true );
-		$this->job_title_extended = get_post_meta( $staff_post_id, 'job_title_mini_bio', true );
-		$this->photo = get_the_post_thumbnail( $staff_post_id, 'medium' );
-		$this->photo_high_res = get_the_post_thumbnail( $staff_post_id, 'full' );
+		$this->job_title = get_post_meta( $staff_post_id, 'jobTitle', true );
+		$this->job_title_extended = get_post_meta( $staff_post_id, 'jobTitleExtended', true );
+		$this->photo = array(
+			'thumbnail' => get_the_post_thumbnail_url( $staff_post_id, '160-portrait' ),
+			'full' => get_the_post_thumbnail_url( $staff_post_id, 'full' ),
+		);
 		$this->social_profiles = $this->get_social_profiles();
 		$this->expertise = $this->get_expertise();
 		$this->is_currently_employed = $this->check_employment_status();
+
+		if ( 20 !== $site_id ) {
+			restore_current_blog();
+		}
 
 		$this->set_cache();
 	}

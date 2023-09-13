@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+use WPSEO_Options;
 
 /**
  * This class handles constructing and managing the broad schema.org object graph and Google/Facebook/Twitter social metadata. As well as research related meta like DOI, PMID, etc.
@@ -77,6 +78,17 @@ class Schema_Meta {
 			$title = $title . ' | Pew Research Center';
 		}
 		return $title;
+	}
+
+	/**
+	 * Default Twitter to the site's twitter handle rather than personal twitter handles.
+	 * @hook wpseo_twitter_creator_account
+	 * @param mixed $twitter
+	 * @return mixed
+	 */
+	public function yoast_seo_default_twitter( $twitter ) {
+		$twitter = WPSEO_Options::get( 'twitter_site' );
+		return $twitter;
 	}
 
 	public function remove_pipe_from_social_titles( $title ) {
