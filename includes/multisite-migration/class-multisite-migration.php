@@ -189,7 +189,7 @@ class Multisite_Migration {
 	public function scheduled_distributor_attachments_push($post_id, $meta) {
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
-		$attachments = new Attachments(
+		$attachments = new Attachments_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);
@@ -207,7 +207,7 @@ class Multisite_Migration {
 	 * @return bool
 	 */
 	public function scheduled_distributor_attachments_meta_mapping($post_id, $attachment_id_pairs, $meta) {
-		$attachments = new Attachments(
+		$attachments = new Attachments_Migration(
 			array('post_id' => null, 'site_id' => null),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);
@@ -227,7 +227,7 @@ class Multisite_Migration {
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
 		$old_multisection_report = $meta['_multiSectionReport'];
-		$multisection_report = new Multisection_Reports(
+		$multisection_report = new Multisection_Reports_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);
@@ -249,7 +249,7 @@ class Multisite_Migration {
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
 		$old_related_posts = $meta['_relatedPosts'];
-		$related_posts = new Related_posts(
+		$related_posts = new Related_Posts_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);
@@ -358,7 +358,7 @@ class Multisite_Migration {
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
 
-		$page_migration = new Pages(
+		$page_migration = new Pages_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);

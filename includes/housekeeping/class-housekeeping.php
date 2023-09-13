@@ -81,17 +81,35 @@ class Housekeeping {
 			$paged++;
 		} while ( count( $posts ) );
 
+		$success_list = array_map(function($post_id){
+			return wp_sprintf(
+				'<span>%s (%s)</span>',
+				get_the_title($post_id),
+				$post_id
+			);
+		}, $posts_cleaned);
+		$success_list = implode( '<br>', $success_list );
+
+		$failure_list = array_map(function($post_id){
+			return wp_sprintf(
+				'<span>%s (%s)</span>',
+				get_the_title($post_id),
+				$post_id
+			);
+		}, $posts_not_cleaned);
+		$failure_list = implode( '<br>', $failure_list );
+
 		wp_mail(
 			$this->email_contact,
 			'🧹 PRC Platform System Notice: Weekly Draft Cleanup Results for: ' . $sitename,
-			!empty($posts_cleaned) ? 'The following posts were trashed 🗑️: ' . array_map(function($post_id) { return wp_sprintf('<a href="%s">%s</a>', get_permalink($post_id), $post_id);}, $posts_cleaned) : 'No posts were found to be trashed 🙂. This is a good thing everyone is doing their part!'
+			!empty($posts_cleaned) ? 'The following posts were trashed 🗑️: ' . $success_list : 'No posts were found to be trashed 🙂. This is a good thing everyone is doing their part!'
 		);
 
 		if ( !empty($posts_not_cleaned) ) {
 			wp_mail(
 				$this->email_contact,
 				'🧹 PRC Platform System Notice: Weekly Draft Cleanup Failures for: ' . $sitename,
-				'The following posts were NOT trashed and require further inspection: ' . array_map(function($post_id) { return wp_sprintf('<a href="%s">%s</a>', get_permalink($post_id), $post_id);}, $posts_not_cleaned)
+				'The following posts were NOT trashed and require further inspection: ' . $failure_list
 			);
 		}
 

@@ -208,7 +208,7 @@ class Art_Direction {
 		foreach ( $this->enabled_post_types as $post_type ) {
 			register_rest_field(
 				$post_type,
-				'art',
+				'artDirection',
 				array(
 					'get_callback' => array( $this, 'get_art_for_api' ),
 					'schema'       => null,
@@ -414,20 +414,11 @@ class Art_Direction {
 		}
 
 		// For stub posts we need to fetch from _stub_info['_art'] for everything else we can just fetch from _art
-		if ( 'stub' !== $post_type ) {
-			// Check for new post meta key artDirection.
-			$all_art = get_post_meta( $parent_post_id, self::$post_meta_key, true );
-			// Fallback to _art if not found.
-			if ( false === $all_art || ! is_array( $all_art ) ) {
-				$all_art = get_post_meta( $parent_post_id, '_art', true );
-			}
-		} else {
-			$stub_info = get_post_meta( $parent_post_id, '_stub_info', true );
-			if ( false === $stub_info || ! is_array( $stub_info ) || ! array_key_exists( '_art', $stub_info ) || empty( $stub_info['_art'] ) ) {
-				$all_art = false;
-			} else {
-				$all_art = $stub_info['_art'];
-			}
+		// Check for new post meta key artDirection.
+		$all_art = get_post_meta( $parent_post_id, self::$post_meta_key, true );
+		// Fallback to _art if not found.
+		if ( false === $all_art || ! is_array( $all_art ) ) {
+			$all_art = get_post_meta( $parent_post_id, '_art', true );
 		}
 
 		// Double checks the object data is cast as an array.

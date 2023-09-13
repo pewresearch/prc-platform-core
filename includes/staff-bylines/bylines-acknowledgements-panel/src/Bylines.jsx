@@ -3,6 +3,7 @@
  */
 import { WPEntitySearch } from '@prc/components';
 import { List } from 'react-movable';
+import styled from '@emotion/styled';
 
 /**
  * WordPress Dependencies
@@ -15,9 +16,21 @@ import { FormToggle, PanelRow } from '@wordpress/components';
  * Internal Dependencies
  */
 import { randomId } from './utils';
-// import { ObjectSearchField } from '../_shared';
 import { useBylines } from './context';
 import BylineItem from './BylineItem';
+
+const SearchContainer = styled.div`
+	width: 100%;
+	display: block;
+	& > div:first-of-type {
+		width: 100%;
+	}
+`;
+
+const ListWrapper = styled.div`
+	width: 100%;
+	padding-top: 1em;
+`;
 
 function Bylines() {
 	const {
@@ -32,37 +45,40 @@ function Bylines() {
 	return (
 		<Fragment>
 			<PanelRow>
-				<WPEntitySearch
-					placeholder="Add new byline..."
-					entityType="taxonomy"
-					entitySubType="bylines"
-					onSelect={(item) => {
-						append(randomId(), item.id, true);
-					}}
-				>
-					<div style={{ width: '100%', paddingTop: '1em' }}>
-						<List
-							lockVertically
-							values={bylineItems}
-							onChange={({ oldIndex, newIndex }) => reorder(oldIndex, newIndex)}
-							renderList={({ children, props }) => (
-								<div {...props}>{children}</div>
-							)}
-							renderItem={({ value, props, index }) => (
-								<div {...props}>
-									<BylineItem
-										key={value.key}
-										value={value}
-										onRemove={() => {
-											remove(index, true);
-										}}
-										lastItem={index === bylineItems.length - 1}
-									/>
-								</div>
-							)}
-						/>
-					</div>
-				</WPEntitySearch>
+				<SearchContainer>
+					<WPEntitySearch
+						placeholder={__('Add new byline...', 'prc-platform-core')}
+						entityType="taxonomy"
+						entitySubType="bylines"
+						onSelect={(item) => {
+							append(randomId(), item.id, true);
+						}}
+						clearOnSelect={true}
+					>
+						<ListWrapper>
+							<List
+								lockVertically
+								values={bylineItems}
+								onChange={({ oldIndex, newIndex }) => reorder(oldIndex, newIndex)}
+								renderList={({ children, props }) => (
+									<div {...props}>{children}</div>
+								)}
+								renderItem={({ value, props, index }) => (
+									<div {...props}>
+										<BylineItem
+											key={value.key}
+											value={value}
+											onRemove={() => {
+												remove(index, true);
+											}}
+											lastItem={index === bylineItems.length - 1}
+										/>
+									</div>
+								)}
+							/>
+						</ListWrapper>
+					</WPEntitySearch>
+				</SearchContainer>
 			</PanelRow>
 			<PanelRow>
 				<label>Display Bylines</label>

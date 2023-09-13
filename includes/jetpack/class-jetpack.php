@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use Jetpack_Gutenberg;
 
 class Jetpack {
 	public static $disallowed_modules = array(
@@ -15,6 +16,7 @@ class Jetpack {
 		'google-calendar',
 		'instagram-gallery',
 		'opentable',
+		'eventbrite',
 		'payments',
 		'pinterest',
 		'premium-content',
@@ -25,6 +27,26 @@ class Jetpack {
 		'wordads',
 		'payments-intro',
 		'payment-buttons',
+	);
+	public static $disallowed_blocks = array(
+		'jetpack/contact-info',
+		'jetpack/donations',
+		'jetpack/podcast-player',
+		'jetpack/payment-buttons',
+		'jetpack/recurring-payments',
+		'jetpack/payments-intro',
+		'jetpack/opentable',
+		'jetpack/calendly',
+		'jetpack/rating-star',
+		'jetpack/pinterest',
+		'jetpack/google-calendar',
+		'jetpack/eventbrite',
+		'jetpack/instagram-gallery',
+		'jetpack/mailchimp',
+		'jetpack/revue',
+		'jetpack/story',
+		'jetpack/send-a-message',
+		'premium-content/container',
 	);
 	/**
 	 * The ID of this plugin.
@@ -92,6 +114,23 @@ class Jetpack {
 				);
 			}
 		);
+	}
+
+	/**
+	 * Set available Jetpack blocks
+	 * @hook jetpack_register_gutenberg_extensions
+	 */
+	function set_available_jetpack_blocks() {
+		if ( ! class_exists( 'Jetpack_Gutenberg' ) ) {
+			return;
+		}
+		foreach (self::$disallowed_blocks as $block_name) {
+			Jetpack_Gutenberg::set_extension_unavailable(
+				$block_name,
+				'disallowed'
+			);
+		}
+
 	}
 
 	public function register_assets() {

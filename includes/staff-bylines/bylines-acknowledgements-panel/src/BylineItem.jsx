@@ -5,7 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
-import { __experimentalLinkControl as LinkControl } from '@wordpress/block-editor';
 import { Icon, IconButton, Spinner } from '@wordpress/components';
 import { dragHandle } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';

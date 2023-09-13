@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+use WP_Error;
 
 class Block_Editor {
 	/**
@@ -38,8 +39,6 @@ class Block_Editor {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -49,14 +48,7 @@ class Block_Editor {
 			true
 		);
 
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
-
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
@@ -100,7 +92,6 @@ class Block_Editor {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
 		}
 	}
 }

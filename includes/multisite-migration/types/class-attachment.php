@@ -5,7 +5,7 @@ use Exception;
 use WP_Error;
 use WP_Query;
 
-class Attachments extends Multisite_Migration {
+class Attachments_Migration extends Multisite_Migration {
 	public $original_post_id = null;
 	public $original_site_id = null;
 	public $target_post_id = null;

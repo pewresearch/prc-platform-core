@@ -61,7 +61,7 @@ class Staff {
 	}
 
 	public function get_cache($post_id) {
-		$cache = wp_cache_get( 'staff-cache-abc-' . $post_id );
+		$cache = wp_cache_get( 'staff-cache-' . $post_id );
 		if ( false !== $cache && ! is_user_logged_in() ) {
 			foreach ( $cache as $key => $value ) {
 				$this->$key = $value;
@@ -83,9 +83,9 @@ class Staff {
 	}
 
 	public function set_staff($post_id) {
-		// if ( true === $this->get_cache($post_id) ) {
-		// 	return;
-		// }
+		if ( true === $this->get_cache($post_id) ) {
+			return;
+		}
 		$staff_post = get_post( $post_id );
 		// do a double check on post type...
 		if ( 'staff' !== $staff_post->post_type ) {
@@ -110,7 +110,7 @@ class Staff {
 		$this->expertise = $this->get_expertise();
 		$this->is_currently_employed = $this->check_employment_status();
 
-		// $this->set_cache();
+		$this->set_cache();
 	}
 
 	public function check_employment_status() {

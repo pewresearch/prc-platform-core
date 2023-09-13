@@ -1,0 +1,16 @@
+{
+	"name": "@pewresearch/prc-platform-related-posts",
+	"description": "Related Posts functionality for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^26.1.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"test": "wp-scripts test-unit"
+	},
+	"dependencies": {
+		"react-movable": "^3.0.4"
+	}
+}

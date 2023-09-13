@@ -11,7 +11,7 @@ import { dispatch } from '@wordpress/data';
  */
 import './style.scss';
 import { ProvideBylines } from './context';
-// import Acknowledgements from './Acknowledgements';
+import Acknowledgements from './Acknowledgements';
 import Bylines from './Bylines';
 
 // @TODO lets cosntruct  a new panel in place of the official bylines taxonomy panel
@@ -22,7 +22,7 @@ function BylinesAndAcknowledgementsPanel() {
 		<PluginDocumentSettingPanel name="prc-bylines" title={__('Bylines')}>
 			<ProvideBylines>
 				<Bylines />
-				{/* <Acknowledgements /> */}
+				<Acknowledgements />
 			</ProvideBylines>
 		</PluginDocumentSettingPanel>
 	);

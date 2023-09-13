@@ -2,7 +2,7 @@
 namespace PRC\Platform;
 use WP_Error;
 
-class Pages extends Multisite_Migration {
+class Pages_Migration extends Multisite_Migration {
 	public $original_post_id = null;
 	public $original_site_id = null;
 	public $target_post_id = null;

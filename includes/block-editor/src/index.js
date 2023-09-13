@@ -16,13 +16,9 @@ import { removeFilter } from '@wordpress/hooks';
 removeFilter('editor.MediaUpload', 'external-media/replace-media-upload');
 
 const removeMetaPanels = (postType) => {
-	// We do not use "Category", Tags, or Comments at Pew Research Center.
-	dispatch('core/edit-post').removeEditorPanel('taxonomy-panel-category');
+	// We do not use Tags or Comments at Pew Research Center.
 	dispatch('core/edit-post').removeEditorPanel('taxonomy-panel-post_tag');
 	dispatch('core/edit-post').removeEditorPanel('discussion-panel');
-
-	// @TODO Move this into bylines proper.
-	dispatch('core/edit-post').removeEditorPanel('taxonomy-panel-bylines');
 };
 
 const unregisterBlocks = () => {
@@ -30,19 +26,6 @@ const unregisterBlocks = () => {
 		'core/archives',
 		'core/calendar',
 		'core/latest-comments',
-		'jetpack/payment-buttons',
-		'jetpack/recurring-payments',
-		'jetpack/payments-intro',
-		'jetpack/opentable',
-		'jetpack/calendly',
-		'jetpack/rating-star',
-		'jetpack/pinterest',
-		'jetpack/google-calendar',
-		'jetpack/eventbrite',
-		'jetpack/instagram-gallery',
-		'jetpack/mailchimp',
-		'jetpack/revue',
-		'jetpack/story',
 		'core/tag-cloud',
 		'core/verse',
 	];
@@ -79,7 +62,6 @@ domReady(() => {
 
 	setTimeout(() => {
 		const postType = select('core/editor').getCurrentPostType();
-
 		if (null !== postType) {
 			removeMetaPanels(postType);
 		}
@@ -101,6 +83,6 @@ domReady(() => {
 
 		unregisterBlocks();
 
-		console.log('PRC Block Editor: Ready', postType);
+		console.log('Loading @pewresearch/prc-platform-block-editor...', 'Block editor ready for post type: ' + postType);
 	}, 3000);
 });

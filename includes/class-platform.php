@@ -74,8 +74,10 @@ class Platform_Bootstrap {
 		// Initialize the plugin and its various systems.
 		$this->load_dependencies();
 		$this->define_wp_admin_hooks();
+		$this->define_post_publish_pipeline_hooks();
 		$this->define_media_hooks();
 		$this->define_gutenberg_hooks();
+		$this->define_block_editor_hooks();
 		$this->define_post_visibility_hooks();
 		$this->define_social_hooks();
 		$this->define_embed_hooks();
@@ -87,6 +89,7 @@ class Platform_Bootstrap {
 		$this->define_jetpack_integration_hooks();
 		$this->define_convert_to_blocks();
 		$this->define_search_hooks();
+		$this->define_related_posts_hook();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -193,6 +196,12 @@ class Platform_Bootstrap {
 		$this->include('convert-to-block/class-convert-to-block.php');
 		// Load Search customizations
 		$this->include('search/class-search.php');
+		// Load Block Editor customizations
+		$this->include('block-editor/class-block-editor.php');
+		// Load post publish pipeline hooks
+		$this->include('post-publish-pipeline/class-post-publish-pipeline.php');
+		// Load Realted Posts system
+		$this->include('related-posts/class-related-posts.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -233,6 +242,26 @@ class Platform_Bootstrap {
 	}
 
 	/**
+	 * Register all of the hooks related to the post visibility status system.
+	 * @return void
+	 */
+	private function define_block_editor_hooks() {
+		$post_visibility = new Block_Editor( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action('enqueue_block_editor_assets', $post_visibility, 'enqueue_assets');
+	}
+
+	/**
+	 * Register all of the hooks related to the post visibility status system.
+	 * @return void
+	 */
+	private function define_site_editor_hooks() {
+		$post_visibility = new Site_Editor( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action('enqueue_block_editor_assets', $post_visibility, 'enqueue_assets');
+	}
+
+	/**
 	 * Register all of the hooks related to Gutenberg plugin integration.
 	 * @return void
 	 */
@@ -245,6 +274,40 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'use_block_editor_for_post', $gutenberg, 'load_gutenberg', 15, 2 );
 		$this->loader->add_action( 'init', $gutenberg, 'add_revisions_to_reusable_blocks' );
 		$this->loader->add_action( 'menu_order', $gutenberg, 'group_admin_menus_together', 101 );
+	}
+
+	private function define_post_publish_pipeline_hooks() {
+		$post_publish_pipeline = new Post_Publish_Pipeline(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+
+		$this->loader->add_action( 'rest_api_init', $post_publish_pipeline, 'register_rest_fields' );
+		/**
+		 * @uses prc_platform_on_incremental_save
+		 */
+		$this->loader->add_action( 'save_post', $post_publish_pipeline, 'post_incremental_save_hook', 10, 3 );
+		/**
+		 * @uses prc_platform_on_post_init
+		 */
+		$this->loader->add_action( 'transition_post_status', $post_publish_pipeline, 'post_init_hook', 0, 3 );
+		/**
+		 * @uses prc_platform_on_update
+		 */
+		$this->loader->add_action( 'transition_post_status', $post_publish_pipeline, 'post_updating_hook', 99, 3 );
+		/**
+		 * @uses prc_platform_on_publish
+		 * @uses prc_platform_on_unpublish
+		 */
+		$this->loader->add_action( 'transition_post_status', $post_publish_pipeline, 'post_saving_hook', 100, 3 );
+		/**
+		 * @uses prc_platform_on_trash
+		 */
+		$this->loader->add_action( 'trashed_post', $post_publish_pipeline, 'post_trashed_hook', 100, 1 );
+		/**
+		 * @uses prc_platform_on_untrash
+		 */
+		$this->loader->add_action( 'untrashed_post', $post_publish_pipeline, 'post_trashed_hook', 100, 2 );
 	}
 
 	/**
@@ -276,6 +339,7 @@ class Platform_Bootstrap {
 
 		// Art Direction
 		$this->loader->add_action( 'init', $art_direction, 'init_art_direction' );
+		$this->loader->add_action( 'rest_api_init', $art_direction, 'register_art_direction_rest_field' );
 		$this->loader->add_action( 'enqueue_block_editor_assets', $art_direction, 'enqueue_block_plugin_assets' );
 		$this->loader->add_action( 'rest_api_init', $art_direction, 'register_rest_endpoint' );
 		$this->loader->add_filter( 'register_post_type_args', $art_direction, 'change_featured_image_label', 100, 2 );
@@ -725,6 +789,7 @@ class Platform_Bootstrap {
 		// Restrict what Jetpack modules are available.
 		$this->loader->add_action( 'jetpack_set_available_extensions', $jetpack, 'set_available_jetpack_extensions' );
 		$this->loader->add_filter( 'option_jetpack_active_modules', $jetpack, 'set_available_jetpack_modules' );
+		$this->loader->add_action( 'jetpack_register_gutenberg_extensions', $jetpack, 'set_available_jetpack_blocks', 99 );
 	}
 
 	private function define_convert_to_blocks() {
@@ -759,6 +824,18 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'pre_get_posts', $search, 'sanitize_search_term', 1, 1 );
 		$this->loader->add_filter( 'ep_set_sort', $search, 'ep_sort_by_date', 10, 2 );
 		$this->loader->add_filter( 'ep_highlight_should_add_clause', $search, 'ep_enable_highlighting', 10, 4);
+	}
+
+	private function define_related_posts_hook() {
+		$related_posts = new Related_Posts(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_action( 'init', $related_posts, 'register_meta_fields' );
+		$this->loader->add_action( 'enqueue_block_editor_assets', $related_posts, 'enqueue_assets' );
+		$this->loader->add_action( 'wpcom_vip_cache_pre_execute_purges', $related_posts, 'clear_cache_on_purge' );
+		$this->loader->add_action( 'prc_platform_on_update', $related_posts, 'clear_cache_on_update' );
+		$this->loader->add_filter( 'prc_related_posts', $related_posts, 'process', 10, 2 );
 	}
 
 	/**
