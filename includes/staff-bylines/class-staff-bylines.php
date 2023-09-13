@@ -197,6 +197,8 @@ class Staff_Bylines {
 
 		// Link the post object and taxonomy object into one entity.
 		TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
+
+		$this->register_meta_fields();
 	}
 
 	public function enable_gutenberg_ramp($post_types) {
@@ -273,23 +275,11 @@ class Staff_Bylines {
 			return $title;
 		}
 
-		// $staff = new Staff( $post->ID );
-		// if ( is_wp_error( $staff ) ) {
-		// 	return $title;
-		// }
-		// if ( false === $staff->is_currently_employed ) {
-		// 	$title = 'FORMER: ' . $title;
-		// }
+		$staff = new Staff( $post->ID );
+		if ( true !== $staff->is_currently_employed ) {
+			$title = 'FORMER: ' . $title;
+		}
 		return $title;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function tie_staff_to_user() {
-		// Link the staff taxonomy term to a user, when the user is created.
-		// If the user is updated update the staff taxonomy term and staff post.
-		// Eventually in this process we may vary well switch over from a staff post type to a user.
 	}
 
 	public function register_meta_fields() {

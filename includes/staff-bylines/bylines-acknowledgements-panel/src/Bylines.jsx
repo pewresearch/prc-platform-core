@@ -2,7 +2,6 @@
  * External Dependencies
  */
 
-import { randomId } from '@prc-app/shared';
 
 /**
  * WordPress Dependencies
@@ -19,6 +18,7 @@ import { List } from 'react-movable';
 /**
  * Internal Dependencies
  */
+import { randomId } from './utils';
 import { ObjectSearchField } from '../_shared';
 import { useBylines } from './context';
 import BylineItem from './BylineItem';

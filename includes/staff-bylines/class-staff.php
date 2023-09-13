@@ -49,18 +49,19 @@ class Staff {
 		if ( empty($this->ID) || !is_int($this->ID) ) {
 			return false;
 		}
-		if ( true !== get_post_meta($this->ID, 'bylineLinkEnabled', true) ) {
+		if ( false === get_post_meta($this->ID, 'bylineLinkEnabled', true) ) {
 			return false;
 		}
 		$term = TDS\get_related_term( $this->ID );
 		if ( ! is_a( $term, 'WP_Term' ) ) {
 			return new WP_Error( '404', 'Byline term not found, no matching term found for staff post.' );
 		}
-		return get_term_link( $term, 'bylines' );
+		$link = get_term_link( $term, 'bylines' );
+		return $link;
 	}
 
 	public function get_cache($post_id) {
-		$cache = wp_cache_get( 'staff-cache-' . $post_id );
+		$cache = wp_cache_get( 'staff-cache-abc-' . $post_id );
 		if ( false !== $cache && ! is_user_logged_in() ) {
 			foreach ( $cache as $key => $value ) {
 				$this->$key = $value;
@@ -82,13 +83,9 @@ class Staff {
 	}
 
 	public function set_staff($post_id) {
-		if ( true === $this->get_cache($post_id) ) {
-			return;
-		}
-		$site_id = get_current_blog_id();
-		if ( 20 !== $site_id ) {
-			switch_to_blog( 20 );
-		}
+		// if ( true === $this->get_cache($post_id) ) {
+		// 	return;
+		// }
 		$staff_post = get_post( $post_id );
 		// do a double check on post type...
 		if ( 'staff' !== $staff_post->post_type ) {
@@ -96,7 +93,7 @@ class Staff {
 		}
 
 		$staff_post_id = $staff_post->ID;
-		$this->ID = $staff_post_id;
+		$this->ID = (int) $staff_post_id;
 
 		$this->name = $staff_post->post_title;
 		$this->slug = $staff_post->post_name;
@@ -113,11 +110,7 @@ class Staff {
 		$this->expertise = $this->get_expertise();
 		$this->is_currently_employed = $this->check_employment_status();
 
-		if ( 20 !== $site_id ) {
-			restore_current_blog();
-		}
-
-		$this->set_cache();
+		// $this->set_cache();
 	}
 
 	public function check_employment_status() {

@@ -1,105 +1,61 @@
 <?php
+namespace PRC\Platform;
+use WP_Error;
 
+class Bylines_Acknowledgements_Panel {
+	protected static $enabled_post_types = array( 'post', 'short-read', 'interactive', 'fact-sheet', 'quiz', 'chart' );
+	protected static $handle = 'prc-platform-bylines-acknowledgements-panel';
+	public static $version = '4.0.0';
 
-use \WPackio as WPackio;
+	public function __construct() {
 
-class Bylines extends PRC_Block_Editor_Plugins {
-	public static $version = '1.1.2';
-	public static $field_schema = array(
-		'items' => array(
-			'type'       => 'object',
-			'properties' => array(
-				'key'    => array(
-					'type' => 'string',
-				),
-				'termId' => array(
-					'type' => 'integer',
-				),
-			),
-		),
-	);
-	//@TODO: Should really make this pull the info directly from the post type.
-	protected static $enabled_post_types = array( 'post', 'short-read', 'interactives', 'fact-sheets', 'stub', 'mini-course' );
-
-	public function __construct( $init = false ) {
-		if ( true === $init ) {
-			add_action( 'enqueue_block_editor_assets', array( $this, 'register_plugin' ) );
-			add_action( 'init', array( $this, 'register_meta_fields' ) );
-			add_filter( 'prc_default_post_header_args', array( $this, 'determine_bylines_display' ), 9, 1 );
-		}
 	}
 
-	public function register_plugin() {
-		if ( ! in_array( parent::get_wp_admin_current_post_type(), self::$enabled_post_types, true ) ) {
-			return;
+	public function get_wp_admin_current_post_type() {
+		global $post, $typenow, $current_screen;
+		if ( $post && $post->post_type ) {
+			return $post->post_type;
+		} elseif ( $typenow ) {
+			return $typenow;
+
+		} elseif ( $current_screen && $current_screen->post_type ) {
+			return $current_screen->post_type;
+
+		} elseif ( isset( $_REQUEST['post_type'] ) ) {
+			return sanitize_key( $_REQUEST['post_type'] );
 		}
-		$enqueue = new WPackio( 'prcBlockPlugins', 'dist', self::$version, 'plugin', parent::$plugin_dir );
-		$enqueue->enqueue(
-			'plugins',
-			'bylines-acknowledgements',
-			array(
-				'js'        => true,
-				'css'       => true,
-				'js_dep'    => array(),
-				'css_dep'   => array(),
-				'in_footer' => true,
-				'media'     => 'all',
-			)
+		return null;
+	}
+
+	public function register_assets() {
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_slug = self::$handle;
+		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+
+		$script = wp_register_script(
+			$asset_slug,
+			$script_src,
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
 		);
+
+		if ( ! $script ) {
+			return new WP_Error( self::$handle, 'Failed to register all assets' );
+		}
+
+		return true;
 	}
 
-	public function determine_bylines_display( $args ) {
-		$args['bylines'] = get_post_meta( (int) $args['post_id'], 'displayBylines', true );
-		return $args;
-	}
-
-	public function register_meta_fields() {
-		foreach ( self::$enabled_post_types as $post_type ) {
-			register_post_meta(
-				$post_type,
-				'bylines',
-				array(
-					'single'        => true,
-					'type'          => 'array',
-					'show_in_rest'  => array(
-						'schema' => self::$field_schema,
-					),
-					'auth_callback' => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				)
-			);
-
-			register_post_meta(
-				$post_type,
-				'acknowledgements',
-				array(
-					'single'        => true,
-					'type'          => 'array',
-					'show_in_rest'  => array(
-						'schema' => self::$field_schema,
-					),
-					'auth_callback' => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				)
-			);
-
-			register_post_meta(
-				$post_type,
-				'displayBylines',
-				array(
-					'show_in_rest'  => true,
-					'single'        => true,
-					'type'          => 'boolean',
-					'default'       => true,
-					'auth_callback' => function() {
-						return current_user_can( 'edit_posts' );
-					},
-				)
-			);
+	/**
+	 * Enqueue block plugin assets
+	 * @hook enqueue_block_editor_assets
+	 */
+	public function enqueue_assets() {
+		$this->register_assets();
+		$registered = wp_script_is( self::$handle, 'registered' );
+		if ( is_admin() && $registered && in_array($this->get_wp_admin_current_post_type(), self::$enabled_post_types, true) ) {
+			wp_enqueue_script( self::$handle );
 		}
 	}
 }
-
-new Bylines( true );

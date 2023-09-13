@@ -4,12 +4,12 @@
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { useEntityProp } from '@wordpress/core-data';
 import { BaseControl, CardDivider, ToggleControl, TextControl } from '@wordpress/components';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 
-function BylineConfigPanel() {
+function StaffInfoPanel() {
 	const { postType, postId } = useSelect(
 		(select) => ({
 			postType: select('core/editor').getCurrentPostType(),
@@ -19,8 +19,6 @@ function BylineConfigPanel() {
 	);
 
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
-	console.log("Entity Prop Meta:", meta);
-
 	const { jobTitle, jobTitleExtended, socialProfiles, bylineLinkEnabled } = meta;
 
 	return (
@@ -71,6 +69,6 @@ function BylineConfigPanel() {
 }
 
 registerPlugin('prc-staff-info', {
-	render: BylineConfigPanel,
+	render: StaffInfoPanel,
 	icon: null,
 });

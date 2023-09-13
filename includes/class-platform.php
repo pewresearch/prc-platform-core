@@ -659,11 +659,11 @@ class Platform_Bootstrap {
 		// Establish a bi-directional relationship between the "staff" post type and the "byline" taxonomy.
 		$this->loader->add_action( 'init', $staff_bylines, 'register_term_data_store' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $staff_bylines, 'enable_gutenberg_ramp' );
-		$this->loader->add_filter('rest_staff_collection_params', $staff_bylines, 'filter_add_rest_orderby_params', 10, 1);
+		$this->loader->add_filter( 'rest_staff_collection_params', $staff_bylines, 'filter_add_rest_orderby_params', 10, 1);
 		$this->loader->add_filter( 'posts_orderby', $staff_bylines, 'orderby_last_name', PHP_INT_MAX, 2 );
 
-		$this->loader->add_action('pre_get_posts', $staff_bylines, 'hide_former_staff', 10, 1);
-		$this->loader->add_filter('the_title', $staff_bylines, 'indicate_former_staff', 10, 1);
+		$this->loader->add_action( 'pre_get_posts', $staff_bylines, 'hide_former_staff', 10, 1 );
+		$this->loader->add_filter( 'the_title', $staff_bylines, 'indicate_former_staff', 10, 1 );
 
 		$this->loader->add_filter( 'post_link', $staff_bylines, 'modify_staff_permalink', 20, 2 );
 		$this->loader->add_action( 'admin_bar_menu', $staff_bylines, 'modify_admin_bar_edit_link', 100 );

@@ -11,6 +11,9 @@ class Staff_Info_Panel {
 	}
 
 	public function get_wp_admin_current_post_type() {
+		if ( !is_admin() ) {
+			return false;
+		}
 		global $post, $typenow, $current_screen;
 		if ( $post && $post->post_type ) {
 			return $post->post_type;
@@ -53,7 +56,7 @@ class Staff_Info_Panel {
 	public function enqueue_assets() {
 		$this->register_assets();
 		$registered = wp_script_is( self::$handle, 'registered' );
-		if ( is_admin() && $registered && $this->get_wp_admin_current_post_type() === 'staff' ) {
+		if ( $registered && $this->get_wp_admin_current_post_type() === 'staff' ) {
 			wp_enqueue_script( self::$handle );
 		}
 	}
