@@ -23,6 +23,13 @@ class Block_Editor {
 
 	public static $handle = 'prc-platform-block-editor';
 
+	public static $wide_template_post_types = array(
+		'homepage',
+		'block_module',
+		'fact-sheet',
+		'interactive',
+	);
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -92,6 +99,37 @@ class Block_Editor {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
+		}
+	}
+
+	public function print_wide_editor_style() {
+		$width = 1136;
+		ob_start();
+		?>
+.wp-block-post-content.wp-block-post-content-is-layout-flow {
+	max-width: var(--wp--custom--max-width)!important;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.editor-styles-wrapper .block-editor-block-list__layout.is-root-container > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+	max-width: 100%!important;
+	margin-left: auto;
+	margin-right: auto;
+}
+		<?php
+		return normalize_whitespace(ob_get_clean());
+	}
+
+	public function post_type_template_css_defaults() {
+		if ( !is_admin() ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( in_array($screen->post_type, self::$wide_template_post_types) ) {
+			// enqueue the stylesheet
+			$wide_style = $this->print_wide_editor_style();
+			wp_add_inline_style( 'wp-block-library', $wide_style );
 		}
 	}
 }

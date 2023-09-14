@@ -36,38 +36,48 @@ class User_Permissions {
 		$this->version = $version;
 	}
 
-	public function establish_user_roles() {
+	/**
+	 * This function uses a json file to manage user roles and capabilities. When a version in the json file is greater than the version stored in the database, the user roles are updated.
+	 * @hook init
+	 * @return void
+	 */
+	public function autoload_user_roles() {
 		if ( ! function_exists('wpcom_vip_add_role') ) {
 			return;
 		}
-		$ver = $this->version;
+		// get the user-roles.json file as a php multidimensional array
+		$user_roles = json_decode( file_get_contents( plugin_dir_path( __FILE__ ) . 'user-roles.json' ), true );
+
+		// get the "version" property from the json file
+		$ver = $user_roles['version'];
 
 		// Check if this has been run already.
 		if ( $ver <= get_option( 'prc_platform_user_permissions' ) ) {
 			return;
 		}
 
-		// // Add new role.
-		// wpcom_vip_add_role( 'reader', 'Reader', array( 'read' => true ) );
+		foreach ( $user_roles['roles'] as $role_slug => $role ) {
+			if ( array_key_exists('inherits', $role) ) {
+				\wpcom_vip_duplicate_role(
+					$role['inherits'],
+					$role_slug,
+					$role['name'],
+					$role['capabilities'],
+				);
+			} else {
+				\wpcom_vip_add_role( $role_slug, $role['name'], $role['capabilities'] );
+			}
+		}
 
-		// // Remove publish_posts cap from authors.
-		// wpcom_vip_merge_role_caps( 'author', array( 'publish_posts' => false ) );
+		update_option( 'prc_platform_user_permissions', $ver );
+	}
 
-		// // Duplicate an existing role and modify some caps.
-		// wpcom_vip_duplicate_role(
-		// 	'administrator',
-		// 	'station-administrator',
-		// 	'Station Administrator',
-		// 	array( 'manage_categories' => false )
-		// );
-
-		// // Add custom cap to a role.
-		// wpcom_vip_add_role_caps( 'administrator', array( 'my-custom-cap' ) );
-
-		// // Remove cap from a role.
-		// wpcom_vip_remove_role_caps( 'author', array( 'publish_posts' ) );
-
-		// // Update the version to prevent this running again.
-		// update_option( 'prc_platform_user_permissions', $ver );
+	/**
+	 * @hook wpcom_vip_enable_two_factor
+	 * @param bool $value
+	 * @return bool
+	 */
+	public function enforce_two_factor($value) {
+		return defined('VIP_GO_APP_ENVIRONMENT') && 'production' === \VIP_GO_APP_ENVIRONMENT;
 	}
 }

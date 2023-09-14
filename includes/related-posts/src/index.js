@@ -8,6 +8,7 @@ import { List } from 'react-movable';
 /**
  * WordPress Dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';

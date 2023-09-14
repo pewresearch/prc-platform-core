@@ -200,4 +200,23 @@ class Homepages {
 			wp_enqueue_style( self::$handle );
 		}
 	}
+
+
+	/**
+	 * Modifies the staff permalink to point to the bylines term archive permalink.
+	 *
+	 * @hook post_link
+	 * @param string $url
+	 * @param WP_Post $post
+	 * @return string
+	 */
+	public function modify_homepage_permalink( $url, $post ) {
+		if ( 'publish' !== $post->post_status ) {
+			return $url;
+		}
+		if ( self::$post_type === $post->post_type ) {
+			return home_url();
+		}
+		return $url;
+	}
 }

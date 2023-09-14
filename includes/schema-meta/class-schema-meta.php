@@ -41,6 +41,14 @@ class Schema_Meta {
 		}
 	}
 
+	/**
+	 * @hook wpvip_parsely_load_mu
+	 * @return true
+	 */
+	public function enable_parsely_mu_on_vip() {
+		return true;
+	}
+
 	public function yoast_seo_no_index( $robots ) {
 		global $paged;
 
@@ -78,6 +86,14 @@ class Schema_Meta {
 			$title = $title . ' | Pew Research Center';
 		}
 		return $title;
+	}
+
+	/**
+	 * Remove the Yoast SEO version number from the head.
+	 * @hook wpseo_hide_version
+	 */
+	public function yoast_hide_version() {
+		return true;
 	}
 
 	/**

@@ -21,7 +21,7 @@ class XX {
 	 */
 	private $version;
 
-	public static $handle = 'prc-platform-XX';
+	public static $handle = 'prc-platform-post-report-package';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -70,5 +70,50 @@ class XX {
 			wp_enqueue_script( self::$handle );
 			wp_enqueue_style( self::$handle );
 		}
+	}
+
+	/**
+	 * @hook pre_get_posts
+	 * @param mixed $query
+	 * @return mixed
+	 */
+	public function hide_back_chapter_posts($query) {
+		if ( ! is_admin() && $query->is_main_query() && is_index() ) {
+			$query->set( 'post_parent', 0 );
+		}
+	}
+
+	/**
+	 * Modify the post title if it's a child post in the admin view.
+	 * @hook the_title
+	 * @param title
+	 */
+	public function indicate_back_chapter_post( $title, $post_id = null ) {
+		if ( ! function_exists('get_current_screen') ) {
+			return $title;
+		}
+
+		// If we're not in admin or if our post_id isn't set return title.
+		if ( ! is_admin() || null === $post_id ) {
+			return $title;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || 'edit' !== $screen->parent_base ) {
+			return $title;
+		}
+
+		if ( 'post' !== get_post_type( $post_id ) ) {
+			return $title;
+		}
+
+		// Add a dash before the title...
+		if ( 0 !== wp_get_post_parent_id( $post_id ) ) {
+			$title = '&mdash; ' . $title;
+			// add a [Back Chapter] tag to the title...
+			$title .= ' [Back Chapter]';
+		}
+
+		return $title;
 	}
 }

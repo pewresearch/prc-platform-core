@@ -1,5 +1,12 @@
+/**
+ * External Dependencies
+ */
+import { listStoreActions } from '@prc/components';
+
+/**
+ * WordPress Dependencies
+ */
 import { select } from '@wordpress/data';
-import { listStoreActions } from '@prc-app/shared';
 
 const isJson = (str) => {
 	try {

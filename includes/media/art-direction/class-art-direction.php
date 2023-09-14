@@ -105,7 +105,6 @@ class Art_Direction {
 	 */
 	public $enabled_post_types = array(
 		'short-read',
-		'stub',
 		'post',
 		'interactives',
 		'interactive',
@@ -252,7 +251,6 @@ class Art_Direction {
 	}
 
 	public function get_art_for_api( $object ) {
-		// get the id of the post object array
 		$post_id = $object['id'];
 		return $this->get_art( $post_id, 'all' );
 	}
@@ -295,22 +293,6 @@ class Art_Direction {
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
 			wp_enqueue_style( self::$handle );
-		}
-	}
-
-	private function get_stub_info( $stub_post_id, $needle = false ) {
-		$meta = get_post_meta( $stub_post_id, '_stub_info', true );
-		if ( ! $meta ) {
-			return false;
-		}
-		if ( false !== $needle ) {
-			if ( array_key_exists( $needle, $meta ) ) {
-				return $meta[ $needle ];
-			} else {
-				return false;
-			}
-		} else {
-			return $meta;
 		}
 	}
 
@@ -370,24 +352,7 @@ class Art_Direction {
 	}
 
 	private function get_fallback_featured_image( $post_id ) {
-		$post_type = get_post_type( $post_id );
-
-		if ( 'stub' === $post_type ) {
-			$stub_info = $this->get_stub_info( $post_id );
-			if ( false === $stub_info ) {
-				return false;
-			}
-			$origin_post_id = (int) $stub_info['post_id'];
-			$site_id        = (int) $stub_info['site_id'];
-
-			switch_to_blog( $site_id );
-			$fallback_art = $this->get_fallback_art( $origin_post_id );
-			restore_current_blog();
-		} else {
-			$fallback_art = $this->get_fallback_art( $post_id );
-		}
-
-		return $fallback_art;
+		return $this->get_fallback_art( $post_id );
 	}
 
 	/**
@@ -417,7 +382,6 @@ class Art_Direction {
 			$parent_post_id = $post_id;
 		}
 
-		// For stub posts we need to fetch from _stub_info['_art'] for everything else we can just fetch from _art
 		// Check for new post meta key artDirection.
 		$all_art = get_post_meta( $parent_post_id, self::$post_meta_key, true );
 		// Fallback to _art if not found.

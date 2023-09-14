@@ -202,4 +202,84 @@ class WP_Admin {
 		return $disable;
 	}
 
+	/**
+	 * @hook admin_menu
+	 * @param mixed $menu
+	 * @return void
+	 */
+	public function modify_menu() {
+		global $menu;
+		unset( $menu[15] ); // 15 = Links menu
+	}
+
+	/**
+	 * Remove useless widgets from the dashboard.
+	 * @hook wp_dashboard_setup
+	 */
+	public function remove_dashboard_widgets() {
+		global $wp_meta_boxes;
+		unset( $wp_meta_boxes['dashboard']['normal']['core']['dashboard_recent_comments'] );
+		unset( $wp_meta_boxes['dashboard']['side']['core']['dashboard_primary'] );
+		unset( $wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary'] );
+		unset( $wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press'] );
+	}
+
+	/**
+	 * @hook multisite_enhancements_status_label
+	 * @param mixed $blogname
+	 * @param mixed $blog
+	 * @return void
+	 */
+	public function multisite_enhancement_plugin_sites_label($blogname, $blog) {
+		return $blog->blogname;
+	}
+
+	/**
+	 * This is a serious place no emojis here.
+	 * @hook init
+	 * @return void
+	 */
+	public function disable_emojis() {
+		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+		remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+		remove_action( 'wp_print_styles', 'print_emoji_styles' );
+		remove_action( 'admin_print_styles', 'print_emoji_styles' );
+		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+	}
+
+	/**
+	 * @hook update_footer
+	 * @param mixed $content
+	 * @return string
+	 */
+	public function output_platform_version_in_wp_admin( $content ) {
+		$environment = '<span style="color:red;">Production</span>';
+		if ( 'production' !== wp_get_environment_type() ) {
+			$environment = '<span style="color:green;">Development</span>';
+		}
+		return '<strong>' . $environment . ' | PRC Platform Core: ' . $this->version . '</strong>';
+	}
+
+	/**
+	 * Change the Public Post Preview plugins default lifetime to 14 days.
+	 * @hook ppp_nonce_life
+	 * @return int|float
+	 */
+	public function define_public_post_preview_lifetime() {
+		return 14 * DAY_IN_SECONDS;
+	}
+
+	/**
+	 * Removes the "Overview" text from the beginning of excerpts.
+	 * @hook the_excerpt
+	 * @param mixed $excerpt
+	 * @return string|string[]|null
+	 */
+	public function remove_overview_from_excerpts( $excerpt ) {
+		$excerpt = preg_replace( '/^<p>(\s+|&nbsp;\s+)?Overview\s/', '<p>', $excerpt );
+		return $excerpt;
+	}
+
 }

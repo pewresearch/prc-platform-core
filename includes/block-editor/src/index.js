@@ -11,6 +11,10 @@ import {
 import { removeFilter } from '@wordpress/hooks';
 
 /**
+ * Internal Dependencies:
+ */
+
+/**
  * Removes the external media button that Jetpack so rudely adds everywhere.
  */
 removeFilter('editor.MediaUpload', 'external-media/replace-media-upload');

@@ -74,7 +74,9 @@ class Platform_Bootstrap {
 		// Initialize the plugin and its various systems.
 		$this->load_dependencies();
 		$this->define_wp_admin_hooks();
+		$this->define_user_permissions_hooks();
 		$this->define_post_publish_pipeline_hooks();
+		$this->define_rss_feed_hooks();
 		$this->define_media_hooks();
 		$this->define_gutenberg_hooks();
 		$this->define_block_editor_hooks();
@@ -154,6 +156,10 @@ class Platform_Bootstrap {
 		$this->include('media/attachment-report/class-attachment-report.php');
 		// Load wp-admin modifications and ui additions.
 		$this->include('wp-admin/class-wp-admin.php');
+		// Load RSS Feed customizations
+		$this->include('rss/class-rss.php');
+		// Load user permissions
+		$this->include('user-permissions/class-user-permissions.php');
 		// Load /iframe embed system.
 		$this->include('embeds/class-embeds.php');
 		// Load schema meta system. (Yoast/Parsely/Schema JSON-LD)
@@ -223,11 +229,39 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'wp_before_admin_bar_render', $admin, 'admin_bar_tweaks' );
 		$this->loader->add_filter( 'get_user_option_admin_color', $admin, 'default_admin_color_scheme' );
 		$this->loader->add_action( 'admin_print_footer_scripts', $admin, 'admin_footer' );
+		$this->loader->add_filter( 'disabled_cookiepro', $admin, 'disable_cookie_banner_conditions', 10, 1 );
+		$this->loader->add_action( 'admin_menu', $admin, 'modify_menu', 10 );
+		$this->loader->add_action( 'wp_dashboard_setup' , $admin, 'remove_dashboard_widgets', 99 );
+		$this->loader->add_filter( 'multisite_enhancements_status_label', $admin, 'multisite_enhancement_plugin_sites_label', 10, 2 );
+		$this->loader->add_action( 'init', $admin, 'disable_emojis' );
+		$this->loader->add_filter( 'ppp_nonce_life', $admin, 'define_public_post_preview_lifetime' ) ;
+		$this->loader->add_filter( 'the_excerpt', $admin, 'remove_overview_from_excerpts' );
+		$this->loader->add_filter( 'update_footer', $admin, 'output_platform_version_in_wp_admin', 100 );
+
 		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
 			$this->loader->add_filter( 'acp/storage/file/directory', $admin_columns, 'acp_load_via_files' );
 		}
 		$this->loader->add_action( 'ac/ready', $admin_columns, 'register_columns' );
-		$this->loader->add_filter( 'disabled_cookiepro', $admin, 'disable_cookie_banner_conditions', 10, 1 );
+	}
+
+	private function define_user_permissions_hooks() {
+		$user_permissions = new User_Permissions(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_filter('wpcom_vip_enable_two_factor', $user_permissions, 'enforce_two_factor', 10, 1);
+		$this->loader->add_action('admin_init', $user_permissions, 'autoload_user_roles');
+	}
+
+	private function define_rss_feed_hooks() {
+		$rss_feeds = new RSS_Feeds(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_filter('the_excerpt_rss', $rss_feeds, 'remove_iframe');
+		$this->loader->add_filter('the_content_feed', $rss_feeds, 'remove_iframe');
+		$this->loader->add_action('wp_feed_cache_transient_lifetime', $rss_feeds, 'adjust_feed_cache_transient_lifetime');
+		$this->loader->add_action('wp_head', $rss_feeds, 'add_to_head', 10);
 	}
 
 	/**
@@ -246,9 +280,10 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_block_editor_hooks() {
-		$post_visibility = new Block_Editor( $this->get_plugin_name(), $this->get_version() );
+		$block_editor = new Block_Editor( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action('enqueue_block_editor_assets', $post_visibility, 'enqueue_assets');
+		$this->loader->add_action('enqueue_block_editor_assets', $block_editor, 'enqueue_assets');
+		$this->loader->add_action('enqueue_block_assets', $block_editor, 'post_type_template_css_defaults');
 	}
 
 	/**
@@ -256,9 +291,9 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_site_editor_hooks() {
-		$post_visibility = new Site_Editor( $this->get_plugin_name(), $this->get_version() );
+		$site_editor = new Site_Editor( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action('enqueue_block_editor_assets', $post_visibility, 'enqueue_assets');
+		$this->loader->add_action('enqueue_block_editor_assets', $site_editor, 'enqueue_assets');
 	}
 
 	/**
@@ -403,8 +438,10 @@ class Platform_Bootstrap {
 		add_filter( 'wpseo_frontend_presenters', array( $schema_meta, 'add_parsely_meta' ) );
 		add_filter( 'wp_parsely_metadata', array( $schema_meta, 'disable_parsely_json_ld'), 10, 3 );
 
+		$this->loader->add_filter( 'wpvip_parsely_load_mu', $schema_meta, 'enable_parsely_mu_on_vip' );
 		$this->loader->add_action( 'wp_head', $schema_meta, 'ascii', 1 );
 		$this->loader->add_filter( 'wpseo_twitter_creator_account', $schema_meta, 'yoast_seo_default_twitter' );
+		$this->loader->add_filter( 'wpseo_hide_version', $schema_meta, 'yoast_hide_version' );
 	}
 
 	/**
@@ -656,6 +693,7 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'prc_load_gutenberg', $homepages, 'enable_gutenberg_ramp' );
 		$this->loader->add_action( 'admin_bar_menu', $homepages, 'add_front_page_quick_edit', 999 );
 		$this->loader->add_filter( 'admin_menu_order', $homepages, 'admin_menu_order', 999 );
+		$this->loader->add_filter( 'post_type_link', $homepages, 'modify_homepage_permalink', 10, 2 );
 	}
 
 	/**
@@ -734,7 +772,7 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'pre_get_posts', $staff_bylines, 'hide_former_staff', 10, 1 );
 		$this->loader->add_filter( 'the_title', $staff_bylines, 'indicate_former_staff', 10, 1 );
 
-		$this->loader->add_filter( 'post_link', $staff_bylines, 'modify_staff_permalink', 20, 2 );
+		$this->loader->add_filter( 'post_type_link', $staff_bylines, 'modify_staff_permalink', 20, 2 );
 		$this->loader->add_action( 'admin_bar_menu', $staff_bylines, 'modify_admin_bar_edit_link', 100 );
 
 		$this->loader->add_action( 'rest_api_init', $staff_bylines, 'add_staff_info_term' );

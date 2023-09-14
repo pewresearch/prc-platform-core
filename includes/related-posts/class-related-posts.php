@@ -3,10 +3,11 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Related_Posts {
-	public static $cache_key = 'prc_related_posts_data';
+	public static $cache_key = 'relatedPosts';
 	public static $cache_time = 1 * HOUR_IN_SECONDS;
 	protected static $enabled_post_types = array( 'post', 'short-read' );
 
+	public static $meta_key = 'relatedPosts';
 	public static $schema_properties = array(
 		'date' 	   => array(
 			'type' => 'string',
@@ -68,7 +69,7 @@ class Related_Posts {
 		foreach ( self::$enabled_post_types as $post_type ) {
 			register_post_meta(
 				$post_type,
-				'relatedPosts',
+				self::$meta_key,
 				array(
 					'single'        => true,
 					'type'          => 'array',

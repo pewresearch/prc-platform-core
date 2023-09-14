@@ -2,7 +2,7 @@
 namespace PRC\Platform;
 use WP_Error;
 
-class XX {
+class Mailchimp {
 	/**
 	 * The ID of this plugin.
 	 *
@@ -70,5 +70,23 @@ class XX {
 			wp_enqueue_script( self::$handle );
 			wp_enqueue_style( self::$handle );
 		}
+	}
+
+	/**
+	 * @hook wp_mail_from_name
+	 * @param mixed $name
+	 * @return string
+	 */
+	public function change_default_from_name($name) {
+		return 'Pew Research Center';
+	}
+
+	/**
+	 * @hook wp_mail_from
+	 * @param mixed $emali
+	 * @return string
+	 */
+	public function change_default_mail_from_address($emali) {
+		return 'no-reply@pewresearch.org';
 	}
 }

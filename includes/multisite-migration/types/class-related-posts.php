@@ -60,7 +60,6 @@ class Related_Posts_Migration extends Multisite_Migration {
 	public function process($old_related_posts) {
 		// loop through the related posts, go find the new post id based on the old post. If you can't find it then keep the existing data..
 		if ( true === $this->allow_processing && !empty($old_related_posts) ) {
-			//
 			$new_related_posts = array();
 			foreach ($old_related_posts as $related_post) {
 				$new_post_id = $this->get_new_post_id_from_old_id($related_post['id']);

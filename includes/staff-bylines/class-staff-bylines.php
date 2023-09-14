@@ -419,12 +419,9 @@ class Staff_Bylines {
 		}
 		if ( self::$post_object_name === $post->post_type ) {
 			$staff = new Staff( $post->ID );
-			if ( is_wp_error( $staff ) ) {
-				return $url;
-			}
 			$matched_url = $staff->link;
-			if ( is_wp_error( $matched_url ) ) {
-				return $url;
+			if ( !is_wp_error( $matched_url ) ) {
+				return $matched_url;
 			}
 		}
 		return $url;

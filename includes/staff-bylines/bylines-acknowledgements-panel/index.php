@@ -3,7 +3,7 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Bylines_Acknowledgements_Panel {
-	protected static $enabled_post_types = array( 'post', 'short-read', 'interactive', 'fact-sheet', 'quiz', 'chart' );
+	protected static $enabled_post_types = array( 'post', 'short-read', 'interactive', 'fact-sheet', 'quiz' );
 	protected static $handle = 'prc-platform-bylines-acknowledgements-panel';
 	public static $version = '4.0.0';
 

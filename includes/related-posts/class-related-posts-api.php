@@ -99,7 +99,7 @@ class Related_Posts_API extends Related_Posts {
 	 * @return array
 	 */
 	private function get_custom_related_posts( ) {
-		$data          = get_post_meta( $this->ID, 'relatedPosts', true );
+		$data          = get_post_meta( $this->ID, self::$meta_key, true );
 		if ( $this->is_JSON($data) ) {
 			$data = json_decode( $data, true );
 		}

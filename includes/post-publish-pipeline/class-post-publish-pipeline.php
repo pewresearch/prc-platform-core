@@ -43,7 +43,7 @@ class Post_Publish_Pipeline {
 		$this->is_cli = defined( 'WP_CLI' ) && WP_CLI;
 		if ( true !== $this->is_cli ) {
 			// This is just an internal hook to this class, it allows us to setup and scaffold these fields and fill the data in later, allowing for a more performant API.
-			add_filter( 'prc_core_post_object', array( $this, 'apply_post_object_extra_fields' ), 1, 1 );
+			add_filter( 'prc_core_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
 		}
 	}
 
@@ -159,7 +159,7 @@ class Post_Publish_Pipeline {
 	/**
 	 * Exposes the rest fields above ^ via the PHP hooks.
 	 */
-	private function setup_extra_wp_post_object_fields( $post_object ) {
+	public function setup_extra_wp_post_object_fields( $post_object ) {
 		if ( ! is_object( $post_object ) ) {
 			return new WP_Error( 'get_post_object_extra_fields', 'The $post_object passed to get_post_object_extra_fields is not a object', $post_object );
 		}
@@ -167,7 +167,7 @@ class Post_Publish_Pipeline {
 		// Transform post object into an array for safer manipulation and add additional data.
 		$ref_post = (array) $post_object;
 
-		// These are placeholders, data is loaded later using a filter, see: apply_post_object_extra_fields().
+		// These are placeholders, data is loaded later using a filter, see: apply_extra_wp_post_object_fields().
 		$ref_post['canonical_url'] = false;
 		$ref_post['label']         = null;
 		$ref_post['visibility']    = false;
@@ -179,7 +179,7 @@ class Post_Publish_Pipeline {
 		}
 
 		if ( empty($ref_post) ) {
-			return new WP_Error( 'empty_post_object', 'The $ref_post passed to apply_post_object_extra_fields is empty', $ref_post );
+			return new WP_Error( 'empty_post_object', 'The $ref_post passed to apply_extra_wp_post_object_fields is empty', $ref_post );
 		}
 
 		// Return post data back as object.
