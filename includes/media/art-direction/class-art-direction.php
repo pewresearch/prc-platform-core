@@ -210,8 +210,12 @@ class Art_Direction {
 				$post_type,
 				'artDirection',
 				array(
-					'get_callback' => array( $this, 'get_art_for_api' ),
 					'schema'       => null,
+					'get_callback' => array( $this, 'get_art_for_api' ),
+					'auth_callback' => function() {
+						return current_user_can('read');
+					},
+					// 'update_callback' => null,
 				)
 			);
 		}
