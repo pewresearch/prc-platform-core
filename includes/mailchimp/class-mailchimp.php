@@ -2,7 +2,12 @@
 namespace PRC\Platform;
 use WP_Error;
 
+/**
+ * We send all mail through Mailchimp's Mandrill service and we use Mailchimp to register newsletter subscriptions. This class handles both.
+ * @package PRC\Platform
+ */
 class Mailchimp {
+	protected $api_keys;
 	/**
 	 * The ID of this plugin.
 	 *
