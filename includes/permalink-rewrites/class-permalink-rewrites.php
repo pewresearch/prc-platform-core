@@ -21,7 +21,7 @@ class Permalink_Rewrites {
 	 */
 	private $version;
 
-	public static $handle = 'prc-platform-XX';
+	public static $handle = 'prc-platform-permalink-rewrites';
 
 	/**
 	 * Initialize the class and set its properties.
