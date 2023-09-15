@@ -2,7 +2,9 @@
 namespace PRC\Platform;
 use WP_Error;
 
-class XX {
+class Post_Report_Package {
+	public $report_materials_meta_key = 'report_materials';
+	public $back_chapters_meta_key = 'back_chapters';
 	/**
 	 * The ID of this plugin.
 	 *
@@ -115,5 +117,88 @@ class XX {
 		}
 
 		return $title;
+	}
+
+	public function update_child_state() {
+		// We should match the post status of the parent to the children.
+	}
+
+	public function assign_child_to_parent() {
+		// We should assign the parent to the child.
+	}
+
+	/**
+	 * On incremental saves update any child posts...
+	 * @param mixed $post
+	 * @return void
+	 */
+	public function set_child_posts( $post ) {
+		if ( 'post' !== $post->post_type ) {
+			return;
+		}
+		$current_chapters = get_post_meta( $post->ID, self::$back_chapters_meta_key, true );
+		do_action( 'prc_update_post_children', $post->ID, $current_chapters );
+	}
+
+	public function register_meta_fields() {
+		register_post_meta(
+			'post',
+			self::$report_materials_meta_key,
+			array(
+				'single'        => true,
+				'type'          => 'array',
+				'description'   => 'Array of report material objects.',
+				'show_in_rest'  => array(
+					'schema' => array(
+						'items' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'key'          => array(
+									'type' => 'string',
+								),
+								'type'         => array(
+									'type' => 'string',
+								),
+								'url'          => array(
+									'type' => 'string',
+								),
+							),
+							'additionalProperties' => true
+						),
+					),
+				),
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'post',
+			self::$back_chapters_meta_key,
+			array(
+				'single'        => true,
+				'type'          => 'array',
+				'description'   => 'Array of back chapter posts.',
+				'show_in_rest'  => array(
+					'schema' => array(
+						'items' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'key'    => array(
+									'type' => 'string',
+								),
+								'postId' => array(
+									'type' => 'integer',
+								),
+							),
+						),
+					),
+				),
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
 	}
 }
