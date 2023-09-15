@@ -92,6 +92,7 @@ class Platform_Bootstrap {
 		$this->define_convert_to_blocks();
 		$this->define_search_hooks();
 		$this->define_related_posts_hook();
+		$this->define_post_report_package_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -206,8 +207,10 @@ class Platform_Bootstrap {
 		$this->include('block-editor/class-block-editor.php');
 		// Load post publish pipeline hooks
 		$this->include('post-publish-pipeline/class-post-publish-pipeline.php');
-		// Load Realted Posts system
+		// Load Related Posts system
 		$this->include('related-posts/class-related-posts.php');
+		// Load Post Report Package system
+		$this->include('post-report-package/class-post-report-package.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -874,6 +877,24 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'wpcom_vip_cache_pre_execute_purges', $related_posts, 'clear_cache_on_purge' );
 		$this->loader->add_action( 'prc_platform_on_update', $related_posts, 'clear_cache_on_update' );
 		$this->loader->add_filter( 'prc_related_posts', $related_posts, 'process', 10, 2 );
+	}
+
+	private function define_post_report_package_hooks() {
+		$post_report_package = new Post_Report_Package(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+
+		$this->loader->add_action( 'init', $post_report_package, 'register_meta_fields' );
+		$this->loader->add_action( 'rest_api_init', $post_report_package, 'register_rest_fields' );
+		$this->loader->add_action( 'enqueue_block_editor_assets', $post_report_package, 'enqueue_assets' );
+
+		$this->loader->add_action( 'prc-platform_on_incremental_save', $post_report_package, 'set_child_posts', 10, 1 );
+		$this->loader->add_action( 'prc_platform_on_update', $post_report_package, 'update_child_state', 10, 1 );
+		$this->loader->add_action( 'pre_get_posts', $post_report_package, 'hide_back_chapter_posts', 10, 1 );
+		$this->loader->add_filter( 'the_title', $post_report_package, 'indicate_back_chapter_post', 10, 2 );
+		$this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
+		$this->loader->add_filter( 'query_vars', $post_report_package, 'register_query_var', 10, 1 );
 	}
 
 	/**

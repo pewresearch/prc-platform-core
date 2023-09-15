@@ -4,11 +4,11 @@ use WP_Error;
 
 class Post_Report_Package {
 	public $post_id = null;
-	public $report_package_key = 'report_package';
-	public $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case?
-	public $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case?
+	public static $report_package_key = 'report_package';
+	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case?
+	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case?
 
-	public $report_materials_schema_properties = array(
+	public static $report_materials_schema_properties = array(
 		'key'          => array(
 			'type' => 'string',
 		),
@@ -20,7 +20,7 @@ class Post_Report_Package {
 		),
 	);
 
-	public $back_chapters_schema_properties = array(
+	public static $back_chapters_schema_properties = array(
 		'key'    => array(
 			'type' => 'string',
 		),
@@ -65,8 +65,6 @@ class Post_Report_Package {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -75,36 +73,77 @@ class Post_Report_Package {
 			$asset_file['version'],
 			true
 		);
-
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
-
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
 		return true;
 	}
 
+	/**
+	 * Enqueue the assets for this block editor plugin.
+	 * @hook enqueue_block_editor_assets
+	 * @return void
+	 */
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
 		}
 	}
 
+	public function get_report_parent_id( int $post_id ) {
+		$parent_id = wp_get_post_parent_id( $post_id );
+		if ( 0 !== $parent_id && is_int($parent_id) ) {
+			$post_id = $parent_id;
+		}
+		return $post_id;
+	}
+
+	public function is_report_package($post_id) {
+		$post_id = $this->get_report_parent_id( $post_id );
+		if ( !empty(get_post_meta($post_id, self::$back_chapters_meta_key, true) ) ) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
+	 * Disable Yoast SEO relative link hijack when the post is part of a report package.
+	 * @hook wpseo_disable_adjacent_rel_links
+	 * @return bool|void
+	 */
+	public function disable_yoast_adjacent_rel_links_on_report_package() {
+		if ( ! is_singular() ) {
+			return false;
+		}
+		global $post;
+		$post_id = $post->ID;
+		return $this->is_report_package($post_id);
+	}
+
+	/**
+	 * @hook query_vars
+	 * @param mixed $qvars
+	 * @return mixed
+	 */
+	public function register_query_var($qvars) {
+		$qvars[] = 'showBackChapters';
+		return $qvars;
+	}
+
+	/**
+	 * Hide back chapter posts from our "publications" queries:
+	 * - archive
+	 * - taxonomy
+	 * - homepage/frontpage
 	 * @hook pre_get_posts
 	 * @param mixed $query
 	 * @return mixed
 	 */
 	public function hide_back_chapter_posts($query) {
-		if ( ! is_admin() && $query->is_main_query() && is_index() ) {
+		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
+		if ( ! is_admin() && $query->is_main_query() && is_index() && false === $show_back_chapters ) {
 			$query->set( 'post_parent', 0 );
 		}
 	}
@@ -134,10 +173,10 @@ class Post_Report_Package {
 		}
 
 		// Add a dash before the title...
-		if ( 0 !== wp_get_post_parent_id( $post_id ) ) {
+		if ( 0 !== wp_get_post_parent_id( $post_id ) && true === $this->is_report_package( $post_id ) ) {
 			$title = '&mdash; ' . $title;
 			// add a [Back Chapter] tag to the title...
-			$title .= ' [Back Chapter]';
+			// $title .= ' [Back Chapter]';
 		}
 
 		return $title;
@@ -145,46 +184,50 @@ class Post_Report_Package {
 
 	/**
 	 * When this post changes the children should also change to match for specific items (namely taxonomy, post_date, post_status)
+	 * @hook prc_platform_on_update
 	 * @return void
 	 */
-	public function update_child_state($child_post_id, $parent_post_id) {
-		$child_post = get_post( $child_post_id );
+	public function update_child_state( $post ) {
+		if ( 'post' !== $post->post_type ) {
+			return;
+		}
+		$parent_post_id = wp_get_post_parent_id( $post->ID );
+		if ( 0 !== $parent_post_id ) {
+			return;
+		}
 		$parent_post = get_post( $parent_post_id );
-
-		// Do a quick sanity check to make sure we're dealing with the correct parent post and the child is a post.
+		// Do a quick sanity check to make sure we're dealing with the correct parent post.
 		if ( $parent_post_id !== $parent_post->ID ) {
 			return new WP_Error( '412', 'Parent post ID does not match parent post object ID.' );
 		}
-		if ( 'post' !== $child_post->post_type ) {
-			return new WP_Error( '412', 'Child post is not a post type.' );
-		}
-		$available_taxonomies = get_object_taxonomies( $child_post->post_type );
+		$available_taxonomies = get_object_taxonomies( $post->post_type );
 		$parent_post_taxonomy_terms = wp_get_post_terms( $parent_post->ID, $available_taxonomies );
 		$parent_post_status = $parent_post->post_status;
 		$parent_post_date = $parent_post->post_date;
 
-		// Update the child post to match the parent post.
-		$child_updated = wp_update_post( array(
-			'ID' => $child_post_id,
+		$new_updates = array(
+			'ID' => $post->ID,
 			'post_status' => $parent_post_status,
 			'post_date' => $parent_post_date,
-		), true );
+		);
+
+		// Update the child post to match the parent post.
+		$child_updated = wp_update_post( $new_updates, true );
 
 		if ( is_wp_error( $child_updated ) ) {
 			return new WP_Error( '412', 'Failed to update child post state.', $child_updated );
 		}
 
-		$terms_updated = wp_set_post_terms( $child_post_id, $parent_post_taxonomy_terms, $available_taxonomies );
+		$terms_updated = wp_set_post_terms( $child_updated, $parent_post_taxonomy_terms, $available_taxonomies );
 
 		return array(
-			'child_updated' => $child_updated,
+			'child_updated' => $new_updates,
 			'terms_updated' => $terms_updated,
 		);
 
 	}
 
 	public function assign_child_to_parent($child_post_id, $parent_post_id) {
-		// We should assign the parent to the child.
 		$updated = wp_update_post( array(
 			'ID' => $child_post_id,
 			'post_parent' => $parent_post_id,
@@ -196,11 +239,12 @@ class Post_Report_Package {
 
 	/**
 	 * On incremental saves assigns the child posts to the parent.
+	 * @hook prc_platform_on_incremental_save
 	 * @param mixed $post
 	 * @return void
 	 */
 	public function set_child_posts( $post ) {
-		if ( 'post' !== $post->post_type ) {
+		if ( 'post' !== $post->post_type && 0 !== wp_get_post_parent_id( $post->ID ) ) {
 			return;
 		}
 		$errors = array();
@@ -228,7 +272,7 @@ class Post_Report_Package {
 			'post',
 			self::$report_package_key,
 			array(
-				'get_callback' => array($this, 'get_report_package'),
+				'get_callback' => array($this, 'get_report_package_field'),
 				'description'  => 'The full report package; materials and back chapters.',
 			)
 		);
@@ -307,7 +351,7 @@ class Post_Report_Package {
 	}
 
 	/**
-	 * Will recrusively build the table of contents through navigating all blocks and grabbing core/heading and prc-block/chapter
+	 * Will recrusively build the table of contents through navigating all blocks and grabbing core/heading with isChapter set to true.
 	 * @param mixed $array
 	 * @return array
 	 */
@@ -334,6 +378,11 @@ class Post_Report_Package {
 		return $results;
 	}
 
+	/**
+	 * Get the back chapters for a given post.
+	 * @param mixed $post_id
+	 * @return void
+	 */
 	public function get_back_chapters( $post_id ) {
 		$parent_id = wp_get_post_parent_id( $post_id );
 		if ( false !== $parent_id && 0 !== $parent_id) {
@@ -341,36 +390,40 @@ class Post_Report_Package {
 		}
 
 		$back_chapters = get_post_meta( $post_id, self::$back_chapters_meta_key, true );
-
-		// Get the chapters of the current $post_id.
-		$blocks = parse_blocks( get_the_content( null, false, $post_id ) );
-		$chapters = $this->prepare_chapter_blocks( $blocks );
-
-		// We need to build a complete array of chapters, including those from multi-section reports.
-		if ( ! empty( $back_chapters ) ) {
-			foreach ( $back_chapters as $back_chapter ) {
-				$back_chapter_blocks = parse_blocks( get_the_content( null, false, $back_chapter['postId'] ) );
-
-				$section_chapters = $this->prepare_chapter_blocks( $back_chapter_blocks );
-
-				$chapters = array_merge( $chapters, $section_chapters );
-			}
+		$formatted = array();
+		foreach( $back_chapters as $chapter ) {
+			$chapter_id = $chapter['postId'];
+			$formatted[] = array(
+				'title' => get_the_title( $chapter_id ),
+				'slug' => get_post_field( 'post_name', $chapter_id ),
+				'permalink' => get_permalink( $chapter_id ),
+			);
 		}
+
+		// // Get the chapters of the current $post_id.
+		// $blocks = parse_blocks( get_the_content( null, false, $post_id ) );
+		// $chapters = $this->prepare_chapter_blocks( $blocks );
+
+		// // We need to build a complete array of chapters, including those from multi-section reports.
+		// if ( ! empty( $back_chapters ) ) {
+		// 	foreach ( $back_chapters as $back_chapter ) {
+		// 		$back_chapter_blocks = parse_blocks( get_the_content( null, false, $back_chapter['postId'] ) );
+
+		// 		$section_chapters = $this->prepare_chapter_blocks( $back_chapter_blocks );
+
+		// 		$chapters = array_merge( $chapters, $section_chapters );
+		// 	}
+		// }
+
+		return $formatted;
 	}
 
-	public function get_report_package( $object ) {
-		$post_id = $object['id'];
-
-		$cache = wp_cache_get( $post_id, self::$report_package_key );
+	public function get_report_package($post_id) {
+		$cache_key = self::$report_package_key . 'e';
+		$cached_package = wp_cache_get( $post_id, $cache_key );
 		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cache && ( !is_preview() || !is_user_logged_in() )) {
-			return $cache;
-		}
-
-		// Check if $post_id is a child post and if so then fetch the report_materials and back_chapters from the parent.
-		$parent_id = wp_get_post_parent_id( $post_id );
-		if ( false !== $parent_id && 0 !== $parent_id) {
-			$post_id = $parent_id;
+		if ( false !== $cached_package && ( !is_preview() || !is_user_logged_in() )) {
+			return $cached_package;
 		}
 
 		$package = array(
@@ -379,9 +432,21 @@ class Post_Report_Package {
 		);
 
 		if ( !is_preview() || !is_user_logged_in() ) {
-			wp_cache_set( $post_id, $package, self::$report_package_key );
+			wp_cache_set( $post_id, $package, $cache_key, 1 * HOUR_IN_SECONDS );
 		}
 
 		return $package;
+	}
+
+	/**
+	 * Get the report package for a given post object.
+	 * This is intended for use with the REST API and will return the
+	 * report_materials and back_chapters on the post object.
+	 * @param mixed $object
+	 * @return mixed
+	 */
+	public function get_report_package_field( $object ) {
+		$post_id = $object['id'];
+		return $this->get_report_package( $post_id );
 	}
 }

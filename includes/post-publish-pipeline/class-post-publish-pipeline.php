@@ -4,6 +4,15 @@ use WP_Error;
 
 /**
  * This class provides standardized hooks for the publishing pipeline, tracking posts from init, to updates, to publish, to trash. This handy class will check for the usual caveats, like is Rest or is CLI, and will only run when it should. As a note, these hooks will not work via WP_CLI, intentionally.
+ *
+ * @uses prc_platform_on_post_init
+ * @uses prc_platform_on_incremental_save
+ * @uses prc_platform_on_publish
+ * @uses prc_platform_on_update
+ * @uses prc_platform_on_unpublish
+ * @uses prc_platform_on_trash
+ * @uses prc_platform_on_untrash
+ *
  * @package PRC\Platform
  */
 class Post_Publish_Pipeline {
@@ -42,8 +51,8 @@ class Post_Publish_Pipeline {
 	public function __construct() {
 		$this->is_cli = defined( 'WP_CLI' ) && WP_CLI;
 		if ( true !== $this->is_cli ) {
-			// This is just an internal hook to this class, it allows us to setup and scaffold these fields and fill the data in later, allowing for a more performant API.
-			add_filter( 'prc_core_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
+			// This is just an internal hook to this class, it allows us to setup and scaffold these fields and fill the data in later, allowing for a more performant API. Other parts of the platform can hook into this and add their own data but should not be used for anything other than the platform.
+			add_filter( 'prc_platform_wp_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
 		}
 	}
 
@@ -157,7 +166,9 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
-	 * Exposes the rest fields above ^ via the PHP hooks.
+	 * Exposes the rest fields above ^ via PHP WP_Post objects on our internal hooks.
+	 * Sometimes its best to do it (whatever that thing is) server side, this allows you the same functionality
+	 * as client side operations but with the added benefit of not having to make a request to the API.
 	 */
 	public function setup_extra_wp_post_object_fields( $post_object ) {
 		if ( ! is_object( $post_object ) ) {
@@ -171,8 +182,8 @@ class Post_Publish_Pipeline {
 		$ref_post['canonical_url'] = false;
 		$ref_post['label']         = null;
 		$ref_post['visibility']    = false;
-
-		$ref_post = apply_filters( 'prc_core_post_object', $ref_post );
+		// Data is actually loaded here with the opportunity for other platform plugins to hook in and add their own data. @see post-report-package
+		$ref_post = apply_filters( 'prc_platform_wp_post_object', $ref_post );
 
 		if ( is_wp_error( $ref_post ) ) {
 			return $ref_post;
@@ -306,10 +317,11 @@ class Post_Publish_Pipeline {
 		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
-		// Make sure the new status IS publish and the old  IS NOT publish (yoda conditionally). We want only brand new published posts.
+		// Make sure the new status IS publish and the old  IS NOT publish. We want only first time published posts.
 		if ( ! in_array( $new_status, $this->published_statuses ) || wp_is_post_revision( $post ) ) {
 			return;
 		}
+		// If we're doing a save_post action then exit early, we don't want to run this twice.
 		if ( doing_action( 'save_post' ) || doing_action( 'prc_platform_on_publish' ) || doing_action( 'prc_platform_on_update' ) ) {
 			return;
 		}

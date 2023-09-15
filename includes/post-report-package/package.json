@@ -1,0 +1,14 @@
+{
+	"name": "@pewresearch/prc-platform-post-report-package",
+	"description": "Post Report Package functionality (formerly 'Multisection Reports') for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^26.1.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build src/index.js"
+	},
+	"dependencies": {
+		"react-movable": "^3.0.4"
+	}
+}

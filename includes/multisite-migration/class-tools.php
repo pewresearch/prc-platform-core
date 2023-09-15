@@ -228,7 +228,7 @@ class Multisite_Migration_Tools {
 			return new WP_Error( 'no-data', 'No _multiSectionReport data found' );
 		}
 
-		$multisection_report = new Multisection_Reports(
+		$multisection_report = new Multisection_Reports_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
 		);
