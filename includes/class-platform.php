@@ -93,6 +93,7 @@ class Platform_Bootstrap {
 		$this->define_search_hooks();
 		$this->define_related_posts_hook();
 		$this->define_post_report_package_hooks();
+		$this->define_slack_bot_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -211,6 +212,8 @@ class Platform_Bootstrap {
 		$this->include('related-posts/class-related-posts.php');
 		// Load Post Report Package system
 		$this->include('post-report-package/class-post-report-package.php');
+		// Slack Bot
+		$this->include('slack-bot/class-slack-bot.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -502,6 +505,16 @@ class Platform_Bootstrap {
 		}
 	}
 
+	private function define_slack_bot_hooks() {
+		// Only load the Slack Bot on production.
+		if ( 'production' !== wp_get_environment_type() ) {
+			// return;
+		}
+		$slack = new Slack_Bot( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'transition_post_status', $slack, 'post_publish_notification', 10, 3 );
+		$this->loader->add_action( 'created_category', $slack, 'category_created_notification', 10, 2 );
+	}
+
 	/**
 	 * Register all of the hooks related to the 10up Distributor integration.
 	 * @return void
@@ -744,6 +757,12 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'prc_load_gutenberg', $short_reads, 'enable_gutenberg_ramp' );
 		$this->loader->add_action( 'init', $short_reads, 'register_permalink_structure' );
 		$this->loader->add_filter( 'post_type_link', $short_reads, 'get_short_read_permalink', 10, 3 );
+	}
+
+	private function define_alexa_daily_briefing_hooks() {
+		$alexa_daily_briefing = new Alexa_Daily_Briefing( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'init', $alexa_daily_briefing, 'register_type' );
+		$this->loader->add_filter( 'prc_load_gutenberg', $alexa_daily_briefing, 'enable_gutenberg_ramp' );
 	}
 
 	/**

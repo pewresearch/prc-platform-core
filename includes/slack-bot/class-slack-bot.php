@@ -2,6 +2,17 @@
 namespace PRC\Platform;
 use WP_Error;
 
+/**
+ * Slack Bot
+ * Example PHP usage:
+ *
+ * $slackbot = new \PRC\Platform\Slack_Bot()->send_notification( array(
+ *	'text' => 'Hello World!',
+ *  'channel' => '#publish',
+ * ) );
+ *
+ * @package PRC\Platform
+ */
 class Slack_Bot {
 	/**
 	 * The ID of this plugin.
@@ -35,11 +46,11 @@ class Slack_Bot {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		$this->settings = get_site_option( 'prc_platform_slack', array(
-			'token' => null,
+		$this->settings = array(
+			'token' => PRC_PLATFORM_SLACK_TOKEN,
 			'username' => 'PRC_Platform',
 			'default_channel' => '#publish',
-		) );
+		);
 	}
 
 	public function register_assets() {
@@ -174,7 +185,7 @@ class Slack_Bot {
 	 * @param mixed $taxonomy_id
 	 * @return void
 	 */
-	public function term_created( $term_id, $taxonomy_id ) {
+	public function category_created_notification( $term_id, $taxonomy_id ) {
 		global $post;
 
 		$term = get_term( $term_id, 'category' );
@@ -221,6 +232,3 @@ class Slack_Bot {
 	}
 }
 
-// $slackbot = new \PRC\Platform\Slack_Bot()->send_notification( array(
-// 	'text' => 'Hello World!',
-// ) );
