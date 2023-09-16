@@ -355,7 +355,8 @@ class Post_Report_Package {
 	 * @param mixed $array
 	 * @return array
 	 */
-	public function prepare_chapter_blocks( $array ) {
+	public function prepare_chapter_blocks( $array, $post_id ) {
+		$permalink = get_permalink( $post_id );
 		$results = array();
 
 		if ( is_array( $array ) ) {
@@ -365,13 +366,14 @@ class Post_Report_Package {
 					$attrs = $this->extract_html_attributes($array['innerHTML']);
 					$results[] = array(
 						'id' => $attrs['attributes']['id'],
-						'content' => wp_strip_all_tags( !empty($array['attrs']['altTocText']) ? $array['attrs']['altTocText'] : $array['innerHTML'] ),
+						'title' => wp_strip_all_tags( !empty($array['attrs']['altTocText']) ? $array['attrs']['altTocText'] : $array['innerHTML'] ),
+						'link' => $permalink . '#' . $attrs['attributes']['id'],
 					);
 				}
 			}
 
 			foreach ( $array as $subarray ) {
-				$results = array_merge( $results, $this->prepare_chapter_blocks( $subarray ) );
+				$results = array_merge( $results, $this->prepare_chapter_blocks( $subarray, $post_id ) );
 			}
 		}
 
@@ -384,56 +386,63 @@ class Post_Report_Package {
 	 * @return void
 	 */
 	public function get_back_chapters( $post_id ) {
-		$parent_id = wp_get_post_parent_id( $post_id );
-		if ( false !== $parent_id && 0 !== $parent_id) {
-			$post_id = $parent_id;
-		}
+		$post_id = $this->get_report_parent_id( $post_id );
 
 		$back_chapters = get_post_meta( $post_id, self::$back_chapters_meta_key, true );
-		$formatted = array();
-		foreach( $back_chapters as $chapter ) {
-			$chapter_id = $chapter['postId'];
-			$formatted[] = array(
-				'title' => get_the_title( $chapter_id ),
-				'slug' => get_post_field( 'post_name', $chapter_id ),
-				'permalink' => get_permalink( $chapter_id ),
-			);
+
+		if ( empty( $back_chapters ) ) {
+			return array();
 		}
 
-		// // Get the chapters of the current $post_id.
-		// $blocks = parse_blocks( get_the_content( null, false, $post_id ) );
-		// $chapters = $this->prepare_chapter_blocks( $blocks );
+		$formatted = array();
 
-		// // We need to build a complete array of chapters, including those from multi-section reports.
-		// if ( ! empty( $back_chapters ) ) {
-		// 	foreach ( $back_chapters as $back_chapter ) {
-		// 		$back_chapter_blocks = parse_blocks( get_the_content( null, false, $back_chapter['postId'] ) );
+		foreach( $back_chapters as $chapter ) {
+			$chapter_id = $chapter['postId'];
+			$blocks = parse_blocks( get_the_content( null, false, $chapter_id ) );
+			$chapters = $this->prepare_chapter_blocks( $blocks, $chapter_id );
 
-		// 		$section_chapters = $this->prepare_chapter_blocks( $back_chapter_blocks );
-
-		// 		$chapters = array_merge( $chapters, $section_chapters );
-		// 	}
-		// }
+			$formatted[] = array(
+				'id' => $chapter_id,
+				'title' => get_the_title( $chapter_id ),
+				'slug' => get_post_field( 'post_name', $chapter_id ),
+				'link' => get_permalink( $chapter_id ),
+				'chapters' => $chapters,
+			);
+		}
 
 		return $formatted;
 	}
 
-	public function get_report_package($post_id) {
-		$cache_key = self::$report_package_key . 'e';
-		$cached_package = wp_cache_get( $post_id, $cache_key );
+	public function get_constructed_toc( $post_id ) {
+		$cache_key = self::$report_package_key . '_toc';
+		$cached_toc = wp_cache_get( $post_id, $cache_key );
 		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cached_package && ( !is_preview() || !is_user_logged_in() )) {
-			return $cached_package;
+		if ( false !== $cached_toc && ( !is_preview() || !is_user_logged_in() )) {
+			// return $cached_package;
 		}
 
-		$package = array(
-			'report_materials' => $this->get_report_materials( $post_id ),
-			'back_chapters'  => $this->get_back_chapters( $post_id ),
+		$post_id = $this->get_report_parent_id( $post_id );
+		$blocks = parse_blocks( get_the_content( null, false, $post_id ) );
+		$chapters = $this->prepare_chapter_blocks( $blocks, $post_id );
+		$back_chapters = $this->get_back_chapters( $post_id );
+
+		$constructed_toc = array(
+			'chapters' => $chapters,
+			'back_chapters' => $back_chapters,
 		);
 
 		if ( !is_preview() || !is_user_logged_in() ) {
-			wp_cache_set( $post_id, $package, $cache_key, 1 * HOUR_IN_SECONDS );
+			// wp_cache_set( $post_id, $constructed_toc, $cache_key, 1 * HOUR_IN_SECONDS );
 		}
+
+		return $constructed_toc;
+	}
+
+	public function get_report_package($post_id) {
+		$package = array(
+			'report_materials' => $this->get_report_materials( $post_id ),
+			'table_of_contents'  => $this->get_constructed_toc( $post_id ),
+		);
 
 		return $package;
 	}
@@ -441,7 +450,7 @@ class Post_Report_Package {
 	/**
 	 * Get the report package for a given post object.
 	 * This is intended for use with the REST API and will return the
-	 * report_materials and back_chapters on the post object.
+	 * report_materials and table_of_contents on the post object.
 	 * @param mixed $object
 	 * @return mixed
 	 */
