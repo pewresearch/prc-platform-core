@@ -141,7 +141,7 @@ class Slack_Bot {
 	 * @param mixed $post
 	 * @return void
 	 */
-	public function post_published_notification( $new_status, $old_status, $post ) {
+	public function post_publish_notification( $new_status, $old_status, $post ) {
 		if ( $new_status === 'publish' && $old_status !== 'publish' ) {
 			// If this post type is not set to public then bail
 			$post_type = get_post_type_object( $post->post_type );

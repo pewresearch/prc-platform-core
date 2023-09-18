@@ -118,8 +118,13 @@ class Related_Posts {
 	 */
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
-		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
+		if ( is_admin() && ! is_wp_error( $registered )  ) {
+			// get current screen
+			$screen = get_current_screen();
+			// check if the post type is allowed
+			if ( in_array( $screen->post_type, self::$enabled_post_types ) ) {
+				wp_enqueue_script( self::$handle );
+			}
 		}
 	}
 
