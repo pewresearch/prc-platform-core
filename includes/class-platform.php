@@ -94,6 +94,7 @@ class Platform_Bootstrap {
 		$this->define_related_posts_hook();
 		$this->define_post_report_package_hooks();
 		$this->define_slack_bot_hooks();
+		$this->define_apple_news_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -214,6 +215,8 @@ class Platform_Bootstrap {
 		$this->include('post-report-package/class-post-report-package.php');
 		// Slack Bot
 		$this->include('slack-bot/class-slack-bot.php');
+		// Apple News
+		$this->include('apple-news/class-apple-news.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -914,6 +917,15 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'the_title', $post_report_package, 'indicate_back_chapter_post', 10, 2 );
 		$this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
 		$this->loader->add_filter( 'query_vars', $post_report_package, 'register_query_var', 10, 1 );
+	}
+
+	private function define_apple_news_hooks() {
+		$apple_news = new Apple_News(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_filter('apple_news_exporter_byline', $apple_news,  'get_bylines', 10, 2);
+		$this->loader->add_filter('apple_news_skip_push', $apple_news, 'skip_push', 10, 1);
 	}
 
 	/**
