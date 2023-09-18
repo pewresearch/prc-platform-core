@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use PRC_PLATFORM_SLACK_TOKEN;
 
 /**
  * Slack Bot
@@ -47,7 +48,7 @@ class Slack_Bot {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 		$this->settings = array(
-			'token' => PRC_PLATFORM_SLACK_TOKEN,
+			'token' => '',
 			'username' => 'PRC_Platform',
 			'default_channel' => '#publish',
 		);
