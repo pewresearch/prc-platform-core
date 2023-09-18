@@ -4,6 +4,7 @@ use WP_Error;
 
 class Post_Report_Package {
 	public $post_id = null;
+	public static $enabled_post_types = array( 'post' );
 	public static $report_package_key = 'report_package';
 	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case?
 	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case?
@@ -88,7 +89,13 @@ class Post_Report_Package {
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
+			// get current screen
+			$screen = get_current_screen();
+			// check if the post type is in the array of enabled post types
+			if ( in_array( $screen->post_type, self::$enabled_post_types ) ) {
+				// enqueue the script
+				wp_enqueue_script( self::$handle );
+			}
 		}
 	}
 

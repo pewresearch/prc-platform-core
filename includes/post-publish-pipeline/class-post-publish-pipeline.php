@@ -97,6 +97,19 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
+	 * @hook rest_post_query
+	 * @param mixed $args
+	 * @param mixed $request
+	 * @return mixed
+	 */
+	public function merge_post_parent_into_rest_queries($args, $request) {
+		if ( $request->get_param( 'post_parent' ) ) {
+			$args['post_parent'] = $request->get_param( 'post_parent' );
+		}
+		return $args;
+	}
+
+	/**
 	 * Get the word count for a post.
 	 * @param mixed $object
 	 * @return string[]|int

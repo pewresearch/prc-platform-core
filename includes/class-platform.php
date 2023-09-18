@@ -327,6 +327,8 @@ class Platform_Bootstrap {
 		);
 
 		$this->loader->add_action( 'rest_api_init', $post_publish_pipeline, 'register_rest_fields' );
+		$this->loader->add_filter('rest_post_query', $post_publish_pipeline, 'merge_post_parent_into_rest_queries', 10, 2);
+
 		/**
 		 * @uses prc_platform_on_incremental_save
 		 */
@@ -467,8 +469,8 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'register_taxonomy_args', $taxonomies, 'modify_post_tag_taxonomy_args', 10, 2 );
 
 		$this->loader->add_action( 'init', $taxonomies, 'register_activity_trail_meta' );
-		$this->loader->add_action( 'create_term', $taxonomies, 'hook_on_to_term_update', 10, 3 );
-		$this->loader->add_action( 'edit_term', $taxonomies, 'hook_on_to_term_update', 10, 3 );
+		$this->loader->add_action( 'create_term', $taxonomies, 'hook_on_to_term_update', 10, 4 );
+		$this->loader->add_action( 'edit_term', $taxonomies, 'hook_on_to_term_update', 10, 4 );
 
 		// "Topic" Category
 		// Begining with 5.0 we will be migrating away from the "Topic" taxonomy to the "Category" taxonomy.
@@ -509,10 +511,6 @@ class Platform_Bootstrap {
 	}
 
 	private function define_slack_bot_hooks() {
-		// Only load the Slack Bot on production.
-		if ( 'production' !== wp_get_environment_type() ) {
-			// return;
-		}
 		$slack = new Slack_Bot( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'transition_post_status', $slack, 'post_publish_notification', 10, 3 );
 		$this->loader->add_action( 'created_category', $slack, 'category_created_notification', 10, 2 );

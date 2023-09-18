@@ -2,7 +2,6 @@
 namespace PRC\Platform;
 use WP_Error;
 use PRC_PLATFORM_SLACK_TOKEN;
-
 /**
  * Slack Bot
  * Example PHP usage:
@@ -47,11 +46,12 @@ class Slack_Bot {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		$this->settings = array(
-			'token' => '',
+		$settings = array(
+			'token' => \PRC_PLATFORM_SLACK_TOKEN,
 			'username' => 'PRC_Platform',
 			'default_channel' => '#publish',
 		);
+		$this->settings = $settings;
 	}
 
 	public function register_assets() {
@@ -142,6 +142,9 @@ class Slack_Bot {
 	 * @return void
 	 */
 	public function post_publish_notification( $new_status, $old_status, $post ) {
+		if ( 'production' !== wp_get_environment_type() ) {
+			// return;
+		}
 		if ( $new_status === 'publish' && $old_status !== 'publish' ) {
 			// If this post type is not set to public then bail
 			$post_type = get_post_type_object( $post->post_type );
@@ -187,6 +190,9 @@ class Slack_Bot {
 	 * @return void
 	 */
 	public function category_created_notification( $term_id, $taxonomy_id ) {
+		if ( 'production' !== wp_get_environment_type() ) {
+			// return;
+		}
 		global $post;
 
 		$term = get_term( $term_id, 'category' );

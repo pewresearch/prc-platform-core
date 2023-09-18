@@ -25,6 +25,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 define( 'PRC_PLATFORM_VERSION', '0.0.3' );
 
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-prc-platform-activator.php
