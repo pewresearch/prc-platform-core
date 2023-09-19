@@ -26,6 +26,9 @@ module.exports = {
 				if (request.includes('@prc/icons')) {
 					return 'prcIcons';
 				}
+				if (request.includes('@prc/postReportPackageHook')) {
+					return 'prcPostReportPackageHook';
+				}
 			},
 			// eslint-disable-next-line consistent-return
 			requestToHandle(request) {
@@ -40,6 +43,9 @@ module.exports = {
 				}
 				if ('@prc/icons' === request) {
 					return 'prc-icons';
+				}
+				if ('@prc/postReportPackageHook' === request) {
+					return 'prc-platform-post-report-package-hook';
 				}
 			},
 		}),

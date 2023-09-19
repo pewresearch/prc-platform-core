@@ -3,6 +3,7 @@
  */
 import { List } from 'react-movable';
 import { ListStoreItem } from '@prc/components';
+
 /**
  * WordPress Dependencies
  */
@@ -15,7 +16,7 @@ import { useEntityProp } from '@wordpress/core-data';
  * Internal Dependencies
  */
 import './store';
-import { randomId } from '../utils';
+import { randomId } from '../../utils';
 import PostSearchByEditUrlField from './post-search-field';
 
 function BackChapters({

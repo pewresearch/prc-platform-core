@@ -29,5 +29,4 @@ function ReportPackagePanel() {
 
 registerPlugin(PLUGIN_NAME, {
 	render: ReportPackagePanel,
-	// icon,
 });

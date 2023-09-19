@@ -49,6 +49,8 @@ class Post_Report_Package {
 	private $version;
 
 	public static $handle = 'prc-platform-post-report-package';
+	public static $panel_handle = 'prc-platform-post-report-package-panel';
+	public static $hook_handle = 'prc-platform-post-report-package-hook';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -62,10 +64,14 @@ class Post_Report_Package {
 		$this->version = $version;
 	}
 
-	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
-		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+	/**
+	 * @hook enqueue_block_editor_assets
+	 * @return WP_Error|true
+	 */
+	public function register_panel_assets() {
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/panel/index.asset.php' );
+		$asset_slug = self::$panel_handle;
+		$script_src  = plugin_dir_url( __FILE__ ) . 'build/panel/index.js';
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -75,7 +81,7 @@ class Post_Report_Package {
 			true
 		);
 		if ( ! $script ) {
-			return new WP_Error( self::$handle, 'Failed to register all assets' );
+			return new WP_Error( self::$panel_handle, 'Failed to register all assets' );
 		}
 
 		return true;
@@ -86,17 +92,36 @@ class Post_Report_Package {
 	 * @hook enqueue_block_editor_assets
 	 * @return void
 	 */
-	public function enqueue_assets() {
-		$registered = $this->register_assets();
+	public function enqueue_panel_assets() {
+		$registered = $this->register_panel_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			// get current screen
 			$screen = get_current_screen();
 			// check if the post type is in the array of enabled post types
 			if ( in_array( $screen->post_type, self::$enabled_post_types ) ) {
 				// enqueue the script
-				wp_enqueue_script( self::$handle );
+				wp_enqueue_script( self::$panel_handle );
 			}
 		}
+	}
+
+	public function register_hook_assets() {
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/hook/index.asset.php' );
+		$asset_slug = self::$hook_handle;
+		$script_src  = plugin_dir_url( __FILE__ ) . 'build/hook/index.js';
+
+		$script = wp_register_script(
+			$asset_slug,
+			$script_src,
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
+		);
+		if ( ! $script ) {
+			return new WP_Error( self::$hook_handle, 'Failed to register all assets' );
+		}
+
+		return true;
 	}
 
 	public function get_report_parent_id( int $post_id ) {
