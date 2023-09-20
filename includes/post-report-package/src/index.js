@@ -35,6 +35,7 @@ function ReportPackagePanel() {
 		[]
 	);
 	return (
+		<Fragment>
 			<PluginSidebar name={PLUGIN_NAME} title="Report Package" icon={Icon}>
 				<ProvidePostReportPackage {...{
 					postType,
@@ -44,14 +45,22 @@ function ReportPackagePanel() {
 					<BackChapters />
 				</ProvidePostReportPackage>
 			</PluginSidebar>
+			{!isChildPost && (
+				<PluginPrePublishPanel>
+					<ProvidePostReportPackage {...{
+						postType,
+						postId: parentId,
+					}}>
+						<p>Please review the attached report materials:</p>
+						<ReportMaterials />
+						<p>Please review the attached back chapter posts. These post's status will be updated to match the parent post on publish.</p>
+						<BackChapters />
+					</ProvidePostReportPackage>
+				</PluginPrePublishPanel>
+			)}
+		</Fragment>
 	);
 }
-
-
-{/* <PluginPrePublishPanel>
-	<p>Hi There!</p>
-	<p>IN theory... this should share context and state in the same memory object as the sidebar panel.</p>
-</PluginPrePublishPanel> */}
 
 // Pre publish to confirm your chapters.
 

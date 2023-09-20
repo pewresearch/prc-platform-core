@@ -1,10 +1,11 @@
 /**
  * WordPress Dependencies
  */
-import { useEffect, useState } from '@wordpress/element';
+import { useMemo } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import { Icon, IconButton } from '@wordpress/components';
 import { dragHandle } from '@wordpress/icons';
+import { useEntityProp } from '@wordpress/core-data';
 
 export default function ListItem({
 	label,
@@ -16,37 +17,16 @@ export default function ListItem({
 	lastItem = false,
 	icon = false,
 }) {
-	const [labelText, setLabelText] = useState(
-		undefined !== label ? label : defaultLabel,
-	);
-
-	const getPostTitleByKey = (postId) => {
-		const { api } = window.wp;
-		const post = new api.models.Post({ id: postId });
-		if (null === postId) {
-			setLabelText(defaultLabel);
-		} else {
-			post.fetch().then((matched) => {
-				console.log(matched);
-				setLabelText(
-					`${decodeEntities(matched.title.rendered)} (${matched.id})`,
-				);
-			});
+	const [postTitle] = useEntityProp('postType', 'post', 'title', keyValue);
+	const labelText = useMemo(() => {
+		if (undefined === label && undefined !== postTitle && '' !== postTitle) {
+			return decodeEntities(postTitle);
 		}
-	};
-
-	useEffect(() => {
-		console.log(
-			'getPostTitleByKey',
-			label,
-			defaultLabel,
-			keyValue,
-			index,
-		);
-		if (undefined === label && undefined !== keyValue) {
-			getPostTitleByKey(keyValue);
+		if (undefined !== label && '' !== label) {
+			return label;
 		}
-	}, [keyValue]);
+		return defaultLabel;
+	}, [postTitle, label, defaultLabel]);
 
 	return (
 		<div

@@ -16,7 +16,7 @@ import { Button, PanelBody } from '@wordpress/components';
 import { randomId } from '../utils';
 import { usePostReportPackage } from '../context';
 import Item from './Item';
-import { TypeSelect } from './type-select';
+import { TypeSelect } from './TypeSelect';
 
 function ReportMaterials() {
 	const [popoverVisible, toggleVisibility] = useState(false);
@@ -65,7 +65,7 @@ function ReportMaterials() {
 							{
 								type: t,
 								url: '',
-								attachmentId: 0,
+								attachmentId: null,
 								label: '',
 								icon: '',
 							},

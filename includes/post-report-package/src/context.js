@@ -9,11 +9,8 @@ import {
 	useState,
 	useContext,
 	createContext,
-	useEffect,
 	useMemo,
 } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
 import { useEntityProp, useResourcePermissions } from '@wordpress/core-data';
 
 /**
@@ -23,12 +20,7 @@ import { useEntityProp, useResourcePermissions } from '@wordpress/core-data';
 const postReportPackageContext = createContext();
 
 const usePostReportPackageContext = (postId, postType) => {
-	const [ loading, setIsLoading ] = useState( true );
-	const [ materials, setMaterials ] = useState( [] );
-	const [ backChapters, setBackChapters ] = useState( [] );
-
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
-	console.log("META??", meta);
 	const {canDelete, isResolving} = useResourcePermissions('posts', postId);
 
 	const allowEditing = useMemo(() => {
@@ -41,37 +33,24 @@ const usePostReportPackageContext = (postId, postType) => {
 		return false;
 	}, [isResolving, canDelete]);
 
-	// Initially resolve if there is saved data.
-	useEffect(() => {
-		if (loading && meta) {
-			const { reportMaterials, multiSectionReport } = meta;
-			if (reportMaterials) {
-				setMaterials(reportMaterials);
+	const { materials, setMaterials, backChapters, setBackChapters } = useMemo(() => {
+		return {
+			materials: meta?.reportMaterials,
+			setMaterials(newVal) {
+				setMeta({
+					...meta,
+					reportMaterials: newVal,
+				});
+			},
+			backChapters: meta?.multiSectionReport,
+			setBackChapters(newVal) {
+				setMeta({
+					...meta,
+					multiSectionReport: newVal,
+				});
 			}
-			if (multiSectionReport) {
-				setBackChapters(multiSectionReport);
-			}
-			setIsLoading(false);
-		}
-	}, [meta, loading]);
-
-	// Update the post meta on the parent post as we change materials and back chapters.
-	useEffect(() => {
-		if (!loading && allowEditing && (materials || backChapters)) {
-			const updates = {...meta};
-			if (materials) {
-				updates.reportMaterials = materials;
-			}
-			if (backChapters) {
-				updates.multiSectionReport = backChapters;
-			}
-			setMeta(updates);
-		}
-	}, [allowEditing, materials, backChapters]);
-
-	//
-	//
-	//
+		};
+	}, [meta]);
 
 	const getLatestStateByItemType = (itemsType = 'materials') => {
 		if ( 'materials' === itemsType ) {
@@ -160,12 +139,7 @@ const usePostReportPackageContext = (postId, postType) => {
 		fn(newItems);
 	};
 
-	//
-	//
-	//
-
 	return {
-		loading,
 		allowEditing,
 		postId,
 		postType,

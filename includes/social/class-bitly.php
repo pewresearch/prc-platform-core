@@ -35,6 +35,9 @@ class Bitly {
 	}
 
 	private function get_bitly_shortlink( $post_id, $url = null ) {
+		if ( 'production' !== wp_get_environment_type() ) {
+			return $url;
+		}
 		$rest_url = 'https://api-ssl.bitly.com/v4/shorten';
 
 		$headers = array(

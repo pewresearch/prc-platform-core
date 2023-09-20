@@ -1,0 +1,48 @@
+{
+	"options": [
+		{
+			"label": "--",
+			"value": null
+		},
+		{
+			"label": "Detailed Table",
+			"value": "detailedTable"
+		},
+		{
+			"label": "Link",
+			"value": "link"
+		},
+		{
+			"label": "Presentation",
+			"value": "presentation"
+		},
+		{
+			"label": "Press Release",
+			"value": "pressRelease"
+		},
+		{
+			"label": "Promo",
+			"value": "promo"
+		},
+		{
+			"label": "Q & A",
+			"value": "qA"
+		},
+		{
+			"label": "Questionnaire",
+			"value": "questionnaire"
+		},
+		{
+			"label": "Report PDF",
+			"value": "report"
+		},
+		{
+			"label": "Supplemental",
+			"value": "supplemental"
+		},
+		{
+			"label": "Topline",
+			"value": "topline"
+		}
+	]
+}
