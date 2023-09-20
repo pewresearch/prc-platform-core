@@ -2,45 +2,35 @@
  * External Dependencies
  */
 import { List } from 'react-movable';
-import { randomId } from '@prc-app/shared';
 
 /**
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { Button, PanelBody } from '@wordpress/components';
 
 /**
  * Internal Dependencies
  */
-import './store';
-import Item from './item';
+import { randomId } from '../utils';
+import { usePostReportPackage } from '../context';
+import Item from './Item';
 import { TypeSelect } from './type-select';
-import { useEffect } from 'react';
 
-const ReportMaterials = () => {
+function ReportMaterials() {
 	const [popoverVisible, toggleVisibility] = useState(false);
-	const { append, reorder } = useDispatch('prc/report');
 
-	// Initial load of report materials.
-	const { items } = useSelect((select) => {
-		return {
-			items: select('prc/report').getItems(),
-		};
-	}, []);
+	const ITEMS_TYPE = 'materials';
+	const { materials, reorder, append, remove, updateItem, isResolving } = usePostReportPackage();
 
 	return (
 		<PanelBody title="Materials">
 			<List
 				lockVertically
-				values={items}
+				values={materials ?? []}
 				onChange={({ oldIndex, newIndex }) =>
-					reorder({
-						from: oldIndex,
-						to: newIndex,
-					})
+					reorder(oldIndex, newIndex, ITEMS_TYPE)
 				}
 				renderList={({ children, props }) => (
 					<div {...props}>{children}</div>
@@ -60,7 +50,7 @@ const ReportMaterials = () => {
 				)}
 			/>
 			<Button
-				isPrimary
+				variant="primary"
 				onClick={() => {
 					toggleVisibility(true);
 				}}
@@ -70,14 +60,17 @@ const ReportMaterials = () => {
 			{popoverVisible && (
 				<TypeSelect
 					onChange={(t) => {
-						append({
-							key: randomId(),
-							type: t,
-							attachmentId: 0,
-							url: '',
-							label: '',
-							icon: '',
-						});
+						append(
+							randomId(),
+							{
+								type: t,
+								url: '',
+								attachmentId: 0,
+								label: '',
+								icon: '',
+							},
+							ITEMS_TYPE
+						);
 						toggleVisibility(false);
 					}}
 					toggleVisibility={toggleVisibility}

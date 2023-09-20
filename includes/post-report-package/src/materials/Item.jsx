@@ -1,8 +1,6 @@
 /**
  * External Dependencies
  */
-import { ListStoreItem } from '@prc-app/shared';
-import { randomId } from '@prc-app/shared';
 
 /**
  * WordPress Dependencies
@@ -23,20 +21,37 @@ import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
  * Internal Dependencies
  */
 import { TypeSelect, types } from './type-select';
+import { usePostReportPackage } from '../context';
+import ListItem from '../ListItem'
+
+const ALLOWED_MEDIA_TYPES = [
+	'image',
+	'application/pdf',
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+	'application/vnd.ms-powerpoint',
+	'application/vnd.ms-excel',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+
+const ICONS = {
+	detailedTable: 'editor-table',
+	link: 'admin-links',
+	presentation: 'format-gallery',
+	pressRelease: 'media-document',
+	promo: 'star-empty',
+	qA: 'clipboard',
+	questionnaire: 'editor-help',
+	report: 'analytics',
+	supplemental: 'welcome-add-page',
+	topline: 'editor-ul',
+};
 
 const Item = ({ type, url, attachmentId, label, icon, index }) => {
+	const ITEMS_TYPE = 'materials';
+	const { updateItem, allowEditing, remove } = usePostReportPackage();
 	const [popoverVisible, toggleVisibility] = useState(false);
-	const { setItemProp, remove, insert } = useDispatch('prc/report');
 
 	const UploadFileButton = ({ title, value }) => {
-		const ALLOWED_MEDIA_TYPES = [
-			'image',
-			'application/pdf',
-			'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-			'application/vnd.ms-powerpoint',
-			'application/vnd.ms-excel',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-		];
 		return (
 			<MediaUploadCheck>
 				<MediaUpload
@@ -44,13 +59,12 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 					allowedTypes={ALLOWED_MEDIA_TYPES}
 					value={value}
 					onSelect={(img) => {
-						// setItemProp(index, 'type', input)
-						setItemProp(index, 'url', img.url);
-						setItemProp(index, 'attachmentId', img.id);
+						updateItem(index, 'url', img.url, ITEMS_TYPE);
+						updateItem(index, 'attachmentId', img.id, ITEMS_TYPE);
 					}}
 					render={({ open }) => {
 						return (
-							<Button isDefault onClick={open}>
+							<Button variant="secondary" disabled={!allowEditing} onClick={open}>
 								{__(
 									null === value
 										? `Upload ${title}`
@@ -72,19 +86,6 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 		return '';
 	};
 
-	const icons = {
-		detailedTable: 'editor-table',
-		link: 'admin-links',
-		presentation: 'format-gallery',
-		pressRelease: 'media-document',
-		promo: 'star-empty',
-		qA: 'clipboard',
-		questionnaire: 'editor-help',
-		report: 'analytics',
-		supplemental: 'welcome-add-page',
-		topline: 'editor-ul',
-	};
-
 	const getValue = () => {
 		const t = types.find((x) => x.value === type);
 		if (undefined !== t) {
@@ -94,7 +95,7 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 	};
 
 	return (
-		<ListStoreItem label={getLabel()} index={index} storeName="report">
+		<ListItem label={getLabel()} index={index} onRemove={() => remove(index, ITEMS_TYPE)}>
 			<div
 				style={{
 					paddingTop: '10px',
@@ -117,7 +118,8 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 							autoComplete={false}
 							label="URL"
 							value={url}
-							onChange={(u) => setItemProp(index, 'url', u)}
+							onChange={(u) => updateItem(index, 'url', u, ITEMS_TYPE)}
+							disabled={!allowEditing}
 						/>
 					</Fragment>
 				)}
@@ -127,13 +129,15 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 							autoComplete={false}
 							label="Label"
 							value={label}
-							onChange={(c) => setItemProp(index, 'label', c)}
+							onChange={(c) => updateItem(index, 'label', c, ITEMS_TYPE)}
+							disabled={!allowEditing}
 						/>
 						<TextControl
 							autoComplete={false}
 							label="URL"
 							value={url}
-							onChange={(u) => setItemProp(index, 'url', u)}
+							onChange={(u) => updateItem(index, 'url', u, ITEMS_TYPE)}
+							disabled={!allowEditing}
 						/>
 						{'link' === type && (
 							<SelectControl
@@ -142,26 +146,28 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 								options={types}
 								onChange={(t) => {
 									console.log(t);
-									setItemProp(index, 'icon', t);
+									updateItem(index, 'icon', t, ITEMS_TYPE);
 								}}
+								disabled={!allowEditing}
 							/>
 						)}
 						{'promo' === type && (
 							<MediaUploadCheck>
 								<MediaUpload
 									title="Upload Promo Icon"
-									value={attachmentId} // If we actually have data we should pass it in here.
+									value={attachmentId}
 									onSelect={(img) => {
-										setItemProp(index, 'icon', img.url);
-										setItemProp(
+										updateItem(index, 'icon', img.url, ITEMS_TYPE);
+										updateItem(
 											index,
 											'attachmentId',
-											img.id
+											img.id,
+											ITEMS_TYPE
 										);
 									}}
 									render={({ open }) => {
 										return (
-											<Button onClick={open}>
+											<Button onClick={open} disabled={!allowEditing}>
 												Upload Icon
 											</Button>
 										);
@@ -172,38 +178,34 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 					</Fragment>
 				)}
 				<Button
-					isLarge
+					variant="link"
 					onClick={() => {
 						toggleVisibility(true);
 						console.log('toggleVisibility');
 					}}
 					style={{ height: 'auto' }}
+					disabled={!allowEditing}
 				>
-					<Icon
-						icon={icons[getValue()]}
-						style={{ marginLeft: '5px' }}
-					/>
+					Change Type
 				</Button>
 				{popoverVisible && (
 					<TypeSelect
 						type={type}
 						onChange={(t) => {
-							remove(index);
-							insert(index, {
-								key: randomId(),
-								type: t,
-								attachmentId: 0,
-								url: '',
-								label: '',
-								icon: '',
-							});
+							// Set up the new type
+							updateItem(index, 'type', t, ITEMS_TYPE);
+							// Reset everything else
+							updateItem(index, 'attachmentId', 0, ITEMS_TYPE);
+							updateItem(index, 'url', '', ITEMS_TYPE);
+							updateItem(index, 'label', '', ITEMS_TYPE);
+							updateItem(index, 'icon', '', ITEMS_TYPE);
 							toggleVisibility(false);
 						}}
 						toggleVisibility={toggleVisibility}
 					/>
 				)}
 			</div>
-		</ListStoreItem>
+		</ListItem>
 	);
 };
 

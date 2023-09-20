@@ -908,8 +908,6 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'init', $post_report_package, 'register_meta_fields' );
 		$this->loader->add_action( 'rest_api_init', $post_report_package, 'register_rest_fields' );
 		$this->loader->add_action( 'enqueue_block_editor_assets', $post_report_package, 'enqueue_panel_assets' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $post_report_package, 'register_hook_assets' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $post_report_package, 'register_hook_assets' );
 
 		$this->loader->add_action( 'prc-platform_on_incremental_save', $post_report_package, 'set_child_posts', 10, 1 );
 		$this->loader->add_action( 'prc_platform_on_update', $post_report_package, 'update_child_state', 10, 1 );

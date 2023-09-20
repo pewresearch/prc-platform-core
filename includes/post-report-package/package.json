@@ -6,8 +6,7 @@
 		"@wordpress/scripts": "^26.1.0"
 	},
 	"scripts": {
-		"build::panel": "wp-scripts build src/panel/index.js --output-path=build/panel",
-		"build::hook": "wp-scripts build src/hook/index.js --output-path=build/hook"
+		"build": "wp-scripts build src/index.js"
 	},
 	"dependencies": {
 		"react-movable": "^3.0.4"

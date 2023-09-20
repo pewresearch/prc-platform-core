@@ -1,22 +1,16 @@
 import { Popover, SelectControl } from '@wordpress/components';
 
 const types = [
-	// Datasets are added automatically by the datasets system and a filter in the report materials widget.
-	// {
-	//     label: 'Dataset',
-	//     value: 'dataset',
-	//     icon:
-	//         'https://www.pewresearch.org/wp-content/themes/prc_parent/src/images/icons/icon-dataset.svg',
-	// },
+	// Datasets are added automatically by the hooks and filters in the datasets system and as such are not defined here.
 	{
 		label: 'Default',
 		value: null,
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-detailed-table.svg',
+		icon: null,
 	},
 	{
 		label: 'Detailed Table',
 		value: 'detailedTable',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-detailed-table.svg',
+		icon: null,
 	},
 	{
 		label: 'Link',
@@ -26,12 +20,12 @@ const types = [
 	{
 		label: 'Presentation',
 		value: 'presentation',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-presentation.svg',
+		icon: null,
 	},
 	{
 		label: 'Press Release',
 		value: 'pressRelease',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-press-release.svg',
+		icon: null,
 	},
 	{
 		label: 'Promo',
@@ -41,27 +35,27 @@ const types = [
 	{
 		label: 'Q & A',
 		value: 'qA',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-q-and-a.svg',
+		icon: null,
 	},
 	{
 		label: 'Questionnaire',
 		value: 'questionnaire',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-questionnaire.svg',
+		icon: null,
 	},
 	{
 		label: 'Report PDF',
 		value: 'report',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-report.svg',
+		icon: null,
 	},
 	{
 		label: 'Supplemental',
 		value: 'supplemental',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-supplemental.svg',
+		icon: null,
 	},
 	{
 		label: 'Topline',
 		value: 'topline',
-		icon: '/wp-content/themes/prc_parent/src/images/icons/icon-topline.svg',
+		icon: null,
 	},
 ];
 

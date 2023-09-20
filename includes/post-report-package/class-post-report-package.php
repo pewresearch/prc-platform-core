@@ -4,10 +4,11 @@ use WP_Error;
 
 class Post_Report_Package {
 	public $post_id = null;
+	public static $handle = 'prc-platform-post-report-package';
 	public static $enabled_post_types = array( 'post' );
 	public static $report_package_key = 'report_package';
-	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case?
-	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case?
+	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case
+	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case
 
 	public static $report_materials_schema_properties = array(
 		'key'          => array(
@@ -48,10 +49,6 @@ class Post_Report_Package {
 	 */
 	private $version;
 
-	public static $handle = 'prc-platform-post-report-package';
-	public static $panel_handle = 'prc-platform-post-report-package-panel';
-	public static $hook_handle = 'prc-platform-post-report-package-hook';
-
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -69,9 +66,9 @@ class Post_Report_Package {
 	 * @return WP_Error|true
 	 */
 	public function register_panel_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/panel/index.asset.php' );
-		$asset_slug = self::$panel_handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/panel/index.js';
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_slug = self::$handle;
+		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -81,7 +78,7 @@ class Post_Report_Package {
 			true
 		);
 		if ( ! $script ) {
-			return new WP_Error( self::$panel_handle, 'Failed to register all assets' );
+			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
 		return true;
@@ -95,33 +92,11 @@ class Post_Report_Package {
 	public function enqueue_panel_assets() {
 		$registered = $this->register_panel_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			// get current screen
 			$screen = get_current_screen();
-			// check if the post type is in the array of enabled post types
 			if ( in_array( $screen->post_type, self::$enabled_post_types ) ) {
-				// enqueue the script
-				wp_enqueue_script( self::$panel_handle );
+				wp_enqueue_script( self::$handle );
 			}
 		}
-	}
-
-	public function register_hook_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/hook/index.asset.php' );
-		$asset_slug = self::$hook_handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/hook/index.js';
-
-		$script = wp_register_script(
-			$asset_slug,
-			$script_src,
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
-		);
-		if ( ! $script ) {
-			return new WP_Error( self::$hook_handle, 'Failed to register all assets' );
-		}
-
-		return true;
 	}
 
 	public function get_report_parent_id( int $post_id ) {
@@ -165,7 +140,8 @@ class Post_Report_Package {
 	}
 
 	/**
-	 * Hide back chapter posts from our "publications" queries:
+	 * Hide "back chapter" posts from our "publications" queries:
+	 * Can be overridden by setting ?showBackChapters query var to truthy value.
 	 * - archive
 	 * - taxonomy
 	 * - homepage/frontpage
@@ -438,7 +414,7 @@ class Post_Report_Package {
 				'title' => get_the_title( $chapter_id ),
 				'slug' => get_post_field( 'post_name', $chapter_id ),
 				'link' => get_permalink( $chapter_id ),
-				'chapters' => $chapters,
+				'internal_chapters' => $chapters,
 			);
 		}
 
@@ -450,18 +426,21 @@ class Post_Report_Package {
 		$cached_toc = wp_cache_get( $post_id, $cache_key );
 		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
 		if ( false !== $cached_toc && ( !is_preview() || !is_user_logged_in() )) {
-			// return $cached_package;
+			// return $cached_toc;
 		}
+		$parent_id = $this->get_report_parent_id( $post_id );
 
-		$post_id = $this->get_report_parent_id( $post_id );
-		$blocks = parse_blocks( get_the_content( null, false, $post_id ) );
-		$chapters = $this->prepare_chapter_blocks( $blocks, $post_id );
-		$back_chapters = $this->get_back_chapters( $post_id );
-
-		$constructed_toc = array(
-			'chapters' => $chapters,
-			'back_chapters' => $back_chapters,
-		);
+		$constructed_toc = array_merge( array(
+			array(
+				'id' => $parent_id,
+				'title' => get_the_title( $parent_id ),
+				'slug' => get_post_field( 'post_name', $parent_id ),
+				'link' => get_permalink( $parent_id ),
+				'internal_chapters' => $this->prepare_chapter_blocks(
+					parse_blocks( get_the_content( null, false, $parent_id ) ), $parent_id
+				),
+			),
+		), $this->get_back_chapters( $parent_id ) );
 
 		if ( !is_preview() || !is_user_logged_in() ) {
 			// wp_cache_set( $post_id, $constructed_toc, $cache_key, 1 * HOUR_IN_SECONDS );
@@ -471,12 +450,13 @@ class Post_Report_Package {
 	}
 
 	public function get_report_package($post_id) {
-		$package = array(
+		$parent_id = $this->get_report_parent_id( $post_id );
+		return array(
+			'parent_title' => get_the_title( $parent_id ),
+			'parent_id' => $parent_id,
 			'report_materials' => $this->get_report_materials( $post_id ),
 			'table_of_contents'  => $this->get_constructed_toc( $post_id ),
 		);
-
-		return $package;
 	}
 
 	/**
