@@ -36,10 +36,11 @@ function ReportPackagePanel() {
 	);
 	return (
 		<Fragment>
-			<PluginSidebar name={PLUGIN_NAME} title="Report Package" icon={Icon}>
+			<PluginSidebar name={PLUGIN_NAME} title="Report Package">
 				<ProvidePostReportPackage {...{
 					postType,
 					postId: parentId,
+					currentPostId: postId,
 				}}>
 					<ReportMaterials />
 					<BackChapters />
@@ -50,6 +51,7 @@ function ReportPackagePanel() {
 					<ProvidePostReportPackage {...{
 						postType,
 						postId: parentId,
+						currentPostId: postId,
 					}}>
 						<p>Please review the attached report materials:</p>
 						<ReportMaterials />

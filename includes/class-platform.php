@@ -909,7 +909,7 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'rest_api_init', $post_report_package, 'register_rest_fields' );
 		$this->loader->add_action( 'enqueue_block_editor_assets', $post_report_package, 'enqueue_panel_assets' );
 
-		$this->loader->add_action( 'prc-platform_on_incremental_save', $post_report_package, 'set_child_posts', 10, 1 );
+		$this->loader->add_action( 'prc_platform_on_incremental_save', $post_report_package, 'set_child_posts', 10, 1 );
 		$this->loader->add_action( 'prc_platform_on_update', $post_report_package, 'update_child_state', 10, 1 );
 		$this->loader->add_action( 'pre_get_posts', $post_report_package, 'hide_back_chapter_posts', 10, 1 );
 		$this->loader->add_filter( 'the_title', $post_report_package, 'indicate_back_chapter_post', 10, 2 );

@@ -15,10 +15,11 @@ import { randomId } from '../utils';
 import { usePostReportPackage } from '../context';
 import ListItem from '../ListItem';
 import PostSearchByEditUrlField from './PostSearchByEditUrlField';
+import ExistingBackChapterToolbar from './ExistingBackChapterToolbar';
 
 export default function BackChapters() {
 	const ITEMS_TYPE = 'backChapters';
-	const { backChapters, reorder, append, remove, updateItem } = usePostReportPackage();
+	const { backChapters, reorder, append, remove, updateItem, currentPostId } = usePostReportPackage();
 
 	return (
 		<PanelBody title="Back Chapters">
@@ -42,6 +43,12 @@ export default function BackChapters() {
 								<PostSearchByEditUrlField
 									hocOnChange={(postId) => updateItem(index, 'postId', postId, ITEMS_TYPE)}
 								/>
+							)}
+							{null !== value.postId && (
+								<ExistingBackChapterToolbar {...{
+									postId: value.postId,
+									currentPostId,
+								}}/>
 							)}
 						</ListItem>
 					</div>

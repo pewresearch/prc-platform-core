@@ -17,7 +17,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { TAXONOMY, TAXONOMY_LABEL } from './constants';
 
-export default function PlaceholderBlockAreaSelect({ setBlockAreaSlug, context }) {
+export default function PlaceholderBlockAreaSelect({ setBlockAreaSlug, context, value }) {
 	return (
 		<div>
 			<WPEntitySearch

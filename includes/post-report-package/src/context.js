@@ -19,7 +19,7 @@ import { useEntityProp, useResourcePermissions } from '@wordpress/core-data';
 
 const postReportPackageContext = createContext();
 
-const usePostReportPackageContext = (postId, postType) => {
+const usePostReportPackageContext = (postId, postType, currentPostId) => {
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
 	const {canDelete, isResolving} = useResourcePermissions('posts', postId);
 
@@ -142,6 +142,7 @@ const usePostReportPackageContext = (postId, postType) => {
 	return {
 		allowEditing,
 		postId,
+		currentPostId,
 		postType,
 		materials,
 		backChapters,
@@ -154,8 +155,8 @@ const usePostReportPackageContext = (postId, postType) => {
 
 const usePostReportPackage = () => useContext(postReportPackageContext);
 
-function ProvidePostReportPackage({ postId, postType, children }) {
-	const provider = usePostReportPackageContext(postId, postType);
+function ProvidePostReportPackage({ postId, postType, currentPostId, children }) {
+	const provider = usePostReportPackageContext(postId, postType, currentPostId);
 	return (
 		<postReportPackageContext.Provider value={provider}>
 			{children}

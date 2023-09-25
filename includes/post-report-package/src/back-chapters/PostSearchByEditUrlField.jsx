@@ -11,6 +11,7 @@ import { Fragment, useEffect, useState } from '@wordpress/element';
 import { Button, SearchControl, Spinner } from '@wordpress/components';
 import { getQueryArg } from '@wordpress/url';
 import { useSelect } from '@wordpress/data';
+import { useEntityRecord } from '@wordpress/core-data';
 
 /**
  * Internal Dependencies
@@ -18,17 +19,19 @@ import { useSelect } from '@wordpress/data';
 import AddChildModal from './AddChildModal';
 import CreateDraftModal from './CreateDraftModal';
 
-const { api } = window.wp;
-
 const PostSearchByEditUrlField = ({
     hocOnChange = false,
 }) => {
-	const { parentTitle, getEntityRecord } = useSelect((select) => {
+	const { parentTitle, parentId, getEntityRecord } = useSelect((select) => {
 		return {
 			parentTitle: select('core/editor').getEditedPostAttribute('title'),
+			parentId: select('core/editor').getCurrentPostId(),
 			getEntityRecord: select('core').getEntityRecord,
 		}
 	});
+	const [targetPostId, setTargetPostId] = useState(null);
+	const {record, isResolving} = useEntityRecord('postType', 'post', targetPostId, {enabled: null !== targetPostId});
+	// const [post,] = getEntityRecord('postType', 'post', targetPostId, {enabled: false});
     const [addChildModalOpen, toggleAddChildModal] = useState(false);
 	const [createDraftModalOpen, toggleCreateDraftModal] = useState(false);
     const [isLoading, toggleLoading] = useState(false);
@@ -38,23 +41,21 @@ const PostSearchByEditUrlField = ({
     const postUrl = useDebounce(searchValue, 1000);
     const [searchResult, setSearchResult] = useState(false);
 
-    const fetchPostByEditURL = (val) => {
-        const postId = getQueryArg(val, 'post');
-		const post = getEntityRecord('postType', 'post', postId);
-		console.log('post', post);
-        if ( undefined !== post ) {
-			setChildTitle(post?.title?.rendered);
-            setSearchResult(post);
-            toggleAddChildModal(true);
-		}
-    };
-
     useEffect(()=>{
         if ( undefined !== postUrl && 3 <= postUrl.length ) {
 			console.log('postUrl', postUrl);
-            fetchPostByEditURL(postUrl);
+			const postId = getQueryArg(postUrl, 'post');
+			setTargetPostId(postId);
         }
     }, [postUrl]);
+
+	useEffect(()=>{
+		if ( undefined !== record && isResolving === false) {
+			setChildTitle(record?.title?.rendered);
+			setSearchResult(record);
+			toggleAddChildModal(true);
+		}
+	}, [record, isResolving]);
 
     return (
         <Fragment>
@@ -80,14 +81,13 @@ const PostSearchByEditUrlField = ({
 			{ true === createDraftModalOpen && (
 				<CreateDraftModal
 				{...{
-					toggleCreateDraftModal,
 					parentTitle,
-					onConfirm: () => {
-						console.log("CREATE DRAFT!");
-						toggleCreateDraftModal(false);
-						// if ( false !== hocOnChange ) {
-						// 	hocOnChange(id);
-						// }
+					parentId,
+					onConfirm: (newPostId) => {
+						console.log("CREATE DRAFT!", newPostId);
+						if ( false !== hocOnChange ) {
+							hocOnChange(newPostId);
+						}
 					},
 					onDeny: () => {
 						toggleCreateDraftModal(false);
@@ -103,7 +103,7 @@ const PostSearchByEditUrlField = ({
 					childTitle,
 					onConfirm: () => {
 						const {id} = searchResult;
-						toggleModal(false);
+						toggleAddChildModal(false);
 						setSearchResult(false);
 						if ( false !== hocOnChange ) {
 							hocOnChange(id);

@@ -4,18 +4,18 @@
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 import { store as coreDataStore } from '@wordpress/core-data';
-import { Modal, ButtonGroup, Button } from '@wordpress/components';
+import { Modal, ButtonGroup, Button, TextControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { useState, useEffect } from '@wordpress/element';
 
-export default function CreateDraftModal({toggleCreateDraftModal, parentTitle, onDeny, onConfirm}) {
+export default function CreateDraftModal({parentTitle, parentId, onDeny, onConfirm}) {
 	const { saveEntityRecord } = useDispatch( coreDataStore );
 	const [postTitle, setPostTitle] = useState('');
 
 	const createPost = async () => {
 		const newDraftPost = await saveEntityRecord(
 			'postType',
-			'page',
+			'post',
 			{
 				title: postTitle,
 				status: 'draft',
@@ -23,14 +23,14 @@ export default function CreateDraftModal({toggleCreateDraftModal, parentTitle, o
 		);
 		if ( newDraftPost ) {
 			console.log('newDraftPost', newDraftPost);
-			// onConfirm(newDraftPost?.id);
+			onConfirm(newDraftPost?.id);
 		}
 	}
 
 	return(
 		<Modal
 			title={__('Create New Draft Back Chapter', 'prc-platform-post-report-package')}
-			onRequestClose={()=>{toggleCreateDraftModal(false)}}
+			onRequestClose={()=>{onDeny()}}
 		>
 			<p>Create a new draft back chapter for <strong>{decodeEntities(parentTitle)}</strong>?</p>
 			<TextControl
@@ -38,15 +38,12 @@ export default function CreateDraftModal({toggleCreateDraftModal, parentTitle, o
 				value={postTitle}
 				onChange={setPostTitle}
 			/>
-			<Button variant="primary" onClick={createPost}>Create Draft</Button>
 
 			<ButtonGroup>
 				<Button variant="secondary" onClick={onDeny}>
-					No
+					Cancel
 				</Button>
-				<Button variant="primary" onClick={onConfirm}>
-					Yes
-				</Button>
+				<Button variant="primary" onClick={createPost} disabled={3 > postTitle.length}>Create Draft</Button>
 			</ButtonGroup>
 		</Modal>
 	);

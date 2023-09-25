@@ -7,24 +7,27 @@ import { WPEntitySearch } from '@prc/components';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useState, useEffect } from '@wordpress/element';
+import { Fragment, useState, useEffect, useMemo } from '@wordpress/element';
 import { Button, ToggleControl } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
+import { cleanForSlug } from '@wordpress/url';
 
 /**
  * Internal Dependencies
  */
-import { TAXONOMY, TAXONOMY_LABEL } from './constants';
+import { TAXONOMY, POST_TYPE } from './constants';
 import PlaceholderBlockAreaCreate from './PlaceholderBlockAreaCreate';
 import PlaceholderBlockAreaSelect from './PlaceholderBlockAreaSelect';
 import PlaceholderCategorySelect from './PlaceholderCategorySelect';
 
 export default function PlaceholderWizard({ attributes, setAttributes, context, setInstructions, noticeOperations }) {
 	const [readyToInsert, setReadyToInsert] = useState(false);
-	const [disableNext, setDisableNext] = useState(false);
+	// const [disableNext, setDisableNext] = useState(false);
 	const [blockAreaName, setBlockAreaName] = useState('');
 	const [blockAreaSlug, setBlockAreaSlug] = useState(attributes?.blockAreaSlug);
+	const [blockModuleName, setBlockModuleName] = useState('');
+	const [blockModuleSlug, setBlockModuleSlug] = useState(attributes?.blockAreaSlug);
 	const [categorySlug, setCategorySlug] = useState(attributes?.categorySlug);
 	const [step, setStep] = useState('intro');
 	const [processing, setProcessing] = useState(false);
@@ -63,11 +66,44 @@ export default function PlaceholderWizard({ attributes, setAttributes, context, 
 		}
 	}
 
+	const onCreateNewBlockArea = async (name) => {
+		const slug = cleanForSlug(name);
+		const newBlockArea = await saveEntityRecord(
+			'taxonomy',
+			TAXONOMY,
+			{
+				name,
+				slug
+			}
+		);
+		if ( newBlockArea ) {
+			console.log('newDraftBlockArea', newBlockArea);
+			setBlockAreaSlug(slug);
+		}
+	}
+
+	const onCreateNewBlockModule = async (title) => {
+		const newDraftPost = await saveEntityRecord(
+			'postType',
+			POST_TYPE,
+			{
+				title,
+				status: 'publish',
+				terms: {
+					[TAXONOMY]: [blockAreaSlug],
+				}
+			}
+		);
+		if ( newDraftPost ) {
+			console.log('newDraftBlockArea', newDraftPost);
+		}
+	}
+
 	const onFinal = () => {
 		console.log("ON FINAL", blockAreaName, blockAreaSlug, categorySlug);
 		if (blockAreaName && !blockAreaSlug) {
 			// Create new term and wait...
-
+			onCreateNewBlockArea(blockAreaName);
 		} else if (blockAreaSlug) {
 			const newAttrs = { blockAreaSlug };
 			if (categorySlug) {
@@ -77,6 +113,11 @@ export default function PlaceholderWizard({ attributes, setAttributes, context, 
 		}
 	}
 
+	const nextDisabled = useMemo(() => {
+		console.log('nextDisabled', step, blockAreaName.length, blockAreaSlug);
+		return ['intro', 'create-new'].includes(step) && blockAreaName.length <= 3;
+	}, [step, blockAreaName]);
+
 	// On page change:
 	useEffect(() => {
 		switch(step) {
@@ -85,6 +126,7 @@ export default function PlaceholderWizard({ attributes, setAttributes, context, 
 				break;
 			case 'create-new':
 				setInstructions(null);
+				if ( blockAreaName.length <= 3)
 				break;
 			case 'final':
 				if (context?.templateSlug?.includes('category')) {
@@ -130,7 +172,7 @@ export default function PlaceholderWizard({ attributes, setAttributes, context, 
 				</Button>
 			)}
 			{'final' !== step && (
-				<Button variant="link" onClick={onNext} disabled={['intro', 'create-new'].includes(step) && !blockAreaSlug}>
+				<Button variant="link" onClick={onNext} disabled={nextDisabled}>
 					{__('Next')}
 				</Button>
 			)}

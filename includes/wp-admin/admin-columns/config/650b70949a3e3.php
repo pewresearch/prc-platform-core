@@ -1,0 +1,206 @@
+<?php
+
+return array (
+  'version' => '6.3.3',
+  'list_screen' => 
+  array (
+    'title' => '',
+    'type' => 'block_module',
+    'id' => '650b70949a3e3',
+    'updated' => 1695248532,
+    'columns' => 
+    array (
+      'title' => 
+      array (
+        'type' => 'title',
+        'label' => 'Title',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => 'title',
+      ),
+      'author' => 
+      array (
+        'type' => 'author',
+        'label' => 'Author',
+        'width' => '10',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => 'author',
+      ),
+      'categories' => 
+      array (
+        'type' => 'categories',
+        'label' => 'Topics',
+        'width' => '15',
+        'width_unit' => '%',
+        'edit' => 'on',
+        'enable_term_creation' => 'off',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'on',
+        'name' => 'categories',
+      ),
+      'taxonomy-block_area' => 
+      array (
+        'type' => 'taxonomy-block_area',
+        'label' => 'Block Areas',
+        'width' => '',
+        'width_unit' => '%',
+        'edit' => 'on',
+        'enable_term_creation' => 'off',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'on',
+        'filter_label' => '',
+        'name' => 'taxonomy-block_area',
+      ),
+      'distributor' => 
+      array (
+        'type' => 'distributor',
+        'label' => '<img src="[cpac_site_url]/wp-content/plugins/distributor/assets/img/icon.svg" alt="Posts distributed from another site." title="Posts distributed from another site."> <span class="dt-column-header">Distributor</span>',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'name' => 'distributor',
+      ),
+      'date' => 
+      array (
+        'type' => 'date',
+        'label' => 'Date',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'filter_format' => '',
+        'name' => 'date',
+      ),
+      'wpseo-score' => 
+      array (
+        'type' => 'wpseo-score',
+        'label' => '<span class="yoast-column-seo-score yoast-column-header-has-tooltip" data-tooltip-text="SEO score"><span class="screen-reader-text">SEO score</span></span></span>',
+        'width' => '63',
+        'width_unit' => 'px',
+        'export' => 'on',
+        'sort' => 'on',
+        'name' => 'wpseo-score',
+      ),
+      'wpseo-score-readability' => 
+      array (
+        'type' => 'wpseo-score-readability',
+        'label' => '<span class="yoast-column-readability yoast-column-header-has-tooltip" data-tooltip-text="Readability score"><span class="screen-reader-text">Readability score</span></span></span>',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'name' => 'wpseo-score-readability',
+      ),
+      'wpseo-title' => 
+      array (
+        'type' => 'wpseo-title',
+        'label' => 'SEO Title',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => 'wpseo-title',
+      ),
+      'wpseo-metadesc' => 
+      array (
+        'type' => 'wpseo-metadesc',
+        'label' => 'Meta Desc.',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => 'wpseo-metadesc',
+      ),
+      'wpseo-focuskw' => 
+      array (
+        'type' => 'wpseo-focuskw',
+        'label' => 'Keyphrase',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => 'wpseo-focuskw',
+      ),
+      'wpseo-links' => 
+      array (
+        'type' => 'wpseo-links',
+        'label' => '<span class="yoast-linked-to yoast-column-header-has-tooltip" data-tooltip-text="Number of outgoing internal links in this post. See "Yoast Columns" text in the help tab for more info."><span class="screen-reader-text">Outgoing internal links</span></span>',
+        'width' => '',
+        'width_unit' => '%',
+        'sort' => 'on',
+        'name' => 'wpseo-links',
+      ),
+      'wpseo-cornerstone' => 
+      array (
+        'type' => 'wpseo-cornerstone',
+        'label' => '<span class="yoast-column-cornerstone yoast-column-header-has-tooltip" data-tooltip-text="Is this cornerstone content?"><span class="screen-reader-text">Cornerstone content</span></span>',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'name' => 'wpseo-cornerstone',
+      ),
+    ),
+    'settings' => 
+    array (
+      'roles' => 
+      array (
+      ),
+      'users' => 
+      array (
+      ),
+      'sorting' => '0',
+      'sorting_order' => 'asc',
+      'hide_inline_edit' => 'off',
+      'hide_bulk_edit' => 'off',
+      'hide_bulk_delete' => 'off',
+      'hide_smart_filters' => 'off',
+      'hide_segments' => 'off',
+      'hide_export' => 'off',
+      'hide_conditional_formatting' => 'off',
+      'hide_new_inline' => 'on',
+      'resize_columns' => 'off',
+      'column_order' => 'off',
+      'hide_filters' => 'off',
+      'hide_filter_post_date' => 'off',
+      'hide_filter_category' => 'off',
+      'hide_filter_yoast_seo_scores' => 'off',
+      'hide_filter_yoast_readability_score' => 'off',
+      'hide_submenu' => 'off',
+      'hide_search' => 'off',
+      'hide_bulk_actions' => 'off',
+      'hide_row_actions' => 'off',
+      'horizontal_scrolling' => 'off',
+      'primary_column' => '',
+      'filter_segment' => '',
+    ),
+  ),
+);

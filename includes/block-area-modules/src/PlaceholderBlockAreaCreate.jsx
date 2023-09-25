@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import { Fragment, useState, useEffect } from '@wordpress/element';
 import { Button, TextControl } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
-import { useSelect } from '@wordpress/data';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal Dependencies

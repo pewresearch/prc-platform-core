@@ -42,11 +42,6 @@ class Post_Publish_Pipeline {
 		'press-release'
 	);
 
-	protected function filtered_allowable_post_types( $filtered_out = 'stub' ) {
-		return array_filter( $this->allowed_post_types, function( $post_type ) use ( $filtered_out ) {
-			return $filtered_out !== $post_type;
-		} );
-	}
 
 	public function __construct() {
 		$this->is_cli = defined( 'WP_CLI' ) && WP_CLI;
@@ -252,8 +247,7 @@ class Post_Publish_Pipeline {
 		if ( ! in_array( $post->post_status, array( 'draft', 'publish' ) ) ) {
 			return;
 		}
-		// We're explicitly not allowing incremental update hooks for stub post types.
-		if ( ! in_array( $post->post_type, $this->filtered_allowable_post_types('stub') ) ) {
+		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -405,7 +399,7 @@ class Post_Publish_Pipeline {
 		}
 		$post = get_post( $post_id );
 		// Ensure the post is not of type stub, we don't want to run into recursion issues.
-		if ( ! in_array( $post->post_type, $this->filtered_allowable_post_types('stub') ) ) {
+		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
 
@@ -430,7 +424,7 @@ class Post_Publish_Pipeline {
 		}
 		$post = get_post( $post_id );
 		// Ensure the post is not of type stub, we don't want to run into recursion issues.
-		if ( ! in_array( $post->post_type, $this->filtered_allowable_post_types('stub') ) ) {
+		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
 

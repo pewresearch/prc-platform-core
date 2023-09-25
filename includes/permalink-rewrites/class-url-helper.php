@@ -154,6 +154,6 @@ class URL_Helper {
 	}
 
 	public function get_post_id_from_published_link( $url ) {
-		return wpcom_vip_url_to_postid( $url );
+		return \wpcom_vip_url_to_postid( $url );
 	}
 }

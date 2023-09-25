@@ -252,6 +252,7 @@ class Post_Report_Package {
 	 * @return void
 	 */
 	public function set_child_posts( $post ) {
+		error_log("SETTING CHILD POSTS");
 		if ( 'post' !== $post->post_type && 0 !== wp_get_post_parent_id( $post->ID ) ) {
 			return;
 		}

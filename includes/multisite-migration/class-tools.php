@@ -285,7 +285,8 @@ class Multisite_Migration_Tools {
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
+			// @TODO Disabling this for now
+			// wp_enqueue_script( self::$handle );
 		}
 	}
 }
