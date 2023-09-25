@@ -1,7 +1,16 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use WP_HTML_Heading_Processor;
 
+/**
+ * Post Report Package is an all encompasing class for accessing the constructed report materials, the constructed table of contents, and the combination the report_package object.
+ *
+ * To access the table of contents it's recommended to use new \PRC\Platform\Post_Report_Package(null, null)->get_constructed_toc( $post_id );
+ *
+ * For the report materials it's recommended to use new \PRC\Platform\Post_Report_Package(null, null)->get_constructed_report_materials( $post_id );
+ * @package PRC\Platform
+ */
 class Post_Report_Package {
 	public $post_id = null;
 	public static $handle = 'prc-platform-post-report-package';
@@ -9,6 +18,7 @@ class Post_Report_Package {
 	public static $report_package_key = 'report_package';
 	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case
 	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case
+	protected $bypass_caching = false;
 
 	public static $report_materials_schema_properties = array(
 		'key'          => array(
@@ -59,6 +69,11 @@ class Post_Report_Package {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		// Always bypass caching if we're previewing a url.
+		$this->bypass_caching = is_preview();
+		if ( !class_exists('WP_HTML_Heading_Processor') ) {
+			require_once( plugin_dir_path( __FILE__ ) . 'class-wp-html-heading-processor.php' );
+		}
 	}
 
 	/**
@@ -252,7 +267,6 @@ class Post_Report_Package {
 	 * @return void
 	 */
 	public function set_child_posts( $post ) {
-		error_log("SETTING CHILD POSTS");
 		if ( 'post' !== $post->post_type && 0 !== wp_get_post_parent_id( $post->ID ) ) {
 			return;
 		}
@@ -333,6 +347,8 @@ class Post_Report_Package {
 	}
 
 	public function get_report_materials( $post_id ) {
+		$this->bypass_caching = $this->bypass_caching || is_user_logged_in();
+
 		$parent_id = wp_get_post_parent_id( $post_id );
 		if ( false !== $parent_id && 0 !== $parent_id) {
 			$post_id = $parent_id;
@@ -341,42 +357,142 @@ class Post_Report_Package {
 		return get_post_meta( $post_id, self::$report_materials_meta_key, true );
 	}
 
-	// Cribbed from https://codepad.co/snippet/extract-html-attributes-with-regex-in-php
-	public function extract_html_attributes($input) {
-		if( ! preg_match('#^(<)([a-z0-9\-._:]+)((\s)+(.*?))?((>)([\s\S]*?)((<)\/\2(>))|(\s)*\/?(>))$#im', $input, $matches)) return false;
-		$matches[5] = preg_replace('#(^|(\s)+)([a-z0-9\-]+)(=)(")(")#i', '$1$2$3$4$5<attr:value>$6', $matches[5]);
-		$results = array(
-			'element' => $matches[2],
-			'attributes' => null,
-			'content' => isset($matches[8]) && $matches[9] == '</' . $matches[2] . '>' ? $matches[8] : null
-		);
-		if(preg_match_all('#([a-z0-9\-]+)((=)(")(.*?)("))?(?:(\s)|$)#i', $matches[5], $attrs)) {
-			$results['attributes'] = array();
-			foreach($attrs[1] as $i => $attr) {
-				$results['attributes'][$attr] = isset($attrs[5][$i]) && ! empty($attrs[5][$i]) ? ($attrs[5][$i] != '<attr:value>' ? $attrs[5][$i] : "") : $attr;
-			}
-		}
-		return $results;
+	public function get_constructed_report_materials( $post_id ) {
+		$materials = $this->get_report_materials( $post_id );
 	}
 
 	/**
-	 * Will recrusively build the table of contents through navigating all blocks and grabbing core/heading with isChapter set to true.
+	 * Convert a number to words.
+	 * @param mixed $number
+	 * @return string|WP_Error
+	 */
+	public function convert_number_to_words($num) {
+		if (!is_int($num)) {
+		  return new WP_Error('invalid_input', 'Input must be an integer.');
+		}
+
+		$ones = array(
+		  0 => 'zero', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four',
+		  5 => 'five', 6 => 'six', 7 => 'seven', 8 => 'eight', 9 => 'nine'
+		);
+		$tens = array(
+		  0 => '', 1 => 'ten', 2 => 'twenty', 3 => 'thirty', 4 => 'forty',
+		  5 => 'fifty', 6 => 'sixty', 7 => 'seventy', 8 => 'eighty', 9 => 'ninety'
+		);
+		$hundreds = array(
+		  'hundred', 'thousand'
+		);
+
+		if ($num < 0 || $num >= 1000) {
+		  return new WP_Error('out_of_range', 'Input must be between 0 and 999.');
+		}
+
+		if ($num == 0) {
+		  return esc_html($ones[0]);
+		}
+
+		$result = '';
+		$hundred = (int) ($num / 100);
+		$ten = (int) ($num / 10) % 10;
+		$one = $num % 10;
+
+		if ($hundred > 0) {
+		  $result .= $ones[$hundred] . ' ' . $hundreds[0];
+		}
+
+		if ($ten > 0 || $one > 0) {
+		  if (!empty($result)) {
+			$result .= ' ';
+		  }
+
+		  if ($ten < 2) {
+			$result .= $ones[$ten * 10 + $one];
+		  } else {
+			$result .= $tens[$ten];
+			if ($one > 0) {
+			  $result .= '-' . $ones[$one];
+			}
+		  }
+		}
+
+		return esc_html($result);
+	}
+
+	/**
+	 * This will only match h2 and h3 elements and assign them as chapters...
+	 */
+	public function prepare_legacy_headings($content, $post_id) {
+		if ( has_blocks($content) ) {
+			return false;
+		}
+
+		// strip $document_content of any <!-- comments -->, which can interfer with the parser below
+		$chapters = preg_replace( '/<!--(.|\s)*?-->/', '', $content );
+		$processor = new WP_HTML_Heading_Processor( $chapters );
+		$chapters = $processor->process();
+
+		if ( ! empty( $chapters ) ) {
+			update_post_meta($post_id, '_migration_legacy_headings_detected', true);
+		}
+
+		return $chapters;
+	}
+
+	/**
+	 * Will recrusively build the table of contents through navigating all blocks and grabbing core/heading and prc-block/chapter
 	 * @param mixed $array
 	 * @return array
 	 */
-	public function prepare_chapter_blocks( $array, $post_id ) {
+	public function prepare_chapter_blocks( $array, $post_id = false ) {
 		$permalink = get_permalink( $post_id );
 		$results = array();
 
+		$needs_migration = false;
+
 		if ( is_array( $array ) ) {
+			$block_name = array_key_exists('blockName', $array) ? $array['blockName'] : false;
 			// We get the first level of the array first, then sub levels...
-			if ( isset( $array[ 'blockName' ] ) && in_array($array[ 'blockName' ], array('core/heading')) ) {
+			if ( in_array($block_name, array('core/heading', 'prc-block/chapter')) ) {
 				if ( array_key_exists('isChapter', $array['attrs']) && true === $array['attrs']['isChapter'] ) {
-					$attrs = $this->extract_html_attributes($array['innerHTML']);
+					$level = $array['attrs']['level'];
+
+					$tags = new WP_HTML_Heading_Processor($array['innerHTML']);
+					$tags->next_tag('H'.$level);
+					$id = $tags->get_attribute('id');
+
+					// Check if the heading has a number in it and if so then we'll convert it to words, also we're removing the default h- from heading blocks, looks awful for SEO.
+					if ( preg_match( '/^h-(\d+)-/', $id, $matches ) ) {
+						$number = $matches[1];
+						$number = intval( $number );
+						$number = $this->convert_number_to_words( $level );
+						if ( is_wp_error( $number ) ) {
+							$id = preg_replace( '/^h-(\d+)-/', '', $id );
+						} else {
+							$id = preg_replace( '/^h-(\d+)-/', $number . '-', $id );
+						}
+					} else {
+						$id = preg_replace( '/^h-/', '', $id );
+					}
+
 					$results[] = array(
-						'id' => $attrs['attributes']['id'],
+						'id' => $id,
 						'title' => wp_strip_all_tags( !empty($array['attrs']['altTocText']) ? $array['attrs']['altTocText'] : $array['innerHTML'] ),
-						'link' => $permalink . '#' . $attrs['attributes']['id'],
+						'link' => $permalink . '#' . $id,
+					);
+				} elseif ( 'prc-block/chapter' === $array['blockName'] ) {
+					// @TODO: This is legacy and needs to be migrated at some point. We flag that here and provide meta down below to do this automatically/editorially at some point.
+					$needs_migration = true;
+					$id = $array['attrs']['id'];
+					// Ensure the ID is clean and none of the core/heading block id stuff gets added.
+					if ( preg_match( '/^h-\d+/', $id ) ) {
+						$id = preg_replace( '/^h-\d+-/', '', $id );
+					} elseif ( preg_match( '/^h-/', $id ) ) {
+						$id = preg_replace( '/^h-/', '', $id );
+					}
+					$results[] = array(
+						'id' => $id,
+						'title' => wp_strip_all_tags( $array['attrs']['value'] ),
+						'link' => $permalink . '#' . $id,
 					);
 				}
 			}
@@ -386,7 +502,22 @@ class Post_Report_Package {
 			}
 		}
 
+		if ( $needs_migration && false !== $post_id ) {
+			update_post_meta($post_id, '_migration_legacy_prc_block_chapter_detected', true);
+		}
+
 		return $results;
+	}
+
+	public function get_internal_chapters($post_id) {
+		$the_content = get_post_field( 'post_content', $post_id, 'raw' );
+		$legacy = $this->prepare_legacy_headings($the_content, $post_id);
+		if ( false !== $legacy ) {
+			$blocks = '';
+		} else {
+			$blocks = parse_blocks( $the_content );
+		}
+		return $this->prepare_chapter_blocks( $blocks, $post_id );
 	}
 
 	/**
@@ -407,8 +538,7 @@ class Post_Report_Package {
 
 		foreach( $back_chapters as $chapter ) {
 			$chapter_id = $chapter['postId'];
-			$blocks = parse_blocks( get_the_content( null, false, $chapter_id ) );
-			$chapters = $this->prepare_chapter_blocks( $blocks, $chapter_id );
+			$chapters = $this->get_internal_chapters( $chapter_id );
 
 			$formatted[] = array(
 				'id' => $chapter_id,
@@ -422,14 +552,32 @@ class Post_Report_Package {
 		return $formatted;
 	}
 
-	public function get_constructed_toc( $post_id ) {
+	private function get_toc_cache($post_id) {
+		if (true !== $this->bypass_caching ) {
+			return false;
+		}
 		$cache_key = self::$report_package_key . '_toc';
-		$cached_toc = wp_cache_get( $post_id, $cache_key );
+		return wp_cache_get( $post_id, $cache_key );
+	}
+
+	private function update_toc_cache($post_id, $toc) {
+		if (true !== $this->bypass_caching ) {
+			return null;
+		}
+		$cache_key = self::$report_package_key . '_toc';
+		return wp_cache_set( $post_id, $toc, $cache_key, 5 * MINUTE_IN_SECONDS );
+	}
+
+	public function get_constructed_toc( $post_id ) {
+		$this->bypass_caching = $this->bypass_caching || is_user_logged_in();
+		$cached_toc = $this->get_toc_cache( $post_id );
 		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cached_toc && ( !is_preview() || !is_user_logged_in() )) {
-			// return $cached_toc;
+		if ( false !== $cached_toc ) {
+			return $cached_toc;
 		}
 		$parent_id = $this->get_report_parent_id( $post_id );
+
+		// Check if this post
 
 		$constructed_toc = array_merge( array(
 			array(
@@ -437,17 +585,24 @@ class Post_Report_Package {
 				'title' => get_the_title( $parent_id ),
 				'slug' => get_post_field( 'post_name', $parent_id ),
 				'link' => get_permalink( $parent_id ),
-				'internal_chapters' => $this->prepare_chapter_blocks(
-					parse_blocks( get_the_content( null, false, $parent_id ) ), $parent_id
-				),
+				'internal_chapters' => $this->get_internal_chapters( $parent_id ),
 			),
 		), $this->get_back_chapters( $parent_id ) );
 
-		if ( !is_preview() || !is_user_logged_in() ) {
-			// wp_cache_set( $post_id, $constructed_toc, $cache_key, 1 * HOUR_IN_SECONDS );
-		}
+		$this->update_toc_cache( $post_id, $constructed_toc );
 
 		return $constructed_toc;
+	}
+
+	/**
+	 * @hook prc_platform_on_update
+	 * @return void
+	 */
+	public function clear_toc_cache_on_update( $post ) {
+		$cached_toc = $this->get_toc_cache( $post->ID );
+		if ( false !== $cached_toc ) {
+			wp_cache_delete( $post->ID, self::$report_package_key . '_toc');
+		}
 	}
 
 	public function get_report_package($post_id) {
