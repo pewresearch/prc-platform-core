@@ -1,12 +1,16 @@
 /**
+ * External Dependencies
+ */
+import { useTaxonomy } from '@prc/hooks';
+
+/**
  * Internal Dependencies
  */
 import { TAXONOMY } from '../constants';
-import {getTaxonomyBySlug} from '../utils';
 
 export default function useTaxonomyInfo(blockAreaSlug = null, categorySlug =  null) {
-	const [categoryId, categoryName] = getTaxonomyBySlug('category', categorySlug);
-	const [blockAreaId, blockAreaName] = getTaxonomyBySlug(TAXONOMY, blockAreaSlug);
+	const [categoryId, categoryName] = useTaxonomy('category', categorySlug);
+	const [blockAreaId, blockAreaName] = useTaxonomy(TAXONOMY, blockAreaSlug);
 
 	return {
 		blockAreaId,

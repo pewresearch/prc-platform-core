@@ -14,14 +14,15 @@ import {
 	useBlockProps,
 	Warning,
 } from '@wordpress/block-editor';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal Dependencies
  */
 import Controls from './Controls';
 import Placeholder from './Placeholder';
+import LoadingIndicator from './LoadingIndicator';
 import { useLatestBlockModule, useTaxonomyInfo } from './hooks';
-import { LoadingIndicator } from './utils';
 import { POST_TYPE, POST_TYPE_LABEL } from './constants';
 
 function SyncedEntityEdit({
@@ -33,28 +34,29 @@ function SyncedEntityEdit({
 	context,
 }) {
 	const { blockAreaSlug, categorySlug, inheritCategory } = attributes;
-	const isNew = !blockAreaSlug;
-	let catSlug = categorySlug;
 
-	if (inheritCategory && !categorySlug) {
-		const { templateSlug } = context;
-		if ( templateSlug.includes('category') ) {
-			catSlug = templateSlug.replace('category-', '');
+	const catSlug = useMemo(() => {
+		if (true === inheritCategory && !categorySlug) {
+			const { templateSlug } = context;
+			if ( templateSlug.includes('category') ) {
+				return templateSlug.replace('category-', '');
+			}
 		}
-	}
+		return undefined !== categorySlug ? categorySlug : false;
+	}, [inheritCategory, categorySlug, context]);
 
 	const { blockAreaName, blockAreaId, categoryName, categoryId } = useTaxonomyInfo(
 		blockAreaSlug,
 		catSlug
 	);
-
-	console.log("tax info...", {blockAreaName, blockAreaId, categoryName, categoryId});
-
-	const {blockModuleId, hasResolved } = useLatestBlockModule(blockAreaId, categoryId, {
-		enabled: !isNew,
+	const {blockModuleId, hasResolved} = useLatestBlockModule(blockAreaId, categoryId, {
+		enabled: undefined !== (blockAreaSlug && blockAreaId && categoryId)
 	});
-	const isResolving = !hasResolved;
-	const isMissing = hasResolved && !blockModuleId && !isNew;
+
+	const isResolving = useMemo(() => !hasResolved && undefined !== (blockAreaId && categoryId), [hasResolved, blockAreaId, categoryId]);
+	const isMissing = useMemo(() => hasResolved && blockAreaSlug && !blockModuleId, [hasResolved, blockAreaSlug, blockModuleId]);
+	const isLoading = useMemo(() => isResolving && blockAreaSlug && catSlug, [isResolving, blockAreaSlug, catSlug]);
+	const isInSetup = useMemo(() => !isResolving && !blockModuleId && !blockAreaSlug && !catSlug, [isResolving, blockModuleId, blockAreaSlug, catSlug]);
 
 	const [blocks, onInput, onChange] = useEntityBlockEditor(
 		'postType',
@@ -65,11 +67,9 @@ function SyncedEntityEdit({
 	const recursionKey = useMemo(() => {
 		return JSON.stringify({blockModuleId, blockAreaSlug});
 	}, [blockModuleId, blockAreaSlug]);
-
 	const hasAlreadyRendered = useHasRecursion(recursionKey);
 
 	const blockProps = useBlockProps();
-
 	const innerBlocksProps = useInnerBlocksProps(blockProps, {
 		value: blocks,
 		onInput,
@@ -78,6 +78,25 @@ function SyncedEntityEdit({
 			? undefined
 			: InnerBlocks.ButtonBlockAppender,
 	});
+
+	useEffect(() => {
+		console.log('SyncedEntityEdit', {
+			isResolving,
+			blockAreaSlug,
+			catSlug,
+			blockAreaId,
+			categoryId,
+		});
+	}, [isResolving, blockAreaSlug, catSlug, blockAreaId, categoryId]);
+
+	useEffect(() => {
+		console.log("INFO:", {
+			isResolving,
+			isMissing,
+			isLoading,
+			isInSetup,
+		});
+	}, [isResolving, isMissing, isLoading, isInSetup]);
 
 	if (hasAlreadyRendered) {
 		return (
@@ -93,13 +112,14 @@ function SyncedEntityEdit({
 		return (
 			<div {...blockProps}>
 				<Warning>
-					{__(`A matching ${POST_TYPE_LABEL.toLowerCase()} could not be found. It may have been deleted or is unavailable at this time.`)}
+					<p>{__(`A matching ${POST_TYPE_LABEL.toLowerCase()} could not be found. It may have been deleted or is unavailable at this time.`)}</p>
+					<Button variant="secondary">Create New Module</Button>
 				</Warning>
 			</div>
 		);
 	}
 
-	if (isResolving && !isNew) {
+	if (isLoading) {
 		return (
 			<div {...blockProps}>
 				<Warning>
@@ -109,18 +129,17 @@ function SyncedEntityEdit({
 		);
 	}
 
-	if (isResolving && isNew) {
+	if (isInSetup) {
 		return(
 			<div {...blockProps}>
+				<p>Setup</p>
 				<Placeholder
 					{...{
 						attributes,
 						setAttributes,
 						clientId,
 						isResolving,
-						isNew,
 						context,
-						noticeOperations,
 					}}
 				/>
 			</div>

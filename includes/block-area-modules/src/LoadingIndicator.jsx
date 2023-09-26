@@ -12,7 +12,7 @@ import { Spinner } from '@wordpress/components';
 /**
  * Internal Dependencies
  */
-import { TAXONOMY_LABEL } from '../constants';
+import { TAXONOMY_LABEL } from './constants';
 
 const Indicator = styled.div`
 	display: flex;
