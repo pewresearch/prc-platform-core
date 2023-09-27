@@ -95,6 +95,7 @@ class Platform_Bootstrap {
 		$this->define_post_report_package_hooks();
 		$this->define_slack_bot_hooks();
 		$this->define_apple_news_hooks();
+		$this->define_icon_loader_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -217,6 +218,8 @@ class Platform_Bootstrap {
 		$this->include('slack-bot/class-slack-bot.php');
 		// Apple News
 		$this->include('apple-news/class-apple-news.php');
+		// Icon Loader
+		$this->include('icon-loader/class-icon-loader.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -924,6 +927,19 @@ class Platform_Bootstrap {
 		);
 		$this->loader->add_filter('apple_news_exporter_byline', $apple_news,  'get_bylines', 10, 2);
 		$this->loader->add_filter('apple_news_skip_push', $apple_news, 'skip_push', 10, 1);
+	}
+
+	private function define_icon_loader_hooks() {
+		$icon_loader = new Icon_Loader(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		// Load the loader late so that theres a change for an icon library to be registered.
+		$this->loader->add_action( 'enqueue_block_assets', $icon_loader, 'enqueue_icon_loader', 99 );
+		// Load fallback prc-icons if needed
+		$this->loader->add_action( 'enqueue_block_editor_assets', $icon_loader, 'enqueue_icon_library_fallback', 10 );
+		// Determine if icon loader should be enqueued in frontend
+		$this->loader->add_filter( 'render_block', $icon_loader, 'tree_shaker', 100, 3 );
 	}
 
 	/**
