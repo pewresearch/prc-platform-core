@@ -3,18 +3,18 @@
 	"description": "PRC Platform Icons Loader",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/data": "^9.8.0",
+		"@wordpress/data": "^9.12.0",
 		"@wordpress/e2e-test-utils-playwright": "^0.1.0",
-		"@wordpress/element": "^5.15.0",
-		"@wordpress/env": "^8.3.0",
-		"@wordpress/scripts": "^26.1.0",
+		"@wordpress/element": "^5.19.0",
+		"@wordpress/env": "^8.8.0",
+		"@wordpress/scripts": "^26.13.0",
 		"babel-plugin-macros": "^3.1.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build src/loader/index.js --output-path=build/loader; wp-scripts build src/library-fallback/index.js --output-path=build/library-fallback"
 	},
 	"dependencies": {
-		"@fortawesome/fontawesome-svg-core": "^6.4.0",
-		"@fortawesome/react-fontawesome": "latest"
+		"@fortawesome/fontawesome-svg-core": "^6.4.2",
+		"@fortawesome/react-fontawesome": "^0.2.0"
 	}
 }
