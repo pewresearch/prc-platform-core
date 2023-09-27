@@ -6,7 +6,7 @@ import { uploadMedia } from '@wordpress/media-utils';
 import { PanelBody, PanelRow, Button } from '@wordpress/components';
 
 const SECURITY_TOKEN =
-    '#qS*#7xtCx!LeMdULcC4TI4KRhk1MyJKvfancySO6^%gCFYxvseaMNP2VSa@eg5HZNbMAYyRAV$kTk*xcb5O15j33fJuz0LXclN4';
+    'xyz';
 
 const addMedia = (content, postId) => {
     const mediaCollection = new wp.api.collections.Media();
