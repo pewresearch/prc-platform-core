@@ -678,8 +678,7 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'init', $block_area_modules, 'register_block_modules' );
 		$this->loader->add_action( 'init', $block_area_modules, 'block_init' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $block_area_modules, 'enable_gutenberg_ramp' );
-		$this->loader->add_filter( 'the_content', $block_area_modules, 'collect_story_item_post_ids', 10, 1 );
-		$this->loader->add_filter( 'the_content', $block_area_modules, 'de_duplicate_story_items_in_query_block', 10, 1 );
+		$this->loader->add_filter( 'the_content', $block_area_modules, 'collect_story_item_post_ids', 0, 1 );
 	}
 
 	/**

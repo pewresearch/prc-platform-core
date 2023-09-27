@@ -156,7 +156,7 @@ class Block_Area_Modules {
 		) );
 	}
 
-	public function query_block_area($category_slug = null, $block_area_slug = null, $inherit_category = false) {
+	public function get_query_args($category_slug = null, $block_area_slug = null, $inherit_category = false) {
 		if ( null === $block_area_slug ) {
 			return false;
 		}
@@ -193,7 +193,7 @@ class Block_Area_Modules {
 			'tax_query' => $tax_query,
 		);
 
-		return new WP_Query($block_module_query_args);
+		return $block_module_query_args;
 	}
 
 	public function render_block_area($attributes, $content, $block) {
@@ -202,7 +202,8 @@ class Block_Area_Modules {
 		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
 		$inherit_category = array_key_exists('inheritCategory', $attributes) ? $attributes['inheritCategory'] : false;
 
-		$block_modules = $this->query_block_area($category_slug, $block_area_slug, $inherit_category);
+		$query_args = $this->get_query_args($category_slug, $block_area_slug, $inherit_category);
+		$block_modules = new WP_Query($query_args);
 		if ( $block_modules->have_posts() ) {
 			$block_module_id = $block_modules->posts[0];
 			$block_module = get_post($block_module_id);
@@ -269,71 +270,60 @@ class Block_Area_Modules {
 
 		// Get all the block area blocks on this page
 		$block_area_blocks = array_filter($blocks, function($block) {
-			return 'prc-block/block-area' === $block['blockName'];
+			return 'prc-platform/block-area' === $block['blockName'];
 		});
 
-		foreach($block_area_blocks as $block_area) {
-			$attributes = array_map(function($block) {
-				return $block['attrs'];
-			}, $block_area);
-			$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
-			$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
+		foreach($block_area_blocks as $index => $block_area) {
+			$attributes = $block_area['attrs'];
 
-			$block_modules = $this->query_block_area($category_slug, $block_area_slug, false);
+			$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
+			$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
+
+			$query_args = $this->get_query_args($category_slug, $block_area_slug, false);
+			$block_modules = new WP_Query($query_args);
+
 			if ( $block_modules->have_posts() ) {
 				$block_module_id = $block_modules->posts[0];
 				$block_module = get_post($block_module_id);
-				$block_module_content = $block_module instanceof WP_Post ? apply_filters(
-					'the_content',
-					$block_module->post_content,
-				) : null;
+				$block_module_content = $block_module instanceof WP_Post ? $block_module->post_content : null;
+
 				if ( null !== $block_module_content ) {
 					// search for story item blocks in the block module content
 					$block_module_blocks = parse_blocks($block_module_content);
+
 					$story_item_blocks = array_filter($block_module_blocks, function($block) {
 						return 'prc-block/story-item' === $block['blockName'];
 					});
+
 					// get postId attributes from story item blocks
 					$story_item_post_ids = array_map(function($block) {
 						return $block['attrs']['postId'];
 					}, $story_item_blocks);
+
+					$story_item_post_ids = array_values($story_item_post_ids);
 
 					// add to collected story item ids
 					$this->collected_story_item_ids = array_merge($this->collected_story_item_ids, $story_item_post_ids);
 				}
 			}
 			wp_reset_postdata();
-
-			// query block modules
 		}
 
-		return $content;
-	}
-
-	/**
-	 * Prevents duplicate content
-	 * @hook the_content
-	 * @return void
-	 */
-	public function de_duplicate_story_items_in_query_block($content) {
-		if ( !has_blocks($content) ) {
-			return $content;
+		foreach ($blocks as $index => $query_block) {
+			if ( 'core/query' !== $query_block['blockName'] ) {
+				continue;
+			}
+			$attributes = $query_block['attrs'];
+			$query_args = array_key_exists('query', $attributes) ? $attributes['query'] : null;
+			if ( null !== $query_args ) {
+				$query_args['exclude'] = array_merge($query_args['exclude'], $this->collected_story_item_ids);
+				$attributes['query'] = $query_args;
+				$query_block['attrs'] = $attributes;
+				$blocks[$index] = $query_block;
+			}
 		}
 
-		$blocks = parse_blocks($content);
-
-		// Get all the block area blocks on this page
-		$query_blocks = array_filter($blocks, function($block) {
-			return 'core/query' === $block['blockName'];
-		});
-
-		foreach($query_blocks as $query_block) {
-			add_filter('query_loop_block_query_vars', function($query, $block, $page){
-				$query['post__not_in'] = array_merge($query['post__not_in'], $this->collected_story_item_ids);
-				return $query;
-			}, 100, 3);
-		}
-
+		$content = serialize_blocks($blocks);
 		return $content;
 	}
 }
