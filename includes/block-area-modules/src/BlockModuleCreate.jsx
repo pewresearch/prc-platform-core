@@ -2,90 +2,78 @@
  * External Dependencies
  */
 import { useDebounce } from '@prc/hooks';
+import { symbolFilled as icon } from '@wordpress/icons';
 
 /**
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useState, useEffect, useMemo } from '@wordpress/element';
-import { Button, Placeholder, TextControl } from '@wordpress/components';
+import { useState, useMemo } from '@wordpress/element';
+import { Button, TextControl } from '@wordpress/components';
 import { store as coreStore } from '@wordpress/core-data';
-import { useDispatch } from '@wordpress/data';
+import { dispatch } from '@wordpress/data';
 
 
 /**
  * Internal Dependencies
  */
-import { POST_TYPE, POST_TYPE_LABEL, TAXONOMY } from './constants';
+import { POST_TYPE, POST_TYPE_LABEL, TAXONOMY, TAXONOMY_REST_BASE } from './constants';
+
+export async function createBlockModule(blockModuleTitle, blockAreaId, categoryId, status = 'publish') {
+	if ( !blockAreaId ) {
+		return new Error('No block area id provided.');
+	}
+	if ( !categoryId ) {
+		return new Error('No category id provided.');
+	}
+
+	const { saveEntityRecord } = dispatch(coreStore);
+
+	const newBlockModule = await saveEntityRecord(
+		'postType',
+		POST_TYPE,
+		{
+			title: blockModuleTitle,
+			status,
+			categories: [categoryId],
+			[TAXONOMY_REST_BASE]: [blockAreaId],
+		}
+	);
+
+	if ( newBlockModule ) {
+		console.log('onCreateBlockModule', newBlockModule);
+		return newBlockModule;
+	}
+
+	return false;
+}
 
 /**
  * A simple components that allows a user to create a new Block Module post.
  * @param {*} param0
  * @returns
  */
-export default function BlockModuleCreate({ blockAreaSlug, categorySlug, onCreation = () => {} }) {
-	const { saveEntityRecord } = useDispatch(coreStore);
-
-	const [allowCreation, setAllowCreation] = useState(false);
+export default function BlockModuleCreate({blockAreaId, categoryId}) {
 	const [newBlockModuleTitle, setNewBlockModuleTitle] = useState('');
-
-	const onCreate = async () => {
-		if ( ! allowCreation ) {
-			return false;
-		}
-		if ( !categorySlug ) {
-			return new Error('No category slug provided.');
-		}
-		if ( !blockAreaSlug ) {
-			return new Error('No block area slug provided.');
-		}
-
-		const newBlockModule = await saveEntityRecord(
-			'postType',
-			POST_TYPE,
-			{
-				title: newBlockModuleTitle,
-				status: 'publish',
-				terms: {
-					[TAXONOMY]: [blockAreaSlug],
-					category: [categorySlug],
-				}
-			}
-		);
-
-		if ( newBlockModule ) {
-			// Reset the values:
-			setNewBlockModuleTitle('');
-			console.log('onCreateBlockModule', newBlockModule);
-			return newBlockModule;
-		}
-
-		return false;
-	}
-
-	useEffect(() => {
-		if (newBlockModuleTitle && newBlockModuleTitle.length > 3 && !!categorySlug && !!blockAreaSlug) {
-			setAllowCreation(true);
-		} else {
-			setAllowCreation(false);
-		}
-	}, [newBlockModuleTitle, categorySlug, blockAreaSlug]);
+	const debouncedNewBlockModuleTitle = useDebounce(newBlockModuleTitle, 500);
+	const allowCreation = useMemo(() => debouncedNewBlockModuleTitle && debouncedNewBlockModuleTitle.length > 3, [debouncedNewBlockModuleTitle]);
 
 	return (
-		<Placeholder label={__(`Create New ${POST_TYPE_LABEL}`, 'prc-platform-core')} isColumnLayout={true}>
+		<div>
 			<TextControl
 				label={__(`New ${POST_TYPE_LABEL} Title`, 'prc-platform-core')}
-				help={__(`Enter a title for the new ${POST_TYPE_LABEL}`, 'prc-platform-core')}
 				value={ newBlockModuleTitle }
-				onChange={ ( newTitle ) => setNewBlockModuleTitle( newTitle ) }
+				onChange={ ( newTitle ) => {
+					setNewBlockModuleTitle( newTitle );
+				} }
 			/>
 			<Button
 				variant="primary"
-				onClick={() => onCreate().then((resp) => onCreation(resp).catch((err) => console.error(err)))}
+				onClick={() => createBlockModule(debouncedNewBlockModuleTitle, blockAreaId, categoryId)}
 				disabled={!allowCreation}
 			>
 				{__(`Create New ${POST_TYPE_LABEL}`, 'prc-platform-core')}
 			</Button>
-		</Placeholder>
+		</div>
 	);
 }

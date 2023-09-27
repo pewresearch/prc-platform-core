@@ -8,7 +8,6 @@ import { useTaxonomy } from '@prc/hooks';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Placeholder } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -19,11 +18,7 @@ export default function BlockAreaSearch({ blockAreaSlug, setBlockAreaSlug }) {
 	const [blockAreaId, blockAreaName] = useTaxonomy(TAXONOMY, blockAreaSlug);
 
 	return (
-		<Placeholder
-			label={__('Block Area Search', 'prc-platform-core')}
-			instructions={__(`"Block Areas" are used to create areas where Block Modules can render content based on criteria like Topic.`)}
-			isColumnLayout={true}
-		>
+		<div>
 			<WPEntitySearch
 				placeholder={__('Topic Category Lede...')}
 				searchLabel={__(`Search for ${TAXONOMY_LABEL}`)}
@@ -44,6 +39,6 @@ export default function BlockAreaSearch({ blockAreaSlug, setBlockAreaSlug }) {
 				perPage={10}
 				showExcerpt={true}
 			/>
-		</Placeholder>
+		</div>
 	);
 }

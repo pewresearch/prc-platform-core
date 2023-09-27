@@ -243,4 +243,25 @@ class Block_Area_Modules {
 			wp_enqueue_script( self::$handle );
 		}
 	}
+
+	/**
+	 * Collects prc-block/story-item post id attributes for the current page.
+	 * - First we look for prc-block/block-area blocks on the page, we get the args, run a query, see if there are block modules, if so we cache them in this plugin.
+	 * - Then we look into the block module posts content and collect any prc-block/story-item blocks and get their post id attributes if they have one.
+	 * - Lastly we look for any query blocks on this page and we inject a post__in arg with the post ids we collected.
+	 *
+	 * @hook the_content
+	 * @return void
+	 */
+	public function collect_story_item_post_ids($content) {
+
+	}
+
+	/**
+	 * Prevents duplicate content
+	 * @return void
+	 */
+	public function de_duplicate_story_items_in_query_block() {
+
+	}
 }

@@ -17,7 +17,7 @@ import { Button, TextControl, PanelBody } from '@wordpress/components';
 import DetachEntityMenuControl from './DetachEntityMenuControl';
 import { POST_TYPE, POST_TYPE_LABEL, TAXONOMY, TAXONOMY_LABEL } from './constants';
 
-export default function Controls({ attributes, clientId, blocks, blockAreaId, blockModuleId }) {
+export default function Controls({ setAttributes, clientId, blocks, blockAreaId, blockModuleId }) {
 	// Block Area:
 	const [blockAreaName, setBlockAreaName] = useEntityProp('taxonomy', TAXONOMY, 'name', blockAreaId);
 
@@ -44,6 +44,21 @@ export default function Controls({ attributes, clientId, blocks, blockAreaId, bl
 							value={blockModuleTitle}
 							onChange={setBlockModuleTitle}
 						/>
+					</div>
+					<div>
+						<Button
+							isDestructive
+							variant="secondary"
+							onClick={() => {
+								setAttributes({
+									blockAreaSlug: null,
+									categorySlug: null,
+									inheritCategory: false,
+								});
+							}}
+						>
+							{__('Reset Block Area')}
+						</Button>
 					</div>
 				</PanelBody>
 			</InspectorControls>

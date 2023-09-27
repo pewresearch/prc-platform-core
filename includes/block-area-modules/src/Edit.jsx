@@ -20,12 +20,13 @@ import { Button } from '@wordpress/components';
  * Internal Dependencies
  */
 import Controls from './Controls';
-import Placeholder from './Placeholder';
+import PlaceholderWizard from './PlaceholderWizard';
+import BlockModuleCreate from './BlockModuleCreate';
 import LoadingIndicator from './LoadingIndicator';
 import { useLatestBlockModule, useTaxonomyInfo } from './hooks';
 import { POST_TYPE, POST_TYPE_LABEL } from './constants';
 
-function SyncedEntityEdit({
+function BlockAreaEdit({
 	attributes,
 	setAttributes,
 	clientId,
@@ -38,8 +39,12 @@ function SyncedEntityEdit({
 	const catSlug = useMemo(() => {
 		if (true === inheritCategory && !categorySlug) {
 			const { templateSlug } = context;
-			if ( templateSlug.includes('category') ) {
+			if ( templateSlug.includes('category-') ) {
 				return templateSlug.replace('category-', '');
+			}
+			// If we're just on a general template then use the uncategorized category.
+			if ( templateSlug.includes('category') ) {
+				return 'uncategorized';
 			}
 		}
 		return undefined !== categorySlug ? categorySlug : false;
@@ -54,9 +59,9 @@ function SyncedEntityEdit({
 	});
 
 	const isResolving = useMemo(() => !hasResolved && undefined !== (blockAreaId && categoryId), [hasResolved, blockAreaId, categoryId]);
-	const isMissing = useMemo(() => hasResolved && blockAreaSlug && !blockModuleId, [hasResolved, blockAreaSlug, blockModuleId]);
-	const isLoading = useMemo(() => isResolving && blockAreaSlug && catSlug, [isResolving, blockAreaSlug, catSlug]);
-	const isInSetup = useMemo(() => !isResolving && !blockModuleId && !blockAreaSlug && !catSlug, [isResolving, blockModuleId, blockAreaSlug, catSlug]);
+	const isMissing = useMemo(() => hasResolved && categoryId && blockAreaId && !blockModuleId, [hasResolved, categoryId, blockAreaId, blockModuleId]);
+	const isLoading = useMemo(() => (isResolving && blockAreaId && categoryId) || (blockAreaId && categoryId && !blockModuleId), [isResolving, blockAreaId, categoryId, blockModuleId]);
+	const isInSetup = useMemo(() => (!blockModuleId && !blockAreaSlug) || !catSlug, [blockModuleId, blockAreaSlug, catSlug]);
 
 	const [blocks, onInput, onChange] = useEntityBlockEditor(
 		'postType',
@@ -80,23 +85,19 @@ function SyncedEntityEdit({
 	});
 
 	useEffect(() => {
-		console.log('SyncedEntityEdit', {
-			isResolving,
-			blockAreaSlug,
-			catSlug,
-			blockAreaId,
-			categoryId,
-		});
-	}, [isResolving, blockAreaSlug, catSlug, blockAreaId, categoryId]);
-
-	useEffect(() => {
 		console.log("INFO:", {
 			isResolving,
 			isMissing,
 			isLoading,
-			isInSetup,
+			isInSetup: {
+				isResolving,
+				blockModuleId,
+				blockAreaSlug,
+				catSlug,
+				test: (!blockModuleId && !blockAreaSlug) || !catSlug,
+			},
 		});
-	}, [isResolving, isMissing, isLoading, isInSetup]);
+	}, [isResolving, isMissing, isLoading, isInSetup, blockModuleId, blockAreaSlug, catSlug]);
 
 	if (hasAlreadyRendered) {
 		return (
@@ -113,7 +114,12 @@ function SyncedEntityEdit({
 			<div {...blockProps}>
 				<Warning>
 					<p>{__(`A matching ${POST_TYPE_LABEL.toLowerCase()} could not be found. It may have been deleted or is unavailable at this time.`)}</p>
-					<Button variant="secondary">Create New Module</Button>
+					<BlockModuleCreate
+						{...{
+							blockAreaId,
+							categoryId,
+						}}
+					/>
 				</Warning>
 			</div>
 		);
@@ -132,14 +138,14 @@ function SyncedEntityEdit({
 	if (isInSetup) {
 		return(
 			<div {...blockProps}>
-				<p>Setup</p>
-				<Placeholder
+				<PlaceholderWizard
 					{...{
 						attributes,
 						setAttributes,
 						clientId,
 						isResolving,
 						context,
+						blockModuleId,
 					}}
 				/>
 			</div>
@@ -151,6 +157,7 @@ function SyncedEntityEdit({
 			<Controls
 				{...{
 					attributes,
+					setAttributes,
 					clientId,
 					blocks,
 					blockAreaId,
@@ -162,4 +169,4 @@ function SyncedEntityEdit({
 	);
 }
 
-export default withNotices(SyncedEntityEdit);
+export default withNotices(BlockAreaEdit);
