@@ -5,8 +5,7 @@ import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/edit-post';
 import { uploadMedia } from '@wordpress/media-utils';
 import { PanelBody, PanelRow, Button } from '@wordpress/components';
 
-const SECURITY_TOKEN =
-    '#qS*#7xtCx!LeMdULcC4TI4KRhk1MyJKvfancySO6^%gCFYxvseaMNP2VSa@eg5HZNbMAYyRAV$kTk*xcb5O15j33fJuz0LXclN4';
+const SECURITY_TOKEN = ''; // @TODO need to add this to env vars @benwormald
 
 const addMedia = (content, postId) => {
     const mediaCollection = new wp.api.collections.Media();
@@ -43,13 +42,6 @@ const addMedia = (content, postId) => {
 };
 
 async function postData(url, data) {
-    // let headers = new Headers();
-
-    // headers.append('Content-Type', 'application/json');
-    // headers.append('Accept', 'application/json');
-    // headers.append('Authorization', 'Basic ' + btoa('prc:research'));
-    // headers.append('Origin','http://pewresearch.local');
-
     const res = await fetch(url, {
         method: 'POST',
         headers: {
