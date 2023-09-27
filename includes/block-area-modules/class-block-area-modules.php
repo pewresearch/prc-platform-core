@@ -254,6 +254,7 @@ class Block_Area_Modules {
 	 * - Then we look into the block module posts content and collect any prc-block/story-item blocks and get their post id attributes if they have one.
 	 * - Lastly we look for any query blocks on this page and we inject a post__in arg with the post ids we collected.
 	 *
+	 * @TODO this needs to be 1. cached and 2. recursive to check deep blocks
 	 * @hook the_content
 	 * @return void
 	 */
