@@ -330,7 +330,7 @@ class Platform_Bootstrap {
 		);
 
 		$this->loader->add_action( 'rest_api_init', $post_publish_pipeline, 'register_rest_fields' );
-		$this->loader->add_filter('rest_post_query', $post_publish_pipeline, 'merge_post_parent_into_rest_queries', 10, 2);
+		$this->loader->add_filter( 'rest_post_query', $post_publish_pipeline, 'merge_post_parent_into_rest_queries', 10, 2 );
 
 		/**
 		 * @uses prc_platform_on_incremental_save

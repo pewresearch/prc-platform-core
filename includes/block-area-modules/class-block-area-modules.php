@@ -264,49 +264,52 @@ class Block_Area_Modules {
 			return $content;
 		}
 
-		// We need to cache this...
-
 		$blocks = parse_blocks($content);
 
-		// Get all the block area blocks on this page
-		$block_area_blocks = array_filter($blocks, function($block) {
-			return 'prc-platform/block-area' === $block['blockName'];
-		});
+		global $post;
+		$cached = wp_cache_get($post->ID, 'prc_block_area_module_story_item_ids');
+		if ( false !== $cached && !is_preview() ) {
+			$this->collected_story_item_ids = $cached;
+		} else {
+			// Collect story item post ids from block area block modules:
+			foreach( array_filter($blocks, function($block) {
+				return 'prc-platform/block-area' === $block['blockName'];
+			}) as $index => $block_area ) {
+				$attributes = $block_area['attrs'];
 
-		foreach($block_area_blocks as $index => $block_area) {
-			$attributes = $block_area['attrs'];
+				$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
+				$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
 
-			$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
-			$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
+				$query_args = $this->get_query_args($category_slug, $block_area_slug, false);
+				$block_modules = new WP_Query($query_args);
 
-			$query_args = $this->get_query_args($category_slug, $block_area_slug, false);
-			$block_modules = new WP_Query($query_args);
+				if ( $block_modules->have_posts() ) {
+					$block_module_id = $block_modules->posts[0];
+					$block_module = get_post($block_module_id);
+					$block_module_content = $block_module instanceof WP_Post ? $block_module->post_content : null;
 
-			if ( $block_modules->have_posts() ) {
-				$block_module_id = $block_modules->posts[0];
-				$block_module = get_post($block_module_id);
-				$block_module_content = $block_module instanceof WP_Post ? $block_module->post_content : null;
+					if ( null !== $block_module_content ) {
+						// search for story item blocks in the block module content
+						$block_module_blocks = parse_blocks($block_module_content);
 
-				if ( null !== $block_module_content ) {
-					// search for story item blocks in the block module content
-					$block_module_blocks = parse_blocks($block_module_content);
+						$story_item_blocks = array_filter($block_module_blocks, function($block) {
+							return 'prc-block/story-item' === $block['blockName'];
+						});
 
-					$story_item_blocks = array_filter($block_module_blocks, function($block) {
-						return 'prc-block/story-item' === $block['blockName'];
-					});
+						// get postId attributes from story item blocks
+						$story_item_post_ids = array_map(function($block) {
+							return $block['attrs']['postId'];
+						}, $story_item_blocks);
 
-					// get postId attributes from story item blocks
-					$story_item_post_ids = array_map(function($block) {
-						return $block['attrs']['postId'];
-					}, $story_item_blocks);
+						$story_item_post_ids = array_values($story_item_post_ids);
 
-					$story_item_post_ids = array_values($story_item_post_ids);
-
-					// add to collected story item ids
-					$this->collected_story_item_ids = array_merge($this->collected_story_item_ids, $story_item_post_ids);
+						// add to collected story item ids
+						$this->collected_story_item_ids = array_merge($this->collected_story_item_ids, $story_item_post_ids);
+					}
 				}
+				wp_reset_postdata();
+				wp_cache_set($post->ID, $this->collected_story_item_ids, 'prc_block_area_module_story_item_ids', 1 * HOUR_IN_SECONDS);
 			}
-			wp_reset_postdata();
 		}
 
 		foreach ($blocks as $index => $query_block) {

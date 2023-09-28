@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { InspectorControls } from '@wordpress/block-editor';
 import { Fragment } from '@wordpress/element';
 import { useEntityProp } from '@wordpress/core-data';
-import { Button, TextControl, PanelBody } from '@wordpress/components';
+import { Button, TextControl, PanelBody, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -23,6 +23,7 @@ export default function Controls({ setAttributes, clientId, blocks, blockAreaId,
 
 	// Block Module:
 	const [blockModuleTitle, setBlockModuleTitle] = useEntityProp('postType', POST_TYPE, 'title', blockModuleId);
+	const [blockModuleLink] = useEntityProp('postType', POST_TYPE, 'link', blockModuleId);
 
 	return (
 		<Fragment>
@@ -44,6 +45,9 @@ export default function Controls({ setAttributes, clientId, blocks, blockAreaId,
 							value={blockModuleTitle}
 							onChange={setBlockModuleTitle}
 						/>
+					</div>
+					<div>
+						<ExternalLink href={blockModuleLink}>{`Edit ${POST_TYPE_LABEL}`}</ExternalLink>
 					</div>
 					<div>
 						<Button
