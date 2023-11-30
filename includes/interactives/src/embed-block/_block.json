@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "prc-platform/interactive",
+	"version": "0.1.0",
+	"title": "Interactive",
+	"description": "Embed a interactive into another post.",
+	"category": "media",
+	"keywords": [
+		"interactive"
+	],
+	"attributes": {
+		"ref": {
+			"type": "number"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false
+	},
+	"usesContext": [
+		"queryId",
+		"query",
+		"queryContext",
+		"templateSlug",
+		"previewPostType"
+	],
+	"textdomain": "prc-platform-interactive",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

@@ -100,6 +100,10 @@ class Media_Settings {
 		}
 	}
 
+	/**
+	 * @hook vip_go_srcset_enabled
+	 * @return true
+	 */
 	public function enable_srcset() {
 		return true;
 	}
@@ -135,5 +139,15 @@ class Media_Settings {
 	public function remove_p_around_img( $content ) {
 		$content = preg_replace( '/<p>\s*(<a .*>)?\s*(<img .* \/>)\s*(<\/a>)?\s*<\/p>/iU', '\1\2\3', $content );
 		return $content;
+	}
+
+	/**
+	 * @hook upload_mimes
+	 * @param mixed $existing_mimes
+	 * @return mixed
+	 */
+	public function allow_json_uploads($existing_mimes) {
+		$existing_mimes['json'] = 'application/json';
+		return $existing_mimes;
 	}
 }

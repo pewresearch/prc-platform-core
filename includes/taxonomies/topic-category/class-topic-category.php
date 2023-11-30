@@ -20,15 +20,17 @@ class Topic_Category extends Taxonomies {
 	 * @return void
 	 */
 	public function enforce_category_permalink_structure() {
-		if ( get_current_blog_ID() !== PRC_MIGRATION_SITE ) {
-			return;
-		}
 		update_option( 'category_base', 'topic' );
 	}
 
+	/**
+	 * On the primary site we want to change the vernacular of "Categories" to "Topics".
+	 * @param mixed $args
+	 * @param mixed $taxonomy
+	 * @return mixed
+	 */
 	public function change_category_labels_to_topic( $args, $taxonomy ) {
-		// @TODO: For now we only want this to run on the migration site.
-		if ( get_current_blog_ID() !== PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_ID() !== PRC_PRIMARY_SITE_ID ) {
 			return $args;
 		}
 		if ( $taxonomy === self::$taxonomy ) {
@@ -75,7 +77,7 @@ class Topic_Category extends Taxonomies {
 	}
 
 	public function enqueue_category_name_change_script() {
-		if ( get_current_blog_ID() !== PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_ID() !== PRC_PRIMARY_SITE_ID ) {
 			return null;
 		}
 		$registered = $this->register_category_name_change_filters();

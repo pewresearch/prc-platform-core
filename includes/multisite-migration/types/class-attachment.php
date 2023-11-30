@@ -35,6 +35,13 @@ class Attachments_Migration extends Multisite_Migration {
 		}
 	}
 
+	/**
+	 * This scheduled hook processes additional post meta that is reliant on attachments, e.g. reportMaterials, artDirection, etc...
+	 * @param mixed $attachment_id_pairs
+	 * @param mixed $meta
+	 * @return int
+	 * @throws Exception
+	 */
 	public function schedule_meta_mapping($attachment_id_pairs, $meta) {
 		// Check if a action has already been scheduled for this post and if so cancel it to allow this more recent one to run.
 		$is_next = as_next_scheduled_action('prc_distributor_queue_attachment_meta_migration', array(
@@ -94,13 +101,89 @@ class Attachments_Migration extends Multisite_Migration {
 		return $this->process($meta, false);
 	}
 
+	public function extract_all_attachment_ids_from_blocks($post_content) {
+
+	}
+
+	public function extract_all_attachment_ids_from_classic_content($post_content) {
+
+	}
+
+	public function extract_all_attachment_ids_from_post_content($post_content) {
+		if ( empty($post_content) ) {
+			return false;
+		}
+		if ( has_blocks($post_content) ) {
+			return $this->extract_all_attachment_ids_from_blocks($post_content);
+		}
+		return $this->extract_all_attachment_ids_from_classic_content($post_content);
+	}
+
+	/**
+	 * Returns a combined array of all attachment ids found in the post meta.
+	 * @param mixed $post_id
+	 * @return array<array-key, mixed>
+	 */
+	public function extract_all_attachment_ids_from_post_meta($post_id) {
+		$art_direction_key = 'artDirection';
+		// get the art direction meta and report materials meta
+		$site_id = get_current_blog_id();
+		if ( PRC_PRIMARY_SITE_ID !== $site_id ) {
+			$art_direction_key = '_art';
+		}
+		$art_direction = get_post_meta($post_id, $art_direction_key, true);
+		$art_direction = array_filter($art_direction, function($art) {
+			return isset($art['id']);
+		});
+		$art_direction = array_map(function($art) {
+			return $art['id'];
+		}, $art_direction);
+
+		$report_materials_key = 'reportMaterials';
+		$report_materials = get_post_meta($post_id, $report_materials_key, true);
+
+		// Extract any objects in the $report_materials array that have an attachmentId property and return as an array of those ids.
+		$report_materials = array_filter($report_materials, function($report_material) {
+			return isset($report_material['attachmentId']);
+		});
+		$report_materials = array_map(function($report_material) {
+			return $report_material['attachmentId'];
+		}, $report_materials);
+
+		return array_merge($art_direction, $report_materials);
+	}
+
+	public function extract_all_attachment_ids_from_post($post_id) {
+		$post_content = get_post_field('post_content', $post_id);
+		$attached_media = get_attached_media(
+			get_allowed_mime_types(),
+			$post_id,
+		);
+		// Reduce $attached_media (an array of WP_Post objects) down to an array of post ids.
+		$attachment_ids_from_attached_media = array_map( function( $media ) {
+			return $media->ID;
+		}, $attached_media );
+
+		// Get all the attachment id's from the post_content
+		$attachment_ids_from_content = $this->extract_all_attachment_ids_from_post_content($post_content);
+
+		$attachment_ids_from_post_meta = $this->extract_all_attachment_ids_from_post_meta($post_id);
+
+		// Now make a combined array of all the unique ids...
+		return array_unique(array_merge(
+			$attachment_ids_from_attached_media,
+			$attachment_ids_from_content,
+			$attachment_ids_from_post_meta
+		));
+	}
+
 	/**
 	 * Copy attachments from the source site to the target site.
 	 * @param mixed $post_id
 	 * @param mixed $source_site_id
 	 * @return array
 	 */
-	public function process( $meta = array(), $check_for_existing = false ) {
+	public function process() {
 		if ( true !== $this->allow_processing ) {
 			parent::log("UHOH: Attachments::process() called without all required arguments.");
 			return new WP_Error( 'prc_attachments_missing_args', __( 'Missing arguments.', 'prc' ) );
@@ -110,18 +193,15 @@ class Attachments_Migration extends Multisite_Migration {
 
 		$attachment_id_pairs = array();
 		switch_to_blog($this->original_site_id);
-		$attached_media = get_attached_media(
-			get_allowed_mime_types(),
-			$this->original_post_id
-		);
-		// Lets hack on some metadata to these attachments.
+		$attached_media = $this->extract_all_attachment_ids_from_post($this->original_post_id);
 		if ( $attached_media ) {
-			$attached_media = array_map( function( $media ) {
+			$attached_media = array_map( function( $attachment_id ) {
+				$media = get_post( $attachment_id );
 				$alt_text = get_post_meta($media->ID, '_wp_attachment_image_alt', true);
 				$filename = get_post_meta($media->ID, '_wp_attached_file', true);
 
-				$media->alt_text = $alt_text;
-				$media->filename = basename($filename);
+				$media['alt_text'] = $alt_text;
+				$media['filename'] = basename($filename);
 
 				return $media;
 			}, $attached_media );
@@ -132,37 +212,58 @@ class Attachments_Migration extends Multisite_Migration {
 			return new WP_Error( 'no_attachments', __( 'No attachments found.', 'prc' ) );
 		}
 
+		$update = false;
+
 		foreach($attached_media as $attachment) {
 			$payload = (array) $attachment;
 			// Reassign the outgoing attachment to the new post parent.
 			$payload['post_parent'] = $this->target_post_id;
-			// Remove the ID so that it will be created as a new attachment.
-			unset($payload['ID']);
-			// Remove the guid so that it will be created as a new attachment.
-			unset($payload['guid']);
+
+			if ( true !== $update ) {
+				// Remove the ID so that it will be created as a new attachment.
+				unset($payload['ID']);
+				// Remove the guid so that it will be created as a new attachment.
+				unset($payload['guid']);
+			}
+
 			$payload['_wp_attachment_image_alt'] = isset($attachment->alt_text) ? $attachment->alt_text : null;
 			$payload['_attachment_name'] = isset($attachment->filename) ? $attachment->filename : null;
 			$payload['_prc_migration_origin_object_id'] = $attachment->ID;
 
 			// Store pair of old id and new id.
-			$attachment_id_pairs[$attachment->ID] = $this->copy_attachment($payload, $check_for_existing);
+			$attachment_id_pairs[$attachment->ID] = $this->copy_attachment($payload);
 		}
 
-		$meta_position = $this->schedule_meta_mapping($attachment_id_pairs, $meta);
-		$media_matching_position = $this->schedule_block_media_matching($attachment_id_pairs);
+		// $meta_position = $this->schedule_meta_mapping($attachment_id_pairs, $meta);
+		// $media_matching_position = $this->schedule_block_media_matching($attachment_id_pairs);
 
-		if ( ! $meta_position ) {
-			return new WP_Error( 'prc_attachments_scheduling_failed', __( 'Failed to schedule attachment meta mapping.', 'prc' ) );
-		}
+		// if ( ! $meta_position ) {
+		// 	return new WP_Error( 'prc_attachments_scheduling_failed', __( 'Failed to schedule attachment meta mapping.', 'prc' ) );
+		// }
 
-		if ( ! $media_matching_position ) {
-			return new WP_Error( 'prc_attachments_scheduling_failed', __( 'Failed to schedule block media matching.', 'prc' ) );
-		}
+		// if ( ! $media_matching_position ) {
+		// 	return new WP_Error( 'prc_attachments_scheduling_failed', __( 'Failed to schedule block media matching.', 'prc' ) );
+		// }
 
 		return true;
 	}
 
-	public function copy_attachment($attachment, $check_for_existing = false) {
+	public function generate_attachment_metadata($attachment_id) {
+		// Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
+		require_once( ABSPATH . 'wp-admin/includes/image.php' );
+		$attachment = wp_get_attachment_image_src( $attachment_id, 'full' );
+		$file = get_attached_file( $attachment_id );
+		$meta = wp_get_attachment_metadata( $attachment_id );
+		$file_size = wp_filesize( $file );
+		$meta['sizes'] = [];
+		$meta['file'] = str_replace(array('/wp/wp-content/uploads/sites/20/','vip://wp-content/uploads/sites/20/'), '', $file);
+		$meta['width'] = $attachment[1];
+		$meta['height'] = $attachment[2];
+		$meta['filesize'] = $file_size;
+		return wp_update_attachment_metadata( $attachment_id , $meta );
+	}
+
+	public function copy_attachment($attachment) {
 		// Lets get all the attachment details.
 		$attachment_date = $attachment['post_date'];
 		$attachment_name = $attachment['_attachment_name']; // Get image name
@@ -184,28 +285,28 @@ class Attachments_Migration extends Multisite_Migration {
 			),
 		);
 
-		if ( $check_for_existing ) {
-			// Check if attachment already exists.
-			$existing_attachment = new WP_Query( array(
-				'post_type' => 'attachment',
-				'post_status' => 'any',
-				'meta_query' => array(
-					array(
-						'key' => '_prc_migration_origin_object_id',
-						'value' => $attachment['_prc_migration_origin_object_id'],
-					),
-					array(
-						'key' => '_prc_migration_origin_site_id',
-						'value' => $this->original_site_id,
-					),
+		// Check if attachment already exists.
+		$existing_attachment = new WP_Query( array(
+			'post_type' => 'attachment',
+			'post_status' => 'any',
+			'meta_query' => array(
+				array(
+					'key' => '_prc_migration_origin_object_id',
+					'value' => $attachment['_prc_migration_origin_object_id'],
 				),
-				'posts_per_page' => 1,
-				'fields' => 'ids',
-			) );
-			if ( $existing_attachment->have_posts() ) {
-				// If it does, lets just return the ID.
-				return $existing_attachment->posts[0];
-			}
+				array(
+					'key' => '_prc_migration_origin_site_id',
+					'value' => $this->original_site_id,
+				),
+			),
+			'posts_per_page' => 1,
+			'fields' => 'ids',
+		) );
+		if ( $existing_attachment->have_posts() ) {
+			// If it does, lets just return the ID.
+			// Lets flush and regenerate the metadata for this attachment.
+			$this->generate_attachment_metadata($existing_attachment->posts[0]);
+			return $existing_attachment->posts[0];
 		}
 
 		// Insert attachment into target site.
@@ -215,13 +316,8 @@ class Attachments_Migration extends Multisite_Migration {
 			$this->target_post_id,
 			true
 		);
-
-		// Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
-		require_once( ABSPATH . 'wp-admin/includes/image.php' );
-
-		// Generate the metadata for the attachment, and update the database record.
-		$attach_data = wp_generate_attachment_metadata( $new_attachment_id, $target_filename );
-		wp_update_attachment_metadata( $new_attachment_id, $attach_data );
+		// Generate the metadata for the new attachment, and update the database record.
+		$this->generate_attachment_metadata($new_attachment_id);
 
 		return $new_attachment_id; // Return new attachment ID
 	}

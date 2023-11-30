@@ -7,7 +7,7 @@
 	"config": {
 		"DEFAULT_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
 		"TAXONOMY_TECHNICAL_CONTACT": "srubenstein@pewresearch.org",
-		"PRC_MIGRATION_SITE": 1
+		"PRC_PRIMARY_SITE_ID": 1
 	},
 	"env": {
 		"tests": {

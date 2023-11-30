@@ -37,16 +37,22 @@ class Icon_Loader {
 		$this->version = $version;
 	}
 
-	public function register_icon_loader_script() {
+	public function register_icon_loader_script($register_prc_icons = true) {
 		$asset_file = include(  plugin_dir_path( __FILE__ )  . 'build/loader/index.asset.php' );
+		$dependencies = $asset_file['dependencies'];
+		if ( false === $register_prc_icons ) {
+			$dependencies = array_filter($dependencies, function($handle) {
+				return $handle !== 'prc-icons';
+			});
+		}
 
 		$registered = wp_register_script(
 			$this->handle,
 			plugins_url( 'build/loader/index.js', __FILE__ ),
-			$asset_file['dependencies'],
+			$dependencies,
 			$asset_file['version'],
 			array(
-				'in_footer' => false,
+				'in_footer' => true,
 				'strategy' => 'defer',
 			),
 		);
@@ -63,7 +69,7 @@ class Icon_Loader {
 			$asset_file['dependencies'],
 			$asset_file['version'],
 			array(
-				'in_footer' => false,
+				'in_footer' => true,
 				'strategy' => 'defer',
 			),
 		);
@@ -75,9 +81,9 @@ class Icon_Loader {
 	 * @hook enqueue_block_assets
 	 * @return void
 	 */
-	public function enqueue_icon_loader() {
-		if ( !wp_script_is( $this->handle ) ) {
-			$this->register_icon_loader_script();
+	public function enqueue_icon_loader($register_prc_icons = true) {
+		if ( !wp_script_is( $this->handle, 'enqueued' ) ) {
+			$this->register_icon_loader_script($register_prc_icons);
 		}
 		wp_enqueue_script( $this->handle );
 	}
@@ -88,57 +94,9 @@ class Icon_Loader {
 	 * @return void
 	 */
 	public function enqueue_icon_library_fallback() {
-		if ( !wp_script_is( 'prc-icons', 'registered' ) ) {
+		if ( !wp_script_is( 'prc-icons', 'enqueued' ) ) {
 			$this->register_icon_library_fallback_script();
 			wp_enqueue_script( 'prc-icons' );
 		}
 	}
-
-	public function content_shaker( $content, $block_name ) {
-		$enqueue = false;
-		if ( is_string($content ) ) {
-			$tags = new WP_HTML_Tag_Processor($content);
-			while ( $tags->next_tag( 'i' ) ) {
-				$class = $tags->get_attribute( 'class' );
-				if ( strpos($class, 'fa-') !== false ) {
-					$enqueue = true;
-				}
-			}
-		}
-		return $enqueue;
-	}
-
-	public function attribute_shaker( $attributes ) {
-		$enqueue = false;
-		if ( isset($attributes['iconSlug']) && !empty($attributes['iconSlug']) ) {
-			$enqueue = true;
-		}
-		if ( isset($attributes['iconSlugs']) && !empty($attributes['iconSlugs']) ) {
-			$enqueue = true;
-		}
-		return $enqueue;
-	}
-
-	/**
-	 * @hook render_block
-	 * @param mixed $block_content
-	 * @param mixed $block
-	 * @param mixed $instance
-	 * @return mixed
-	 */
-	public function tree_shaker( $block_content, $block, $instance ) {
-		if ( !is_string($block_content) && !empty($block_content) ) {
-			return $block_content;
-		}
-
-		$content_shaked = $this->content_shaker( $block_content, $block['blockName'] );
-		$attributes_shaked = $this->attribute_shaker( $block['attrs'] );
-
-		if ( $attributes_shaked || $content_shaked ) {
-			$this->enqueue_icon_loader();
-		}
-
-		return $block_content;
-	}
-
 }

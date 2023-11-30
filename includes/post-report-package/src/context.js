@@ -1,16 +1,19 @@
 /**
  * External Dependencies
  */
+import { useDebounce } from '@prc/hooks';
 
 /**
  * WordPress Dependencies
  */
 import {
+	useEffect,
 	useState,
 	useContext,
 	createContext,
 	useMemo,
 } from '@wordpress/element';
+// import { useDispatch, useSelect } from '@wordpress/data';
 import { useEntityProp, useResourcePermissions } from '@wordpress/core-data';
 
 /**
@@ -23,6 +26,11 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
 	const {canDelete, isResolving} = useResourcePermissions('posts', postId);
 
+	const [materials, setMaterials] = useState(meta?.reportMaterials ?? []);
+	const [backChapters, setBackChapters] = useState(meta?.multiSectionReport ?? []);
+	const debounceMaterials = useDebounce(materials, 500);
+	const debounceBackChapters = useDebounce(backChapters, 500);
+
 	const allowEditing = useMemo(() => {
 		if (isResolving) {
 			return false;
@@ -33,24 +41,47 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		return false;
 	}, [isResolving, canDelete]);
 
-	const { materials, setMaterials, backChapters, setBackChapters } = useMemo(() => {
-		return {
-			materials: meta?.reportMaterials,
-			setMaterials(newVal) {
-				setMeta({
-					...meta,
-					reportMaterials: newVal,
-				});
-			},
-			backChapters: meta?.multiSectionReport,
-			setBackChapters(newVal) {
-				setMeta({
-					...meta,
-					multiSectionReport: newVal,
-				});
-			}
-		};
-	}, [meta]);
+	// This approach doesnt support cross collabration as well but it works for now. Leaving the entity sync version below for reference.
+	useEffect(() => {
+		console.log("Materials...", materials);
+		if ( ! allowEditing || undefined === meta ) {
+			return;
+		}
+		setMeta({
+			...meta,
+			reportMaterials: materials,
+		});
+	}, [debounceMaterials]);
+
+	useEffect(() => {
+		console.log("Back Chapters...", backChapters);
+		if ( ! allowEditing || undefined === meta ) {
+			return;
+		}
+		setMeta({
+			...meta,
+			multiSectionReport: backChapters,
+		});
+	}, [debounceBackChapters]);
+
+	// const { materials, setMaterials, backChapters, setBackChapters } = useMemo(() => {
+	// 	return {
+	// 		materials: meta?.reportMaterials,
+	// 		setMaterials(newVal) {
+	// 			setMeta({
+	// 				...meta,
+	// 				reportMaterials: newVal,
+	// 			});
+	// 		},
+	// 		backChapters: meta?.multiSectionReport,
+	// 		setBackChapters(newVal) {
+	// 			setMeta({
+	// 				...meta,
+	// 				multiSectionReport: newVal,
+	// 			});
+	// 		}
+	// 	};
+	// }, [meta]);
 
 	const getLatestStateByItemType = (itemsType = 'materials') => {
 		if ( 'materials' === itemsType ) {
@@ -125,6 +156,7 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		if (!allowEditing) {
 			return;
 		}
+		console.log('updateItem', index, valueKey, value, itemsType, allowEditing, isResolving, canDelete);
 		const newItems = getLatestStateByItemType(itemsType);
 
 		newItems[index][valueKey] = value;

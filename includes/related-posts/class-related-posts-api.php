@@ -6,7 +6,7 @@ use WP_Query;
 class Related_Posts_API extends Related_Posts {
 	public $ID;
 	public $post_type;
-	private $args = array(
+	public $args = array(
 		'taxonomy' => 'category'
 	);
 
@@ -17,7 +17,7 @@ class Related_Posts_API extends Related_Posts {
 			return new WP_Error( 'invalid_post_id', __( 'Invalid post ID.' ) );
 		}
 		$this->post_type = $post_type;
-		$this->args = $args;
+		$this->args = wp_parse_args( $args, $this->args );
 	}
 
 	private function get_label($post_id) {
@@ -37,11 +37,12 @@ class Related_Posts_API extends Related_Posts {
 
 		// Get the primary topic for this post.
 		$primary_taxonomy_term_id = get_post_meta( $this->ID, $meta_key, true );
-		$primary_taxonomy_term = get_term_by( 'term_id', $primary_taxonomy_term_id, $taxonomy );
+		$primary_taxonomy_term = get_term_by( 'term_taxonomy_id', (int) $primary_taxonomy_term_id, $taxonomy );
+
 		if ( ! $primary_taxonomy_term ) {
 			// Get the first term for this post.
 			$terms = wp_get_post_terms( $this->ID, $taxonomy );
-			if ( ! empty( $topics ) ) {
+			if ( ! empty( $terms ) ) {
 				$primary_taxonomy_term = $terms[0];
 			}
 		}
@@ -50,7 +51,7 @@ class Related_Posts_API extends Related_Posts {
 		}
 
 		$query_args = array(
-			'post_type' => $this->post_type,
+			'post_type' => 'any', // Get all post types that are public
 			'post_parent' => 0,
 			'posts_per_page' => $posts_per_page,
 			'meta_key' => $meta_key,
@@ -79,11 +80,11 @@ class Related_Posts_API extends Related_Posts {
 				$label = $this->get_label( $post_id );
 				$related_posts[] = array(
 					'postId' => $post_id,
+					'postType' => get_post_type(),
 					'url' => get_permalink( $post_id ),
 					'title' => get_the_title(),
 					'date' => get_the_date(),
 					'excerpt' => false,
-					'postType' => get_post_type(),
 					'label' => $label,
 				);
 			}
@@ -113,6 +114,7 @@ class Related_Posts_API extends Related_Posts {
 			if ( array_key_exists( 'postId', $item ) ) {
 				$related_posts[] = array(
 					'postId' => $item['postId'],
+					'postType' => get_post_type($item['postId']),
 					'date'   => array_key_exists( 'date', $item ) ? $item['date'] : null,
 					'url'    => array_key_exists( 'permalink', $item ) ? $item['permalink'] : ( array_key_exists('link', $item) ? $item['link'] : null ),
 					'title'  => array_key_exists( 'title', $item ) ? stripslashes( $item['title'] ) : null,
@@ -145,11 +147,12 @@ class Related_Posts_API extends Related_Posts {
 		$related_posts = wp_cache_get( $post_id, self::$cache_key );
 		$custom_posts  = $this->get_custom_related_posts();
 
-		if ( 5 > count( $custom_posts ) && ( is_preview() || empty( $related_posts ) || false === $related_posts ) ) {
+		if ( 5 > count( $custom_posts ) && ( empty( $related_posts ) || false === $related_posts ) ) {
 			$related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
 			// If not enough related posts are found keying off primary topic widen the search and get all posts that at least have this post's primary topic as a topic.
 			if ( 5 > count( $related_posts ) ) {
 				$related_posts = $this->get_posts_with_matching_primary_terms( $per_page, true );
+
 				if ( !is_preview() ) {
 					// For queried related posts store in memcached.
 					wp_cache_set( $post_id, $related_posts, self::$cache_key, self::$cache_time );

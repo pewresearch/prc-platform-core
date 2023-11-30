@@ -1,4 +1,9 @@
 /**
+ * External Dependencies
+ */
+import { Icon, blockMeta as icon } from '@wordpress/icons';
+
+/**
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -14,7 +19,6 @@ import { useSelect } from '@wordpress/data';
 import { ProvidePostReportPackage } from './context';
 import BackChapters from './back-chapters';
 import ReportMaterials from './materials';
-import Icon from './Icon';
 
 const PLUGIN_NAME = 'prc-platform-post-report-package';
 
@@ -36,7 +40,7 @@ function ReportPackagePanel() {
 	);
 	return (
 		<Fragment>
-			<PluginSidebar name={PLUGIN_NAME} title="Report Package">
+			<PluginSidebar name={PLUGIN_NAME} title="Report Package" icon={<Icon icon={icon} size={16} />}>
 				<ProvidePostReportPackage {...{
 					postType,
 					postId: parentId,

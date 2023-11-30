@@ -2019,6 +2019,8 @@ __metadata:
     eslint-plugin-playwright: ^0.15.3
     react: ^18.2.0
     react-dom: ^18.2.0
+    taffydb: ^2.7.3
+    wp-hookdoc: ^0.2.0
   languageName: unknown
   linkType: soft
 
@@ -12561,6 +12563,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"taffydb@npm:^2.7.3":
+  version: 2.7.3
+  resolution: "taffydb@npm:2.7.3"
+  checksum: 40b1c3d463c9479e1b7154018eee5da8725ce46bfbe88be9bce1f84a73459280d79cbef7a597446997bcbf66372251257981e7578b882755dedbd8e203f4e6e0
+  languageName: node
+  linkType: hard
+
 "tannin@npm:^1.2.0":
   version: 1.2.0
   resolution: "tannin@npm:1.2.0"
@@ -13561,6 +13570,13 @@ __metadata:
   version: 2.0.1
   resolution: "wildcard@npm:2.0.1"
   checksum: e0c60a12a219e4b12065d1199802d81c27b841ed6ad6d9d28240980c73ceec6f856771d575af367cbec2982d9ae7838759168b551776577f155044f5a5ba843c
+  languageName: node
+  linkType: hard
+
+"wp-hookdoc@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "wp-hookdoc@npm:0.2.0"
+  checksum: 7e47d79d568baab94fb8c3e4b519a0fa30937392bda95d59692fc8714df1fe3835ebf7909ff01a0b045da3c92d9466c95868f6fc3f2e96e8ee0daba854532945
   languageName: node
   linkType: hard
 

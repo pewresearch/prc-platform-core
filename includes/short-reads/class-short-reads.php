@@ -62,22 +62,21 @@ class Short_Reads {
 			'show_in_menu'       => true,
 			'show_in_rest'       => true,
 			'query_var'          => true,
-			'rewrite'            => true,
+			'rewrite'            => array(
+				'slug' => 'short-read/%year%/%monthnum%/%day%',
+				'with_front' => true,
+				'pages'      => true,
+				'feeds'      => true,
+			),
 			'capability_type'    => 'post',
-			'has_archive'        => true,
+			'has_archive'        => 'short-reads',
 			'hierarchical'       => false,
 			'menu_position'      => 5,
 			'supports'           => array( 'title', 'editor', 'author', 'excerpt', 'revisions', 'thumbnail', 'custom-fields' ),
 			'taxonomies'         => array( 'category' ),
 		);
 
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
-			$args['taxonomies'] = array( 'topic' );
-		}
-
 		register_post_type( self::$post_type, $args );
-
-		add_feed( 'short-reads-full', array( $this, 'short_reads_feed_callback' ) );
 	}
 
 	public function enable_gutenberg_ramp($post_types) {
@@ -85,138 +84,20 @@ class Short_Reads {
 		return $post_types;
 	}
 
-	public function register_permalink_structure() {
-		// via http://shibashake.com/wordpress-theme/custom-post-type-permalinks-part-2
-		global $wp_rewrite;
-		// Short Reads Singular Post
-		$wp_rewrite->add_rewrite_tag( '%short-read%', '([^/]+)', 'short-read=' );
-		$wp_rewrite->add_permastruct( 'short-read', '/short-reads/%year%/%monthnum%/%day%/%short-read%', false );
-
-		// Short Reads Archive
-		$args                       = array(
-			'feed' => false,
-		);
-		$simple_fact_tank_structure = '/short-reads/%short-reads-list%';
-		add_rewrite_tag( '%short-reads-list%', '(list)', 'post_type=short-read&short-reads-list=' );
-		$wp_rewrite->add_permastruct( 'short-read-simple', $simple_fact_tank_structure, $args );
-	}
-
-	// Adapted from get_permalink function in wp-includes/link-template.php
-	// http://pewresearch.local/fact-tank/2019/11/15/key-takeaways-on-americans-views-about-privacy-surveillance-and-data-sharing/
-	public function get_short_read_permalink( $permalink, $post_id, $leavename ) {
-		$post = get_post( $post_id );
-		if ( self::$post_type !== $post->post_type ) {
-			return $permalink;
+	/**
+	 * Convert the %year%, %monthnum%, and %day% placeholders in the post type's rewrite slug to the actual datettime.
+	 * @hook post_type_link
+	 * @param mixed $url
+	 * @param mixed $post
+	 * @param mixed $leavename
+	 * @return mixed
+	 */
+	public function get_short_read_permalink($url, $post, $leavename) {
+		if ( self::$post_type == get_post_type($post) ) {
+			$url = str_replace( "%year%", get_the_date('Y'), $url );
+			$url = str_replace( "%monthnum%", get_the_date('m'), $url );
+			$url = str_replace( "%day%", get_the_date('d'), $url );
 		}
-		$rewritecode = array(
-			'%year%',
-			'%monthnum%',
-			'%day%',
-			'%hour%',
-			'%minute%',
-			'%second%',
-			$leavename ? '' : '%postname%',
-			'%post_id%',
-			'%category%',
-			'%author%',
-			$leavename ? '' : '%pagename%',
-		);
-
-		if ( '' != $permalink && ! in_array( $post->post_status, array( 'pending', 'auto-draft' ) ) ) {
-			$unixtime = strtotime( $post->post_date );
-
-			$category = '';
-			if ( strpos( $permalink, '%category%' ) !== false ) {
-				$cats = get_the_category( $post->ID );
-				if ( $cats ) {
-					usort( $cats, '_usort_terms_by_ID' ); // order by ID
-					$category = $cats[0]->slug;
-					if ( $parent = $cats[0]->parent ) {
-						$category = get_category_parents( $parent, false, '/', true ) . $category;
-					}
-				}
-				// show default category in permalinks, without
-				// having to assign it explicitly
-				if ( empty( $category ) ) {
-					$default_category = get_category( get_option( 'default_category' ) );
-					$category         = is_wp_error( $default_category ) ? '' : $default_category->slug;
-				}
-			}
-
-			$author = '';
-			if ( strpos( $permalink, '%author%' ) !== false ) {
-				$authordata = get_userdata( $post->post_author );
-				$author     = $authordata->user_nicename;
-			}
-
-			$date           = explode( ' ', date( 'Y m d H i s', $unixtime ) );
-			$rewritereplace =
-			array(
-				$date[0],
-				$date[1],
-				$date[2],
-				$date[3],
-				$date[4],
-				$date[5],
-				$post->post_name,
-				$post->ID,
-				$category,
-				$author,
-				$post->post_name,
-			);
-			$permalink      = str_replace( $rewritecode, $rewritereplace, $permalink );
-		}
-
-		return $permalink;
-	}
-
-	public function short_reads_feed_callback() {
-		/**
-		* Template Name: Custom RSS Template - Short Reads Full Feed
-		*/
-		$args = array(
-			'showposts' => 10,
-			'post_type' => self::$post_type,
-		);
-		query_posts($args);
-		header('Content-Type: '.feed_content_type('rss-http').'; charset='.get_option('blog_charset'), true);
-		echo esc_html('<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>');
-		?>
-		<rss version="2.0"
-        xmlns:content="http://purl.org/rss/1.0/modules/content/"
-        xmlns:wfw="http://wellformedweb.org/CommentAPI/"
-        xmlns:dc="http://purl.org/dc/elements/1.1/"
-        xmlns:atom="http://www.w3.org/2005/Atom"
-        xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
-        xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
-        <?php do_action('rss2_ns'); ?>>
-		<channel>
-	        <title>Pew Research Center - Short Reads</title>
-	        <atom:link href="<?php self_link(); ?>" rel="self" type="application/rss+xml" />
-	        <link><?php bloginfo_rss('url') ?></link>
-	        <description><?php bloginfo_rss('description') ?></description>
-	        <lastBuildDate><?php echo mysql2date('D, d M Y H:i:s +0000', get_lastpostmodified('GMT'), false); ?></lastBuildDate>
-	        <language><?php echo get_option('rss_language'); ?></language>
-	        <sy:updatePeriod><?php echo apply_filters( 'rss_update_period', 'hourly' ); ?></sy:updatePeriod>
-	        <sy:updateFrequency><?php echo apply_filters( 'rss_update_frequency', '1' ); ?></sy:updateFrequency>
-	        <?php do_action('rss2_head'); ?>
-	        <?php while(have_posts()) : the_post(); ?>
-				<?php global $more; $more = -1; // Disable the <!--more--> tag ?>
-				<?php $bylines = new Bylines(get_the_ID()); ?>
-                <item>
-                    <title><?php the_title_rss(); ?></title>
-                    <link><?php the_permalink_rss(); ?></link>
-                    <pubDate><?php echo mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true), false); ?></pubDate>
-                    <dc:creator><?php echo $bylines->format('string'); ?></dc:creator>
-                    <guid isPermaLink="false"><?php the_guid(); ?></guid>
-                    <description><![CDATA[<?php the_excerpt_rss(); ?>]]></description>
-                    <content:encoded><![CDATA[<?php the_content_feed();?>]]></content:encoded>
-                    <?php rss_enclosure(); ?>
-                    <?php do_action('rss2_item'); ?>
-                </item>
-	        <?php endwhile; ?>
-		</channel>
-		</rss>
-		<?php
+		return $url;
 	}
 }

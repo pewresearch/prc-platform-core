@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import { Button, ButtonGroup, useEffect } from '@wordpress/components';
 
 export default function ExistingBackChapterToolbar({ postId, currentPostId }) {
-	console.log('ExistingBackChapterToolbar', postId, currentPostId);
 	if (postId === currentPostId) {
 		return null;
 	}

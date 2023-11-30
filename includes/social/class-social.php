@@ -1,7 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
-
+use \PRC_PLATFORM_FACEBOOK_APP_ID;
 class Social {
 	/**
 	 * The ID of this plugin.
@@ -39,8 +39,6 @@ class Social {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -50,14 +48,7 @@ class Social {
 			true
 		);
 
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
-
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
@@ -68,7 +59,19 @@ class Social {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
 		}
+	}
+
+	/**
+	 * @hook wp_head
+	 * @return void
+	 */
+	public function place_facebook_app_id_in_head() {
+		$fb_key = PRC_PLATFORM_FACEBOOK_APP_ID;
+		// If on a dev server then override the site selection and use test ID.
+		if ( 'production' !== wp_get_environment_type() ) {
+			$fb_key = null;
+		}
+		echo '<meta property="share:appID:fb" content="' . esc_attr( $fb_key ) . '">';
 	}
 }

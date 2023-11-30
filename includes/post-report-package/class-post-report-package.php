@@ -2,13 +2,14 @@
 namespace PRC\Platform;
 use WP_Error;
 use WP_HTML_Heading_Processor;
+use WP_HTML_Tag_Processor;
 
 /**
  * Post Report Package is an all encompasing class for accessing the constructed report materials, the constructed table of contents, and the combination the report_package object.
  *
- * To access the table of contents it's recommended to use new \PRC\Platform\Post_Report_Package(null, null)->get_constructed_toc( $post_id );
+ * To access the table of contents it's recommended to use \PRC\Platform\Post_Report_Package(null, null)->get_constructed_toc( $post_id );
  *
- * For the report materials it's recommended to use new \PRC\Platform\Post_Report_Package(null, null)->get_constructed_report_materials( $post_id );
+ * For the report materials it's recommended to use \PRC\Platform\Post_Report_Package(null, null)->get_constructed_report_materials( $post_id );
  * @package PRC\Platform
  */
 class Post_Report_Package {
@@ -18,17 +19,32 @@ class Post_Report_Package {
 	public static $report_package_key = 'report_package';
 	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case
 	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case
-	protected $bypass_caching = false;
+	protected $bypass_caching = true;
 
 	public static $report_materials_schema_properties = array(
 		'key'          => array(
 			'type' => 'string',
+			'required' => false,
 		),
 		'type'         => array(
 			'type' => 'string',
+			'required' => false,
 		),
 		'url'          => array(
 			'type' => 'string',
+			'required' => false,
+		),
+		'label' => array(
+			'type' => 'string',
+			'required' => false,
+		),
+		'attachmentId' => array(
+			'type' => 'integer',
+			'required' => false,
+		),
+		'icon' => array(
+			'type' => 'string',
+			'required' => false,
 		),
 	);
 
@@ -70,10 +86,10 @@ class Post_Report_Package {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 		// Always bypass caching if we're previewing a url.
-		$this->bypass_caching = is_preview();
 		if ( !class_exists('WP_HTML_Heading_Processor') ) {
 			require_once( plugin_dir_path( __FILE__ ) . 'class-wp-html-heading-processor.php' );
 		}
+		require_once( plugin_dir_path( __FILE__ ) . 'class-pagination.php' );
 	}
 
 	/**
@@ -122,7 +138,7 @@ class Post_Report_Package {
 		return $post_id;
 	}
 
-	public function is_report_package($post_id) {
+	public function is_report_package( int $post_id) {
 		$post_id = $this->get_report_parent_id( $post_id );
 		if ( !empty(get_post_meta($post_id, self::$back_chapters_meta_key, true) ) ) {
 			return true;
@@ -155,6 +171,50 @@ class Post_Report_Package {
 	}
 
 	/**
+	 * Add appropriate post_status arguments to restful queries on the backend.
+	 * @hook rest_post_query
+	 * @param mixed $args
+	 * @param mixed $request
+	 * @return void
+	 */
+	public function hide_back_chapter_posts_restfully( $args, $request ) {
+		$referer = $request->get_header('referer');
+		// Break up the refere into its url params
+		$referer = wp_parse_url( $referer );
+		$referer_query = array_key_exists('query', $referer) ? $referer['query'] : '';
+		$referer_query = wp_parse_args( $referer_query );
+		$post_type = array_key_exists('postType', $referer_query) ? $referer_query['postType'] : '';
+		$post_id = array_key_exists('postId', $referer_query) ? $referer_query['postId'] : '';
+
+		$is_publication_listing = $request->get_param('isPubListingQuery');
+
+		$allowed_ids = array(
+			'prc-block-theme//index',
+			'prc-block-theme//home',
+			'prc-block-theme//category'
+		);
+
+		if ( ('wp_template' === $post_type && in_array($post_id, $allowed_ids)) || $is_publication_listing ) {
+			$args['post_parent'] = 0;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * This is a filter that can be used to modify the default args for a publication listing query used throughout PRC Platform.
+	 * @hook prc_platform_pub_listing_default_args
+	 * @param mixed $query
+	 * @return void
+	 */
+	public function hide_back_chapter_on_non_inherited_query_loops($query) {
+		if ( empty($query['s']) ){
+			$query['post_parent'] = 0;
+		}
+		return $query;
+	}
+
+	/**
 	 * Hide "back chapter" posts from our "publications" queries:
 	 * Can be overridden by setting ?showBackChapters query var to truthy value.
 	 * - archive
@@ -166,7 +226,7 @@ class Post_Report_Package {
 	 */
 	public function hide_back_chapter_posts($query) {
 		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
-		if ( ! is_admin() && $query->is_main_query() && is_index() && false === $show_back_chapters ) {
+		if ( ! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_post_type_archive() || $query->is_tax()) && false === $show_back_chapters ) {
 			$query->set( 'post_parent', 0 );
 		}
 	}
@@ -291,17 +351,52 @@ class Post_Report_Package {
 	}
 
 	public function register_rest_fields() {
+		// Register the quick Table of Contents field for all public posts types.
+		$public_post_types = get_post_types( array(
+			'public' => true,
+		) );
+		foreach ($public_post_types as $post_type) {
+			register_rest_field(
+				$post_type,
+				'table_of_contents',
+				array(
+					'get_callback' => array($this, 'get_table_of_contents_field'),
+					'description'  => 'The table of contents for this post.',
+				)
+			);
+		}
+
+		// Register the other constiuent fields for the report package.
 		register_rest_field(
 			'post',
-			self::$report_package_key,
+			'report_materials',
 			array(
-				'get_callback' => array($this, 'get_report_package_field'),
+				'get_callback' => array($this, 'get_report_materials_field'),
+				'description'  => 'The full report package; materials and back chapters.',
+			)
+		);
+
+		register_rest_field(
+			'post',
+			'report_pagination',
+			array(
+				'get_callback' => array($this, 'get_report_pagination_field'),
+				'description'  => 'Pagination for report packages.',
+			)
+		);
+
+		register_rest_field(
+			'post',
+			'parent_info',
+			array(
+				'get_callback' => array($this, 'get_parent_info_field'),
 				'description'  => 'The full report package; materials and back chapters.',
 			)
 		);
 	}
 
 	public function register_meta_fields() {
+		// Report Materials
 		register_post_meta(
 			'post',
 			self::$report_materials_meta_key,
@@ -314,16 +409,17 @@ class Post_Report_Package {
 						'items' => array(
 							'type'       => 'object',
 							'properties' => self::$report_materials_schema_properties,
-							'additionalProperties' => true
 						),
 					),
 				),
 				'auth_callback' => function() {
 					return current_user_can( 'edit_posts' );
 				},
+				'revisions_enabled' => true,
 			)
 		);
 
+		// Back Chapters
 		register_post_meta(
 			'post',
 			self::$back_chapters_meta_key,
@@ -342,12 +438,16 @@ class Post_Report_Package {
 				'auth_callback' => function() {
 					return current_user_can( 'edit_posts' );
 				},
+				'revisions_enabled' => true,
 			)
 		);
 	}
 
+	/**
+	 * REPORT MATERIALS
+	 */
 	public function get_report_materials( $post_id ) {
-		$this->bypass_caching = $this->bypass_caching || is_user_logged_in();
+		$this->bypass_caching = $this->bypass_caching || is_preview() || is_user_logged_in();
 
 		$parent_id = wp_get_post_parent_id( $post_id );
 		if ( false !== $parent_id && 0 !== $parent_id) {
@@ -359,7 +459,12 @@ class Post_Report_Package {
 
 	public function get_constructed_report_materials( $post_id ) {
 		$materials = $this->get_report_materials( $post_id );
+		return $materials;
 	}
+
+	/**
+	 * BACK CHAPTERS (TABLE OF CONTENTS)
+	 */
 
 	/**
 	 * Convert a number to words.
@@ -422,7 +527,7 @@ class Post_Report_Package {
 	 * This will only match h2 and h3 elements and assign them as chapters...
 	 */
 	public function prepare_legacy_headings($content, $post_id) {
-		if ( has_blocks($content) ) {
+		if ( has_blocks($content) || empty($content) ) {
 			return false;
 		}
 
@@ -454,11 +559,15 @@ class Post_Report_Package {
 			// We get the first level of the array first, then sub levels...
 			if ( in_array($block_name, array('core/heading', 'prc-block/chapter')) ) {
 				if ( array_key_exists('isChapter', $array['attrs']) && true === $array['attrs']['isChapter'] ) {
-					$level = $array['attrs']['level'];
+					$level = array_key_exists('level', $array['attrs']) ? $array['attrs']['level'] : 2;
 
 					$tags = new WP_HTML_Heading_Processor($array['innerHTML']);
 					$tags->next_tag('H'.$level);
 					$id = $tags->get_attribute('id');
+
+					if ( empty( $id ) ) {
+						$id = sanitize_title( $array['innerHTML'] );
+					}
 
 					// Check if the heading has a number in it and if so then we'll convert it to words, also we're removing the default h- from heading blocks, looks awful for SEO.
 					if ( preg_match( '/^h-(\d+)-/', $id, $matches ) ) {
@@ -523,7 +632,7 @@ class Post_Report_Package {
 	/**
 	 * Get the back chapters for a given post.
 	 * @param mixed $post_id
-	 * @return void
+	 * @return array
 	 */
 	public function get_back_chapters( $post_id ) {
 		$post_id = $this->get_report_parent_id( $post_id );
@@ -553,7 +662,7 @@ class Post_Report_Package {
 	}
 
 	private function get_toc_cache($post_id) {
-		if (true !== $this->bypass_caching ) {
+		if (false !== $this->bypass_caching ) {
 			return false;
 		}
 		$cache_key = self::$report_package_key . '_toc';
@@ -561,23 +670,27 @@ class Post_Report_Package {
 	}
 
 	private function update_toc_cache($post_id, $toc) {
-		if (true !== $this->bypass_caching ) {
+		if (false !== $this->bypass_caching ) {
 			return null;
 		}
 		$cache_key = self::$report_package_key . '_toc';
 		return wp_cache_set( $post_id, $toc, $cache_key, 5 * MINUTE_IN_SECONDS );
 	}
 
+	/**
+	 * This function will work with any post type, if the post is not a report package and does not have backchapter posts then it will just collapse the internal chapters into the main list.
+	 * @param mixed $post_id
+	 * @return mixed
+	 */
 	public function get_constructed_toc( $post_id ) {
-		$this->bypass_caching = $this->bypass_caching || is_user_logged_in();
+		$parent_id = $this->get_report_parent_id( $post_id );
+
+		$this->bypass_caching = $this->bypass_caching || is_preview() || is_user_logged_in();
 		$cached_toc = $this->get_toc_cache( $post_id );
 		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
 		if ( false !== $cached_toc ) {
 			return $cached_toc;
 		}
-		$parent_id = $this->get_report_parent_id( $post_id );
-
-		// Check if this post
 
 		$constructed_toc = array_merge( array(
 			array(
@@ -605,13 +718,24 @@ class Post_Report_Package {
 		}
 	}
 
+	public function get_pagination($post_id) {
+		$pagination = new Pagination( $post_id );
+		return $pagination->get();
+	}
+
+	/**
+	 * REPORT PACKAGE
+	 * Combined report materials and back chapter table of contents.
+	 */
 	public function get_report_package($post_id) {
 		$parent_id = $this->get_report_parent_id( $post_id );
+		$pagination = $this->get_pagination( $post_id );
 		return array(
 			'parent_title' => get_the_title( $parent_id ),
 			'parent_id' => $parent_id,
-			'report_materials' => $this->get_report_materials( $post_id ),
+			'report_materials' => $this->get_constructed_report_materials( $post_id ),
 			'table_of_contents'  => $this->get_constructed_toc( $post_id ),
+			'pagination' => $pagination,
 		);
 	}
 
@@ -622,8 +746,77 @@ class Post_Report_Package {
 	 * @param mixed $object
 	 * @return mixed
 	 */
-	public function get_report_package_field( $object ) {
+	public function get_table_of_contents_field( $object ) {
 		$post_id = $object['id'];
-		return $this->get_report_package( $post_id );
+		return $this->get_constructed_toc( $post_id );
+	}
+
+	public function get_report_materials_field( $object ) {
+		$post_id = $object['id'];
+		return $this->get_constructed_report_materials( $post_id );
+	}
+
+	public function get_report_pagination_field( $object ) {
+		$post_id = $object['id'];
+		return $this->get_pagination( $post_id );
+	}
+
+	public function get_parent_info_field( $object ) {
+		$post_id = $object['id'];
+		$parent_id = $this->get_report_parent_id( $post_id );
+		return array(
+			'parent_title' => get_the_title( $parent_id ),
+			'parent_id' => $parent_id,
+		);
+	}
+
+	/**
+	 * Helper function for getting the "adjacent" post in a report package.
+	 * @param mixed $where
+	 * @param mixed $post
+	 * @param string $adjacent
+	 * @return mixed
+	 */
+	private function filter_adjacent_post($where, $post, $adjacent = 'next_post') {
+		$is_post_report_package = $this->is_report_package( $post->ID );
+		if ( !$is_post_report_package ) {
+			return $where;
+		}
+
+		$pagination = $this->get_pagination( $post->ID );
+		$next_post = $pagination[$adjacent];
+
+		if ( !$next_post ) {
+			return $where;
+		}
+		global $wpdb;
+		$where = $wpdb->prepare( "WHERE p.ID = %s AND p.post_type = %s", $next_post['id'], $post->post_type );
+		return $where;
+	}
+
+	/**
+	 * @hook get_next_post_where
+	 * @param mixed $where
+	 * @param mixed $in_same_term
+	 * @param mixed $excluded_terms
+	 * @param mixed $taxonomy
+	 * @param mixed $post
+	 * @return mixed
+	 */
+	public function filter_next_post($where, $in_same_term, $excluded_terms, $taxonomy, $post) {
+		return $this->filter_adjacent_post($where, $post, 'next_post');
+	}
+
+	/**
+	 * @hook get_previous_post_where
+	 * @param mixed $where
+	 * @param mixed $in_same_term
+	 * @param mixed $excluded_terms
+	 * @param mixed $taxonomy
+	 * @param mixed $post
+	 * @return mixed
+	 */
+	public function filter_prev_post($where, $in_same_term, $excluded_terms, $taxonomy, $post) {
+		return $this->filter_adjacent_post($where, $post, 'previous_post');
 	}
 }

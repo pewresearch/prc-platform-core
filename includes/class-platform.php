@@ -10,7 +10,6 @@ namespace PRC\Platform;
  * @subpackage PRC_Platform/includes
  */
 
-use AC\Message\Plugin;
 use WP_Error;
 
 /**
@@ -73,6 +72,7 @@ class Platform_Bootstrap {
 
 		// Initialize the plugin and its various systems.
 		$this->load_dependencies();
+
 		$this->define_wp_admin_hooks();
 		$this->define_user_permissions_hooks();
 		$this->define_post_publish_pipeline_hooks();
@@ -96,6 +96,9 @@ class Platform_Bootstrap {
 		$this->define_slack_bot_hooks();
 		$this->define_apple_news_hooks();
 		$this->define_icon_loader_hooks();
+		$this->define_mailchimp_hooks();
+		$this->define_facets_hooks();
+		$this->define_block_utils_hooks();
 
 		// Initialize all taxonomy types:
 		$this->define_taxonomy_hooks();
@@ -195,6 +198,7 @@ class Platform_Bootstrap {
 		// Load "short-read" post type
 		$this->include('short-reads/class-short-reads.php');
 		// Load "social" system and tools.
+		$this->include('social/class-social.php');
 		$this->include('social/class-bitly.php');
 		// Load asynchronous multisite migration system.
 		$this->include('multisite-migration/class-multisite-migration.php');
@@ -220,6 +224,12 @@ class Platform_Bootstrap {
 		$this->include('apple-news/class-apple-news.php');
 		// Icon Loader
 		$this->include('icon-loader/class-icon-loader.php');
+		// Mailchimp
+		$this->include('mailchimp/class-mailchimp.php');
+		// Facets
+		$this->include('facets/class-facets.php');
+		// Block Utils
+		$this->include('block-utils/index.php');
 
 		// Initialize the loader.
 		$this->loader = new Loader();
@@ -250,7 +260,7 @@ class Platform_Bootstrap {
 		$this->loader->add_filter( 'the_excerpt', $admin, 'remove_overview_from_excerpts' );
 		$this->loader->add_filter( 'update_footer', $admin, 'output_platform_version_in_wp_admin', 100 );
 
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
 			$this->loader->add_filter( 'acp/storage/file/directory', $admin_columns, 'acp_load_via_files' );
 		}
 		$this->loader->add_action( 'ac/ready', $admin_columns, 'register_columns' );
@@ -285,6 +295,9 @@ class Platform_Bootstrap {
 
 		$this->loader->add_action('init', $post_visibility, 'register_custom_visibility_statuses', 9);
 		$this->loader->add_action('enqueue_block_editor_assets', $post_visibility, 'enqueue_assets');
+		$this->loader->add_action('pre_get_posts', $post_visibility, 'filter_pre_get_posts');
+		$this->loader->add_filter( 'rest_post_query', $post_visibility, 'filter_rest_query', 100, 2 );
+		$this->loader->add_filter('prc_platform_pub_listing_default_args', $post_visibility, 'filter_pub_listing_query_args', 10, 1);
 	}
 
 	/**
@@ -293,9 +306,7 @@ class Platform_Bootstrap {
 	 */
 	private function define_block_editor_hooks() {
 		$block_editor = new Block_Editor( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action('enqueue_block_editor_assets', $block_editor, 'enqueue_assets');
-		$this->loader->add_action('enqueue_block_assets', $block_editor, 'post_type_template_css_defaults');
 	}
 
 	/**
@@ -330,7 +341,7 @@ class Platform_Bootstrap {
 		);
 
 		$this->loader->add_action( 'rest_api_init', $post_publish_pipeline, 'register_rest_fields' );
-		$this->loader->add_filter( 'rest_post_query', $post_publish_pipeline, 'merge_post_parent_into_rest_queries', 10, 2 );
+		$this->loader->add_filter( 'rest_post_query', $post_publish_pipeline, 'add_post_parent_request_to_rest_api', 10, 2 );
 
 		/**
 		 * @uses prc_platform_on_incremental_save
@@ -344,6 +355,10 @@ class Platform_Bootstrap {
 		 * @uses prc_platform_on_update
 		 */
 		$this->loader->add_action( 'transition_post_status', $post_publish_pipeline, 'post_updating_hook', 99, 3 );
+		/**
+		 * @uses prc_platform_on_rest_update
+		 */
+		$this->loader->add_action( 'transition_post_status', $post_publish_pipeline, 'restful_post_updating_hook', 100, 3 );
 		/**
 		 * @uses prc_platform_on_publish
 		 * @uses prc_platform_on_unpublish
@@ -380,6 +395,7 @@ class Platform_Bootstrap {
 			'default_site_option_ms_files_rewriting', $media_settings,'handle_legacy_multisite_files_rewrites', 1000
 		);
 		$this->loader->add_filter('oembed_dataparse', $media_settings, 'youtube_remove_related', 10, 3);
+		$this->loader->add_filter( 'upload_mimes', $media_settings, 'allow_json_uploads' );
 
 		// Attachment Download URL Rewrite Handler
 		$this->loader->add_action( 'init', $attachment_downloads, 'attachment_download_rewrite' );
@@ -444,18 +460,23 @@ class Platform_Bootstrap {
 	 */
 	private function define_schema_meta_hooks() {
 		$schema_meta = new Schema_Meta( $this->get_plugin_name(), $this->get_version() );
-		add_filter( 'wpseo_robots', array( $schema_meta, 'yoast_seo_no_index' ) );
-		add_action( 'wp_head', array( $schema_meta, 'force_search_engines_to_use_meta' ) );
-		add_filter( 'wpseo_title', array( $schema_meta, 'yoast_seo_legacy_title_fix' ), 10, 1 );
-		add_filter( 'wpseo_opengraph_title', array( $schema_meta, 'remove_pipe_from_social_titles' ), 10, 1 );
-		add_action( 'wp_head', array( $schema_meta, 'taxonomy_head_meta' ) );
-		add_filter( 'wpseo_frontend_presenters', array( $schema_meta, 'add_parsely_meta' ) );
-		add_filter( 'wp_parsely_metadata', array( $schema_meta, 'disable_parsely_json_ld'), 10, 3 );
+		$this->loader->add_filter( 'wpseo_robots', $schema_meta, 'yoast_seo_no_index' );
+		$this->loader->add_action( 'wp_head', $schema_meta, 'force_search_engines_to_use_meta' );
+		$this->loader->add_filter( 'wpseo_title', $schema_meta, 'yoast_seo_legacy_title_fix', 10, 1 );
+		$this->loader->add_filter( 'wpseo_opengraph_title', $schema_meta, 'remove_pipe_from_social_titles', 10, 1 );
+		$this->loader->add_filter( 'wpseo_opengraph_image', $schema_meta, 'get_chart_image', 100, 1 );
+		$this->loader->add_filter( 'wpseo_metadesc', $schema_meta, 'get_chart_description', 100, 1 );
+		$this->loader->add_filter( 'wpseo_title', $schema_meta, 'get_chart_title', 100, 1 );
+
+		$this->loader->add_filter( 'wpseo_frontend_presenters', $schema_meta, 'add_parsely_meta' );
+		$this->loader->add_filter( 'wp_parsely_metadata', $schema_meta, 'disable_parsely_json_ld', 10, 3 );
 
 		$this->loader->add_filter( 'wpvip_parsely_load_mu', $schema_meta, 'enable_parsely_mu_on_vip' );
 		$this->loader->add_action( 'wp_head', $schema_meta, 'ascii', 1 );
 		$this->loader->add_filter( 'wpseo_twitter_creator_account', $schema_meta, 'yoast_seo_default_twitter' );
 		$this->loader->add_filter( 'wpseo_hide_version', $schema_meta, 'yoast_hide_version' );
+
+
 	}
 
 	/**
@@ -480,6 +501,7 @@ class Platform_Bootstrap {
 		// This will net us immediate functionality gains in the block editor, and php helper functions built into the core of WordPress.
 		// This is WordPress' core taxonomy, and we are simply renaming it's labels to "Topic" and adding a few customizations.
 		$category = new Topic_Category();
+		$this->loader->add_action('init', $category, 'enforce_category_permalink_structure');
 		$this->loader->add_filter( 'register_taxonomy_args', $category, 'change_category_labels_to_topic', 10, 2 );
 		$this->loader->add_action( 'enqueue_block_editor_assets', $category, 'enqueue_category_name_change_script' );
 
@@ -506,7 +528,7 @@ class Platform_Bootstrap {
 		// Research Teams
 		$research_teams = new Research_Teams();
 		$this->loader->add_action( 'init', $research_teams, 'register' );
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
 			$this->loader->add_filter( 'post_link', $research_teams, 'modify_post_permalinks', 10, 2 );
 			$this->loader->add_filter( 'post_type_link', $research_teams, 'modify_post_permalinks', 10, 2 );
 			$this->loader->add_filter( 'rewrite_rules_array', $research_teams, 'add_rewrite_rules', 10, 1 );
@@ -560,7 +582,6 @@ class Platform_Bootstrap {
 	 */
 	private function define_multisite_migration_hooks() {
 		$multisite_migration = new Multisite_Migration();
-		$multisite_migration_tools = new Multisite_Migration_Tools();
 		/**
 		 * For now these are being structured explicitly to support the multisite migration but many
 		 * of these distributor workflows that handle media and re-attaching media/posts will be re-tooled for post-launch distributor support of /decoded and /producers.
@@ -636,20 +657,6 @@ class Platform_Bootstrap {
 			'scheduled_distributor_primary_category_mapping',
 			10, 2
 		);
-
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
-			// Register "Migration Tools" REST API and interface.
-			$this->loader->add_action(
-				'rest_api_init',
-				$multisite_migration_tools,
-				'register_rest_endpoints'
-			);
-			$this->loader->add_action(
-				'enqueue_block_editor_assets',
-				$multisite_migration_tools,
-				'enqueue_assets'
-			);
-		}
 	}
 
 	/**
@@ -669,16 +676,30 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_block_area_module_hooks() {
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
-			return;
-		}
 		$block_area_modules = new Block_Area_Modules( $this->get_plugin_name(), $this->get_version() );
+		$block_area = new Block_Area();
+		$block_area_context_provider = new Block_Area_Context_Provider();
 
+		// Init Block Area Modules
 		$this->loader->add_action( 'init', $block_area_modules, 'register_block_areas' );
 		$this->loader->add_action( 'init', $block_area_modules, 'register_block_modules' );
-		$this->loader->add_action( 'init', $block_area_modules, 'block_init' );
+		$this->loader->add_action( 'ini', $block_area_modules, 'register_meta' );
+		$this->loader->add_action( 'rest_api_init', $block_area_modules, 'register_rest_fields' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $block_area_modules, 'enable_gutenberg_ramp' );
-		$this->loader->add_filter( 'the_content', $block_area_modules, 'collect_story_item_post_ids', 0, 1 );
+
+		// When saving block_modules update block area context
+		$this->loader->add_action( 'prc_platform_on_update', $block_area_modules, 'on_block_module_update_store_story_item_ids', 10, 2 );
+		$this->loader->add_action( 'prc_platform_on_rest_update', $block_area_modules, 'on_block_module_update_store_story_item_ids', 10, 2 );
+
+		// Handle block area context
+		$this->loader->add_filter( 'render_block_context', $block_area_context_provider, 'construct_block_context', 1, 3);
+		$this->loader->add_filter( 'render_block_context', $block_area_context_provider, 'execute_block_context', 100, 3);
+		$this->loader->add_action('pre_get_posts', $block_area_context_provider, 'execute_on_main_query');
+		$this->loader->add_action('prc_platform_on_update', $block_area_context_provider, 'clear_cache_on_block_module_saves');
+
+		// Init Blocks
+		$this->loader->add_action( 'init', $block_area, 'block_init' );
+		$this->loader->add_action( 'init', $block_area_context_provider, 'block_init');
 	}
 
 	/**
@@ -699,8 +720,19 @@ class Platform_Bootstrap {
 	private function define_interactive_post_type_hooks() {
 		$interactives = new Interactives( $this->get_plugin_name(), $this->get_version() );
 
+		// $this->loader->add_action( '', $interactives, '' );
+		// $this->loader->add_filter( '', $interactives, '' );
+
 		$this->loader->add_action( 'init', $interactives, 'register_type' );
+		// $this->loader->add_action( 'init', $interactives, 'register_assets' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $interactives, 'enable_gutenberg_ramp' );
+		$this->loader->add_action( 'init', $interactives, 'block_init' );
+		$this->loader->add_action( 'init', $interactives, 'rewrite_tags' );
+		$this->loader->add_action( 'init', $interactives, 'rewrite_index', 11 );
+		$this->loader->add_action( 'prc_platform_on_publish', $interactives, 'rewrite_update_hook' );
+		$this->loader->add_action( 'prc_platform_on_update', $interactives, 'rewrite_update_hook' );
+		$this->loader->add_action( 'enqueue_block_editor_assets', $interactives, 'enqueue_panel_assets' );
+		$this->loader->add_action( 'rest_api_init', $interactives, 'register_rest_endpoints' );
 	}
 
 	/**
@@ -711,10 +743,11 @@ class Platform_Bootstrap {
 		$homepages = new Homepages( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'init', $homepages, 'register_type' );
+		$this->loader->add_action( 'init', $homepages, 'block_init' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $homepages, 'enable_gutenberg_ramp' );
 		$this->loader->add_action( 'admin_bar_menu', $homepages, 'add_front_page_quick_edit', 999 );
 		$this->loader->add_filter( 'admin_menu_order', $homepages, 'admin_menu_order', 999 );
-		$this->loader->add_filter( 'post_type_link', $homepages, 'modify_homepage_permalink', 10, 2 );
+		// $this->loader->add_filter( 'post_type_link', $homepages, 'modify_homepage_permalink', 10, 2 );
 	}
 
 	/**
@@ -754,13 +787,9 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_short_read_post_type_hooks() {
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
-			return;
-		}
 		$short_reads = new Short_Reads( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'init', $short_reads, 'register_type' );
 		$this->loader->add_filter( 'prc_load_gutenberg', $short_reads, 'enable_gutenberg_ramp' );
-		$this->loader->add_action( 'init', $short_reads, 'register_permalink_structure' );
 		$this->loader->add_filter( 'post_type_link', $short_reads, 'get_short_read_permalink', 10, 3 );
 	}
 
@@ -775,9 +804,6 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_staff_bylines_hooks() {
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
-			return;
-		}
 		$staff_bylines = new Staff_Bylines(
 			$this->get_plugin_name(),
 			$this->get_version()
@@ -816,7 +842,7 @@ class Platform_Bootstrap {
 	 * @return void
 	 */
 	private function define_datasets_hooks() {
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
 			return;
 		}
 		$datasets = new Datasets(
@@ -869,11 +895,15 @@ class Platform_Bootstrap {
 	}
 
 	private function define_social_hooks() {
+		$social = new Social(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
 		$bitly = new Bitly(
 			$this->get_plugin_name(),
 			$this->get_version()
 		);
-
+		$this->loader->add_action( 'wp_head', $social, 'place_facebook_app_id_in_head' );
 		$this->loader->add_action( 'wp_head', $bitly, 'flush_shortlink' );
 		$this->loader->add_action( 'prc_platform_on_publish', $bitly, 'update_post_with_shortlink', 10, 1 );
 		$this->loader->add_action( 'admin_bar_menu', $bitly, 'add_quick_edit', 100 );
@@ -885,10 +915,15 @@ class Platform_Bootstrap {
 			$this->get_plugin_name(),
 			$this->get_version()
 		);
+		$factoids = new Search_Factoids();
 		$this->loader->add_filter( 'facetwp_use_search_relevancy', $search, 'facetwp_disable_search_relevancy' );
 		$this->loader->add_filter( 'pre_get_posts', $search, 'sanitize_search_term', 1, 1 );
 		$this->loader->add_filter( 'ep_set_sort', $search, 'ep_sort_by_date', 10, 2 );
 		$this->loader->add_filter( 'ep_highlight_should_add_clause', $search, 'ep_enable_highlighting', 10, 4);
+		$this->loader->add_action( 'init', $factoids, 'init' );
+		$this->loader->add_filter( 'prc_load_gutenberg', $factoids, 'enable_gutenberg_ramp' );
+		$this->loader->add_action( 'save_post_factoid', $factoids, 'update_index', 10, 3);
+		$this->loader->add_action( 'rest_api_init', $factoids, 'register_rest_endpoint' );
 	}
 
 	private function define_related_posts_hook() {
@@ -900,7 +935,6 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'enqueue_block_editor_assets', $related_posts, 'enqueue_assets' );
 		$this->loader->add_action( 'wpcom_vip_cache_pre_execute_purges', $related_posts, 'clear_cache_on_purge' );
 		$this->loader->add_action( 'prc_platform_on_update', $related_posts, 'clear_cache_on_update' );
-		$this->loader->add_filter( 'prc_related_posts', $related_posts, 'process', 10, 2 );
 	}
 
 	private function define_post_report_package_hooks() {
@@ -916,9 +950,15 @@ class Platform_Bootstrap {
 		$this->loader->add_action( 'prc_platform_on_incremental_save', $post_report_package, 'set_child_posts', 10, 1 );
 		$this->loader->add_action( 'prc_platform_on_update', $post_report_package, 'update_child_state', 10, 1 );
 		$this->loader->add_action( 'pre_get_posts', $post_report_package, 'hide_back_chapter_posts', 10, 1 );
+		$this->loader->add_filter('rest_post_query', $post_report_package, 'hide_back_chapter_posts_restfully', 10, 2);
 		$this->loader->add_filter( 'the_title', $post_report_package, 'indicate_back_chapter_post', 10, 2 );
-		$this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
+		// $this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
 		$this->loader->add_filter( 'query_vars', $post_report_package, 'register_query_var', 10, 1 );
+		$this->loader->add_filter( 'get_next_post_where', $post_report_package,
+		'filter_next_post', 10, 5 );
+		$this->loader->add_filter( 'get_previous_post_where', $post_report_package,
+		'filter_prev_post', 10, 5 );
+		$this->loader->add_filter('prc_platform_pub_listing_default_args', $post_report_package, 'hide_back_chapter_on_non_inherited_query_loops', 9, 1);
 	}
 
 	private function define_apple_news_hooks() {
@@ -937,10 +977,42 @@ class Platform_Bootstrap {
 		);
 		// Load the loader late so that theres a change for an icon library to be registered.
 		$this->loader->add_action( 'enqueue_block_assets', $icon_loader, 'enqueue_icon_loader', 99 );
-		// Load fallback prc-icons if needed
-		$this->loader->add_action( 'enqueue_block_editor_assets', $icon_loader, 'enqueue_icon_library_fallback', 10 );
-		// Determine if icon loader should be enqueued in frontend
-		$this->loader->add_filter( 'render_block', $icon_loader, 'tree_shaker', 100, 3 );
+		// Load fallback prc-icons if needed.
+		$this->loader->add_action( 'enqueue_block_editor_assets', $icon_loader, 'enqueue_icon_library_fallback', 98 );
+		$this->loader->add_action( 'enqueue_block_assets', $icon_loader, 'enqueue_icon_library_fallback', 98 );
+	}
+
+	private function define_mailchimp_hooks() {
+		$mailchimp = new Mailchimp(
+			$this->get_plugin_name(),
+			$this->get_version()
+		);
+		$this->loader->add_action('prc_run_monthly', $mailchimp, 'update_segments_list_monthly');
+		$this->loader->add_filter('wp_mail_from_name', $mailchimp, 'change_default_from_name');
+		$this->loader->add_filter('wp_mail_from', $mailchimp, 'change_default_mail_from_address');
+		$this->loader->add_action('rest_api_init', $mailchimp, 'register_rest_endpoints');
+	}
+
+	private function define_facets_hooks() {
+		$facets = new Facets(
+			$this->get_plugin_name(),
+			$this->get_version(),
+		);
+		$this->loader->add_action('init', $facets, 'init_api');
+		$this->loader->add_action('init', $facets, 'init_cache');
+		$this->loader->add_action('rest_api_init', $facets, 'init_rest_api');
+		$this->loader->add_action('init', $facets, 'init_blocks');
+		$this->loader->add_filter('facetwp_indexer_query_args', $facets, 'filter_facetwp_indexer_args', 10, 1);
+		$this->loader->add_filter('facetwp_index_row', $facets, 'restrict_facet_row_depth', 10, 1);
+		$this->loader->add_filter('facetwp_facets', $facets, 'facetwp_register_facets', 10, 1);
+	}
+
+	private function define_block_utils_hooks() {
+		$block_utils = new Block_Utils\JS_Utils_Loader(
+			$this->get_plugin_name(),
+			$this->get_version(),
+		);
+		$this->loader->add_action('enqueue_block_editor_assets', $block_utils, 'register_assets_for_use', 10, 1);
 	}
 
 	/**

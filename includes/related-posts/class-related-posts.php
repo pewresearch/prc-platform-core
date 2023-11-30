@@ -3,7 +3,7 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Related_Posts {
-	public static $cache_key = 'relatedPosts';
+	public static $cache_key = 'relatedPostsB';
 	public static $cache_time = 1 * HOUR_IN_SECONDS;
 	protected static $enabled_post_types = array( 'post', 'short-read' );
 
@@ -94,8 +94,6 @@ class Related_Posts {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -159,7 +157,7 @@ class Related_Posts {
 	 * @param mixed $args
 	 * @return void
 	 */
-	public function process($post_id, $args) {
+	public function process($post_id, $args = array()) {
 		$api = new Related_Posts_API($post_id, $args);
 		return $api->query();
 	}

@@ -10,12 +10,15 @@
 		"@wordpress/scripts": "^26.1.0",
 		"eslint-plugin-playwright": "^0.15.3",
 		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
+		"react-dom": "^18.2.0",
+		"taffydb": "^2.7.3",
+		"wp-hookdoc": "^0.2.0"
 	},
 	"scripts": {
 		"env:start": "wp-env start",
 		"env:stop": "wp-env stop",
 		"env:destroy": "wp-env destroy",
-		"test": "playwright test --config tests/playwright.config.ts"
+		"test": "playwright test --config tests/playwright.config.ts",
+		"docs:build": "jsdoc -c ./hookdoc-conf.json -r ./includes"
 	}
 }

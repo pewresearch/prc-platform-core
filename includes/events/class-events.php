@@ -93,7 +93,7 @@ class Events {
 			'capability_type'     => 'post',
 		);
 
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
 			$args['taxonomies'] = array( 'topic' );
 		}
 

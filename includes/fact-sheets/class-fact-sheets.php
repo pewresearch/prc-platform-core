@@ -34,9 +34,6 @@ class Fact_Sheets {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
-			self::$post_type = 'fact-sheets';
-		}
 	}
 
 	public function register_type() {
@@ -80,7 +77,7 @@ class Fact_Sheets {
 			'description'         => __( '', 'text_domain' ),
 			'labels'              => $labels,
 			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields' ),
-			'taxonomies'          => array( 'category', 'research-teams' ),
+			'taxonomies'          => array( 'category', 'research-teams', 'collection', 'languages' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -97,7 +94,7 @@ class Fact_Sheets {
 			'capability_type'     => 'post',
 		);
 
-		if ( get_current_blog_id() !== PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
 			$args['taxonomies'] = array( 'topic', 'research-teams' );
 		}
 

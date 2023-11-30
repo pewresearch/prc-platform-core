@@ -72,6 +72,10 @@ class Research_Teams extends Taxonomies {
 		return $registered;
 	}
 
+	public function generate_attachment_rewrite_rules($rules) {
+		//
+	}
+
 	// Adds a rewrite rule for each research term for the approved post types.
 	public function add_rewrite_rules($rules) {
 		$new_rules = array();
@@ -87,14 +91,24 @@ class Research_Teams extends Taxonomies {
 			foreach(self::$post_types as $post_type) {
 				if ( 'post' === $post_type ) {
 					$new_rules[$term_name. '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/?$'] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]';
+					// Add attachment rule:
+					$new_rules[$term_name . '/[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'fact-sheet' === $post_type ) {
 					$new_rules[$term_name . '/fact-sheet/([^/]+)/?$'] = 'index.php?post_type=fact-sheet&name=$matches[1]';
+					// Add attachment rule:
+					$new_rules[$term_name . '/fact-sheet/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'quiz' === $post_type ) {
 					$new_rules[$term_name . '/quiz/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]';
+					// Add attachment rule:
+					$new_rules[$term_name . '/quiz/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'interactive' === $post_type ) {
 					$new_rules[$term_name . '/interactive/([^/]+)/?$'] = 'index.php?post_type=interactive&name=$matches[1]';
+					// Add attachment rule:
+					$new_rules[$term_name . '/interactive/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'dataset' === $post_type ) {
 					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?post_type=dataset&name=$matches[1]';
+					// Add attachment rule:
+					$new_rules[$term_name . '/dataset/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				}
 			}
 		}

@@ -389,6 +389,9 @@ class Staff_Bylines {
 				)
 			);
 
+			/**
+			 * This handles whether ALL bylines should display on a given post.
+			 */
 			register_post_meta(
 				$post_type,
 				'displayBylines',
@@ -396,7 +399,7 @@ class Staff_Bylines {
 					'show_in_rest'  => true,
 					'single'        => true,
 					'type'          => 'boolean',
-					'default'       => true,
+					'default'       => false,
 					'auth_callback' => function() {
 						return current_user_can( 'edit_posts' );
 					},

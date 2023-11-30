@@ -1,0 +1,63 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "prc-platform/facet-template",
+	"version": "0.1.0",
+	"title": "Facet Template",
+	"category": "theme",
+	"description": "Display a facet given its slug and type as a block",
+	"attributes": {
+		"facetName": {
+			"type": "string",
+			"default": ""
+		},
+		"facetType": {
+			"type": "string"
+		},
+		"facetLabel": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"spacing": {
+			"blockGap": true,
+			"margin": [ "top", "bottom" ],
+			"padding": true,
+			"__experimentalDefaultControls": {
+				"padding": true
+			}
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalFontStyle": true,
+			"__experimentalTextTransform": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true,
+				"__experimentalFontFamily": true
+			}
+		},
+		"interactivity": true
+	},
+	"selectors": {
+		"root": ".wp-block-prc-platform-facet-template",
+		"typography": "h5"
+	},
+	"usesContext": [
+		"postType",
+		"templateSlug",
+		"previewPostType",
+		"facetsContextProvider"
+	],
+	"textdomain": "facet-template",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js"
+}

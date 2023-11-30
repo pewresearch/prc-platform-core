@@ -258,7 +258,7 @@ class Iframe_Embeds {
 	}
 
 	/**
-	 * Default output for /iframe if no template is passed through the `prc_iframe_template` filter.
+	 * Default output for /iframe if no template is passed through.
 	 * @hook template_redirect
 	 * @return void
 	 */

@@ -1,0 +1,17 @@
+{
+	"name": "prc-platform-block-utils",
+	"version": "1.0.0",
+	"description": "Common PHP and JS utilities for outputting block markup.",
+	"author": "Seth Rubenstein",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"format": "wp-scripts format",
+		"packages-update": "wp-scripts packages-update",
+		"start": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^26.16.0"
+	}
+}

@@ -39,7 +39,8 @@ class Post_Publish_Pipeline {
 		'topic-page',
 		'events',
 		'mini-course',
-		'press-release'
+		'press-release',
+		'block_module',
 	);
 
 
@@ -49,6 +50,37 @@ class Post_Publish_Pipeline {
 			// This is just an internal hook to this class, it allows us to setup and scaffold these fields and fill the data in later, allowing for a more performant API. Other parts of the platform can hook into this and add their own data but should not be used for anything other than the platform.
 			add_filter( 'prc_platform_wp_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
 		}
+	}
+
+	/**
+	 * Weird place to put this but I dont have another place right now for misc rest customizations and utilities.
+	 * @hook rest_api_init
+	 * @return void
+	 */
+	public function register_rest_endpoints() {
+		register_rest_route(
+			'prc-api/v3',
+			'/utils/postid-by-url',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'restfully_get_postid_by_url' ),
+				'args'                => array(
+					'url' => array(
+						'validate_callback' => function( $param, $request, $key ) {
+							// check if $param is a url...
+							$url = filter_var( $param, FILTER_VALIDATE_URL );
+							if ( $url === false ) {
+								return false;
+							}
+							return true;
+						},
+					),
+				),
+				'permission_callback' => function () {
+					return user_can( get_current_user_id(), 'edit_posts' );
+				},
+			)
+		);
 	}
 
 	public function restfully_get_label($object) {
@@ -62,6 +94,9 @@ class Post_Publish_Pipeline {
 		$terms = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'names' ) );
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			$term_name = array_shift( $terms );
+			if (is_object($term_name)) {
+				$term_name = $term_name->name;
+			}
 			$label = ucwords( str_replace( "-", " ", $term_name ) );
 		}
 
@@ -92,12 +127,13 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
+	 * Supports querying by post_parent for "post" types in the rest api.
 	 * @hook rest_post_query
 	 * @param mixed $args
 	 * @param mixed $request
 	 * @return mixed
 	 */
-	public function merge_post_parent_into_rest_queries($args, $request) {
+	public function add_post_parent_request_to_rest_api($args, $request) {
 		if ( $request->get_param( 'post_parent' ) ) {
 			$args['post_parent'] = $request->get_param( 'post_parent' );
 		}
@@ -128,6 +164,21 @@ class Post_Publish_Pipeline {
 			return $url;
 		}
 		return get_permalink( $post_id );
+	}
+
+	public function restfully_get_postid_by_url( $request ) {
+		$url = $request->get_param( 'url' );
+		if ( empty( $url ) ) {
+			return new WP_Error( 'no-url-provided', __( 'No url provided', 'my_textdomain' ), array( 'status' => 400 ) );
+		}
+		$post_id = \wpcom_vip_url_to_postid( $url );
+		if ( 0 === $post_id ) {
+			return new WP_Error( 'no-post-found', __( 'No post found', 'my_textdomain' ), array( 'status' => 404 ) );
+		}
+		return array(
+			'postId' => $post_id,
+			'postType' => get_post_type( $post_id ),
+		);
 	}
 
 	/**
@@ -171,6 +222,8 @@ class Post_Publish_Pipeline {
 				'get_callback' => array( $this, 'restfully_get_canonical_url' ),
 			)
 		);
+
+		$this->register_rest_endpoints();
 	}
 
 	/**
@@ -284,6 +337,10 @@ class Post_Publish_Pipeline {
 		if ( true === $this->is_cli ) {
 			return;
 		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
+			return;
+		}
 		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
@@ -304,6 +361,48 @@ class Post_Publish_Pipeline {
 		}
 	}
 
+	/**
+	 * transition_post_status
+	 * @param mixed $post_id
+	 * @param mixed $post
+	 * @param mixed $update
+	 * @return void
+	 */
+	public function restful_post_updating_hook( $new_status, $old_status, $post ) {
+		if ( true === $this->is_cli ) {
+			return;
+		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( !defined( 'REST_REQUEST' ) || true !== REST_REQUEST ) {
+			return;
+		}
+		if ( 'draft' === $old_status ) {
+			return;
+		}
+		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
+			return;
+		}
+		// Make sure the new status IS publish and the old  IS NOT publish. We want only first time published posts.
+		if ( ! in_array( $new_status, $this->published_statuses ) || wp_is_post_revision( $post ) ) {
+			return;
+		}
+		// If we're doing a save_post action then exit early, we don't want to run this twice.
+		if ( doing_action( 'save_post' ) || doing_action( 'prc_platform_on_publish' ) || doing_action( 'prc_platform_on_update' ) ) {
+			return;
+		}
+
+		// If the status before or after is not in the approved statuses then exit early.
+		if ( ! in_array( $new_status, $this->published_statuses ) && ! in_array( $old_status, $this->published_statuses ) ) {
+			return;
+		}
+
+		$ref_post = $this->setup_extra_wp_post_object_fields( $post );
+
+		if ( !is_wp_error($ref_post) ) {
+			do_action( 'prc_platform_on_rest_update', $ref_post, has_blocks( $post ) );
+		}
+	}
+
 
 	/**
 	 * Runs often, when a post is already published and is updated.
@@ -316,6 +415,10 @@ class Post_Publish_Pipeline {
 	 */
 	public function post_updating_hook( $new_status, $old_status, $post ) {
 		if ( true === $this->is_cli ) {
+			return;
+		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
 			return;
 		}
 		if ( 'draft' === $old_status ) {
@@ -360,6 +463,10 @@ class Post_Publish_Pipeline {
 		if ( true === $this->is_cli ) {
 			return;
 		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
+			return;
+		}
 		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
 			return;
 		}
@@ -397,6 +504,10 @@ class Post_Publish_Pipeline {
 		if ( true === $this->is_cli ) {
 			return;
 		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
+			return;
+		}
 		$post = get_post( $post_id );
 		// Ensure the post is not of type stub, we don't want to run into recursion issues.
 		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
@@ -420,6 +531,10 @@ class Post_Publish_Pipeline {
 	 */
 	public function post_untrashed_hook( $post_id, $previous_state ) {
 		if ( true === $this->is_cli ) {
+			return;
+		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
 			return;
 		}
 		$post = get_post( $post_id );

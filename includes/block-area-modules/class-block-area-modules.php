@@ -9,8 +9,6 @@ class Block_Area_Modules {
 	public static $taxonomy = 'block_area';
 	public static $post_type = 'block_module';
 
-	public $collected_story_item_ids = array();
-
 	/**
 	 * The ID of this plugin.
 	 *
@@ -41,6 +39,8 @@ class Block_Area_Modules {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area/block-area.php';
+		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area-context-provider/block-area-context-provider.php';
 	}
 
 	public function register_block_areas() {
@@ -150,18 +150,66 @@ class Block_Area_Modules {
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function block_init() {
-		register_block_type( __DIR__ . '/build', array(
-			'render_callback' => array( $this, 'render_block_area' ),
-		) );
+	public function enable_gutenberg_ramp($post_types) {
+		array_push( $post_types, self::$post_type );
+		return $post_types;
 	}
 
-	public function get_query_args($category_slug = null, $block_area_slug = null, $inherit_category = false) {
-		if ( null === $block_area_slug ) {
+	/**
+	 * @hook init
+	 * @return void
+	 */
+	public function register_meta() {
+		register_post_meta(
+			self::$post_type,
+			'_story_item_ids',
+			array(
+				'show_in_rest'  => true,
+				'single'        => true,
+				'default' 	    => 'public',
+				'type'          => 'array',
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+	}
+
+	/**
+	 * Make collected story item id's available in the rest api.
+	 * @hook rest_api_init
+	 * @return void
+	 */
+	public function register_rest_fields() {
+		register_rest_field(
+			self::$post_type,
+			'_story_item_ids',
+			array(
+				'get_callback'    => function( $object ) {
+					return get_post_meta( $object['id'], '_story_item_ids', true );
+				},
+				'update_callback' => function( $value, $object ) {
+					return update_post_meta( $object->ID, '_story_item_ids', $value );
+				},
+				'schema'          => array(
+					'description' => "Collected prc-block/story-item post id's from the block module.",
+					'type'        => 'array',
+				),
+			)
+		);
+	}
+
+	public function get_query_args(
+		$category_slug = null,
+		$block_area_slug = null,
+		$inherit_category = false,
+		$reference_id = false
+	) {
+		if ( null === $block_area_slug && false === $reference_id ) {
 			return false;
 		}
 
-		if ( true === $inherit_category && null === $category_slug ) {
+		if ( true === $inherit_category ) {
 			global $wp_query;
 			if ( $wp_query->is_main_query() && $wp_query->is_category() ) {
 				$queried_object = $wp_query->get_queried_object();
@@ -183,6 +231,7 @@ class Block_Area_Modules {
 				'taxonomy' => 'category',
 				'field' => 'slug',
 				'terms' => array($category_slug),
+				'include_children' => false, //
 			));
 		}
 
@@ -193,140 +242,65 @@ class Block_Area_Modules {
 			'tax_query' => $tax_query,
 		);
 
+		if ( false !== $reference_id ) {
+			$block_module_query_args['post__in'] = array($reference_id);
+			unset($block_module_query_args['tax_query']);
+		}
+
+		do_action('qm/debug', 'Block Area Query Args' . print_r($block_module_query_args, true));
+
 		return $block_module_query_args;
 	}
 
-	public function render_block_area($attributes, $content, $block) {
-		$context = $block->context;
-		$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
-		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
-		$inherit_category = array_key_exists('inheritCategory', $attributes) ? $attributes['inheritCategory'] : false;
+	/**
+	 * A very fast way to collect story item id's from innerblocks.
+	 *
+	 * It doesn't check for anything else, it doesn't care for anything else, it just collects the id attribute if it exists for story-item blocks and returns them in an array.
+	 *
+	 * @param mixed $blocks
+	 * @return array
+	 */
+	public function collect_story_item_ids($blocks) {
+		$story_item_post_ids = [];
+		$temp_ids = [];
 
-		$query_args = $this->get_query_args($category_slug, $block_area_slug, $inherit_category);
-		$block_modules = new WP_Query($query_args);
-		if ( $block_modules->have_posts() ) {
-			$block_module_id = $block_modules->posts[0];
-			$block_module = get_post($block_module_id);
-			$content = $block_module instanceof WP_Post ? apply_filters(
-				'the_content',
-				$block_module->post_content,
-			) : $content;
-		}
-		wp_reset_postdata();
-
-		return $content;
-	}
-
-	public function enable_gutenberg_ramp($post_types) {
-		array_push( $post_types, self::$post_type );
-		return $post_types;
-	}
-
-	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
-		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-
-		$script = wp_register_script(
-			$asset_slug,
-			$script_src,
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
-		);
-
-		if ( ! $script ) {
-			return new WP_Error( self::$handle, 'Failed to register all assets' );
+		foreach ($blocks as $block) {
+			if ('prc-block/story-item' === $block['blockName'] && isset($block['attrs']['postId'])) {
+				$story_item_post_ids[] = $block['attrs']['postId'];
+			}
+			if (isset($block['innerBlocks'])) {
+				$temp_ids[] = $this->collect_story_item_ids($block['innerBlocks']);
+			}
 		}
 
-		return true;
-	}
-
-	public function enqueue_assets() {
-		$registered = $this->register_assets();
-		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
+		foreach ($temp_ids as $ids) {
+			$story_item_post_ids = array_merge($story_item_post_ids, $ids);
 		}
+
+		return array_values($story_item_post_ids);
 	}
 
 	/**
-	 * Collects prc-block/story-item post id attributes for the current page.
-	 * - First we look for prc-block/block-area blocks on the page, we get the args, run a query, see if there are block modules, if so we cache them in this plugin.
-	 * - Then we look into the block module posts content and collect any prc-block/story-item blocks and get their post id attributes if they have one.
-	 * - Lastly we look for any query blocks on this page and we inject a post__in arg with the post ids we collected.
-	 *
-	 * @TODO this needs to be 1. cached and 2. recursive to check deep blocks
-	 * @hook the_content
+	 * @hook prc_platform_on_update, prc_platform_on_rest_update
+	 * @param mixed $post
+	 * @param mixed $has_blocks
 	 * @return void
 	 */
-	public function collect_story_item_post_ids($content) {
-		if ( !has_blocks($content) ) {
-			return $content;
+	public function on_block_module_update_store_story_item_ids($post, $has_blocks){
+		if ( self::$post_type !== $post->post_type ) {
+			return;
 		}
+		$content = $post->post_content;
+		$block_module_blocks = parse_blocks($content);
 
-		$blocks = parse_blocks($content);
+		$story_item_ids = $this->collect_story_item_ids($block_module_blocks);
 
-		global $post;
-		$cached = wp_cache_get($post->ID, 'prc_block_area_module_story_item_ids');
-		if ( false !== $cached && !is_preview() ) {
-			$this->collected_story_item_ids = $cached;
-		} else {
-			// Collect story item post ids from block area block modules:
-			foreach( array_filter($blocks, function($block) {
-				return 'prc-platform/block-area' === $block['blockName'];
-			}) as $index => $block_area ) {
-				$attributes = $block_area['attrs'];
-
-				$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
-				$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
-
-				$query_args = $this->get_query_args($category_slug, $block_area_slug, false);
-				$block_modules = new WP_Query($query_args);
-
-				if ( $block_modules->have_posts() ) {
-					$block_module_id = $block_modules->posts[0];
-					$block_module = get_post($block_module_id);
-					$block_module_content = $block_module instanceof WP_Post ? $block_module->post_content : null;
-
-					if ( null !== $block_module_content ) {
-						// search for story item blocks in the block module content
-						$block_module_blocks = parse_blocks($block_module_content);
-
-						$story_item_blocks = array_filter($block_module_blocks, function($block) {
-							return 'prc-block/story-item' === $block['blockName'];
-						});
-
-						// get postId attributes from story item blocks
-						$story_item_post_ids = array_map(function($block) {
-							return $block['attrs']['postId'];
-						}, $story_item_blocks);
-
-						$story_item_post_ids = array_values($story_item_post_ids);
-
-						// add to collected story item ids
-						$this->collected_story_item_ids = array_merge($this->collected_story_item_ids, $story_item_post_ids);
-					}
-				}
-				wp_reset_postdata();
-				wp_cache_set($post->ID, $this->collected_story_item_ids, 'prc_block_area_module_story_item_ids', 1 * HOUR_IN_SECONDS);
-			}
-		}
-
-		foreach ($blocks as $index => $query_block) {
-			if ( 'core/query' !== $query_block['blockName'] ) {
-				continue;
-			}
-			$attributes = $query_block['attrs'];
-			$query_args = array_key_exists('query', $attributes) ? $attributes['query'] : null;
-			if ( null !== $query_args ) {
-				$query_args['exclude'] = array_merge($query_args['exclude'], $this->collected_story_item_ids);
-				$attributes['query'] = $query_args;
-				$query_block['attrs'] = $attributes;
-				$blocks[$index] = $query_block;
-			}
-		}
-
-		$content = serialize_blocks($blocks);
-		return $content;
+		update_post_meta(
+			$post->ID,
+			'_story_item_ids',
+			$story_item_ids,
+		);
 	}
+
+
 }

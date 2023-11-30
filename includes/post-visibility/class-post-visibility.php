@@ -64,6 +64,7 @@ class Post_Visibility {
 							'description' => 'The visibility of the post in the index and search. Defaults to public. **Private and password protected posts are not affected by this setting and this respects their statuses.**',
 							'enum' => array(
 								null,
+								'', // This is the default value
 								'public',
 								'hidden_from_search',
 								'hidden_from_index',
@@ -71,6 +72,7 @@ class Post_Visibility {
 						),
 					),
 					'single'        => true,
+					'default' 	    => 'public',
 					'type'          => 'string',
 					'auth_callback' => function() {
 						return current_user_can( 'edit_posts' );
@@ -134,7 +136,6 @@ class Post_Visibility {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 
 		$script = wp_register_script(
@@ -145,14 +146,7 @@ class Post_Visibility {
 			true
 		);
 
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
-
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
@@ -166,7 +160,107 @@ class Post_Visibility {
 		}
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
 		}
 	}
+
+	/**
+	 * Add appropriate post_status arguments to restful queries.
+	 * @hook rest_{post_type}_query
+	 * @param mixed $args
+	 * @param mixed $request
+	 * @return void
+	 */
+	public function filter_rest_query( $args, $request ) {
+		$referer = $request->get_header('referer');
+		// Break up the refere into its url params
+		$referer = wp_parse_url( $referer );
+		$referer_query = array_key_exists('query', $referer) ? $referer['query'] : '';
+		$referer_query = wp_parse_args( $referer_query );
+		$post_type = array_key_exists('postType', $referer_query) ? $referer_query['postType'] : '';
+		$post_id = array_key_exists('postId', $referer_query) ? $referer_query['postId'] : '';
+
+		$allowed_ids = array(
+			'prc-block-theme//index',
+			'prc-block-theme//home',
+			'prc-block-theme//category'
+		);
+
+		$is_publication_listing = $request->get_param('isPubListingQuery');
+
+		if ( 'wp_template' === $post_type ) {
+			if ( in_array($post_id, $allowed_ids) ){
+				$args['post_status'] = $this->show_publish_and_hidden_from_search($args['post_status']);
+			}
+			if ( 'prc-block-theme//search' === $post_id ) {
+				$args['post_status'] = $this->show_publish_and_hidden_from_index($args['post_status']);
+			}
+		} elseif ( $is_publication_listing ) {
+			$args['post_status'] = $this->show_publish_and_hidden_from_search($args['post_status']);
+		}
+
+		return $args;
+	}
+
+	public function show_publish_and_hidden_from_search($post_status = array()){
+		if ( !is_array($post_status) ) {
+			$post_status = array($post_status);
+		}
+		$to_add = array(
+			'publish',
+			'hidden_from_search'
+		);
+		return array_merge($post_status, $to_add);
+	}
+
+	public function show_publish_and_hidden_from_index($post_status = array()){
+		if ( !is_array($post_status) ) {
+			$post_status = array($post_status);
+		}
+		$to_add = array(
+			'publish',
+			'hidden_from_index'
+		);
+		return array_merge($post_status, $to_add);
+	}
+
+	/**
+	 * @hook prc_platform_pub_listing_default_args
+	 * @param mixed $query
+	 * @return mixed
+	 */
+	public function filter_pub_listing_query_args($query) {
+		if ( is_admin() || !is_array($query) ) {
+			return $query;
+		}
+		$post_status = array_key_exists('post_status', $query) ? $query['post_status'] : array();
+		if ( !empty($query['s'] ) ){
+			$query['post_status'] = $this->show_publish_and_hidden_from_index($post_status);
+		} else {
+			$query['post_status'] = $this->show_publish_and_hidden_from_search($post_status);
+		}
+		return $query;
+	}
+
+	/**
+	 * @hook pre_get_posts
+	 */
+	public function filter_pre_get_posts($query) {
+		if ( is_admin() || ! $query->is_main_query() || $query->is_page() ) {
+			return $query;
+		}
+
+		// On "publication listing" only allow "publish" and "hidden from search" posts. Hidden from index posts wont appear.
+		if ( $query->is_home() || $query->is_archive() || $query->is_tax() ) {
+			$query->set( 'post_status', $this->show_publish_and_hidden_from_search() );
+		}
+		// On search only allow "publish" and "hidden from index" posts. Hidden from search posts wont appear.
+		if ( $query->is_search() ) {
+			$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );
+		}
+		// On bylines only allow "publish" and "hidden from index" posts, giving a full accounting of a persons work. Hidden from search posts wont appear.
+		if ( $query->is_tax('bylines') ) {
+			$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );
+		}
+	}
+
 }

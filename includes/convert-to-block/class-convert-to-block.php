@@ -92,7 +92,12 @@ class Convert_To_Blocks {
 		} );
 		add_shortcode( 'collapsible', function( $attr, $content = null ) {
 			$this->signal_conversion_needed('collapsible');
-			return $content;
+			// We need to account for this here and return some simple markup...
+			ob_start();
+			?>
+			<div class="wp-block-prc-block-collapsible--to-convert"><?php echo $content;?></div>
+			<?php
+			return normalize_whitespace(ob_get_clean());
 		} );
 	}
 

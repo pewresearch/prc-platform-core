@@ -9,17 +9,15 @@ class Multisite_Migration {
 	public static $migration_flag_key = '_prc_migrated_post';
 
 	public function __construct() {
-		$this->migration_site_id = PRC_MIGRATION_SITE;
+		$this->migration_site_id = PRC_PRIMARY_SITE_ID;
 
 		// Attachments Handler
 		require_once( __DIR__ . '/types/class-attachment.php' );
 		require_once( __DIR__ . '/types/class-multisection-report.php' );
 		require_once( __DIR__ . '/types/class-staff-bylines.php' );
 		require_once( __DIR__ . '/types/class-block-patcher.php' );
-		require_once( __DIR__ . '/types/class-classic-editor-patcher.php' );
-		require_once( __DIR__ . '/types/class-pages.php' );
+		require_once( __DIR__ . '/types/class-classic-to-blocks.php');
 		require_once( __DIR__ . '/types/class-related-posts.php' );
-		require_once( __DIR__ . '/class-tools.php' );
 		require_once( __DIR__ . '/class-wp-cli-commands.php' );
 	}
 
@@ -66,116 +64,48 @@ class Multisite_Migration {
 	}
 
 	/**
-	 * Handles on-going migration of posts from the original site to the new site.
-	 * New content will be migrated automatically at midnight every night.
-	 * Posts will be queued at 6pm, capturing everything published between 6pm yesterday and 6pm today.
-	 *
-	 * @hook prc_run_at_end_of_day
-	 */
-	public function schedule_midnight_distributor_push() {
-		// This shouldn't run on the migration site.
-		if ( PRC_MIGRATION_SITE === get_current_blog_id() ) {
-			return;
-		}
-		// At 6pm each day, lets get all the posts published today that dont have $migration_flag_key in their meta.
-		// Then we're going to schedule a distributor push for each of them at midnight.
-		// Let the date_query be looking for everything from 6pm yesterday to 6pm today.
-		$posts = get_posts(
-			array(
-				'posts_per_page'   => 100, // This is a one time thing, so we can do them all at once.
-				'post_type'        => array(
-					'staff',
-					'chart',
-					'dataset',
-					'fact-sheets',
-					'short-read',
-					'interactives',
-					'post'
-				),
-				'post_status'      => 'publish',
-				'date_query' => array(
-					array(
-						'after' => 'yesterday 6pm',
-						'before' => 'today 6pm',
-						'inclusive' => true,
-					)
-				),
-				/// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				'meta_query' => array(
-					array(
-						'key' => '_prc_migrated_post',
-						'compare' => 'NOT EXISTS',
-					)
-				),
-			)
-		);
-
-		foreach ( $posts as $post ) {
-			// We're going to need to check the post type and depending on post type 1.) schedule its time out correctly (charts, staff, and datasets should occur first then everything else)'.
-			// $timestamp should be midnight tonight.
-			$timestamp = null;
-			switch ($post->post_type) {
-				case 'staff':
-					$timestamp = strtotime('tomorrow midnight');
-					break;
-
-				case 'chart':
-					$timestamp = strtotime('tomorrow midnight + 5 minutes');
-					break;
-
-				case 'dataset':
-					$timestamp = strtotime('tomorrow midnight + 10 minutes');
-					break;
-
-				default:
-					$timestamp = strtotime('tomorrow at 1am');
-					break;
-			}
-			$action = 'prc_distributor_queue_push';
-			$args = array(
-				'post_id' => $post->ID,
-				'push_target' => $this->migration_site_id,
-			);
-			$group = $this->migration_site_id . '_' . $post->ID;
-
-			$is_next = as_next_scheduled_action($action, $args, $group);
-			if (!$is_next) {
-				as_schedule_single_action($timestamp, $action, $args, $group);
-			}
-		}
-	}
-
-	/**
 	 * The primary action that starts the subsequent actions that handle the migration of a post.
-	 * This will push the post to the target site and establish a Distributor connection between the two posts,
-	 * so that future updates will be continue to be applied to the new post.
+	 * This will PULL updates to the post and clean up any data that needs to be cleaned up.
 	 *
-	 * @hook prc_distributor_queue_push
+	 * @hook prc_migration_pull_and_replace
 	 * @param mixed $post_id
-	 * @param mixed $target_site_id
 	 * @return array|WP_Error|void
 	 */
-	public function scheduled_distributor_push($post_id, $target_site_id) {
-		$migrated = get_post_meta( $post_id, '_prc_migrated_post', true );
-		if ( $migrated ) {
-			return;
-		}
-		$distributor = new Distributor( $post_id, $target_site_id );
-		$distributed = $distributor->push();
-
-		// now its here that we could schedule follow up tasks to handle things like the media attachments and what not.
-		$has_push_errors = array_key_exists('push-errors', $distributed) && !empty($distributed['push-errors']);
-		if ( !is_wp_error($distributed) ) {
-			update_post_meta( $post_id, '_prc_migrated_post', true );
-			update_post_meta( $post_id, '_prc_migrated_new_post_id', $distributed['id'] );
+	public function scheduled_distributor_push($post_id) {
+		// Give the post id we need to first check that it has a original blog id and original post id.
+		$original_site_id = $this->get_original_blog_id($post_id);
+		$original_post_id = $this->get_original_post_id($post_id);
+		if (empty($original_site_id) || empty($original_post_id)) {
+			return new WP_Error('prc_migration_missing_original_ids', 'The original blog id or original post id is missing from the post meta.');
 		}
 
-		if ($has_push_errors) {
-			update_post_meta( $post_id, '_prc_migrated_post__errors', wp_json_encode($distributed['push-errors']) );
-		}
+		// First we need to gather up some information that we can pass down to each subsequent action:
+		// 1. Lets get all the attachments associated with this post into an array.
+		// 2. Lets get all the images that should be associated with this post from its post content into an array. Account for blocks, account for classic editor html content when searching for images...
+		// 3. We'll get the attachment id's for report materials and for art direction.
+		// Combine all these into unique attachment id's and urls.
 
-		return $distributed;
+		// 3. Get all the currently assigned taxonomy terms for this post.
+		// 4. Get the currently set primay category/topic term for this post.
+
+		// Then we're going to switch into the original_site_id and get the original_post_id post.
+		// 1. We'll get all the attachments associated with this post into an array.
+		// 2. We'll get all the images that should be associated with this post from its content just like above.
+		// 3. We'll get all the attachment ids in report materials and in art direction and make sure they are in the attachments array. If not we'll add them to the attachments array.
+		// Combine all these into unique attachment id's and urls.
+
+		// 3. We'll check the images that we found in the content against the attachments we found properly attached and make sure its 1:1. If not we'll make an array of the images from the content missing from the attachments array. We'll also make an array of any matching new post attachment id's paired with their old post attachment id's so that we can run simple updates against these attachments later. For the missing one's we'll copy those over.
+		// 4. We'll get the post content and determine if its blocks or not. If its block we'll run one class to update things. If its classic we'll run another.
+		// BLOCK CONTENT FIXES:
+		// 1. Search for [footnotes] and replace these with <sup> wp footnotes markup and then construct post meta that has the gutenberg footnotes structure.
+		// 2. Run through image blocks and patch the media id's and sources and links to their new attachment ids and such.
+		// CLASSIC CONTENT FIXES:
+		// 1. Update all the current content to blocks. Along the way this class will update shortcodes to their new blocks and such.
+		// 2. During the conversion process also run through images and convert to blocks with the new image data.
+		//
+		// 5. We'll ensure the taxonomy term slugs match (account for our {taxonomy}_ slug schema on non migration site). If not then we'll make sure the term exists on the target site if not then we'll create it, otherwise we'll just get the term id and update the post with the new term id.
 	}
+
 
 	/**
 	 * Handles pushing attachments to the target site after a post is migrated and then re-establishing the parent relationship on the target site.
@@ -248,7 +178,9 @@ class Multisite_Migration {
 	public function scheduled_distributor_related_posts_meta_mapping($post_id, $meta) {
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
+
 		$old_related_posts = $meta['_relatedPosts'];
+
 		$related_posts = new Related_Posts_Migration(
 			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
 			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
@@ -345,25 +277,6 @@ class Multisite_Migration {
 		);
 
 		return $block_patcher->process_media($attachment_id_pairs);
-	}
-
-	/**
-	 * Handle re-connecting page hierarchy after migration.
-	 *
-	 * @hook prc_distributor_queue_page_migration
-	 * @param mixed $post_id
-	 * @return void
-	 */
-	public function scheduled_distributor_page_mapping($post_id) {
-		$original_site_id = $this->get_original_blog_id($post_id);
-		$original_post_id = $this->get_original_post_id($post_id);
-
-		$page_migration = new Pages_Migration(
-			array('post_id' => $original_post_id, 'site_id' => $original_site_id),
-			array('post_id' => $post_id, 'site_id' => $this->migration_site_id)
-		);
-
-		return $page_migration->process();
 	}
 
 	/**

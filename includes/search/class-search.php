@@ -33,6 +33,7 @@ class Search {
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		require_once( plugin_dir_path( __FILE__ ) . 'factoids/class-factoids.php' );
 	}
 
 

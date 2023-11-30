@@ -90,3 +90,4 @@ domReady(() => {
 		console.log('Loading @pewresearch/prc-platform-block-editor...', 'Block editor ready for post type: ' + postType);
 	}, 3000);
 });
+

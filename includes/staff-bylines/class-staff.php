@@ -45,14 +45,20 @@ class Staff {
 		return $staff_post_id;
 	}
 
-	public function get_staff_link() {
-		if ( empty($this->ID) || !is_int($this->ID) ) {
+	public function get_staff_link($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
 			return false;
 		}
-		if ( false === get_post_meta($this->ID, 'bylineLinkEnabled', true) ) {
+
+		$display_byline_link = rest_sanitize_boolean(get_post_meta($staff_post_id, 'bylineLinkEnabled', true));
+		if ( true !== $display_byline_link) {
 			return false;
 		}
-		$term = TDS\get_related_term( $this->ID );
+
+		$term = TDS\get_related_term( $staff_post_id );
 		if ( ! is_a( $term, 'WP_Term' ) ) {
 			return new WP_Error( '404', 'Byline term not found, no matching term found for staff post.' );
 		}
@@ -97,7 +103,7 @@ class Staff {
 
 		$this->name = $staff_post->post_title;
 		$this->slug = $staff_post->post_name;
-		$this->link = $this->get_staff_link();
+		$this->link = $this->get_staff_link($staff_post_id);
 		$this->user_id = get_post_meta( $staff_post_id, 'user_id', true );
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
 		$this->job_title = get_post_meta( $staff_post_id, 'jobTitle', true );
@@ -106,23 +112,35 @@ class Staff {
 			'thumbnail' => get_the_post_thumbnail_url( $staff_post_id, '160-portrait' ),
 			'full' => get_the_post_thumbnail_url( $staff_post_id, 'full' ),
 		);
-		$this->social_profiles = $this->get_social_profiles();
-		$this->expertise = $this->get_expertise();
-		$this->is_currently_employed = $this->check_employment_status();
+		$this->social_profiles = $this->get_social_profiles($staff_post_id);
+		$this->expertise = $this->get_expertise($staff_post_id);
+		$this->is_currently_employed = $this->check_employment_status($staff_post_id);
 
 		$this->set_cache();
 	}
 
-	public function check_employment_status() {
-		if ( has_term( 'former-staff', 'staff-type', $this->ID ) ) {
+	public function check_employment_status($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		if ( has_term( 'former-staff', 'staff-type', $staff_post_id ) ) {
 			return false;
 		} else {
 			return true;
 		}
 	}
 
-	public function get_expertise() {
-		$terms     = get_the_terms( $this->ID, 'areas-of-expertise' );
+	public function get_expertise($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		$terms     = get_the_terms( $staff_post_id, 'areas-of-expertise' );
 		$expertise = array();
 		if ( $terms ) {
 			foreach ( $terms as $term ) {
@@ -141,7 +159,13 @@ class Staff {
 		return $expertise;
 	}
 
-	public function get_social_profiles() {
+	public function get_social_profiles($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
 		return array();
 	}
 }

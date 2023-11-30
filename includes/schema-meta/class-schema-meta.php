@@ -116,44 +116,70 @@ class Schema_Meta {
 		add_filter( 'yoast_seo_development_mode', '__return_true' );
 	}
 
-	/**
-	 * @TODO: We should depreceate this in favor of the yoast json ld output.
-	 * @return void
-	 */
-	public function taxonomy_head_meta() {
-		if ( ! is_singular() ) {
-			return;
-		}
-		global $post;
-		$taxonomies = array();
-		if ( taxonomy_exists( 'formats' ) ) {
-			$taxonomies[] = 'formats';
-		}
-		if ( taxonomy_exists( 'research-teams' ) ) {
-			$taxonomies[] = 'research-teams';
-		}
-		if ( taxonomy_exists( 'regions-countries' ) ) {
-			$taxonomies[] = 'regions-countries';
-		}
-		if ( taxonomy_exists( 'category' ) ) {
-			$taxonomies[] = 'category';
-		}
-		echo "\n<!-- Begin Taxonomy Meta -->\n";
-		foreach ( wp_get_object_terms( $post->ID, $taxonomies ) as $term ) {
-			echo "<meta name='$term->taxonomy' content='$term->name'>\n";
-		}
-		$primary_category_id = get_post_meta( $post->ID, '_yoast_wpseo_primary_category', true );
-		if ( $primary_category_id ) {
-			$primary_category = get_term_by( 'term_id', $primary_category_id, 'category' );
-			if ( $primary_category ) {
-				echo "<meta name='_primary-category' content='$primary_category->name'>\n";
-			}
-		}
-		echo "\n<!-- End Taxonomy Meta -->\n";
-	}
-
 	public function disable_parsely_json_ld( $parsely_metadata, $post, $parsely_options ) {
 		return array(); // disable the default metadata
+	}
+
+	public function get_chart_attribute($post_id, $attribute) {
+		if ( ! is_singular( 'chart' ) ) {
+			return;
+		}
+
+		$post_content = get_post_field('post_content', $post_id);
+		// get all of the blocks on the page with the name 'prc-block/chart-builder-controller'
+		$blocks = parse_blocks( $post_content );
+		$controller_blocks = array_filter( $blocks, function( $block ) {
+			return $block['blockName'] === 'prc-block/chart-builder-controller';
+		} );
+		// if there are no chart controller blocks, return
+		if ( empty( $controller_blocks ) ) {
+			return;
+		}
+		$chart_blocks = array_map( function( $block ) {
+			// return inner blocks with the block name 'prc-block/chart-builder'
+			return array_filter( $block['innerBlocks'], function( $inner_block ) {
+				return $inner_block['blockName'] === 'prc-block/chart-builder';
+			} );
+		}, $controller_blocks );
+		// get the first chart block
+		$chart_block = reset( $chart_blocks );
+		$attributes = $chart_block[1]['attrs'];
+
+		$block_attribute = array_key_exists($attribute, $attributes) ? $attributes[$attribute] : false;
+
+		return $block_attribute;
+	}
+
+	public function get_chart_title($title) {
+		global $post;
+		if ( ! is_singular( 'chart' ) ) {
+			return $title;
+		}
+		$id = $post->ID;
+		$title = $this->get_chart_attribute($id, 'metaTitle');
+		return $title;
+	}
+
+	public function get_chart_image($image) {
+		global $post;
+		if ( ! is_singular( 'chart' ) ) {
+			return $image;
+		}
+		$id = $post->ID;
+		$png_id = $this->get_chart_attribute($id, 'pngId');
+		$image = wp_get_attachment_url($png_id);
+
+		return $image;
+	}
+
+	public function get_chart_description($description) {
+		global $post;
+		if ( ! is_singular( 'chart' ) ) {
+			return $description;
+		}
+		$id = $post->ID;
+		$description = $this->get_chart_attribute($id, 'metaSource');
+		return $description;
 	}
 
 	/**
@@ -190,7 +216,7 @@ class Schema_Meta {
 	<!--
 	#   Pew Research Center Publishing Platform
 	#   Github: https://github.com/pewresearch/prc-platform-core
-	#   Version: <?php echo esc_html($this->version); ?> /\n
+	#   Version: <?php echo esc_html($this->version); ?>
 	#
 	-->
 		<?php

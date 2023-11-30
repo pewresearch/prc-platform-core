@@ -115,7 +115,7 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 					continue;
 				}
 				$id = $this->get_attribute('id');
-				$content = $this->get_attribute('toc-title'); // A sorta legacy "alt text"
+				$content = $this->get_attribute('toc-title'); // Alt text
 				if ( empty($content) ) {
 					$content = $this->get_inner_html();
 				}

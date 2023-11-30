@@ -470,6 +470,7 @@ class Distributor {
 		$timestamp = time();
 		$group = get_current_blog_id() . '_' . $post_id;
 
+		// First we transfer the attachments and pass along report materials, art direction, and dataset download if necessary.
 		$this->schedule_processing(
 			'prc_distributor_queue_attachment_migration',
 			$timestamp,
@@ -669,11 +670,55 @@ class Distributor {
 		return $taxonomy_terms;
 	}
 
+	public function get_research_slug_from_id( $site_id ) {
+		switch ( $site_id ) {
+			case 1:
+				return 'prc';
+				break;
+			case 2:
+				return 'global';
+				break;
+			case 3:
+				return 'social-trends';
+				break;
+			case 4:
+				return 'politics';
+				break;
+			case 5:
+				return 'hispanic';
+				break;
+			case 7:
+				return 'religion';
+				break;
+			case 8:
+				return 'media-news';
+				break;
+			case 9:
+				return 'internet-tech';
+				break;
+			case 10:
+				return 'methods';
+				break;
+			case 16:
+				return 'science';
+				break;
+			case 17:
+				return 'dev-docs';
+				break;
+			case 18:
+				return 'race-ethnicity';
+				break;
+			case 19:
+				return 'decoded';
+				break;
+		}
+	}
+
 	public function prepare_research_team_terms($taxonomy_terms) {
 		// Get the research team taxonomy term based on the current site id and add it to the taxonomy_terms array.
 		$current_blog_id = get_current_blog_id();
 		// Get the slug for the site. These corollate to the research team taxonomy terms.
-		$research_term_slug = prc_get_site_slug_from_id( $current_blog_id );
+		$research_term_slug = $this->get_research_slug_from_id( $current_blog_id );
 		// if research term slug is hispanic then change it to race-ethnicity.
 		$research_term_slug = 'hispanic' === $research_term_slug ? 'race-and-ethnicity' : $research_term_slug;
 		// if not on the main site then prepend the slug with research-teams_ to ensure we get the right term.

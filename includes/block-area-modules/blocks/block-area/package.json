@@ -1,0 +1,18 @@
+{
+	"name": "@pewresearch/prc-platform-block-area-modules",
+	"description": "Block Area and Block Module functionality for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/icons": "^9.37.0",
+		"@wordpress/scripts": "^26.17.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"test": "wp-scripts test-unit"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.11.1",
+		"@emotion/styled": "^11.11.0"
+	}
+}

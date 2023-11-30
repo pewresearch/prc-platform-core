@@ -1,0 +1,25 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-prc-platform-facet-template {
+	color: inherit;
+	background: inherit;
+	display: flex;
+	flex-direction: column;
+	gap: var(--block-gap);
+	&.is-processing {
+		opacity: 0.5;
+	}
+	&:not(.is-expanded) {
+		.wp-block-prc-platform-facet-template__list-expanded {
+			display: none;
+		}
+	}
+	.wp-block-prc-platform-facet-template__label {
+		margin: 0!important;
+	}
+}

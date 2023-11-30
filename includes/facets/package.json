@@ -1,0 +1,21 @@
+{
+  "name": "@pewresearch/prc-app-facets",
+  "version": "3.0.1",
+  "description": "Handles PRC implementation of FacetWP",
+  "author": "Seth Rubenstein",
+  "license": "GPL-2.0+",
+  "devDependencies": {
+    "@wordpress/dependency-extraction-webpack-plugin": "^4.10.0",
+    "@wordpress/dom-ready": "^3.6.0",
+    "@wordpress/html-entities": "^3.7.0",
+    "@wordpress/scripts": "^25.4.0"
+  },
+  "dependencies": {
+    "classnames": "^2.3.1",
+    "semantic-ui-react": "^2.1.2",
+    "styled-components": "^5.3.5"
+  },
+  "scripts": {
+    "build": "wp-scripts build src/index.js --output-path=build"
+  }
+}

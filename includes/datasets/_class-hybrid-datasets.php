@@ -24,7 +24,7 @@ class Hybrid_Dataset {
 	public function __construct() {      }
 
 	public function init() {
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
 			return;
 		}
 		add_action( 'init', array( $this, 'register' ), 5 );
@@ -44,7 +44,7 @@ class Hybrid_Dataset {
 	}
 
 	public function register() {
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
 			return;
 		}
 		$labels = array(
@@ -158,7 +158,7 @@ class Hybrid_Dataset {
 	}
 
 	public function on_save_dataset_logic( $post_id, $post, $update ) {
-		if ( get_current_blog_id() === PRC_MIGRATION_SITE ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
 			return;
 		}
 		// If is a revision or autosave do nothing.

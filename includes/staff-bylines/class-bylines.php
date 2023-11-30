@@ -1,9 +1,6 @@
 <?php
 namespace PRC\Platform;
-
-use WP_Query;
 use WP_Error;
-use TDS;
 
 class Bylines {
 	public static $handle = 'prc-platform-staff-bylines';
@@ -14,10 +11,12 @@ class Bylines {
 	public function __construct($post_id, $args = array()) {
 		if ( !is_int($post_id) ) {
 			$this->bylines = new WP_Error( '404', 'Bylines not found, no post id provided.' );
+		} else  {
+			$parent_post_id = wp_get_post_parent_id( $post_id );
+			$this->post_id = 0 !== $parent_post_id ? $parent_post_id : $post_id;
+			$this->should_display = $this->determine_bylines_display();
+			$this->bylines = $this->get();
 		}
-		$this->post_id = $post_id;
-		$this->should_display = $this->determine_bylines_display();
-		$this->bylines = $this->get();
 	}
 
 	/**
@@ -55,9 +54,17 @@ class Bylines {
 		$i      = 1;
 		foreach ( $this->bylines as $term_id => $d ) {
 			if ( 1 < $total && $i === $total ) {
-				$output .= ' ' . $and . ' ';
+				if ( false === $return_html ) {
+					$output .= ' ' . $and . ' ';
+				} else {
+					$output .= ' <span class="prc-platform-staff-bylines__separator">' . $and . '</span> ';
+				}
 			} elseif ( 1 < $total && 1 !== $i ) {
-				$output .= ', ';
+				if ( false === $return_html ) {
+					$output .= ', ';
+				} else {
+					$output .= '<span class="prc-platform-staff-bylines__separator">, </span>';
+				}
 			}
 			if ( false === $return_html ) {
 				$output .= $d['name'];

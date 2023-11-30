@@ -228,21 +228,32 @@ class Block_Patcher extends Multisite_Migration {
 					$img_src = wp_get_attachment_image_src( $new_reference_id, $size_slug );
 					$new_src = isset($img_src[0]) ? $img_src[0] : null;
 
+					// We should check to see if the img src and new src have the same filename, if they don't then we should probably just leave it alone.
+					$file_name_sanity_check = false;
+					if ( $new_src ) {
+						$old_src_check = explode('/', $block['attrs']['url']);
+						$old_src_check = end($old_src_check);
+						$new_src_check = explode('/', $new_src);
+						$new_src_check = end($new_src_check);
+						$file_name_sanity_check = $old_src_check === $new_src_check;
+					}
+
 					$tags = new WP_HTML_Tag_Processor($block['innerHTML']);
 
 					// Go get the <a> tag and change its href to the new href.
-					if ( $new_href && $tags->next_tag( 'a' ) ) {
-						$href_updated = $tags->set_attribute( 'href', $new_href );
+					if ( $new_href && $tags->next_tag( 'a' ) && true === $file_name_sanity_check ) {
+						$tags->set_attribute( 'href', $new_href );
 					};
 
 					// Go get the img tag, look at the src attribute and change it to the new src.
-					if ( $new_src && $tags->next_tag( 'img' ) ) {
-						$img_src_updated = $tags->set_attribute( 'src', $new_src );
+					if ( $new_src && $tags->next_tag( 'img' ) && true === $file_name_sanity_check ) {
+						$tags->set_attribute( 'src', $new_src );
 
 						// replace any wp-image-<old_id> with wp-image-<new_reference_id>
 						$old_classname = $tags->get_attribute( 'class' );
 						$new_classname = str_replace('wp-image-' . $old_reference_id, 'wp-image-' . $new_reference_id, $old_classname);
-						$class_updated = $tags->set_attribute( 'class', $new_classname );
+
+						$tags->set_attribute( 'class', $new_classname );
 					}
 
 					// Update the id attribute by looking it up by blockname.

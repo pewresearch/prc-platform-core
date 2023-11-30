@@ -7,6 +7,9 @@ namespace Composer\Autoload;
 class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
 {
     public static $files = array (
+        '22177d82d05723dff5b1903f4496520e' => __DIR__ . '/..' . '/alleyinteractive/wordpress-autoloader/src/class-autoloader.php',
+        'd0b4d9ff2237dcc1a532ae9d039c0c2c' => __DIR__ . '/..' . '/alleyinteractive/composer-wordpress-autoloader/src/autoload.php',
+        'b68c986d100cce58b4f7580a7ebd1ae7' => __DIR__ . '/..' . '/alleyinteractive/wp-block-converter/src/helpers.php',
         'c34dc34eb7eec77023209fe27e4e18e8' => __DIR__ . '/..' . '/woocommerce/action-scheduler/action-scheduler.php',
     );
 
@@ -19,6 +22,10 @@ class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
         array (
             'LanguageDetector\\' => 17,
         ),
+        'C' => 
+        array (
+            'ComposerWordPressAutoloader\\' => 28,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -29,6 +36,10 @@ class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
         'LanguageDetector\\' => 
         array (
             0 => __DIR__ . '/..' . '/landrok/language-detector/src/LanguageDetector',
+        ),
+        'ComposerWordPressAutoloader\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/alleyinteractive/composer-wordpress-autoloader/src',
         ),
     );
 

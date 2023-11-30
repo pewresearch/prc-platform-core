@@ -1,0 +1,14 @@
+{
+	"name": "@pewresearch/prc-platform-homepages",
+	"description": "Homepage Modules for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/icons": "^9.31.0",
+		"@wordpress/scripts": "^26.1.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"test": "wp-scripts test-unit"
+	}
+}

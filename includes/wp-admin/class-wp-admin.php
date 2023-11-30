@@ -41,7 +41,7 @@ class WP_Admin {
 
 	public function default_admin_color_scheme( $result ) {
 		$result = 'modern';
-			return $result;
+		return $result;
 	}
 
 	/**

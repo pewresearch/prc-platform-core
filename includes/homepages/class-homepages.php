@@ -1,6 +1,9 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use WP_Query;
+use WP_Post;
+
 
 class Homepages {
 	public static $post_type = 'homepage';
@@ -92,6 +95,75 @@ class Homepages {
 			'show_in_rest'        => true,
 			'rewrite'             => $rewrite,
 			'capability_type'     => 'post',
+			'template'            => array(
+				array( 'core/group', array(
+						'layout' => array(
+							'type' 		  => 'constrained',
+							'contentSize' => '1200px',
+						)
+					), array(
+						array( 'prc-block/grid-controller', array(
+							'dividerColor' => 'gray',
+							'className'    => 'is-pattern__featured-layout',
+						), array(
+							array( 'prc-block/grid-column', array(
+								'gridLayout' => array(
+									'index' 		=> '1',
+									'desktopSpan'   => '3',
+									'tabletSpan'    => '6',
+									'mobileSpan'    => '4',
+								),
+							), array (
+								array( 'prc-block/story-item', array(
+									'imageSize'    => 'A2',
+									'metaTaxonomy' => 'category',
+									'postId'       => 0
+								)),
+								array( 'prc-block/story-item', array(
+									'imageSize'    => 'A2',
+									'metaTaxonomy' => 'category',
+									'postId'       => 0
+								))
+							)),
+							array( 'prc-block/grid-column', array(
+								'gridLayout' => array(
+									'index' 		=> '2',
+									'desktopSpan'   => '6',
+									'tabletSpan'    => '12',
+									'mobileSpan'    => '4',
+								),
+							), array(
+								array( 'prc-block/story-item', array(
+									'imageSize'    => 'A1',
+									'metaTaxonomy' => 'category',
+									'postId'       => 0
+								))
+							)),
+							array( 'prc-block/grid-column', array(
+								'gridLayout' => array(
+									'index' 		=> '3',
+									'desktopSpan'   => '3',
+									'tabletSpan'    => '6',
+									'mobileSpan'    => '4',
+								),
+							), array(
+								array( 'prc-block/story-item', array(
+									'imageSize'    => 'A2',
+									'metaTaxonomy' => 'category',
+									'postId'       => 0
+								)),
+								array( 'prc-block/story-item', array(
+									'imageSize'    => 'A2',
+									'metaTaxonomy' => 'category',
+									'postId'       => 0
+								))
+							)
+
+						),
+						) ),
+					)
+				),
+			),
 		);
 
 		register_post_type( self::$post_type, $args );
@@ -168,7 +240,7 @@ class Homepages {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
+		// $style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 
 		$script = wp_register_script(
@@ -179,14 +251,8 @@ class Homepages {
 			true
 		);
 
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
 
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
@@ -197,7 +263,6 @@ class Homepages {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
 		}
 	}
 
@@ -211,12 +276,57 @@ class Homepages {
 	 * @return string
 	 */
 	public function modify_homepage_permalink( $url, $post ) {
-		if ( 'publish' !== $post->post_status ) {
-			return $url;
-		}
-		if ( self::$post_type === $post->post_type ) {
-			return home_url();
-		}
+		// if ( 'publish' !== $post->post_status ) {
+		// 	return $url;
+		// }
+		// if ( self::$post_type === $post->post_type ) {
+		// 	return home_url();
+		// }
 		return $url;
+	}
+
+	public function render_homepage_block($attributes, $content, $block) {
+		$homepage = false;
+		$args          = array(
+			'posts_per_page'   => 1,
+			'orderby'          => 'date',
+			'order'            => 'DESC',
+			'post_type'        => self::$post_type,
+			'post_status'      => 'publish',
+			'fields'           => 'ids',
+		);
+		$homepage = new WP_Query($args);
+
+		if ( ! $homepage->have_posts() ) {
+			return ''; // Bail early if no homepage.
+		}
+
+		if ( ! $homepage->have_posts() && is_user_logged_in()) {
+			$content ='<div class="warning">No homepage found. <a href="'. esc_url( admin_url( 'post-new.php?post_type=homepage' ) ) .'">Create a new homepage.</a></div>';
+		}
+
+		if ( $homepage->have_posts() ) {
+			$homepage_id = $homepage->posts[0];
+			$homepage_module = get_post($homepage_id);
+			$content = $homepage_module instanceof WP_Post ? apply_filters(
+				'the_content',
+				$homepage_module->post_content,
+			) : $content;
+		}
+
+		wp_reset_postdata();
+
+		return $content;
+	}
+
+
+	/**
+	 * Initializes the homepage block
+	 * @hook init
+	 */
+	public function block_init() {
+		register_block_type( __DIR__ . '/build', array(
+			'render_callback' => array( $this, 'render_homepage_block' ),
+		) );
 	}
 }
