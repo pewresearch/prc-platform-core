@@ -100,9 +100,6 @@ class Platform_Bootstrap {
 	 * @access   private
 	 */
 	private function load_dependencies() {
-		// Include Composer dependencies.
-		require_once plugin_dir_path(dirname(__FILE__)) . 'vendor/autoload.php';
-
 		// Include plugin loading class.
 		$this->include('class-loader.php');
 		// Include common utility functions.
