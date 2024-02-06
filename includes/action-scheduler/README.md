@@ -2,6 +2,29 @@
 
 Action Scheduler is a scalable, traceable job queue for background processing large queues of tasks in WordPress. It is designed for use cases where scheduling or offloading large numbers of tasks, actions, or processes is required.
 
+### CLI:
+
+PRC Platform ships with a fork of crstauf's action-scheduler-cli, to make it easier to manage scheduled actions from the command line. The CLI is a wrapper around the Action Scheduler API, and provides a number of commands to manage scheduled actions.
+
+#### Commands:
+
+|Command|Description|
+|:--|:--|
+|`ascli action cancel`|Cancels an existing scheduled action.|
+|`ascli action create`|Creates a new scheduled action.|
+|`ascli action delete`|Deletes scheduled action(s).|
+|`ascli action generate`|Generates some scheduled actions.|
+|`ascli action get`|Get details about a scheduled action.|
+|`ascli action list`|Gets a list of scheduled actions.|
+|`ascli action next`|Get the next scheduled action.|
+|`ascli action run`|Run existing scheduled action.|
+|`ascli system data-store`|Get current data store.|
+|`ascli system runner`|Get current runner.|
+|`ascli system runner disable`|Disable runner.|
+|`ascli system runner enable`|Enable runner.|
+|`ascli system status`|- List of actions according to status<br />- Active version<br />- Active data store class<br />- Active runner class|
+|`ascli system version`|Lists active version(s).|
+
 ### Schedules:
 
 PRC Platform comes with full support for Action Scheduler including some pre-built schedules for common tasks:
