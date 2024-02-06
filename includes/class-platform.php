@@ -140,6 +140,7 @@ class Platform_Bootstrap {
 		$this->include('schema-meta/class-schema-meta.php');
 		$this->include('search/class-search.php');
 		$this->include('short-reads/class-short-reads.php');
+		$this->include('sitemaps/class-sitemaps.php');
 		$this->include('slack-bot/class-slack-bot.php');
 		$this->include('social/class-social.php');
 		$this->include('staff-bylines/class-staff-bylines.php');
@@ -192,6 +193,7 @@ class Platform_Bootstrap {
 		new Schema_Meta( $this->get_version(), $this->get_loader() );
 		new Search( $this->get_version(), $this->get_loader() );
 		new Short_Reads( $this->get_version(), $this->get_loader() );
+		new Sitemaps( $this->get_version(), $this->get_loader() );
 		new Slack_Bot( $this->get_version(), $this->get_loader() );
 		new Social( $this->get_version(), $this->get_loader() );
 		new Staff_Bylines( $this->get_version(), $this->get_loader() );
