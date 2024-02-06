@@ -58,9 +58,13 @@
     "previewPostType",
     "facetsContextProvider"
   ],
+  "providesContext": {
+    "prc-facets/template/facetType": "facetType",
+    "prc-facets/template/facetName": "facetName",
+    "prc-facets/template/facetLabel": "facetLabel"
+  },
   "textdomain": "facet-template",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
-  "style": "file:./style-index.css",
-  "viewScript": "file:./view.js"
+  "style": "file:./style-index.css"
 }

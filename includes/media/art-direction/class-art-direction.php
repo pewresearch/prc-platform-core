@@ -76,15 +76,6 @@ class Art_Direction {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -126,7 +117,6 @@ class Art_Direction {
 	 */
 	protected static $legacy_post_meta_key = '_art';
 
-
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -134,17 +124,31 @@ class Art_Direction {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( $version, $loader ) {
+		// Construct schema and field properties for each image size.
 		$constructed_schema = self::$field_schema;
 		foreach( $constructed_schema['properties'] as $image_size => $schema) {
 			$constructed_schema['properties'][$image_size]['properties'] = self::$field_properties;
 		}
 		self::$field_schema = $constructed_schema;
 
-		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'art-direction/utils.php';
+
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'init_art_direction' );
+			$loader->add_action( 'rest_api_init', $this, 'register_art_direction_rest_field' );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_block_plugin_assets' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
+			$loader->add_filter( 'register_post_type_args', $this, 'change_featured_image_label', 100, 2 );
+			$loader->add_filter( 'wpseo_opengraph_image', $this, 'filter_facebook_image', 10, 1 );
+			$loader->add_filter( 'wpseo_twitter_image', $this, 'filter_twitter_image', 10, 1 );
+		}
 	}
 
 	public function init_art_direction() {
@@ -203,6 +207,11 @@ class Art_Direction {
 		}
 	}
 
+	/**
+	 * Register a field for artDirection on supported post types in the REST API.
+	 * @hook rest_api_init
+	 * @return void
+	 */
 	public function register_art_direction_rest_field() {
 		foreach ( $this->enabled_post_types as $post_type ) {
 			register_rest_field(
@@ -220,28 +229,29 @@ class Art_Direction {
 		}
 	}
 
-	//@TODO: I'm actually torn here if this should be an endpoint or a field in the normal WP_Post request. Something to noodle on later.
-	public function register_rest_endpoint() {
-		register_rest_route(
-			'prc-api/v2',
-			'/get-art',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'restfully_get_art' ),
-				'args'                => array(
-					'postId' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+	/**
+	 * Register the art direction endpoint.
+	 * @hook prc_api_endpoints
+	 * @param mixed $endpoints
+	 * @return array
+	 */
+	public function register_endpoint($endpoints) {
+		array_push($endpoints, array(
+			'route' => '/art-direction/get',
+			'methods' => 'GET',
+			'callback' => array( $this, 'restfully_get_art' ),
+			'args' => array(
+				'postId' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
 				),
-				'permission_callback' => function () {
-					return true;
-				},
-			)
-		);
-
-		$this->register_art_direction_rest_field();
+			),
+			'permission_callback' => function () {
+				return true;
+			},
+		) );
+		return $endpoints;
 	}
 
 	public function restfully_get_art( WP_REST_Request $request ) {

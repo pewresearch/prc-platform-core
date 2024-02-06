@@ -6,15 +6,6 @@ namespace PRC\Platform;
  */
 class Gutenberg {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -44,14 +35,33 @@ class Gutenberg {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ){
+			$loader->add_filter( 'use_block_editor_for_post', $this, 'load_gutenberg', 15, 2 );
+			$loader->add_action( 'init', $this, 'add_revisions_to_reusable_blocks' );
+			$loader->add_action( 'menu_order', $this, 'group_admin_menus_together', 101 );
+			// Remove the "Block Directory" from the block inserter.
+			remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets' );
+			// Disable loading remote block patterns, we only want local or DB sourced block patterns.
+			add_filter(
+				'should_load_remote_block_patterns',
+				'__return_false',
+				10,
+				1
+			);
+		}
 	}
 
 	/**
 	 * Initialize the correct core post types and third party post types for Gutenberg.
 	 * Also provides a filter for internal use to enable Gutenberg for other post types; 'prc_load_gutenberg'.
+	 *
+	 * @hook use_block_editor_for_post
 	 *
 	 * @param mixed $can_edit
 	 * @param mixed $post
@@ -63,10 +73,20 @@ class Gutenberg {
 		return in_array( $post->post_type, $enable_for_post_types );
 	}
 
+	/**
+	 * Enable revisions for reusable blocks.
+	 * @hook init
+	 */
 	public function add_revisions_to_reusable_blocks() {
 		add_post_type_support( 'wp_block', 'revisions' );
 	}
 
+	/**
+	 * Group the admin menus for Gutenberg together.
+	 * @hook menu_order
+	 * @param array $menu_order
+	 * @return array
+	 */
 	public function group_admin_menus_together( $menu_order ) {
 		$new_menu_order = array();
 

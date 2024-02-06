@@ -1,11 +1,14 @@
 {
 	"name": "@pewresearch/prc-platform-datasets",
-	"description": "Datasets functionality for PRC Platform",
+	"description": "Datasets functionality for PRC Platform. Includes a block to render a download button, linked to the account system, and a panel to manage an individual dataset.",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/scripts": "^26.1.0"
+		"@wordpress/scripts": "^27.0.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build src/index.js"
+		"build": "wp-scripts build --experimental-modules"
+	},
+	"dependencies": {
+		"@wordpress/icons": "^9.40.0"
 	}
 }

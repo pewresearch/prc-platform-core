@@ -8,8 +8,8 @@ use TypeError;
 class Languages extends Taxonomies {
 	protected static $taxonomy = 'languages';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {

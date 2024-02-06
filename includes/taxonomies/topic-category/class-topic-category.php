@@ -11,8 +11,10 @@ class Topic_Category extends Taxonomies {
 
 	public static $handle = 'prc-platform-category-taxonomy';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action('init', $this, 'enforce_category_permalink_structure');
+		$loader->add_filter( 'register_taxonomy_args', $this, 'change_category_labels_to_topic', 10, 2 );
+		$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_category_name_change_script' );
 	}
 
 	/**

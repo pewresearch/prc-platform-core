@@ -9,14 +9,6 @@ use WP_Error;
 class Mailchimp {
 	protected $default_list_id = '3e953b9b70';
 	protected $api_keys;
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
@@ -36,10 +28,19 @@ class Mailchimp {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once( plugin_dir_path( __FILE__ ) . 'class-mailchimp-api.php' );
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'prc_run_monthly', $this, 'update_segments_list_monthly' );
+			$loader->add_filter( 'wp_mail_from_name', $this, 'change_default_from_name' );
+			$loader->add_filter( 'wp_mail_from', $this, 'change_default_mail_from_address' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
+		}
 	}
 
 	public function register_assets() {
@@ -149,200 +150,209 @@ class Mailchimp {
 		}
 	}
 
-	public function register_rest_endpoints() {
-		register_rest_route(
-			'prc-api/v3',
-			'/mailchimp/subscribe/',
-			array(
-				'methods'             => 'POST',
-				'callback'            => array( $this, 'subscribe_to_list_restfully' ),
-				'args'                => array(
-					'email'     => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_email( $param );
-						},
-					),
-					'fname'     => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'lname'     => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'interests' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'captcha_token' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'api_key' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'origin_url' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+	/**
+	 * Register endpoints for Mailchimp API
+	 *
+	 * - /mailchimp/subscribe
+	 * - /mailchimp/unsubscribe
+	 * - /mailchimp/update
+	 * - /mailchimp/get-member
+	 * - /mailchimp/get-segments
+	 *
+	 * @hook prc_api_endpoints
+	 *
+	 * @param array $endpoints
+	 * @return array $endpoints with new endpoints
+	 */
+	public function register_endpoints($endpoints) {
+		$subscribe = array(
+			'route' => 'mailchimp/subscribe',
+			'methods' => 'POST',
+			'callback' => array( $this, 'subscribe_to_list_restfully' ),
+			'args' => array(
+				'email'     => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_email( $param );
+					},
 				),
-				'permission_callback' => function () {
-					return true;
+				'fname'     => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'lname'     => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'interests' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'captcha_token' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'api_key' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'origin_url' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+			),
+			'permission_callback' => function () {
+				return true;
 
-					// check for a nonce value
-					if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-						return false;
-					}
-					// verify the nonce value
-					$nonce = $_REQUEST['_wpnonce'];
-					return $this->verify_subscribe_nonce( $nonce );
-				},
-			)
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
+					return false;
+				}
+				// verify the nonce value
+				$nonce = $_REQUEST['_wpnonce'];
+				return $this->verify_subscribe_nonce( $nonce );
+			},
 		);
 
-		register_rest_route(
-			'prc-api/v3',
-			'/mailchimp/unsubscribe/',
-			array(
-				'methods'             => 'POST',
-				'callback'            => array( $this, 'remove_member_from_list_restfully' ),
-				'args'                => array(
-					'email' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_email( $param );
-						},
-					),
-					'api_key' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'origin_url' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+		$unsubscribe = array(
+			'route' => 'mailchimp/unsubscribe',
+			'methods' => 'POST',
+			'callback' => array( $this, 'remove_member_from_list_restfully' ),
+			'args' => array(
+				'email' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_email( $param );
+					},
 				),
-				'permission_callback' => function () {
-					// check for a nonce value
-					if ( ! isset( $_REQUEST['nonce'] ) ) {
-						return false;
-					}
-					// verify the nonce value
-					$nonce = $_REQUEST['nonce'];
-					return $this->verify_unsubscribe_nonce( $nonce );
-				},
-			)
+				'api_key' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'origin_url' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+			),
+			'permission_callback' => function () {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
+					return false;
+				}
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_unsubscribe_nonce( $nonce );
+			},
 		);
 
-		register_rest_route(
-			'prc-api/v3',
-			'/mailchimp/update/',
-			array(
-				'methods'             => 'POST',
-				'callback'            => array( $this, 'update_member_interests_restfully' ),
-				'args'                => array(
-					'email'     => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_email( $param );
-						},
-					),
-					'interests' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_array( $param );
-						},
-					),
-					'api_key' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'origin_url' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+		$update = array(
+			'route' => 'mailchimp/update',
+			'methods' => 'POST',
+			'callback' => array( $this, 'update_member_interests_restfully' ),
+			'args' => array(
+				'email' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_email( $param );
+					},
 				),
-				'permission_callback' => function () {
-					// check for a nonce value
-					if ( ! isset( $_REQUEST['nonce'] ) ) {
-						return false;
-					}
-					// verify the nonce value
-					$nonce = $_REQUEST['nonce'];
-					return $this->verify_update_interests_nonce( $nonce );
-				},
-			)
+				'interests' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_array( $param );
+					},
+				),
+				'api_key' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+				'origin_url' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+			),
+			'permission_callback' => function () {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
+					return false;
+				}
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_update_interests_nonce( $nonce );
+			},
 		);
 
-		register_rest_route(
-			'prc-api/v3',
-			'/mailchimp/get-member/',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_member_restfully' ),
-				'args'                => array(
-					'email' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_email( $param );
-						},
-					),
-					'api_key' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+		$get_member = array(
+			'route' => 'mailchimp/get-member',
+			'methods' => 'GET',
+			'callback' => array( $this, 'get_member_restfully' ),
+			'args' => array(
+				'email' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_email( $param );
+					},
 				),
-				'permission_callback' => function () {
-					// check for a nonce value
-					if ( ! isset( $_REQUEST['nonce'] ) ) {
-						return false;
-					}
-					// verify the nonce value
-					$nonce = $_REQUEST['nonce'];
-					return $this->verify_get_member_nonce( $nonce );
-				},
-			)
+				'api_key' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+			),
+			'permission_callback' => function () {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
+					return false;
+				}
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_get_member_nonce( $nonce );
+			},
 		);
 
-		register_rest_route(
-			'prc-api/v3',
-			'/mailchimp/get-segments/',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_segments_restfully' ),
-				'args'                => array(
-					'api_key' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+		$get_segments = array(
+			'route' => 'mailchimp/get-segments',
+			'methods' => 'GET',
+			'callback' => array( $this, 'get_segments_restfully' ),
+			'args' => array(
+				'api_key' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
 				),
-				'permission_callback' => function () {
-					return true;
-				},
-			)
+			),
+			'permission_callback' => function () {
+				return true;
+			},
 		);
+
+		array_push($endpoints, $subscribe, $unsubscribe, $update, $get_member, $get_segments);
+
+		return $endpoints;
 	}
 
+	/**
+	 * Verify the given captcha token with Cloudflare.
+	 * @param mixed $response_token
+	 * @return bool
+	 */
 	private function verify_captcha( $response_token ) {
 		$data = array(
-            'secret' => PRC_HCAPTCHA_SECRET,
+            'secret' => PRC_PLATFORM_TURNSTILE_SECRET_KEY,
             'response' => $response_token
         );
-
-		$response = wp_remote_post( "https://hcaptcha.com/siteverify", array('body' => $data) );
+		$response = wp_remote_post( "https://challenges.cloudflare.com/turnstile/v0/siteverify", array('body' => $data) );
 		$body     = wp_remote_retrieve_body( $response );
 
-		$responseData = json_decode($body);
-		if( $responseData->success ) {
+		$response_data = json_decode($body);
+		$response_data->key = PRC_PLATFORM_TURNSTILE_SECRET_KEY;
+		error_log('VERIFY_CAPTCHA' . print_r($response_data, true));
+		if( $response_data->success ) {
 			return true;
 		} else {
 			return false;

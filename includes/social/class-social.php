@@ -4,15 +4,6 @@ use WP_Error;
 use \PRC_PLATFORM_FACEBOOK_APP_ID;
 class Social {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -30,35 +21,16 @@ class Social {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		require_once plugin_dir_path( __FILE__ ) . 'class-bitly.php';
+		$this->init($loader);
 	}
 
-	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
-		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-
-		$script = wp_register_script(
-			$asset_slug,
-			$script_src,
-			$asset_file['dependencies'],
-			$asset_file['version'],
-			true
-		);
-
-		if ( ! $script ) {
-			return new WP_Error( self::$handle, 'Failed to register all assets' );
-		}
-
-		return true;
-	}
-
-	public function enqueue_assets() {
-		$registered = $this->register_assets();
-		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
+	public function init($loader) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'wp_head', $this, 'place_facebook_app_id_in_head' );
+			new Bitly( $this->version, $loader );
 		}
 	}
 

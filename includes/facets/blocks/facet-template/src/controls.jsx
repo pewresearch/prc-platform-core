@@ -31,60 +31,50 @@ import { createBlocksFromInnerBlocksTemplate } from '@wordpress/blocks';
 
 const getTemplateForType = (type, name) => {
 	const defaultAttrs = {
-		interactiveNamespace: 'facetsContextProvider',
+		interactiveNamespace: 'prc-platform/facets-context-provider',
 		isInteractive: true,
 	}
+	console.log('getTemplateForType', type, name);
 	const label = name.replace(/_/g, ' ').replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))) + ' Value';
 	switch (type) {
 		case 'checkboxes':
-			return [['prc-block/form-field', {
-				className: 'is-style-form-field-input-checkbox',
+			return [['prc-block/form-input-checkbox', {
+				type: 'checkbox',
 				label,
 				...defaultAttrs,
-			}, [
-				['prc-block/form-input-checkbox', {
-					type: 'checkbox',
-					...defaultAttrs,
-				}]
-			]]]
+			}]]
 			break;
-		case 'radio':
-			return [['prc-block/form-field', {
-				className: 'is-style-form-field-input-radio',
-				label,
+		case 'dropdown':
+			return [['prc-block/form-input-select', {
+				placeholder: label,
 				...defaultAttrs,
-			}, [
-				['prc-block/form-input-checkbox', {
-					type: 'radio',
-					...defaultAttrs,
-				}]
-			]]]
+			}]]
 			break;
-		case 'time_since':
-			return [['prc-block/form-field', {
-				className: 'is-style-form-field-input-radio',
-				label,
+		case 'yearly':
+			return [['prc-block/form-input-select', {
+				placeholder: label,
 				...defaultAttrs,
-			}, [
-				['prc-block/form-input-checkbox', {
-					type: 'radio',
+			}]]
+			break;
+		case 'date_range':
+			return [
+				['prc-block/form-input-select', {
+					placeholder: label,
+					...defaultAttrs,
+				}],
+				['prc-block/form-input-select', {
+					placeholder: label,
 					...defaultAttrs,
 				}]
-			]]]
+			]
 			break;
-		// @TODO: define dropdown block from Ben
-		// @TODO: define time since and year range options.
 		default:
-			return [['prc-block/form-field', {
-				className: 'is-style-form-field-input-text',
+			// Default to Radio
+			return [['prc-block/form-input-checkbox', {
+				type: 'radio',
 				label,
 				...defaultAttrs,
-			}, [
-				['prc-block/form-input-text', {
-					type: 'text',
-					...defaultAttrs,
-				}]
-			]]]
+			}]]
 			break;
 	}
 }

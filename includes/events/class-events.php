@@ -4,14 +4,6 @@ use WP_Error;
 
 class Events {
 	protected static $post_type = 'events';
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
@@ -31,9 +23,16 @@ class Events {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+		}
 	}
 
 	public function register_type() {
@@ -92,10 +91,6 @@ class Events {
 			'rewrite'             => $rewrite,
 			'capability_type'     => 'post',
 		);
-
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			$args['taxonomies'] = array( 'topic' );
-		}
 
 		register_post_type( self::$post_type, $args );
 	}

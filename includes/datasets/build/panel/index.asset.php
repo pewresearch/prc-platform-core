@@ -1,0 +1,1 @@
+<?php return array('dependencies' => array('prc-components', 'react', 'wp-components', 'wp-core-data', 'wp-data', 'wp-edit-post', 'wp-editor', 'wp-element', 'wp-i18n', 'wp-plugins', 'wp-polyfill', 'wp-primitives'), 'version' => 'dccc90c01d4ff729f77e');

@@ -6,15 +6,6 @@ use WP_Error;
 
 class Icon_Loader {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,9 +23,18 @@ class Icon_Loader {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_loader', 99 );
+			// Load fallback prc-icons (if needed).
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_icon_library_fallback', 98 );
+			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_library_fallback', 98 );
+		}
 	}
 
 	public function register_icon_loader_script($register_prc_icons = true) {

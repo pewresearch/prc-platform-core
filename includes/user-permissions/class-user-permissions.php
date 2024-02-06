@@ -7,15 +7,6 @@ namespace PRC\Platform;
  */
 class User_Permissions {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -31,15 +22,21 @@ class User_Permissions {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'wpcom_vip_enable_two_factor', $this, 'enforce_two_factor', 10, 1 );
+			$loader->add_action( 'admin_init', $this, 'autoload_user_roles' );
+		}
 	}
 
 	/**
 	 * This function uses a json file to manage user roles and capabilities. When a version in the json file is greater than the version stored in the database, the user roles are updated.
 	 * @hook init
-	 * @return void
 	 */
 	public function autoload_user_roles() {
 		if ( ! function_exists('wpcom_vip_add_role') ) {
@@ -73,6 +70,7 @@ class User_Permissions {
 	}
 
 	/**
+	 * Force two factor authentication on production.
 	 * @hook wpcom_vip_enable_two_factor
 	 * @param bool $value
 	 * @return bool

@@ -7,9 +7,7 @@ class Bylines_Acknowledgements_Panel {
 	protected static $handle = 'prc-platform-bylines-acknowledgements-panel';
 	public static $version = '4.0.0';
 
-	public function __construct() {
-
-	}
+	public function __construct() {}
 
 	public function get_wp_admin_current_post_type() {
 		global $post, $typenow, $current_screen;

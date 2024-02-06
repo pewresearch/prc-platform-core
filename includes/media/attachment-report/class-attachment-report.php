@@ -4,15 +4,6 @@ use WP_Error;
 use WP_REST_Request;
 class Attachment_Report {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -30,9 +21,20 @@ class Attachment_Report {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
+			$loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_frontend_assets' );
+			$loader->add_filter( 'the_content', $this, 'add_report_to_content' );
+			$loader->add_action( 'admin_enqueue_scripts', $this, 'register_assets' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
+			$loader->add_action( 'ac/ready', $this, 'register_column' );
+		}
 	}
 
 	public function register_query_vars( $vars ) {
@@ -114,37 +116,41 @@ class Attachment_Report {
 		return $post_content;
 	}
 
-	public function register_rest_endpoint() {
-		register_rest_route(
-			'prc-api/v2',
-			'/media/attachments-report',
-			array(
-				'methods'  => 'GET',
-				'callback' => array( $this, 'get_attachments_restfully' ),
-				'args'                => array(
-					'postId' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'mimeType' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-						'default' => 'all',
-					),
-					'includeChildren' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_bool( $param);
-						},
-						'default' => true,
-					)
+	/**
+	 * Adds the attachment report endpoint to the REST API
+	 * @hook prc_api_endpoints
+	 * @param mixed $endpoints
+	 * @return array
+	 */
+	public function register_endpoint($endpoints) {
+		array_push($endpoints, array(
+			'route' => '/attachments-report/get',
+			'methods'  => 'GET',
+			'callback' => array( $this, 'get_attachments_restfully' ),
+			'args'                => array(
+				'postId' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
 				),
-				'permission_callback' => function () {
-					return true;
-				},
-			)
-		);
+				'mimeType' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+					'default' => 'all',
+				),
+				'includeChildren' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_bool( $param);
+					},
+					'default' => true,
+				)
+			),
+			'permission_callback' => function () {
+				return true;
+			},
+		));
+		return $endpoints;
 	}
 
 	public function get_attachments_by_post_id( $post_id, $mime_type = 'image' ) {

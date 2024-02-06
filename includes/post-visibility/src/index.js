@@ -2,7 +2,7 @@
  * WordPress Dependencies
  */
 import { FormToggle } from '@wordpress/components';
-import { Fragment } from '@wordpress/element';
+import { Fragment, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
@@ -15,6 +15,16 @@ function PRCPostVisibility() {
 	});
 
 	const { editPost } = useDispatch('core/editor');
+
+	// If postVisibility is null or undefined, set it to 'public'.
+	// This ensures that the postVisibility meta is always set properly for the rest api, even on older posts.
+	useEffect(() => {
+		if (postVisibility === null || postVisibility === undefined) {
+			editPost({
+				meta: { _postVisibility: 'public' },
+			});
+		}
+	}, [postVisibility]);
 
 	return (
 		<Fragment>

@@ -3,10 +3,9 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Related_Posts {
-	public static $cache_key = 'relatedPostsB';
+	public static $cache_key = 'relatedPosts';
 	public static $cache_time = 1 * HOUR_IN_SECONDS;
 	protected static $enabled_post_types = array( 'post', 'short-read' );
-
 	public static $meta_key = 'relatedPosts';
 	public static $schema_properties = array(
 		'date' 	   => array(
@@ -33,15 +32,6 @@ class Related_Posts {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -59,10 +49,19 @@ class Related_Posts {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . 'class-related-posts-api.php';
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_meta_fields' );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
+			$loader->add_action( 'wpcom_vip_cache_pre_execute_purges', $this, 'clear_cache_on_purge' );
+			$loader->add_action( 'prc_platform_on_update', $this, 'clear_cache_on_update' );
+		}
 	}
 
 	public function register_meta_fields() {
@@ -144,7 +143,6 @@ class Related_Posts {
 	/**
 	 * @hook prc_platform_on_update
 	 * @param mixed $post
-	 * @return void
 	 */
 	public function clear_cache_on_update( $post ) {
 		$post_id = $post->ID;

@@ -6,15 +6,6 @@ class Short_Reads {
 	public static $post_type = 'short-read';
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,9 +23,17 @@ class Short_Reads {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_filter( 'post_type_link', $this, 'get_short_read_permalink', 10, 3 );
+		}
 	}
 
 	public function register_type() {

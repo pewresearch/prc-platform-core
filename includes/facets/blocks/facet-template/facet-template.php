@@ -15,34 +15,14 @@ use WP_HTML_Tag_Processor;
  */
 
 class Facet_Template {
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
+	public function __construct($loader) {
+		$this->init($loader);
+	}
 
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'block_init' );
+		}
 	}
 
 	/**
@@ -70,25 +50,55 @@ class Facet_Template {
 		return preg_match('/^var:preset\|spacing\|\d+$/', $block_gap) ? 'var(--wp--preset--spacing--' . substr($block_gap, strrpos($block_gap, '|') + 1) . ')' : $block_gap;
 	}
 
-	public function render_block_callback($attributes, $content, $block) {
-		$block_instance = $block->parsed_block;
-
-		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
-		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
-		$facet_slug = $facet['name'];
+	public function render_dropdown_facet($facet, $inner_blocks) {
+		$field = $inner_blocks[0];
 		$facet_choices = $facet['choices'];
 		$selected_choices = $facet['selected'];
 
-		// Compile all the choices based on the template
-		$field_template = $block_instance['innerBlocks'][0];
-		$new_content = '';
+		$options = array();
+		$field_value = null;
+		foreach ($facet_choices as $choice) {
+			$opts = array(
+				'value' => $choice['value'],
+				'label' => $choice['label'] . ' (' . $choice['count'] . ')',
+			);
+			if ( in_array($choice['value'], $selected_choices) ) {
+				$field_value = $choice['value'];
+				$opts['selected'] = true;
+			}
+			$options[] = $opts;
+		}
+		$field['attrs']['options'] = $options;
+		$field['attrs']['value'] = $field_value;
+		$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
+		$parsed = new WP_Block_Parser_Block(
+			$field['blockName'],
+			$field['attrs'],
+			$field['innerBlocks'],
+			$field['innerHTML'],
+			$field['innerContent']
+		);
+		return (
+			new WP_Block(
+				(array) $parsed,
+				array()
+			)
+		)->render();
+	}
+
+	public function render_checkbox_radio_facet($facet, $inner_blocks) {
+		$facet_choices = $facet['choices'];
+		$selected_choices = $facet['selected'];
+		$field_template = $inner_blocks[0];
+		$content = '';
 		$expanded_content = '';
 		$i = 1;
 		foreach ($facet_choices as $choice) {
 			$field = $field_template;
 			$field['attrs']['label'] = $choice['label'] . ' (' . $choice['count'] . ')';
-			$field['innerBlocks'][0]['attrs']['value'] = $choice['value'];
-			$field['innerBlocks'][0]['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);
+			$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
+			$field['attrs']['value'] = $choice['value'];
+			$field['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);
 
 			$parsed = new WP_Block_Parser_Block(
 				$field['blockName'],
@@ -106,7 +116,7 @@ class Facet_Template {
 					)
 				)->render();
 			} else {
-				$new_content .= (
+				$content .= (
 					new WP_Block(
 						(array) $parsed,
 						array()
@@ -116,29 +126,141 @@ class Facet_Template {
 
 			$i++;
 		}
+		return array(
+			'content' => $content,
+			'expanded_content' => $expanded_content,
+		);
+	}
 
-		// Handle the soft limit and "show more". We may use the taxonomy list block or exapand it into some sort of tree block.
+	public function render_date_range_facet($facet, $inner_blocks) {
+		// Minimum Range
+		$min = array(
+			'min' => date('Y', strtotime($facet['settings']['range']['min']['minDate'])),
+			'max' => date('Y', strtotime($facet['settings']['range']['min']['maxDate'])),
+		);
+		$min_options = array();
+		foreach (range($min['min'], $min['max']) as $year) {
+			$min_options[] = array(
+				'value' => $year,
+				'label' => $year,
+			);
+		}
+		$min_field = $inner_blocks[0];
+		$min_field['attrs']['options'] = $min_options;
+		$min_parsed = new WP_Block_Parser_Block(
+			$min_field['blockName'],
+			$min_field['attrs'],
+			$min_field['innerBlocks'],
+			$min_field['innerHTML'],
+			$min_field['innerContent']
+		);
+		// Render the minimum range select
+		$minimum_field = (
+			new WP_Block(
+				(array) $min_parsed,
+				array()
+			)
+		)->render();
+
+		// Maximum Range
+		$max = array(
+			'min' => date('Y', strtotime($facet['settings']['range']['max']['minDate'])),
+			'max' => date('Y', strtotime($facet['settings']['range']['max']['maxDate'])),
+		);
+		$max_options = array();
+		foreach (range($max['min'], $max['max']) as $year) {
+			$max_options[] = array(
+				'value' => $year,
+				'label' => $year,
+			);
+		}
+		$max_field = $inner_blocks[1];
+		$max_field['attrs']['options'] = $max_options;
+		$max_parsed = new WP_Block_Parser_Block(
+			$max_field['blockName'],
+			$max_field['attrs'],
+			$max_field['innerBlocks'],
+			$max_field['innerHTML'],
+			$max_field['innerContent']
+		);
+		// Render the maximum range select
+		$maximum_field = (
+			new WP_Block(
+				(array) $max_parsed,
+				array()
+			)
+		)->render();
+
+		return array(
+			'minimum' => $minimum_field,
+			'maximum' => $maximum_field,
+		);
+	}
+
+	public function render_block_callback($attributes, $content, $block) {
+		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
+		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
+		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
+		$facet_slug = '_' . $facet['name'];
+
+
+		$new_content = '';
+		$expanded_content = '';
+
+		if ( in_array($facet_type, array('dropdown','yearly') ) ) {
+			$new_content .= $this->render_dropdown_facet($facet, $block->parsed_block['innerBlocks']);
+		} elseif ( in_array($facet_type, array('date_range') ) ) {
+			$date_range_facet = $this->render_date_range_facet($facet, $block->parsed_block['innerBlocks']);
+			$new_content .= $date_range_facet['minimum'];
+			$new_content .= $date_range_facet['maximum'];
+		} else {
+			$checkbox_facet = $this->render_checkbox_radio_facet($facet, $block->parsed_block['innerBlocks']);
+			$new_content .= $checkbox_facet['content'];
+			$expanded_content .= $checkbox_facet['expanded_content'];
+		}
 
 		$block_wrapper_attrs = get_block_wrapper_attributes(array(
-			'data-wp-interactive' => true,
+			'data-wp-interactive' => wp_json_encode(array(
+				'namespace' => 'prc-platform/facet-template'
+			)),
 			'data-wp-navigation-id' => 'facet-template-'.md5(wp_json_encode($attributes)),
-			'data-wp-context' => wp_json_encode(array('facetTemplate' => array(
-				'facetSlug' => $facet_slug,
+			'data-wp-key' => $facet_slug,
+			'data-wp-context' => wp_json_encode(array(
 				'expanded' => false,
 				'expandedLabel' => '+ More',
-			))),
-			'data-wp-effect--on-expand' => 'effects.facetTemplate.onExpand',
-			'data-wp-class--is-expanded' => 'context.facetTemplate.expanded',
-			'data-wp-class--is-processing' => 'state.facetsContextProvider.isProcessing',
+				'facetSlug' => $facet_slug,
+			)),
+			'data-wp-watch--on-expand' => 'callbacks.onExpand',
+			'data-wp-class--is-expanded' => 'context.expanded',
+			'data-wp-class--has-selections' => 'callbacks.isSelected',
 			'style' => '--block-gap: ' . $this->get_block_gap_support_value($attributes) . ';',
 		));
 
-		return wp_sprintf(
-			'<div %1$s><h5 class="wp-block-prc-platform-facet-template__label">%4$s</h5><div class="wp-block-prc-block-facet-template-list">%2$s</div>%3$s</div>',
-			$block_wrapper_attrs,
-			$new_content,
-			!empty($expanded_content) ? '<button data-wp-on--click="actions.facetTemplate.onExpand" data-wp-text="context.facetTemplate.expandedLabel"></button><div class="wp-block-prc-platform-facet-template__list-expanded">' . $expanded_content . '</div>' : '',
+		if ( in_array($facet_type, array('dropdown','yearly','date_range')) ) {
+			$template = '<div %1$s>%2$s %3$s</div>';
+		} else {
+			$template = '<div %1$s>%2$s<div class="wp-block-prc-block-facet-template-list">%3$s</div>%4$s</div>';
+		}
+
+		$label = wp_sprintf(
+			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">x</button></span></h5>',
 			array_key_exists('facetLabel', $attributes) ? $attributes['facetLabel'] : '',
+			'actions.onClear'
+		);
+
+		$expanded_content = !empty($expanded_content) ? wp_sprintf(
+			'<button class="wp-block-prc-platform-facet-template__list-expanded-button" data-wp-on--click="%1$s" data-wp-text="%2$s"></button><div class="wp-block-prc-platform-facet-template__list-expanded">%3$s</div>',
+			'actions.onExpand',
+			'context.expandedLabel',
+			$expanded_content
+		) : '';
+
+		return wp_sprintf(
+			$template,
+			$block_wrapper_attrs,
+			$label,
+			$new_content,
+			$expanded_content,
 		);
 	}
 

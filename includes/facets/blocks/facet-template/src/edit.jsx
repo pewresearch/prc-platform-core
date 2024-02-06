@@ -8,12 +8,11 @@ import { getBlockGapSupportValue } from '@prc/block-utils';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useMemo } from '@wordpress/element';
+import { Fragment, useMemo } from 'react';
 import {
 	useBlockProps,
 	RichText,
 } from '@wordpress/block-editor';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal Dependencies
@@ -50,13 +49,20 @@ export default function Edit( {
 		}
 	});
 
-	const templateContexts = [{
-		label: "Item 1"
-	}, {
-		label: "Item 2"
-	}, {
-		label: "Item 3"
-	}];
+	const templateContexts = useMemo(()=>{
+		if ( ['dropdown','yearly','date_range'].includes(facetType) ) {
+			return [{
+				label: "Dropdown"
+			}];
+		}
+		return [{
+			label: "Item 1"
+		}, {
+			label: "Item 2"
+		}, {
+			label: "Item 3"
+		}];
+	}, [facetType]);
 
 	return (
 		<Fragment>
@@ -72,10 +78,10 @@ export default function Edit( {
 				/>
 				<InnerBlocksAsContextTemplate {...{
 					clientId,
-					allowedBlocks: [ 'prc-block/form-field' ],
+					allowedBlocks: [ 'prc-block/form-input-checkbox', 'prc-block/form-input-select' ],
 					blockContexts: templateContexts,
 					isResolving: false,
-					loadingLabel: 'Loading...',
+					loadingLabel: 'Loading Facet...',
 				}}/>
 			</div>
 		</Fragment>

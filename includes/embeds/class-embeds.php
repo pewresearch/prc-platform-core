@@ -7,16 +7,7 @@ use WP_HTML_Tag_Processor;
  * Provides functionality for allowing embedding of interactives, charts, and other content on other sites.
  * @package
  */
-class Iframe_Embeds {
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
+class Embeds {
 	/**
 	 * The version of this plugin.
 	 *
@@ -33,6 +24,7 @@ class Iframe_Embeds {
 		'prc-block/tabs',
 		'prc-block/accordion-controller',
 		'prc-block/chart',
+		'prc-block/quiz'
 	);
 
 	public static $handle = 'prc-platform-iframe-embeds';
@@ -44,11 +36,39 @@ class Iframe_Embeds {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
-
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'embeds/utils.php';
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var', 10, 1 );
+			$loader->add_action( 'init', $this, 'iframe_endpoint', 10 );
+
+			// $loader->add_filter( 'request', $this, 'filter_request', 10, 1 );
+			$loader->add_filter( 'the_title', $this, 'filter_title', 10, 1 );
+			$loader->add_filter( 'the_content', $this, 'filter_content', 10, 1 );
+			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
+			$loader->add_action( 'init', $this, 'register_assets', 10, 1 );
+			$loader->add_filter( 'show_admin_bar', $this, 'disable_admin_bar_on_iframes', 10, 1 );
+
+			// Block Modifications
+			$loader->add_filter( 'block_type_metadata', $this, 'add_attributes', 100, 1 );
+			$loader->add_filter( 'block_type_metadata_settings', $this, 'add_settings', 100, 2 );
+			$loader->add_filter( 'render_block', $this, 'render', 105, 2 );
+			// Block Controls
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_editor_controls' );
+
+			// Iframe Template
+			$loader->add_filter( 'body_class', $this, 'body_class', 99, 1 );
+			$loader->add_action( 'template_include', $this, 'template_include', 99, 1 );
+			$loader->add_action( 'template_redirect', $this, 'template_default', 10, 1 );
+			$loader->add_action( 'wp_head', $this, 'head', 10, 1 );
+			$loader->add_action( 'wp_footer', $this, 'footer', 10, 1 );
+			$loader->add_action( 'wp_enqueue_scripts', $this, 'iframe_resizer_script', 20, 1 );
+		}
 	}
 
 	public function register_controls_asset() {
@@ -169,8 +189,8 @@ class Iframe_Embeds {
 	}
 
 	/**
+	 * Register all the various script and style assets.
 	 * @hook init
-	 * @return void
 	 */
 	public function register_assets() {
 		$this->register_controls_asset();
@@ -191,6 +211,12 @@ class Iframe_Embeds {
 		wp_enqueue_script(self::$handle . '-controls');
 	}
 
+	/**
+	 * This adds "prc-platform__iframe" to the body class if the current page is an iframe.
+	 * @hook body_class
+	 * @param mixed $classes
+	 * @return mixed $classes
+	 */
 	public function body_class( $classes ) {
 		if ( $this->is_iframe() ) {
 			$classes[] = 'prc-platform__iframe';
@@ -198,13 +224,20 @@ class Iframe_Embeds {
 		return $classes;
 	}
 
-	public function iframe_qvar( $qvars ) {
-		$qvars[] = 'iframe';
-		return $qvars;
+	/**
+	 * Add the iframe query var to the list of query vars.
+	 * @hook prc_platform_rewrite_query_vars
+	 * @param mixed $qvars
+	 * @return mixed
+	 */
+	public function register_query_var( $query_vars ) {
+		$query_vars[] = 'iframe';
+		return $query_vars;
 	}
 
 	/**
 	 * Add /iframe endpoint to all permalinks and attachments
+	 * @hook init
 	 */
 	public function iframe_endpoint() {
 		add_rewrite_endpoint( 'iframe', EP_PERMALINK | EP_ATTACHMENT );
@@ -222,9 +255,9 @@ class Iframe_Embeds {
 	}
 
 	/**
-	 * @hook template_include
+	 * Changes the default template file to be used when loading an iframe.
 	 *
-	 * Changes the default template file to be used if an alternative is found.
+	 * @hook template_include
 	 *
 	 * If available, the following template files will be used, in order:
 	 *  * single-{post_name}-iframe.php
@@ -258,6 +291,25 @@ class Iframe_Embeds {
 	}
 
 	/**
+	 * Return the post content for the iframe template.
+	 * @return string
+	 */
+	public function get_template_post_content() {
+		$post_content = '';
+		while ( have_posts() ) {
+			the_post();
+			$post_content = get_the_content();
+			if ( $this->test_for_embeddable_blocks( $post_content ) ) {
+				$post_content = $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
+			} else {
+				$post_content = apply_filters( 'the_content', $post_content );
+			}
+		}
+		wp_reset_postdata();
+		return $post_content;
+	}
+
+	/**
 	 * Default output for /iframe if no template is passed through.
 	 * @hook template_redirect
 	 * @return void
@@ -269,16 +321,11 @@ class Iframe_Embeds {
 				wp_head();
 				// Never show the admin bar for an iframe.
 				show_admin_bar( false );
-				while ( have_posts() ) {
-					the_post();
-					$post_content = get_the_content();
-					if ( $this->test_for_embeddable_blocks( $post_content ) ) {
-						echo $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
-					} else {
-						echo apply_filters( 'the_content', $post_content );
-					}
-				}
-				wp_reset_postdata();
+				$post_content = $this->get_template_post_content();
+				echo wp_sprintf(
+					'<div class="prc-platform__iframe__content" data-iframe-height>%1$s</div>',
+					$post_content,
+				);
 				?>
 				<style>
 					#wpadminbar {
@@ -295,6 +342,11 @@ class Iframe_Embeds {
 		}
 	}
 
+	/**
+	 * Register the _embeds field for all public post types.
+	 * @hook rest_api_init
+	 * @return void
+	 */
 	public function register_rest_fields() {
 		$post_types = get_post_types( array( 'public' => true ) );
 		foreach ( $post_types as $post_type ) {
@@ -366,6 +418,8 @@ class Iframe_Embeds {
 	/**
 	 * Ensures the 'iframe' query var is correctly parsed.
 	 *
+	 * @hook request
+	 *
 	 * @param  array $vars
 	 * @return array $vars
 	 */
@@ -378,6 +432,7 @@ class Iframe_Embeds {
 
 	/**
 	 * Provides a filter to change the post content of an iframe when viewing an iframe.
+	 * @hook the_content
 	 *
 	 * @param  string $content the post_content.
 	 * @return string $content
@@ -391,7 +446,7 @@ class Iframe_Embeds {
 
 	/**
 	 * Provides a filter to change the post title only on iframes.
-	 *
+	 * @hook the_title
 	 * @param  string $title
 	 * @return string $title
 	 */
@@ -404,6 +459,7 @@ class Iframe_Embeds {
 
 	/**
 	 * Custom hook for the head of iframes
+	 * @hook wp_head
 	 */
 	public function head() {
 		if ( true === $this->is_iframe() ) {
@@ -413,6 +469,7 @@ class Iframe_Embeds {
 
 	/**
 	 * Custom hook for the footer of iframes
+	 * @hook wp_footer
 	 */
 	public function footer() {
 		if ( true === $this->is_iframe() ) {
@@ -421,10 +478,15 @@ class Iframe_Embeds {
 	}
 
 	/**
-	 * On iframes include the iframe resizer content window script.
+	 * On /iframes enqueue the iframe resizer content window script.
+	 * @hook wp_enqueue_scripts
 	 */
 	public function iframe_resizer_script() {
 		if ( true === $this->is_iframe() ) {
+			// @TODO: Look into Luis fix for "classic themes" applications of interactivity api, which I think really means PHP-first applications, like this. https://github.com/WordPress/gutenberg/pull/58066
+			// A little bit of a hack. By calling the_content filter in enqueue_scripts we're ensuring block scripts and modules are enqueued properly.
+			// @TODO: Fix this behavior so we only have to call it once on content render.
+			$this->get_template_post_content();
 			wp_enqueue_script( self::$handle . '-resizer-window-script' );
 		}
 	}
@@ -443,6 +505,7 @@ class Iframe_Embeds {
 
 	/**
 	* Register additional attributes for supported blocks.
+	* @hook block_type_metadata
 	* @param mixed $metadata
 	* @return mixed
 	*/
@@ -466,6 +529,7 @@ class Iframe_Embeds {
 
 	/**
 	* Register additional settings, like context, for supported blocks.
+	* @hook block_type_metadata_settings
 	* @param mixed $settings
 	* @param mixed $metadata
 	* @return mixed
@@ -482,6 +546,13 @@ class Iframe_Embeds {
 		return $settings;
 	}
 
+	/**
+	 * Render the iframe embed footer on the front end.
+	 * @hook render_block
+	 * @param mixed $block_content
+	 * @param mixed $block
+	 * @return mixed
+	 */
 	public function render( $block_content, $block ) {
 		if ( !array_key_exists('blockName', $block) ) {
 			return $block_content;
@@ -507,6 +578,12 @@ class Iframe_Embeds {
 		return $tag->get_updated_html() . $this->embed_footer( get_the_ID(), $block_embed_id );
 	}
 
+	/**
+	 * Render the iframe embed footer on the front end.
+	 * @param mixed $post_id
+	 * @param mixed $block_embed_id
+	 * @return string|false
+	 */
 	public function embed_footer( $post_id, $block_embed_id ) {
 		$permalink = get_permalink( $post_id );
 		$iframe_code = $this->get_iframe_code( $post_id, $permalink . 'iframe/' . $block_embed_id );
@@ -541,7 +618,13 @@ class Iframe_Embeds {
 		return ob_get_clean();
 	}
 
-	public function get_iframe_code( $post_id, $src = null, $output_as_iframe = false ) {
+	public function get_iframe_code( $post_id, $src = null, $opts = array() ) {
+		$opts = wp_parse_args( $opts, array(
+			'output_as_iframe' => false,
+			'enqueue_view_embed' => false,
+		) );
+		$output_as_iframe = $opts['output_as_iframe'];
+		$enqueue_view_embed = $opts['enqueue_view_embed'];
 		if ( empty( $src ) ) {
 			$src = get_permalink( $post_id ) . 'iframe/';
 		}
@@ -552,23 +635,23 @@ class Iframe_Embeds {
 		}
 		$script_url = wp_scripts()->registered[ self::$handle . '-resizer-script' ]->src;
 
-		if ( true === $output_as_iframe ) {
+		if ( true === $output_as_iframe && $enqueue_view_embed ) {
 			wp_enqueue_script(self::$handle . '-view-embed');
 		}
 
 		ob_start();
 		?>
-		<?php if ( true !== $output_as_iframe ): ?>
+		<?php if ( false === $output_as_iframe ): ?>
 		<textarea onClick="this.focus();this.select();">
 		<?php endif; ?>
 		<iframe id="pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>" src="<?php echo esc_url( $src ); ?>" height="<?php echo esc_attr( $height ); ?>px" width="100%" scrolling="no" frameborder="0"></iframe>
-		<?php if ( true !== $output_as_iframe ): ?>
+		<?php if ( false === $output_as_iframe ): ?>
 		<script type='text/javascript' id='pew-iframe-resizer'>(function(){function async_load(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='<?php echo esc_url( $script_url ); ?>';s.onload=s.onreadystatechange=function(){var rs=this.readyState;try{iFrameResize([],'iframe#pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>')}catch(e){}};var embedder=document.getElementById('pew-iframe-resizer');embedder.parentNode.insertBefore(s,embedder)}if(window.attachEvent)window.attachEvent('onload',async_load);else window.addEventListener('load',async_load,false)})();</script>
 		</textarea>
 		<?php endif;?>
 		<?php
 		$output = ob_get_clean();
-		if ( true !== $output_as_iframe ) {
+		if ( false === $output_as_iframe ) {
 			$output = normalize_whitespace( $output );
 		}
 		return apply_filters( 'prc_iframe_embed_code', $output, $post_id );

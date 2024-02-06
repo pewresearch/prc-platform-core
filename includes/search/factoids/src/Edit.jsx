@@ -25,7 +25,7 @@ import {
 /**
  * Internal Dependencies
  */
-import Controls from './Controls';
+import Controls from './controls';
 
 const POST_TYPE = 'factoid';
 const POST_TYPE_LABEL = 'Factoid';

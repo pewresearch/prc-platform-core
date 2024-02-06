@@ -12,6 +12,7 @@ domReady(() => {
 	const embeds = document.querySelectorAll('iframe[id^="pewresearch-org-embed-"]');
 	// loop through the embeds and initialize the iFrameResize library
 	embeds.forEach((embed) => {
+		console.log('... embed ...', embed);
 		iFrameResize(
 			{
 				bodyMargin: 0,

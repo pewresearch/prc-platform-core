@@ -1,6 +1,9 @@
 <?php
 namespace PRC\Platform;
 
+use WP_Taxonomy;
+use WP_Error;
+
 class Research_Teams extends Taxonomies {
 	protected static $taxonomy = 'research-teams';
 
@@ -12,10 +15,17 @@ class Research_Teams extends Taxonomies {
 		'quiz',
 	);
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
+		$loader->add_filter( 'post_link', $this, 'modify_post_permalinks', 10, 2 );
+		$loader->add_filter( 'post_type_link', $this, 'modify_post_permalinks', 10, 2 );
+		$loader->add_filter( 'rewrite_rules_array', $this, 'add_rewrite_rules', 10, 1 );
 	}
 
+	/**
+	 * Register the taxonomy.
+	 * @return WP_Taxonomy|WP_Error
+	 */
 	public function register() {
 		$taxonomy_name = self::$taxonomy;
 
@@ -67,13 +77,7 @@ class Research_Teams extends Taxonomies {
 			'stub',
 		) );
 
-		$registered = register_taxonomy( self::$taxonomy, $post_types, $args );
-
-		return $registered;
-	}
-
-	public function generate_attachment_rewrite_rules($rules) {
-		//
+		return register_taxonomy( self::$taxonomy, $post_types, $args );
 	}
 
 	// Adds a rewrite rule for each research term for the approved post types.

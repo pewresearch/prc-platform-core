@@ -1,10 +1,7 @@
 /**
  * External Dependencies
  */
-import {
-	library,
-	dom,
-} from '@fortawesome/fontawesome-svg-core';
+import { library, dom } from '@fortawesome/fontawesome-svg-core';
 import { icons } from '@prc/icons';
 
 /**
@@ -16,5 +13,5 @@ library.add(icons);
 
 domReady(() => {
 	dom.i2svg();
-	dom.watch();
+	// dom.watch();
 });

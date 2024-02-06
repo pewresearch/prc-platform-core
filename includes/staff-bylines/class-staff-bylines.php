@@ -153,15 +153,6 @@ class Staff_Bylines {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -177,14 +168,42 @@ class Staff_Bylines {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 
 		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';
-		require_once plugin_dir_path( __FILE__ ) . '/staff-info-panel/index.php';
-		require_once plugin_dir_path( __FILE__ ) . '/bylines-acknowledgements-panel/index.php';
+		require_once plugin_dir_path( __FILE__ ) . 'staff-info-panel/index.php';
+		require_once plugin_dir_path( __FILE__ ) . 'bylines-acknowledgements-panel/index.php';
+
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$staff_info_panel = new Staff_Info_Panel();
+			$bylines_acknowledgements_panel = new Bylines_Acknowledgements_Panel();
+
+			// Establish a bi-directional relationship between the "staff" post type and the "byline" taxonomy.
+			$loader->add_action( 'init', $this, 'register_term_data_store' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_filter( 'rest_staff_collection_params', $this, 'filter_add_rest_orderby_params', 10, 1);
+			$loader->add_filter( 'posts_orderby', $this, 'orderby_last_name', PHP_INT_MAX, 2 );
+
+			$loader->add_action( 'pre_get_posts', $this, 'hide_former_staff', 10, 1 );
+			$loader->add_filter( 'the_title', $this, 'indicate_former_staff', 10, 1 );
+
+			$loader->add_filter( 'post_type_link', $this, 'modify_staff_permalink', 20, 2 );
+			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
+
+			$loader->add_action( 'rest_api_init', $this, 'add_staff_info_term' );
+			$loader->add_filter( 'wpseo_enhanced_slack_data', $this, 'generate_yoast_slack_data', 10, 2 );
+			$loader->add_filter( 'wpseo_meta_author', $this, 'generate_yoast_author_data', 10, 2 );
+			$loader->add_filter( 'wpseo_opengraph_author_facebook', $this, 'generate_yoast_author_data', 10, 2 );
+
+			$loader->add_action( 'enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets' );
+			$loader->add_action( 'enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets' );
+		}
 	}
 
 	public function register_term_data_store() {
@@ -243,7 +262,6 @@ class Staff_Bylines {
 	 * Hide former staff from the staff archive and staff taxonomy archive
 	 * @hook pre_get_posts
 	 * @param mixed $query
-	 * @return void
 	 */
 	public function hide_former_staff( $query ) {
 		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {

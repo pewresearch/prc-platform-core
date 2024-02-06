@@ -1,10 +1,16 @@
 <?php
 namespace PRC\Platform;
+use TDS\Invalid_Input_Exception;
 use WP_Error;
+use WP_REST_Request;
+use WP_REST_Response;
 
 class Datasets {
 	public static $post_object_name = 'dataset';
 	public static $taxonomy_object_name = 'datasets';
+	public static $download_meta_key = '_download_attachment_id';
+	public static $atp_legal_key = 'is_atp';
+	public static $schema_key = 'dataset_schema';
 	public static $enabled_post_types = array(
 		'post',
 		'interactives',
@@ -97,15 +103,6 @@ class Datasets {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -123,43 +120,197 @@ class Datasets {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		require_once plugin_dir_path( __FILE__ ) . '/downloads-log/index.php';
+		$this->init($loader);
 	}
 
+	public function init($loader) {
+		if ( null !== $loader ) {
+			// Establish a bi-directional relationship between the "dataset" post type and the "datasets" taxonomy.
+			$loader->add_action( 'init', $this, 'register_term_data_store' );
+			$loader->add_action( 'init', $this, 'block_init' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_download_endpoint' );
+
+			$download_logger = new Datasets_Download_Logger();
+			$loader->add_action( 'init', $download_logger, 'register_meta' );
+			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
+			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_logger_endpoint' );
+		}
+	}
+
+	/**
+	 * Register the dataset post type and taxonomy and establish a relationship between them.
+	 * @hook init
+	 */
 	public function register_term_data_store() {
 		register_post_type( self::$post_object_name, self::$post_object_args );
 		register_taxonomy( self::$taxonomy_object_name, self::$enabled_post_types, self::$taxonomy_object_args );
 		\TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
+		$this->register_dataset_fields();
 	}
 
+	/**
+	 * Enable Gutenberg for the dataset.
+	 * @hook prc_load_gutenberg
+	 * @param  array $post_types [description]
+	 * @return array Post types that should have Gutenberg enabled.
+	 */
 	public function enable_gutenberg_ramp($post_types) {
 		array_push($post_types, self::$post_object_name);
 		return $post_types;
 	}
 
-	public function archive_rewrites() {
-		add_rewrite_rule(
-			'datasets/(\d\d\d\d)/page/?([0-9]{1,})/?$',
-			'index.php?post_type=dataset&year=$matches[1]&paged=$matches[2]',
-			'top'
-		);
-		add_rewrite_rule(
-			'datasets/(\d\d\d\d)/?$',
-			'index.php?post_type=dataset&year=$matches[1]',
-			'top'
-		);
-		add_rewrite_rule(
-			'datasets/page/?([0-9]{1,})/?$',
-			'index.php?post_type=dataset&paged=$matches[1]',
-			'top'
-		);
-		add_rewrite_rule(
-			'datasets/?$',
-			'index.php?post_type=dataset',
-			'top'
+	/**
+	 * @hook prc_platform_rewrite_rules
+	 * @param array $rewrite_rules
+	 * @return array $rewrite_rules
+	 */
+	public function archive_rewrites($rewrite_rules) {
+		return array_merge(
+			$rewrite_rules,
+			array(
+				'datasets/(\d\d\d\d)/page/?([0-9]{1,})/?$' => 'index.php?post_type=dataset&year=$matches[1]&paged=$matches[2]',
+			),
+			array(
+				'datasets/(\d\d\d\d)/?$' => 'index.php?post_type=dataset&year=$matches[1]',
+			),
+			array(
+				'datasets/page/?([0-9]{1,})/?$' => 'index.php?post_type=dataset&paged=$matches[1]',
+			),
+			array(
+				'datasets/?$' => 'index.php?post_type=dataset',
+			),
 		);
 	}
 
+	/**
+	 * Registers the download endpoint. Checks the nonce against user credentials and
+	 * @return void
+	 */
+	public function register_download_endpoint($endpoints) {
+		$get_download_endpoint = array(
+			'route' 		      => 'datasets/get-download',
+			'methods'             => 'POST',
+			'args'                => array(
+				'id' => array(
+					'required' => true,
+					'type' => 'integer'
+				),
+				'uuid' => array(
+					'required' => true,
+					'type' => 'string'
+				),
+			),
+			'callback'            => array( $this, 'restfully_download_dataset' ),
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$nonce = $request->get_header( 'x-wp-nonce' );
+				return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
+			},
+		);
+		array_push($endpoints, $get_download_endpoint);
+		return $endpoints;
+	}
+
+	/**
+	 * Restfully download a dataset.
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function restfully_download_dataset( WP_REST_Request $request ) {
+		$uuid = $request->get_param( 'uuid' );
+		$dataset_id = $request->get_param( 'id' );
+		$attachment_id = get_post_meta( $dataset_id, self::$download_meta_key, true );
+		if ( $attachment_id ) {
+			$attachment_url = wp_get_attachment_url( $attachment_id );
+			// Log the download.
+			$download_logger = new Datasets_Download_Logger();
+			$download_logger->increment_download_total( $dataset_id );
+			$download_logger->log_monthly_download_count( $dataset_id );
+			$download_logger->log_uuid_to_dataset( $dataset_id, $uuid );
+			// @TODO add additional checks here.
+			// ... we may check for correct download logging before allowing a download
+			// ... we may also check for a user's uuid and token and see if they're a valid user.
+			return rest_ensure_response( array(
+				'file_url' => $attachment_url,
+			) );
+		} else {
+			return rest_ensure_response( array(
+				'error' => 'No attachment found for dataset.',
+			) );
+		}
+	}
+
+	public function register_dataset_fields() {
+		register_post_meta(
+			self::$post_object_name,
+			self::$download_meta_key,
+			array(
+				'description'   => 'Attachment ID for the dataset download.',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'integer',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			self::$post_object_name,
+			self::$atp_legal_key,
+			array(
+				'description'   => 'Is this dataset under the ATP legal agreement?',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'boolean',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			self::$post_object_name,
+			self::$schema_key,
+			array(
+				'description'   => 'Dataset schema.',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'string',
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+	}
+
+	/**
+	 * @hook enqueue_block_editor_assets
+	 */
+	public function enqueue_panel() {
+		$screen = get_current_screen();
+		if ( ! is_admin() || ! in_array( $screen->post_type, array(self::$post_object_name) ) ) {
+			return;
+		}
+
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/panel/index.asset.php' );
+		$asset_slug = 'prc-platform-datasets-panel';
+		$script_src  = plugin_dir_url( __FILE__ ) . 'build/panel/index.js';
+
+		wp_enqueue_script(
+			$asset_slug,
+			$script_src,
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
+		);
+	}
+
+	public function block_init() {
+		register_block_type( __DIR__ . '/build/download-block' );
+	}
 }

@@ -9,15 +9,6 @@ class Taxonomies {
 	public static $primary_taxonomy = 'research-teams';
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -33,8 +24,7 @@ class Taxonomies {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 
 		require_once( plugin_dir_path( __FILE__ ) . 'topic-category/class-topic-category.php' );
@@ -44,6 +34,34 @@ class Taxonomies {
 		require_once( plugin_dir_path( __FILE__ ) . 'class-mode-of-analysis.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-regions-countries.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-research-teams.php' );
+
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'disable_term_description_filtering' );
+			$loader->add_filter( 'get_terms', $this, 'replace_commas_in_term_names', 10, 1 );
+			$loader->add_filter( 'global_terms_enabled', $this, 'disable_global_terms', 10, 1 );
+			$loader->add_filter( 'wpseo_premium_term_redirect_slug_change', $this, 'yoast_enable_term_redirect_slug_change' );
+
+			// Disable "Post Tag" from appearing in the admin UI.
+			$loader->add_filter( 'register_taxonomy_args', $this, 'modify_post_tag_taxonomy_args', 10, 2 );
+
+			// Activity Trail.
+			$loader->add_action( 'init', $this, 'register_activity_trail_meta' );
+			$loader->add_action( 'create_term', $this, 'hook_on_to_term_update', 10, 4 );
+			$loader->add_action( 'edit_term', $this, 'hook_on_to_term_update', 10, 4 );
+
+			// Register the taxonomies.
+			new Topic_Category($loader);
+			new Collections($loader);
+			new Formats($loader);
+			new Languages($loader);
+			new Mode_Of_Analysis($loader);
+			new Regions_Countries($loader);
+			new Research_Teams($loader);
+		}
 	}
 
 	public function disable_term_description_filtering() {
@@ -58,20 +76,21 @@ class Taxonomies {
 	 *
 	 * @hook get_terms
 	 *
-	 * @param  [type] $term [description]
-	 * @return [type]       [description]
+	 * @param  WP_Term[] $term Array of terms.
+	 * @return WP_Term[] $term Array of terms.
 	 */
-	public function replace_commas_in_term_names( $term ) {
-		foreach ( $term as $t ) {
-			if ( is_object( $t ) ) {
-				$t->name = preg_replace( '/_/i', ',', $t->name );
+	public function replace_commas_in_term_names( $terms ) {
+		foreach ( $terms as $term ) {
+			if ( is_object( $term ) ) {
+				$term->name = preg_replace( '/_/i', ',', $term->name );
 			}
 		}
-		return $term;
+		return $terms;
 	}
 
 	/**
 	 * Disable 'Global Terms Enabled', this causes issues with shared term slugs. Resolves a long standing taxonomy issue.
+	 * @hook global_terms_enabled
 	 * @return false
 	 */
 	public function disable_global_terms() {
@@ -80,6 +99,7 @@ class Taxonomies {
 
 	/**
 	 * Enable term slug change, this allows us to change the slug of a term without breaking the site.
+	 * @hook wpseo_premium_term_redirect_slug_change
 	 * @return true
 	 */
 	public function yoast_enable_term_redirect_slug_change() {
@@ -95,6 +115,11 @@ class Taxonomies {
 		return $args;
 	}
 
+	/**
+	 * Register the activity trail meta for the taxonomy.
+	 * @hook init
+	 * @param mixed $taxonomy
+	 */
 	public function register_activity_trail_meta($taxonomy = null) {
 		if ( ! $taxonomy ) {
 			return;
@@ -117,8 +142,8 @@ class Taxonomies {
 	}
 
 	/**
+	 * Whenever a term is created this will log when it was created and what user made that change.
 	 * @hook create_term edit_term
-	 * @return void
 	 */
 	public function hook_on_to_term_update( int $term_id, int $tt_id, string $taxonomy, array $args ) {
 		$this->log_activity_trail( $term_id, $tt_id, $taxonomy );
@@ -129,7 +154,6 @@ class Taxonomies {
 	 * @param mixed $term_id
 	 * @param mixed $tt_id
 	 * @param mixed $taxonomy
-	 * @return void
 	 */
 	public function log_activity_trail( $term_id, $tt_id, $taxonomy ) {
 		// Get currently logged in user id.

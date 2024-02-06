@@ -1,5 +1,7 @@
 <?php
 namespace PRC\Platform;
+
+use LogicException;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -20,15 +22,6 @@ class Interactives {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -46,11 +39,32 @@ class Interactives {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->load_dependencies();
+		$this->init($loader);
 	}
 
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_action( 'init', $this, 'rewrite_tags' );
+			$loader->add_action( 'init', $this, 'rewrite_index', 11 );
+			$loader->add_action( 'prc_platform_on_publish', $this, 'rewrite_update_hook' );
+			$loader->add_action( 'prc_platform_on_update', $this, 'rewrite_update_hook' );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
+
+			new Loader_Block($loader);
+			new Legacy_Interactive_Containment_System($loader);
+		}
+	}
+
+	/**
+	 * Register the Interactive post type
+	 * @hook init
+	 */
 	public function register_type() {
 		$labels = array(
 			'name'               => 'Interactive Products',
@@ -99,20 +113,8 @@ class Interactives {
 			),
 		);
 
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			$args['rewrite']['slug'] = 'interactives';
-			$args['taxonomies'] = array( 'topic', 'research-teams' );
-		}
-
 		register_post_type( self::$post_type, $args );
-	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
-	}
-
-	public function register_meta_and_fields() {
 		register_post_meta(
 			self::$post_type,
 			self::$data_meta_key,
@@ -156,41 +158,56 @@ class Interactives {
 	}
 
 	/**
-	 * @hook rest_api_init
-	 * @return void
+	 * Signal that Interactive post type should utilize Gutenberg
+	 * @hook prc_load_gutenberg
+	 * @param mixed $post_types
+	 * @return array
 	 */
-	public function register_rest_endpoints() {
-		register_rest_route(
-			'prc-api/v3',
-			'/interactives/get-assets',
-			array(
-				'methods' => 'GET',
-				'callback' => array( $this, 'get_assets_restfully' ),
-				'permission_callback' => function() {
-					return current_user_can('edit_posts');
-				}
-			)
-		);
-
-		register_rest_route(
-			'prc-api/v3',
-			'/interactives/get-data/(?P<attachmentId>\d+)',
-			array(
-				'methods' => 'GET',
-				'callback' => array( $this, 'get_data_restfully' ),
-				'args' => array(
-					'asString' => array(
-						'default' => false,
-						'type' => 'boolean',
-					),
-				),
-				'permission_callback' => function() {
-					return true; // @TODO check for nonce permissions.
-				}
-			)
-		);
+	public function enable_gutenberg_ramp($post_types) {
+		array_push($post_types, self::$post_type);
+		return $post_types;
 	}
 
+	/**
+	 * Register /interactives/get-assets and /interactives/get-data rest endpoints.
+	 * @hook prc_api_endpoints
+	 * @param array $endpoints
+	 * @return array $endpoints
+	 */
+	public function register_endpoints($endpoints) {
+		$get_assets = array(
+			'route' => '/interactives/get-assets',
+			'methods' => 'GET',
+			'callback' => array( $this, 'get_assets_restfully' ),
+			'permission_callback' => function() {
+				return current_user_can('edit_posts');
+			}
+		);
+
+		$get_data = array(
+			'route' => '/interactives/get-data/(?P<attachmentId>\d+)',
+			'methods' => 'GET',
+			'callback' => array( $this, 'get_data_restfully' ),
+			'args' => array(
+				'asString' => array(
+					'default' => false,
+					'type' => 'boolean',
+				),
+			),
+			'permission_callback' => function() {
+				return true; // @TODO check for nonce permissions.
+			}
+		);
+
+		array_push($endpoints, $get_assets, $get_data);
+		return $endpoints;
+	}
+
+	/**
+	 * Gets the either json or csv data from an attachment and returns it as an restfully formatted array OR a string blob.
+	 * @param WP_REST_Request $request
+	 * @return mixed WP_Error|WP_REST_Response|string
+	 */
 	public function get_data_restfully( \WP_REST_Request $request ) {
 		$attachment_id = $request->get_param('attachmentId');
 		$return_as_string = $request->get_param('asString');
@@ -291,6 +308,11 @@ class Interactives {
 		return $interactives;
 	}
 
+	/**
+	 * Returns a single interactive asset by slug.
+	 * @param mixed $interactive_slug
+	 * @return mixed Array|false
+	 */
 	public function get_asset($interactive_slug) {
 		$interactives = $this->get_assets();
 		foreach ( $interactives as $research_team_name => $years ) {
@@ -306,8 +328,9 @@ class Interactives {
 	}
 
 	/**
+	 * WIP: I'm not sure I want to pre-register all the interactives into the scripts registry like this. I think I'd rather just register them as they are enqueued.
+	 * Register the assets for all interactives.
 	 * @hook init
-	 * @return void
 	 */
 	public function register_assets() {
 		$assets = $this->get_assets();
@@ -339,6 +362,14 @@ class Interactives {
 		}
 	}
 
+	/**
+	 * Load a single interactive by slug.
+	 *
+	 * This function is used by the interactive loader block to load the necessary assets for an interactive.
+	 *
+	 * @param mixed $slug
+	 * @return string[]
+	 */
 	public function load($slug) {
 		$interactives = new Interactives(null, null);
 		$assets = $interactives->get_asset($slug);
@@ -372,6 +403,13 @@ class Interactives {
 		return $enqueued;
 	}
 
+	/**
+	 * Load a single interactive, via Wpackio (legacy) by slug.
+	 *
+	 * @param mixed $args
+	 * @return void|false|array
+	 * @throws LogicException
+	 */
 	public function load_legacy_wpackIO($args) {
 		$args = wp_parse_args(
 			$args,
@@ -436,81 +474,23 @@ class Interactives {
 	}
 
 	/**
-	 * Loads the necessary script and attachment markup for an interactive to load on the front end.
-	 * @param mixed $attributes
-	 * @param mixed $content
-	 * @param mixed $block
-	 * @return string
+	 * Include all blocks from the /blocks directory.
+	 * @return void
 	 */
-	public function render_interactive_loader_callback($attributes, $content, $block) {
-		if ( is_admin() ) {
-			return;
+	private function load_blocks() {
+		$block_files = glob( plugin_dir_path( __FILE__ ) . '/blocks/*', GLOB_ONLYDIR );
+		foreach ($block_files as $block) {
+			$block = basename($block);
+			$block_file_path = 'blocks/' . $block . '/' . $block . '.php';
+			if ( file_exists( plugin_dir_path( __FILE__ ) . $block_file_path ) ) {
+				require_once plugin_dir_path( __FILE__ ) . $block_file_path;
+			}
 		}
-
-		$block_wrapper_attrs = get_block_wrapper_attributes(array(
-			'id' => "js-{$attributes['slug']}"
-		));
-
-		$enqueued_handles = array();
-		if ( $attributes['legacyWpackIo'] ) {
-			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
-		} else if ( $attributes['legacyAssetsS3'] ) {
-			// Do nothing for now...
-			// @TODO: Build out the legacy assets S3 loader.
-		} else {
-			$enqueued_handles = $this->load($attributes['slug']);
-		}
-
-		$url_rewrites = $this->get_rewrites_params();
-		if ( $url_rewrites && array_key_exists('script', $enqueued_handles) ) {
-			// We want to localize whatever script the loader returns.
-			$script_handle = $enqueued_handles['script'];
-			// Use wp_add_inline_script to localize the script instead of wp_localize_script because we want to add the data before the script is enqueued and we want to support multiple localizations for the same script.
-			wp_add_inline_script(
-				$script_handle,
-				'if ( typeof prcPlatformInteractives === "undefined" ) { var prcPlatformInteractives = {}; } prcPlatformInteractives["' . $attributes['slug'] . '"] = ' . json_encode(array(
-					'urlVars' => $url_rewrites,
-				)) . ';',
-				'before'
-			);
-		}
-
-		// Allow for filtering of the interactive content by other plugins.
-		$content = apply_filters('prc_platform_interactive_loader_content', $content, $attributes, $block);
-
-		return wp_sprintf(
-			'<div %1$s>%2$s</div>',
-			$block_wrapper_attrs,
-			json_encode($attributes),
-		);
 	}
 
-	/**
-	 * @TODO: WIP, this block will render the referenced interactive.
-	 * @param mixed $attributes
-	 * @param mixed $content
-	 * @param mixed $block
-	 * @return string
-	 */
-	public function render_interactive_embed_callback($attributes, $content, $block) {
-		$block_wrapper_attrs = get_block_wrapper_attributes(array(
-			'id' => "js-{$attributes['slug']}"
-		));
-
-		return wp_sprintf(
-			'<div %1$s>%2$s</div>',
-			$block_wrapper_attrs,
-			$content,
-		);
-	}
-
-	public function block_init() {
-		register_block_type(
-			__DIR__ . '/build/loader-block',
-			array(
-				'render_callback' => array( $this, 'render_interactive_loader_callback' ),
-			)
-		);
+	private function load_dependencies() {
+		require_once plugin_dir_path( __FILE__ ) . '/legacy-containment-system/class-legacy-containment-system.php';
+		$this->load_blocks();
 	}
 
 	/**
@@ -522,9 +502,9 @@ class Interactives {
 	 * @return WP_Error|true
 	 */
 	public function register_panel_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/panel/index.asset.php' );
+		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'panel/build/index.asset.php' );
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/panel/index.js';
+		$script_src  = plugin_dir_url( __FILE__ ) . 'panel/build/index.js';
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -555,6 +535,13 @@ class Interactives {
 		}
 	}
 
+	/**
+	 * Update the rewrite index for this interactive.
+	 * @param mixed $post_id
+	 * @param mixed $post_slug
+	 * @param bool $rewrites
+	 * @return false|void
+	 */
 	public function update_rewrite( $post_id, $post_slug, $rewrites = false ) {
 		if ( false === $rewrites ) {
 			return false;
@@ -594,10 +581,10 @@ class Interactives {
 	}
 
 	/**
+	 * When an interactive is published or updated, update the rewrite index.
 	 * @hook prc_platform_on_publish
 	 * @hook prc_platform_on_update
 	 * @param mixed $post
-	 * @return void
 	 */
 	public function rewrite_update_hook( $post ) {
 		if ( self::$post_type !== $post->post_type ) {
@@ -607,8 +594,8 @@ class Interactives {
 	}
 
 	/**
+	 * Register the rewrite tags for all interactives.
 	 * @hook init
-	 * @return void
 	 */
 	public function rewrite_tags() {
 		$index = get_option( self::$rewrites_option_key );
@@ -628,8 +615,8 @@ class Interactives {
 	}
 
 	/**
-	 * @hook init 11, give it a chance to build the index first.
-	 * @return void
+	 * Register the rewrite rules for all interactives.
+	 * @hook init
 	 */
 	public function rewrite_index() {
 		$index = get_option( self::$rewrites_option_key );
@@ -661,6 +648,10 @@ class Interactives {
 		}
 	}
 
+	/**
+	 * Get the rewrite params for the current interactive.
+	 * @return void|false|array
+	 */
 	public function get_rewrites_params() {
 		$index = get_option( self::$rewrites_option_key );
 		if ( ! is_singular( self::$post_type ) || false == $index || empty( $index ) ) {

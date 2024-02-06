@@ -6,15 +6,6 @@ use WP_Error;
 
 class WP_Admin {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,11 +23,33 @@ class WP_Admin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
-
 		require_once plugin_dir_path( __FILE__ ) . 'admin-columns/class-admin-columns.php';
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if (null !== $loader) {
+			// This removes the "Public Preview" next to the draft label in the WordPress admin.
+			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
+
+			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
+			$loader->add_action( 'login_enqueue_scripts', $this, 'login_logo' );
+			$loader->add_action( 'wp_before_admin_bar_render', $this, 'admin_bar_tweaks' );
+			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
+			$loader->add_action( 'admin_print_footer_scripts', $this, 'admin_footer' );
+			$loader->add_filter( 'disabled_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
+			$loader->add_action( 'admin_menu', $this, 'modify_menu', 10 );
+			$loader->add_action( 'wp_dashboard_setup' , $this, 'remove_dashboard_widgets', 99 );
+			$loader->add_filter( 'multisite_enhancements_status_label', $this, 'multisite_enhancement_plugin_sites_label', 10, 2 );
+			$loader->add_action( 'init', $this, 'disable_emojis' );
+			$loader->add_filter( 'ppp_nonce_life', $this, 'define_public_post_preview_lifetime' ) ;
+			$loader->add_filter( 'the_excerpt', $this, 'remove_overview_from_excerpts' );
+			$loader->add_filter( 'update_footer', $this, 'output_platform_version_in_wp_admin', 100 );
+
+			new Admin_Columns_Pro($loader);
+		}
 	}
 
 	public function default_admin_color_scheme( $result ) {
@@ -196,9 +209,10 @@ class WP_Admin {
 	 */
 	public function disable_cookie_banner_conditions($disable = false) {
 		$env = wp_get_environment_type();
-		if ( is_user_logged_in() || 'production' !== $env ) {
+		if ( is_user_logged_in() || 'production' !== $env || is_iframe() ) {
 			return true;
 		}
+		// Check if is iframe and if so disable.
 		return $disable;
 	}
 

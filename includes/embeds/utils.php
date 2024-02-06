@@ -1,25 +1,24 @@
 <?php
-use \PRC\Platform\Iframe_Embeds;
+use \PRC\Platform\Embeds;
 
-function prc_the_iframe_code( $post_id, $src = null, $echo = true ) {
-	$prc_embeds = new Iframe_Embeds(
+function prc_get_post_as_iframe( $post_id, $src = null, $enqueue_view_embed = true ) {
+	$prc_embeds = new Embeds(
 		'pewresearch-org-embed',
 		1.0
 	);
-	$iframe_code = $prc_embeds->get_iframe_code( $post_id, $src, true );
-	if ( $echo ) {
-		echo $iframe_code;
-	} else {
-		return $iframe_code;
-	}
+	$iframe_code = $prc_embeds->get_iframe_code( $post_id, $src, array(
+		'output_as_iframe' => true,
+		'enqueue_view_embed' => $enqueue_view_embed,
+	) );
+	return $iframe_code;
 }
 
 function prc_get_the_iframe_code( $post_id ) {
-	$prc_embeds = new Iframe_Embeds(
-		'pewresearch-org-embed',
-		1.0
+	$prc_embeds = new Embeds(
+		1.0,
+		null
 	);
-	return $prc_embeds->get_iframe_code( $post_id, null, false );
+	return $prc_embeds->get_iframe_code( $post_id, null );
 }
 
 function is_iframe() {

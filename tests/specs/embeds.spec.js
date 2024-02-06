@@ -1,1 +1,0 @@
-// TEst that we can set a group block to be embeddable, that on the frontend it renders that functionality, and that we can access the iframe code and go to the iframe and see the same core content that we would expect.

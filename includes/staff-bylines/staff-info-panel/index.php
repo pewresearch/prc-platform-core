@@ -6,9 +6,7 @@ class Staff_Info_Panel {
 	protected static $handle = 'prc-platform-staff-info-panel';
 	public static $version = '4.0.0';
 
-	public function __construct() {
-
-	}
+	public function __construct() {}
 
 	public function get_wp_admin_current_post_type() {
 		if ( !is_admin() ) {

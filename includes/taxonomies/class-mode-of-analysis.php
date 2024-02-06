@@ -4,13 +4,12 @@ namespace PRC\Platform;
 class Mode_Of_Analysis extends Taxonomies {
 	protected static $taxonomy = 'mode-of-analysis';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {
 		$taxonomy_name = self::$taxonomy;
-
 
 		$labels     = array(
 			'name'                       => _x( 'Mode of Analysis', 'Taxonomy General Name', 'text_domain' ),

@@ -21,5 +21,32 @@
 	}
 	.wp-block-prc-platform-facet-template__label {
 		margin: 0!important;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		span:first-of-type {
+			display: flex;
+			flex-grow: 1;
+		}
+	}
+
+	.wp-block-prc-platform-facet-template__list-expanded-button,
+	.wp-block-prc-block-platform-facet-template__clear {
+		appearance: none;
+		border: none;
+		background: transparent;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	&:not(.has-selections) .wp-block-prc-block-platform-facet-template__clear {
+		display: none;
+	}
+	.wp-block-prc-block-platform-facet-template__clear {
+		margin: 0;
+		float: right;
+		background-color: black;
+		color: white;
+		border-radius: 50%;
 	}
 }

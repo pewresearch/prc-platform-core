@@ -12,15 +12,6 @@ class Housekeeping {
 	protected static $drafts_cleanup_count = 50;
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -38,14 +29,24 @@ class Housekeeping {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			// Clean up old drafts on a rolling 30 day basis, weekly. Move them to the trash.
+			// Let WordPress handle the trash.
+			$loader->add_action( 'prc_run_weekly', $this, 'weekly_drafts_cleanup' );
+			// Clean up quiz archetypes with less than 100 hits.
+			$loader->add_action( 'prc_run_monthly', $this, 'monthly_quiz_cleanup' );
+		}
 	}
 
 	/**
+	 * Every week we'll clean up any drafts that have not been modified in 30 days.
 	 * @hook prc_run_weekly
-	 * @return void
 	 */
 	public function weekly_drafts_cleanup() {
 		$posts_cleaned = array();
@@ -54,7 +55,7 @@ class Housekeeping {
 
 		$paged = 1;
 		// Get all posts that are a draft and have not had their post modified 30 days from today.
-		// We're going to loop through 50 of these at a time, if all is going well and the schedule and editors are doing there part we'll never have more than a dozen or so to clean up.
+		// We're going to loop through 50 of these at a time, if all is going well and the schedule and editors are doing their part we'll never have more than a dozen or so to clean up.
 		do {
 			$posts = get_posts(array(
 				'post_type' => 'any',
@@ -106,6 +107,8 @@ class Housekeeping {
 		);
 
 		if ( !empty($posts_not_cleaned) ) {
+			$posts_not_cleaned_mesage = array_map(function($post_id) { return wp_sprintf('<a href="%s">%s (%s)</a>', get_permalink($post_id), get_the_title($post_id), (string) $post_id);}, $posts_not_cleaned);
+			$posts_not_cleaned_mesage = implode(', ', $posts_not_cleaned_mesage);
 			wp_mail(
 				$this->email_contact,
 				'🧹 PRC Platform System Notice: Weekly Draft Cleanup Failures for: ' . $sitename,
@@ -120,6 +123,7 @@ class Housekeeping {
 	}
 
 	/**
+	 * Every month we'll clean up any quizzes that have not been surpased 100 hits.
 	 * @hook prc_run_monthly
 	 * @return void
 	 */
@@ -127,11 +131,23 @@ class Housekeeping {
 		$hits_threshold = apply_filters( 'prc_quiz_reset_threshold', 100, null );
 
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'prc_quiz_archetype';
+		$quiz_db_prefix = $wpdb->prefix . 'prc_quiz_';
+		$table_name = $quiz_db_prefix . 'archetype'; // @TODO, with the multisite collapse we should splice in the quizzes post id to the table name so we can centralize them.
 		$query = $wpdb->prepare(
 			"DELETE FROM $table_name WHERE hits < %d",
 			(int) $hits_threshold
 		);
+
+		$query = $wpdb->query( $query );
+
+		$query_message = is_bool($query) && $query ? 'Quiz cleanup successful.' : 'Quiz cleanup failed.';
+
+		wp_mail(
+			$this->email_contact,
+			'🧹 (🎓 Quizzes) PRC Platform System Notice: Monthly Quiz Cleanup '. is_bool($query) && $query ? 'Success' : 'Failure',
+			$query_message
+		);
+
 		return $wpdb->query($query);
 	}
 }

@@ -20,9 +20,9 @@ Use this package like so to convert HTML into Gutenberg Blocks:
 ```php
 use Alley\WP\Block_Converter\Block_Converter;
 
-$converter = new Block_Converter();
+$converter = new Block_Converter( '<p>Some HTML</p>' );
 
-$blocks = $converter->convert( '<p>Some HTML</p>' );
+$blocks = $converter->convert();
 ```
 
 ### Filtering the Blocks
@@ -46,7 +46,7 @@ add_filter( 'wp_block_converter_block', function ( Block $block, \DOMElement $no
 }, 10, 2 );
 ```
 
-#### `wp_block_converter_html_content`
+#### `wp_block_converter_document_html`
 
 Filter the generated blocks for an entire HTML body.
 
@@ -63,9 +63,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 ## Credits
 
-This project is actively maintained by [Alley
-Interactive](https://github.com/alleyinteractive). Like what you see? [Come work
-with us](https://alley.com/careers/).
+This project is actively maintained by [Alley Interactive](https://github.com/alleyinteractive). Like what you see? [Come work with us](https://alley.com/careers/).
 
 - [Sean Fisher](https://github.com/srtfisher)
 - [All Contributors](../../contributors)

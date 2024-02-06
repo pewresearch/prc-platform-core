@@ -15,15 +15,6 @@ class Post_Visibility {
 	);
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -41,9 +32,19 @@ class Post_Visibility {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_custom_visibility_statuses', 9 );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
+			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts' );
+			$loader->add_filter( 'rest_post_query', $this, 'filter_rest_query', 100, 2 );
+			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1 );
+		}
 	}
 
 	/**
@@ -136,7 +137,6 @@ class Post_Visibility {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -242,7 +242,17 @@ class Post_Visibility {
 	}
 
 	/**
+	 * Handle hiding posts from the index and search based on their visibility status.
+	 *
+	 * If on a "publication listing" only show posts that are "publish" or "hidden from search".
+	 *
+	 * If on a search page only show posts that are "publish" or "hidden from index".
+	 *
+	 * If on a byline page only show posts that are "publish" or "hidden from index".
+	 *
 	 * @hook pre_get_posts
+	 *
+	 * @param mixed $query
 	 */
 	public function filter_pre_get_posts($query) {
 		if ( is_admin() || ! $query->is_main_query() || $query->is_page() ) {

@@ -8,15 +8,6 @@ use WP_Error;
  */
 class Attachment_Downloader {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,37 +23,38 @@ class Attachment_Downloader {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'register_rewrite' );
+			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var' );
+			$loader->add_filter( 'template_include', $this, 'download_attachment_template' );
+		}
 	}
 
 	/**
 	 * Download Image Attachments by adding /download/ to the end of an attachment page URL
-	 *
+	 * @hook prc_platform_rewrite_rules
 	 * @param  [type] $rules [description]
 	 * @return [type]        [description]
 	 */
-	public function attachment_download_rewrite() {
-		if ( ! function_exists( 'hm_add_rewrite_rule' ) ) {
-			return new WP_Error( 'hm-rewrite-missing', 'HM Rewrite plugin is required to use this feature' );
-		}
-		hm_add_rewrite_rule(array(
-			'regex'            => '[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/download/?$',
-			'query'            => 'index.php?attachment=$matches[1]&attachment-download=1',
-			'request_callback' => function() {
-				$this->download_attachment_template( null );
-			},
+	public function register_rewrite($rewrite_rules) {
+		return array_merge($rewrite_rules, array(
+			'[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/download/?$' => 'index.php?attachment=$matches[1]&attachment-download=1',
 		));
 	}
 
 	/**
 	 * Add a query var to enable attachment download.
-	 *
+	 * @hook prc_platform_rewrite_query_vars
 	 * @param array $query_vars Query vars.
 	 * @return array
 	 */
-	public function download_attachment_query_vars( $query_vars ) {
+	public function register_query_var( $query_vars ) {
 		$query_vars[] = 'attachment-download';
 		return $query_vars;
 	}
@@ -80,6 +72,8 @@ class Attachment_Downloader {
 	 * Create a new filename for the image attachment.
 	 *
 	 * Serve up the image file, enjoy!
+	 *
+	 * @hook template_include
 	 *
 	 * @param string $template The path to the current template.
 	 * @return string $template The path to the current template.

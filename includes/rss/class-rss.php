@@ -9,15 +9,6 @@ use WP_Error;
  */
 class RSS_Feeds {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -35,9 +26,18 @@ class RSS_Feeds {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter('the_excerpt_rss', $this, 'remove_iframe');
+			$loader->add_filter('the_content_feed', $this, 'remove_iframe');
+			$loader->add_action('wp_feed_cache_transient_lifetime', $this, 'adjust_feed_cache_transient_lifetime');
+			$loader->add_action('wp_head', $this, 'add_to_head', 10);
+		}
 	}
 
 	/**

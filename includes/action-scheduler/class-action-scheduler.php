@@ -9,15 +9,6 @@ class Action_Scheduler {
 	public static $time_to_keep_records = 1 * HOUR_IN_SECONDS;
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -69,16 +60,24 @@ class Action_Scheduler {
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 
 		require_once( __DIR__ . '/cli/class-cli.php' );
+
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			// Register our default schedules.
+			$loader->add_action('init', $this, 'register_schedules');
+			// Registers WP CLI commands for Action Scheduler.
+			$loader->add_action('action_scheduler_pre_init', $this, 'pre_init');
+			// Change the retention period for Action Scheduler to X days. After that time completed and cancelled actions will be deleted.
+			$loader->add_filter('action_scheduler_retention_period', $this, 'modify_retention_period');
+		}
 	}
 
 	/**

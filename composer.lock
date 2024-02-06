@@ -4,26 +4,82 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7427c6f0a62d254c8ea1c0463d992d50",
+    "content-hash": "75330c29c73892781ceeb6eaa40c6c2b",
     "packages": [
         {
-            "name": "alleyinteractive/composer-wordpress-autoloader",
-            "version": "v1.0.0",
+            "name": "alleyinteractive/cache-collector",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/alleyinteractive/composer-wordpress-autoloader.git",
-                "reference": "5f72de0cc7060c2475117c3231335b0899200230"
+                "url": "https://github.com/alleyinteractive/cache-collector.git",
+                "reference": "51cd970131f6d1c63a53a8d2f33f285e1a7e834e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alleyinteractive/composer-wordpress-autoloader/zipball/5f72de0cc7060c2475117c3231335b0899200230",
-                "reference": "5f72de0cc7060c2475117c3231335b0899200230",
+                "url": "https://api.github.com/repos/alleyinteractive/cache-collector/zipball/51cd970131f6d1c63a53a8d2f33f285e1a7e834e",
+                "reference": "51cd970131f6d1c63a53a8d2f33f285e1a7e834e",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "alleyinteractive/alley-coding-standards": "^0.4",
+                "alleyinteractive/composer-wordpress-autoloader": "^1.0",
+                "mantle-framework/testkit": "^0.9",
+                "nunomaduro/collision": "^5.0"
+            },
+            "suggest": {
+                "psr/log": "For logging messages to when purging the cache"
+            },
+            "type": "wordpress-plugin",
+            "extra": {
+                "wordpress-autoloader": {
+                    "autoload-dev": {
+                        "Cache_Collector\\Tests\\": "tests"
+                    }
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Sean Fisher",
+                    "email": "srtfisher@gmail.com"
+                }
+            ],
+            "description": "Dynamic cache key collector for easy purging",
+            "homepage": "https://github.com/alleyinteractive/cache-collector",
+            "keywords": [
+                "alleyinteractive",
+                "cache-collector"
+            ],
+            "support": {
+                "issues": "https://github.com/alleyinteractive/cache-collector/issues",
+                "source": "https://github.com/alleyinteractive/cache-collector/tree/v1.0.1"
+            },
+            "time": "2022-12-07T19:27:49+00:00"
+        },
+        {
+            "name": "alleyinteractive/composer-wordpress-autoloader",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alleyinteractive/composer-wordpress-autoloader.git",
+                "reference": "30acf9e3498a84af478e316ae3869fa362835695"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alleyinteractive/composer-wordpress-autoloader/zipball/30acf9e3498a84af478e316ae3869fa362835695",
+                "reference": "30acf9e3498a84af478e316ae3869fa362835695",
                 "shasum": ""
             },
             "require": {
                 "alleyinteractive/wordpress-autoloader": "^1.1.1",
                 "composer-plugin-api": "^2.0",
-                "php": "^7.4.0|^8.0|^8.1"
+                "php": "^8.0"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -59,9 +115,9 @@
             "description": "Autoload files using WordPress File Conventions using Composer",
             "support": {
                 "issues": "https://github.com/alleyinteractive/composer-wordpress-autoloader/issues",
-                "source": "https://github.com/alleyinteractive/composer-wordpress-autoloader/tree/v1.0.0"
+                "source": "https://github.com/alleyinteractive/composer-wordpress-autoloader/tree/v1.1.0"
             },
-            "time": "2022-09-01T03:42:52+00:00"
+            "time": "2023-12-06T20:21:22+00:00"
         },
         {
             "name": "alleyinteractive/wordpress-autoloader",
@@ -109,26 +165,26 @@
         },
         {
             "name": "alleyinteractive/wp-block-converter",
-            "version": "v1.0.0",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alleyinteractive/wp-block-converter.git",
-                "reference": "c3775bc7ed324127332acef6bb73c605198979d9"
+                "reference": "95b5df0f20eb8a16e4eaa9d99c4ccdb9ca26fd05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alleyinteractive/wp-block-converter/zipball/c3775bc7ed324127332acef6bb73c605198979d9",
-                "reference": "c3775bc7ed324127332acef6bb73c605198979d9",
+                "url": "https://api.github.com/repos/alleyinteractive/wp-block-converter/zipball/95b5df0f20eb8a16e4eaa9d99c4ccdb9ca26fd05",
+                "reference": "95b5df0f20eb8a16e4eaa9d99c4ccdb9ca26fd05",
                 "shasum": ""
             },
             "require": {
                 "alleyinteractive/composer-wordpress-autoloader": "^1.0",
-                "php": "^8.0"
+                "php": "^8.0|^8.1|^8.2"
             },
             "require-dev": {
-                "alleyinteractive/alley-coding-standards": "^1.0",
-                "mantle-framework/testkit": "^0.9",
-                "nunomaduro/collision": "^5.0"
+                "alleyinteractive/alley-coding-standards": "^2.0",
+                "mantle-framework/testkit": "^0.12",
+                "nunomaduro/collision": "^6.0"
             },
             "type": "library",
             "extra": {
@@ -164,27 +220,27 @@
             ],
             "support": {
                 "issues": "https://github.com/alleyinteractive/wp-block-converter/issues",
-                "source": "https://github.com/alleyinteractive/wp-block-converter/tree/v1.0.0"
+                "source": "https://github.com/alleyinteractive/wp-block-converter/tree/v1.2.0"
             },
-            "time": "2022-12-20T17:54:15+00:00"
+            "time": "2023-11-07T18:59:03+00:00"
         },
         {
             "name": "landrok/language-detector",
-            "version": "1.3.1",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/landrok/language-detector.git",
-                "reference": "97f30d9d8969e63337ecce403f423adad8a21ee2"
+                "reference": "91511a4f93700bd1c4c576b0e3b42173334a3cab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/landrok/language-detector/zipball/97f30d9d8969e63337ecce403f423adad8a21ee2",
-                "reference": "97f30d9d8969e63337ecce403f423adad8a21ee2",
+                "url": "https://api.github.com/repos/landrok/language-detector/zipball/91511a4f93700bd1c4c576b0e3b42173334a3cab",
+                "reference": "91511a4f93700bd1c4c576b0e3b42173334a3cab",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": ">=7.2",
+                "php": ">=7.4",
                 "webmozart/assert": "^1.2"
             },
             "require-dev": {
@@ -209,9 +265,9 @@
             ],
             "support": {
                 "issues": "https://github.com/landrok/language-detector/issues",
-                "source": "https://github.com/landrok/language-detector/tree/1.3.1"
+                "source": "https://github.com/landrok/language-detector/tree/1.4.0"
             },
-            "time": "2021-04-09T12:12:22+00:00"
+            "time": "2023-12-18T21:52:42+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -273,23 +329,26 @@
         },
         {
             "name": "woocommerce/action-scheduler",
-            "version": "3.6.3",
+            "version": "3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/action-scheduler.git",
-                "reference": "c33dd732e37c90f37c3f9662f7eed888c11dc60d"
+                "reference": "bdaecb016e0358065a8bf76a41fdd60772cacaa5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/c33dd732e37c90f37c3f9662f7eed888c11dc60d",
-                "reference": "c33dd732e37c90f37c3f9662f7eed888c11dc60d",
+                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/bdaecb016e0358065a8bf76a41fdd60772cacaa5",
+                "reference": "bdaecb016e0358065a8bf76a41fdd60772cacaa5",
                 "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
             },
             "require-dev": {
                 "phpunit/phpunit": "^7.5",
                 "woocommerce/woocommerce-sniffs": "0.1.0",
                 "wp-cli/wp-cli": "~2.5.0",
-                "yoast/phpunit-polyfills": "^1.0"
+                "yoast/phpunit-polyfills": "^2.0"
             },
             "type": "wordpress-plugin",
             "extra": {
@@ -307,9 +366,9 @@
             "homepage": "https://actionscheduler.org/",
             "support": {
                 "issues": "https://github.com/woocommerce/action-scheduler/issues",
-                "source": "https://github.com/woocommerce/action-scheduler/tree/3.6.3"
+                "source": "https://github.com/woocommerce/action-scheduler/tree/3.7.1"
             },
-            "time": "2023-09-13T13:40:20+00:00"
+            "time": "2023-12-13T21:52:55+00:00"
         }
     ],
     "packages-dev": [],

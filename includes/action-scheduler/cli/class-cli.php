@@ -14,6 +14,9 @@ class Plugin {
 
 	const RUNNER_OPTION = 'ascli_disable_runner';
 
+	public $file;
+	public $directory;
+
 	static function instance() : self {
 		static $instance = null;
 
@@ -23,17 +26,26 @@ class Plugin {
 		return $instance;
 	}
 
-	static function init( string $file ) : void {
-		static $once = false;
+	/**
+	 * Initialize the CLI instance.
+	 *
+	 * @param string $file The file path.
+	 */
+	public static function init(string $file): void
+	{
+		// Singleton pattern: we only initialize once.
+		static $initialized = false;
 
-		if ( true === $once )
+		if ($initialized) {
 			return;
+		}
 
-		$once = true;
-		$instance = static::instance();
+		$initialized = true;
 
+		// Get the instance and set the file and directory.
+		$instance = self::instance();
 		$instance->file = $file;
-		$instance->directory = dirname( $file );
+		$instance->directory = realpath(dirname($file));
 	}
 
 	protected function __construct() {

@@ -31,7 +31,7 @@ const useProvideAttachments = ({ postId, postType, enabled }) => {
 		if ('number' === typeof pId && false === processing) {
 			toggleProcessing(true);
 			apiFetch({
-				path: `/prc-api/v2/media/attachments-report/?postId=${postId}`,
+				path: `/prc-api/v3/attachments-report/get/?postId=${postId}`,
 			})
 				.then((data) => {
 					console.log('... data ...', data);

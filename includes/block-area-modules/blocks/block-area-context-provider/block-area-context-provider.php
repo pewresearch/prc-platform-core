@@ -21,8 +21,8 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	public function __construct() {}
 
 	/**
+	 * Register the Block Area Context Provider block.
 	 * @hook init
-	 * @return void
 	 */
 	public function block_init() {
 		register_block_type( __DIR__ . '/build', array(
@@ -49,9 +49,9 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	}
 
 	/**
-	 * Handles main query
+	 * Filter out story items that have already been used in the block area module from the main query.
+	 * @hook pre_get_posts
 	 * @param mixed $query
-	 * @return void
 	 */
 	public function execute_on_main_query($query) {
 		if ( $query->is_archive() && $query->is_category() && $query->is_main_query() ) {
@@ -68,6 +68,10 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	/**
 	 * Handles when Query blocks are used and they do not inherit WP_Query
 	 * @hook render_block_context, 100
+	 * @param mixed $context
+	 * @param mixed $parsed_block
+	 * @param mixed $parent_block_obj
+	 * @return mixed
 	 */
 	public function execute_block_context( $context, $parsed_block, $parent_block_obj ) {
 		if ( 'core/post-template' === $parsed_block['blockName'] ) {
@@ -151,7 +155,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	/**
 	 * Clear the cache when a block module is updated.
 	 * @hook prc_platform_on_update
-	 * @return void
 	 */
 	public function clear_cache_on_block_module_saves($post) {
 		if ( parent::$post_type !== $post->post_type ) {

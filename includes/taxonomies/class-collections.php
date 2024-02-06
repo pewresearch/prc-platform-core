@@ -2,11 +2,11 @@
 namespace PRC\Platform;
 
 class Collections extends Taxonomies {
-	protected static $post_types = array( 'fact-sheets','fact-sheet', 'interactives', 'interactive' );
+	protected static $post_types = array( 'post', 'page', 'fact-sheets','fact-sheet', 'interactives', 'interactive' );
 	protected static $taxonomy = 'collection';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {
@@ -48,5 +48,37 @@ class Collections extends Taxonomies {
 		$post_types = apply_filters( "prc_taxonomy_{$taxonomy_name}_post_types", self::$post_types );
 
 		register_taxonomy( $taxonomy_name, $post_types, $args );
+	}
+
+	/**
+	 * Register the kicker_image field for the collection taxonomy on the REST API
+	 * @hook rest_api_init
+	 * @return void
+	 */
+	public function register_kicker_image_rest_field() {
+		$taxonomy_name = self::$taxonomy;
+
+		register_rest_field(
+			$taxonomy_name,
+			'kicker_image',
+			array(
+				'get_callback'    => array( $this, 'restfully_get_kicker_image' ),
+				'update_callback' => null,
+				'schema'          => null,
+			)
+		);
+	}
+
+	public function restfully_get_kicker_image( $object, $field_name, $request ) {
+		$term_id = $object['id'];
+		if ( ! $term_id ) {
+			return null;
+		}
+		$kicker_image_id = get_term_meta( $term_id, 'kicker', true );
+		$kicker_image = wp_get_attachment_image_src( $kicker_image_id, 'full' );
+		return array(
+			'image_id' => $kicker_image_id,
+			'image' => $kicker_image,
+		);
 	}
 }

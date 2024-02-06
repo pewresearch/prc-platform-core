@@ -1,44 +1,22 @@
 <?php
 namespace PRC\Platform;
-use WP_Error;
-use WP_Query;
-use WP_Term;
-use WP_Post;
 
 // Provides a block and php filter to wrap query blocks and block area modules to collect all story item id's from the content therein and then inject them into the query block post_not_in arg so that they dont repeat. This is a special block really only intended for dev use.
 class Facets_Context_Provider {
 	public static $handle = 'prc-platform-facets-context-provider';
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
 	public $data = false;
 	public $selected = array();
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+	public function __construct($loader) {
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'block_init' );
+			$loader->add_filter( 'pre_render_block', $this, 'hoist_facet_data_to_pre_render_stage', 10, 3 );
+			$loader->add_filter( 'render_block_context', $this, 'add_facet_data_to_context', 10, 3 );
+		}
 	}
 
 	/**
@@ -52,7 +30,7 @@ class Facets_Context_Provider {
 	}
 
 	/**
-	 * Fetch the facets data once and store it in memory in the class.
+	 * Fetch the facets data ONCE and store it in memory.
 	 * @hook pre_render_block
 	 * @param mixed $pre_render
 	 * @param mixed $parsed_block
@@ -63,7 +41,6 @@ class Facets_Context_Provider {
 		if ( 'prc-platform/facets-context-provider' === $parsed_block['blockName'] ) {
 			global $wp_query;
 			$facets_api = new Facets_API(null);
-
 			$this->data = $facets_api->query();
 			$this->selected = $facets_api->selected_choices;
 		}
@@ -95,16 +72,13 @@ class Facets_Context_Provider {
 	}
 
 	public function render_block_callback($attributes, $content, $block) {
-		// Store the facets data in global app state.
-		// Hmmm this function may not concatenate correctly on VIP filesystem. We may need to use a different method.
-		\wp_store(array(
-			'state' => array(
-				'facetsContextProvider' => $block->context['facetsContextProvider'],
-			)
-		));
+
+		// Store the facets data from memory in the browser's global store for this block.
+		wp_interactivity_state('prc-platform/facets-context-provider', $block->context['facetsContextProvider']);
 
 		$initial_context = array(
 			'isError' => false,
+			'isSuccess' => false,
 			'isProcessing' => false,
 			'isDisabled' => false,
 		);
@@ -112,10 +86,10 @@ class Facets_Context_Provider {
 		return wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			get_block_wrapper_attributes(array(
-				'data-wp-interactive' => true,
-				'data-wp-context' => wp_json_encode(array('facetsContextProvider' => $initial_context)),
-				'data-wp-init' => 'effects.facetsContextProvider.onInit',
-				'data-wp-effect--on-selection' => 'effects.facetsContextProvider.onSelection'
+				'data-wp-interactive' => wp_json_encode(array('namespace' => 'prc-platform/facets-context-provider')),
+				'data-wp-context' => wp_json_encode($initial_context),
+				'data-wp-init' => 'callbacks.onInit',
+				'data-wp-watch--on-selection' => 'callbacks.onSelection',
 			)),
 			$content,
 		);

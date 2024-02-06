@@ -4,15 +4,6 @@ use WP_Error;
 
 class Convert_To_Blocks {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -30,9 +21,16 @@ class Convert_To_Blocks {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
+			$loader->add_action( 'init', $this, 'register_legacy_shortcodes' );
+		}
 	}
 
 	public function signal_conversion_needed($shortcode_name = null) {
@@ -58,8 +56,8 @@ class Convert_To_Blocks {
 	}
 
 	/**
+	 * Register legacy shortcodes and signal conversion on the object when found.
 	 * @hook init
-	 * @return void
 	 */
 	public function register_legacy_shortcodes() {
 		add_shortcode( 'tweetable', function( $attr, $content = null ) {
@@ -122,8 +120,8 @@ class Convert_To_Blocks {
 	}
 
 	/**
+	 * Enqueues convert-to-block helpers.
 	 * @hook enqueue_block_editor_assets
-	 * @return void
 	 */
 	public function enqueue_assets() {
 		$registered = $this->register_assets();

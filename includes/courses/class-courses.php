@@ -4,14 +4,6 @@ use WP_Error;
 
 class Courses {
 	protected static $post_type = 'mini-course';
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
@@ -31,11 +23,22 @@ class Courses {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
 	}
 
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+		}
+	}
+
+	/**
+	 * Register the course post type.
+	 * @hook init
+	 */
 	public function register_type() {
 		$labels  = array(
 			'name'                  => _x( 'Courses', 'Post Type General Name', 'prc-core' ),
@@ -64,12 +67,14 @@ class Courses {
 			'items_list_navigation' => __( 'Courses list navigation', 'prc-core' ),
 			'filter_items_list'     => __( 'Filter Course list', 'prc-core' ),
 		);
+
 		$rewrite = array(
 			'slug'       => 'course',
 			'with_front' => true,
 			'pages'      => true,
 			'feeds'      => true,
 		);
+
 		$args    = array(
 			'label'               => __( 'Course', 'prc-core' ),
 			'description'         => __( 'A post type for newsletter driven mini courses.', 'prc-core' ),
@@ -96,6 +101,12 @@ class Courses {
 		register_post_type( self::$post_type, $args );
 	}
 
+	/**
+	 * Enable Gutenberg for courses.
+	 * @hook prc_load_gutenberg
+	 * @param  array $post_types [description]
+	 * @return array Post types that should have Gutenberg enabled.
+	 */
 	public function enable_gutenberg_ramp($post_types) {
 		array_push($post_types, self::$post_type);
 		return $post_types;

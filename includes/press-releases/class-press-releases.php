@@ -11,15 +11,6 @@ class Press_Releases {
 	protected static $post_type = 'press-release';
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,14 +23,21 @@ class Press_Releases {
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param mixed $version
+	 * @param mixed $loader
+	 * @return void
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_filter( 'post_type_link', $this, 'get_press_release_permalink', 10, 3);
+		}
 	}
 
 	public function register_type() {

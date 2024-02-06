@@ -1,4 +1,4 @@
-# Staff Bylines System
+## Staff Bylines System
 
 "Staff Bylines" provides a novel system for handling staff listing pages, staff/author pages, and byline and or acknowledgement attribution on posts; with hooks into Yoast and Parse.ly. Bylines are stored as a custom taxonomy, and staff are stored as a custom post type. This allows for a great deal of flexibility in how the data is used and displayed.
 

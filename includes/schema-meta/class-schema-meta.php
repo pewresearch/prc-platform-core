@@ -8,15 +8,6 @@ use WPSEO_Options;
  */
 class Schema_Meta {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -32,12 +23,31 @@ class Schema_Meta {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
-
 		if ( class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'class-parsely-meta.php';
+		}
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
+			$loader->add_action( 'wp_head', $this, 'force_search_engines_to_use_meta' );
+			$loader->add_filter( 'wpseo_title', $this, 'yoast_seo_legacy_title_fix', 10, 1 );
+			$loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
+			$loader->add_filter( 'wpseo_opengraph_image', $this, 'get_chart_image', 100, 1 );
+			$loader->add_filter( 'wpseo_metadesc', $this, 'get_chart_description', 100, 1 );
+			$loader->add_filter( 'wpseo_title', $this, 'get_chart_title', 100, 1 );
+
+			$loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
+			$loader->add_filter( 'wp_parsely_metadata', $this, 'disable_parsely_json_ld', 10, 3 );
+
+			$loader->add_filter( 'wpvip_parsely_load_mu', $this, 'enable_parsely_mu_on_vip' );
+			$loader->add_action( 'wp_head', $this, 'ascii', 1 );
+			$loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
+			$loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
 		}
 	}
 
@@ -185,8 +195,9 @@ class Schema_Meta {
 	/**
 	 * Adds our custom presenter to the array of presenters.
 	 *
-	 * @param array $presenters The current array of presenters.
+	 * @hook wpseo_frontend_presenters
 	 *
+	 * @param array $presenters The current array of presenters.
 	 * @return array Presenters with our custom presenter added.
 	 */
 	public function add_parsely_meta( $presenters ) {

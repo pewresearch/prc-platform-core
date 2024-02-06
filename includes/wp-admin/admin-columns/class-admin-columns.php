@@ -2,24 +2,6 @@
 namespace PRC\Platform;
 
 class Admin_Columns_Pro {
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
 	public static $handle = 'prc-platform-admin-columns';
 
 	/**
@@ -29,9 +11,11 @@ class Admin_Columns_Pro {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+	public function __construct( $loader ) {
+		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
+			$loader->add_filter( 'acp/storage/file/directory', $this, 'acp_load_via_files' );
+		}
+		$loader->add_action( 'ac/ready', $this, 'register_columns' );
 	}
 
 	/**

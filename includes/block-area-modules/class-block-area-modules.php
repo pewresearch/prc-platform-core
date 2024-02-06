@@ -1,33 +1,11 @@
 <?php
 namespace PRC\Platform;
-use WP_Error;
-use WP_Query;
-use WP_Term;
-use WP_Post;
 
 class Block_Area_Modules {
 	public static $taxonomy = 'block_area';
 	public static $post_type = 'block_module';
-
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
 	public static $handle = 'prc-platform-block-area-modules';
+	private $version;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -36,11 +14,67 @@ class Block_Area_Modules {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area/block-area.php';
 		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area-context-provider/block-area-context-provider.php';
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$block_area = new Block_Area();
+			$block_area_context_provider = new Block_Area_Context_Provider();
+
+			// Init Block Area Modules
+			$loader->add_action( 'init', $this, 'register_block_areas' );
+			$loader->add_action( 'init', $this, 'register_block_modules' );
+			$loader->add_action( 'ini', $this, 'register_meta' );
+			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+
+			// When saving block_modules update block area context
+			$loader->add_action(
+				'prc_platform_on_update',
+				$this,
+				'on_block_module_update_store_story_item_ids',
+				10, 2
+			);
+			$loader->add_action(
+				'prc_platform_on_rest_update',
+				$this,
+				'on_block_module_update_store_story_item_ids',
+				10, 2
+			);
+			$loader->add_action(
+				'prc_platform_on_update',
+				$block_area_context_provider,
+				'clear_cache_on_block_module_saves'
+			);
+
+			// Handle block area context
+			$loader->add_filter(
+				'render_block_context',
+				$block_area_context_provider,
+				'construct_block_context',
+				1, 3
+			);
+			$loader->add_filter(
+				'render_block_context',
+				$block_area_context_provider,
+				'execute_block_context',
+				100, 3
+			);
+			$loader->add_action(
+				'pre_get_posts',
+				$block_area_context_provider,
+				'execute_on_main_query'
+			);
+
+			// Init Blocks
+			$loader->add_action( 'init', $block_area, 'block_init' );
+			$loader->add_action( 'init', $block_area_context_provider, 'block_init');
+		}
 	}
 
 	public function register_block_areas() {
@@ -176,9 +210,11 @@ class Block_Area_Modules {
 	}
 
 	/**
-	 * Make collected story item id's available in the rest api.
+	 * Register `_story_item_ids` rest field.
+	 *
+	 * Adds an array of story item post id's to the block module post type.
+	 *
 	 * @hook rest_api_init
-	 * @return void
 	 */
 	public function register_rest_fields() {
 		register_rest_field(

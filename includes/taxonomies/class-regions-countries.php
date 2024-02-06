@@ -4,8 +4,8 @@ namespace PRC\Platform;
 class Regions_Countries extends Taxonomies {
 	protected static $taxonomy = 'regions-countries';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {

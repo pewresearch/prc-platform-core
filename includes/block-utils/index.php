@@ -10,15 +10,6 @@ use WP_Error;
  */
 class JS_Utils_Loader {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -36,9 +27,15 @@ class JS_Utils_Loader {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init($loader) {
+		if ( null !== $loader ) {
+			$loader->add_action('enqueue_block_editor_assets', $this, 'register_assets_for_use', 10, 1);
+		}
 	}
 
 	public function register_assets_for_use() {
@@ -77,6 +74,19 @@ function find_block($blocks, $pattern = 'prc-block/', $depth = 0) {
 		}
 	}
 
+	return null;
+}
+
+/**
+ * If a inner block is an input element, return its value.
+ * @param mixed $content 
+ * @return mixed 
+ */
+function get_wp_interactive_input_value($content) {
+	$processor = new WP_HTML_Tag_Processor($content);
+	if ( $processor->next_tag('input') && $processor->get_attribute('value') ) {
+		return $processor->get_attribute('value');
+	}
 	return null;
 }
 

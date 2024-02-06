@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
+class ComposerStaticInit75330c29c73892781ceeb6eaa40c6c2b
 {
     public static $files = array (
         '22177d82d05723dff5b1903f4496520e' => __DIR__ . '/..' . '/alleyinteractive/wordpress-autoloader/src/class-autoloader.php',
@@ -50,9 +50,9 @@ class ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit6ba249f3c828fe57c4ed37ffee2e0a6b::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit75330c29c73892781ceeb6eaa40c6c2b::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit75330c29c73892781ceeb6eaa40c6c2b::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit75330c29c73892781ceeb6eaa40c6c2b::$classMap;
 
         }, null, ClassLoader::class);
     }

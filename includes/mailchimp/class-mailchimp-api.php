@@ -14,12 +14,12 @@ class Mailchimp_API {
 
 	protected function get_matching_api_key($key) {
 		if ( 'mailchimp-form' === $key ) {
-			return PRC_MAILCHIMP_FORM_BLOCK_KEY;
+			return PRC_PLATFORM_MAILCHIMP_FORM_BLOCK_KEY;
 		}
 		if ( 'mailchimp-select' === $key ) {
-			return PRC_MAILCHIMP_SELECT_BLOCK_KEY;
+			return PRC_PLATFORM_MAILCHIMP_SELECT_BLOCK_KEY;
 		}
-		return PRC_MAILCHIMP_KEY;
+		return PRC_PLATFORM_MAILCHIMP_KEY;
 	}
 
 	public function __construct($email_address, $args = array(
@@ -82,9 +82,11 @@ class Mailchimp_API {
 				$segments,
 				1 * DAY_IN_SECONDS
 			);
+
 			return rest_ensure_response($segments);
 		} else {
-			return new WP_Error( 'get-segments-error', __( $list_id . ' - ' . $response['detail'], 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
+			$error = new WP_Error( 'get-segments-error', __( $list_id . ' - segments - ' . $response['detail'], 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
+			return rest_ensure_response($error);
 		}
 	}
 

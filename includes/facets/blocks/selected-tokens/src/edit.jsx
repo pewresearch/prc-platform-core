@@ -50,12 +50,9 @@ export default function Edit( {
 		<Fragment>
 			<Controls { ...{ attributes, setAttributes, context: false } } />
 			<div { ...blockProps }>
-				<p>Active Facet Tokens:</p>
-				<ul>
-					<li>Token 1</li>
-					<li>Token 2</li>
-					<li>Token 3</li>
-				</ul>
+				<span class="wp-block-prc-platform-selected-tokens__token">Topics: X, Y, Z</span>
+				<span class="wp-block-prc-platform-selected-tokens__token">Formats: X, Y, Z</span>
+				<span class="wp-block-prc-platform-selected-tokens__token">Year: 2021</span>
 			</div>
 		</Fragment>
 	);

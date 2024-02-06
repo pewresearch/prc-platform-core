@@ -4,8 +4,8 @@ namespace PRC\Platform;
 class Formats extends Taxonomies {
 	protected static $taxonomy = 'formats';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {

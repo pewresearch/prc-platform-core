@@ -1,18 +1,8 @@
 <?php
 namespace PRC\Platform;
-use \BITLY_API_KEY;
+use PRC_PLATFORM_BITLY_KEY;
 
 class Bitly {
-
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
 	/**
 	 * The version of this plugin.
 	 *
@@ -29,9 +19,18 @@ class Bitly {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init( $loader = null ) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'wp_head', $this, 'flush_shortlink' );
+			$loader->add_action( 'prc_platform_on_publish', $this, 'update_post_with_shortlink', 10, 1 );
+			$loader->add_action( 'admin_bar_menu', $this, 'add_quick_edit', 100 );
+			$loader->add_filter( 'get_shortlink', $this, 'filter_get_shortlink', 100, 2 );
+		}
 	}
 
 	private function get_bitly_shortlink( $post_id, $url = null ) {
@@ -42,7 +41,7 @@ class Bitly {
 
 		$headers = array(
 			'Content-Type'  => 'application/json',
-			'Authorization' => 'Bearer ' . BITLY_API_KEY,
+			'Authorization' => 'Bearer ' . PRC_PLATFORM_BITLY_KEY,
 		);
 
 		if ( null === $url ) {

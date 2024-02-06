@@ -1,2 +1,0 @@
-(()=>{"use strict";const e=window.wp.interactivity;window.wp.url,window.wp.element,window.wp.apiFetch,(0,e.store)({state:{facetTemplate:{}},actions:{facetTemplate:{onExpand:({context:e,state:t,selectors:a})=>{e.facetTemplate.expanded=!e.facetTemplate.expanded}}},effects:{facetTemplate:{onExpand:({context:e,state:t,selectors:a})=>{const{expanded:n}=e.facetTemplate;e.facetTemplate.expandedLabel=n?"- Less":"+ More"}}}})})();
-//# sourceMappingURL=view.js.map

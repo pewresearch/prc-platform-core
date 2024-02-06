@@ -4,18 +4,23 @@ namespace PRC\Platform;
 class Search_Factoids {
 	public static $post_type = 'factoid';
 
-	public function __construct() {
-
+	public function __construct($loader) {
+		$this->init($loader);
 	}
 
 	/**
 	 * @hook init
 	 * @return void
 	 */
-	public function init() {
-		$this->register_type();
-		$this->register_tax();
-		$this->block_init();
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_action( 'init', $this, 'register_tax' );
+			$loader->add_action( 'init', $this, 'block_init' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_action( 'save_post_factoid', $this, 'update_index', 10, 3);
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
+		}
 	}
 
 	public function register_type() {
@@ -112,28 +117,28 @@ class Search_Factoids {
 	}
 
 	/**
-	 * @hook rest_api_init
-	 * @return void
+	 * Register the /factoids/search endpoint.
+	 * @hook prc_api_endpoints
+	 * @param  array $endpoints
+	 * @return array $endpoints
 	 */
-	public function register_rest_endpoint() {
-		register_rest_route(
-			'prc-api/v2/factoids',
-			'/search',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'rest_callback' ),
-				'args'                => array(
-					'search_term' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
+	public function register_endpoint($endpoints) {
+		array_push($endpoints, array(
+			'route' 			  => '/factoids/search',
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'rest_callback' ),
+			'args'                => array(
+				'search_term' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
 				),
-				'permission_callback' => function () {
-					return true;
-				},
-			)
-		);
+			),
+			'permission_callback' => function () {
+				return true;
+			},
+		));
+		return $endpoints;
 	}
 
 	private function sanitize_search_term($search_term) {

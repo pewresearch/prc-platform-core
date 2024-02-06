@@ -57,14 +57,6 @@ class Post_Report_Package {
 		),
 	);
 
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
 
 	/**
 	 * The version of this plugin.
@@ -77,19 +69,38 @@ class Post_Report_Package {
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param mixed $version
+	 * @param mixed $loader
+	 * @return void
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		// Always bypass caching if we're previewing a url.
 		if ( !class_exists('WP_HTML_Heading_Processor') ) {
 			require_once( plugin_dir_path( __FILE__ ) . 'class-wp-html-heading-processor.php' );
 		}
 		require_once( plugin_dir_path( __FILE__ ) . 'class-pagination.php' );
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register_meta_fields' );
+			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
+			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'set_child_posts', 10, 1 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'update_child_state', 10, 1 );
+			$loader->add_action( 'pre_get_posts', $this, 'hide_back_chapter_posts', 10, 1 );
+			$loader->add_filter( 'rest_post_query', $this, 'hide_back_chapter_posts_restfully', 10, 2 );
+			$loader->add_filter( 'the_title', $this, 'indicate_back_chapter_post', 10, 2 );
+			// $this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
+			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var' );
+			$loader->add_filter( 'get_next_post_where', $this,
+			'filter_next_post', 10, 5 );
+			$loader->add_filter( 'get_previous_post_where', $this,
+			'filter_prev_post', 10, 5 );
+			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'hide_back_chapter_on_non_inherited_query_loops', 9, 1 );
+		}
 	}
 
 	/**
@@ -205,7 +216,7 @@ class Post_Report_Package {
 	 * This is a filter that can be used to modify the default args for a publication listing query used throughout PRC Platform.
 	 * @hook prc_platform_pub_listing_default_args
 	 * @param mixed $query
-	 * @return void
+	 * @return array
 	 */
 	public function hide_back_chapter_on_non_inherited_query_loops($query) {
 		if ( empty($query['s']) ){
@@ -215,14 +226,13 @@ class Post_Report_Package {
 	}
 
 	/**
-	 * Hide "back chapter" posts from our "publications" queries:
+	 * Hide back chapter posts from our "publications" queries. (set post_parent to 0)
 	 * Can be overridden by setting ?showBackChapters query var to truthy value.
+	 * Runs on these queries:
 	 * - archive
 	 * - taxonomy
 	 * - homepage/frontpage
 	 * @hook pre_get_posts
-	 * @param mixed $query
-	 * @return mixed
 	 */
 	public function hide_back_chapter_posts($query) {
 		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
@@ -232,9 +242,12 @@ class Post_Report_Package {
 	}
 
 	/**
-	 * Modify the post title if it's a child post in the admin view.
+	 * Modify tthe post title to include a dash before the title if it is a back chapter post.
+	 *
 	 * @hook the_title
 	 * @param title
+	 * @param post_id
+	 * @return string
 	 */
 	public function indicate_back_chapter_post( $title, $post_id = null ) {
 		if ( ! function_exists('get_current_screen') ) {
@@ -258,6 +271,7 @@ class Post_Report_Package {
 		// Add a dash before the title...
 		if ( 0 !== wp_get_post_parent_id( $post_id ) && true === $this->is_report_package( $post_id ) ) {
 			$title = '&mdash; ' . $title;
+			// @TODO: i dunno about this, I like it, but it does get to be a bit much for longer titles.
 			// add a [Back Chapter] tag to the title...
 			// $title .= ' [Back Chapter]';
 		}

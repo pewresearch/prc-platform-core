@@ -3,7 +3,8 @@
 	"require": {
 		"woocommerce/action-scheduler": "^3.6",
 		"landrok/language-detector": "^1.3",
-		"alleyinteractive/wp-block-converter": "^1.0"
+		"alleyinteractive/wp-block-converter": "^1.0",
+		"alleyinteractive/cache-collector": "^1.0"
 	},
 	"autoload": {
 		"files": [

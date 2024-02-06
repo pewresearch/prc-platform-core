@@ -43,44 +43,66 @@ class Post_Publish_Pipeline {
 		'block_module',
 	);
 
+	/**
+	 * The version of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      string    $version    The current version of this plugin.
+	 */
+	private $version;
 
-	public function __construct() {
-		$this->is_cli = defined( 'WP_CLI' ) && WP_CLI;
+	public static $handle = 'prc-platform-post-publish-pipeline';
+
+	/**
+	 * Initialize the class and set its properties.
+	 * @param mixed $version
+	 * @param mixed $loader
+	 */
+	public function __construct( $version, $loader ) {
+		$this->version = $version;
+		$this->is_cli = defined( 'WP_CLI' ) && \WP_CLI;
 		if ( true !== $this->is_cli ) {
 			// This is just an internal hook to this class, it allows us to setup and scaffold these fields and fill the data in later, allowing for a more performant API. Other parts of the platform can hook into this and add their own data but should not be used for anything other than the platform.
 			add_filter( 'prc_platform_wp_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
 		}
+		$this->init($loader);
 	}
 
-	/**
-	 * Weird place to put this but I dont have another place right now for misc rest customizations and utilities.
-	 * @hook rest_api_init
-	 * @return void
-	 */
-	public function register_rest_endpoints() {
-		register_rest_route(
-			'prc-api/v3',
-			'/utils/postid-by-url',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'restfully_get_postid_by_url' ),
-				'args'                => array(
-					'url' => array(
-						'validate_callback' => function( $param, $request, $key ) {
-							// check if $param is a url...
-							$url = filter_var( $param, FILTER_VALIDATE_URL );
-							if ( $url === false ) {
-								return false;
-							}
-							return true;
-						},
-					),
-				),
-				'permission_callback' => function () {
-					return user_can( get_current_user_id(), 'edit_posts' );
-				},
-			)
-		);
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
+			$loader->add_filter( 'rest_post_query', $this, 'add_post_parent_request_to_rest_api', 10, 2 );
+			/**
+			 * @uses prc_platform_on_incremental_save
+			 */
+			$loader->add_action( 'save_post', $this, 'post_incremental_save_hook', 10, 3 );
+			/**
+			 * @uses prc_platform_on_post_init
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'post_init_hook', 0, 3 );
+			/**
+			 * @uses prc_platform_on_update
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'post_updating_hook', 99, 3 );
+			/**
+			 * @uses prc_platform_on_rest_update
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'restful_post_updating_hook', 100, 3 );
+			/**
+			 * @uses prc_platform_on_publish
+			 * @uses prc_platform_on_unpublish
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'post_saving_hook', 100, 3 );
+			/**
+			 * @uses prc_platform_on_trash
+			 */
+			$loader->add_action( 'trashed_post', $this, 'post_trashed_hook', 100, 1 );
+			/**
+			 * @uses prc_platform_on_untrash
+			 */
+			$loader->add_action( 'untrashed_post', $this, 'post_trashed_hook', 100, 2 );
+		}
 	}
 
 	public function restfully_get_label($object) {
@@ -166,25 +188,13 @@ class Post_Publish_Pipeline {
 		return get_permalink( $post_id );
 	}
 
-	public function restfully_get_postid_by_url( $request ) {
-		$url = $request->get_param( 'url' );
-		if ( empty( $url ) ) {
-			return new WP_Error( 'no-url-provided', __( 'No url provided', 'my_textdomain' ), array( 'status' => 400 ) );
-		}
-		$post_id = \wpcom_vip_url_to_postid( $url );
-		if ( 0 === $post_id ) {
-			return new WP_Error( 'no-post-found', __( 'No post found', 'my_textdomain' ), array( 'status' => 404 ) );
-		}
-		return array(
-			'postId' => $post_id,
-			'postType' => get_post_type( $post_id ),
-		);
-	}
-
 	/**
 	 * Register rest fields for objects.
+	 * - label
+	 * - post_parent
+	 * - word_count
+	 * - canonical_url
 	 * @hook rest_api_init
-	 * @return void
 	 */
 	public function register_rest_fields() {
 		// Add label to object.
@@ -222,8 +232,6 @@ class Post_Publish_Pipeline {
 				'get_callback' => array( $this, 'restfully_get_canonical_url' ),
 			)
 		);
-
-		$this->register_rest_endpoints();
 	}
 
 	/**

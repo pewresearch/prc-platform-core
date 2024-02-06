@@ -4,15 +4,6 @@ use WP_Error;
 
 class XX {
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
-
-	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
@@ -30,9 +21,16 @@ class XX {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
+	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
+	}
+
+	public function init( $loader = null ) {
+		if ( null !== $loader ) {
+			$loader->add_action('', $this, 'my_func');
+			$loader->add_filter('', $this, 'my_func');
+		}
 	}
 
 	public function register_assets() {
