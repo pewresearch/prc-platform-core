@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+
 // For admin notices see https://github.com/Automattic/vip-go-mu-plugins/tree/develop/admin-notice
 // AND https://github.com/Automattic/vip-go-mu-plugins/blob/develop/async-publish-actions.php
 
@@ -34,8 +35,7 @@ class WP_Admin {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
 			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
-			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
-			if ( wp_get_environment_type() === 'local' ) {
+			if ( defined('PRC_PLATFORM_TESTING_MODE') && true === PRC_PLATFORM_TESTING_MODE ) {
 				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
 			}
 
@@ -57,6 +57,11 @@ class WP_Admin {
 		}
 	}
 
+	/**
+	 * Change the default admin color scheme to modern and don't allow users to change it.
+	 * @param mixed $result
+	 * @return string
+	 */
 	public function default_admin_color_scheme( $result ) {
 		$result = 'modern';
 		return $result;
