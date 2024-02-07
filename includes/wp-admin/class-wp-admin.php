@@ -34,8 +34,9 @@ class WP_Admin {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
 			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
+			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
 			if ( wp_get_environment_type() === 'local' ) {
-				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames' );
+				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
 			}
 
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
