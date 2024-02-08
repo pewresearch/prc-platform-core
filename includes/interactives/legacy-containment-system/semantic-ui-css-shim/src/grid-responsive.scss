@@ -1,0 +1,327 @@
+@use "master.variables"as variables;
+@use "grid-variables"as gvariables;
+@use 'sass:math';
+
+/*-------------------
+	  Stackable
+--------------------*/
+
+@media only screen and (max-width: variables.$largestMobileScreen) {
+    .ui.stackable.grid {
+        width: auto;
+        margin-left: 0em !important;
+        margin-right: 0em !important;
+    }
+
+    .ui.stackable.grid>.row>.wide.column,
+    .ui.stackable.grid>.wide.column,
+    .ui.stackable.grid>.column.grid>.column,
+    .ui.stackable.grid>.column.row>.column,
+    .ui.stackable.grid>.row>.column,
+    .ui.stackable.grid>.column:not(.row),
+    .ui.grid>.stackable.row>.column {
+        width: 100% !important;
+        margin: 0em 0em !important;
+        box-shadow: none !important;
+        padding: math.div(gvariables.$stackableRowSpacing, 2) math.div(gvariables.$stackableGutter, 2) !important;
+    }
+
+    .ui.stackable.grid:not(.vertically)>.row {
+        margin: 0em;
+        padding: 0em;
+    }
+
+    .ui.stackable.grid>.column.wp-block-prc-block-column:not(.row),
+    .ui.stackable.grid>.column.wp-block-prc-block-column:not(.row)>.ui.stackable.grid>.column.wp-block-prc-block-column:not(.row) {
+        padding-left: 0em !important;
+        padding-right: 0em !important;
+    }
+
+    /* Coupling */
+    .ui.container>.ui.stackable.grid>.column,
+    .ui.container>.ui.stackable.grid>.row>.column,
+    .ui.container>.ui.stackable.grid>.column,
+    .ui.container>.ui.stackable.grid>.column>.ui.stackable.grid>.column,
+    .ui.container>.ui.stackable.grid>.column>.ui.stackable.grid>.column>.ui.stackable.grid>.column {
+        padding-left: 0em !important;
+        padding-right: 0em !important;
+    }
+
+    /* Divided Stackable Celled */
+    .ui.stackable.celled.grid>.row:first-child>.column:first-child,
+    .ui.stackable.celled.grid>.column:not(.row):first-child {
+        border-top: none !important;
+    }
+
+    .ui.inverted.stackable.celled.grid>.column:not(.row),
+    .ui.inverted.stackable.celled.grid>.row>.column {
+        border-top: gvariables.$stackableInvertedMobileBorder;
+    }
+
+    .ui.stackable.divided:not(.vertically).grid>.column:not(.row):first-child .ui.stackable.divided:not(.vertically).grid>.row>.column:first-child {
+        padding-top: 0px !important;
+    }
+
+    .ui.stackable.celled.grid>.column:not(.row),
+    .ui.stackable.divided:not(.vertically).grid>.column:not(.row),
+    .ui.stackable.celled.grid>.row>.column,
+    .ui.stackable.divided:not(.vertically).grid>.row>.column {
+        padding-top: gvariables.$stackableRowSpacing !important;
+        padding-bottom: gvariables.$stackableRowSpacing !important;
+    }
+
+    .ui.stackable.celled.grid>.row {
+        box-shadow: none !important;
+    }
+
+    .ui.stackable.divided:not(.vertically).grid>.column:not(.row),
+    .ui.stackable.divided:not(.vertically).grid>.row>.column {
+        padding-left: 0em !important;
+        padding-right: 0em !important;
+    }
+}
+
+/*----------------------
+	Order per Device
+-----------------------*/
+/* Mobile Sizing Combinations */
+@media only screen and (min-width: variables.$mobileBreakpoint) and (max-width: variables.$largestMobileScreen) {
+    .mobile-order-zero {
+        order: 0;
+    }
+
+    .mobile-order-one {
+        order: 1;
+    }
+
+    .mobile-order-two {
+        order: 2;
+    }
+
+    .mobile-order-three {
+        order: 3;
+    }
+
+    .mobile-order-four {
+        order: 4;
+    }
+
+    [class*="mobile-order-"] {
+        &.mobile-order-zero::before {
+            content: '';
+            position: absolute;
+            background-color: gvariables.$dividedBorder;
+            width: 1px;
+            height: calc(100% - #{gvariables.$consecutiveGridDistance});
+            bottom: 0;
+            right: 0;
+        }
+
+        &.mobile-order-zero::after {
+            display: none !important;
+        }
+    }
+}
+
+/* Tablet Sizing Combinations */
+@media only screen and (min-width: variables.$tabletBreakpoint) and (max-width: variables.$largestTabletScreen) {
+    [class*="tablet-order-"] {
+        &.tablet-order-zero::before {
+            content: '';
+            position: absolute;
+            background-color: gvariables.$dividedBorder;
+            width: 1px;
+            height: calc(100% - #{gvariables.$consecutiveGridDistance});
+            bottom: 0;
+            right: 0;
+        }
+
+        &.tablet-order-zero::after {
+            display: none !important;
+        }
+    }
+
+    /* Columns that take up the entire grid will wrap below and should have a divider line on top instead of left */
+    [class*="sixteen wide tablet"] {
+        margin-top: gvariables.$consecutiveGridDistance;
+
+        &:before {
+            content: "";
+            position: absolute;
+            background-color: rgba(34, 36, 38, .15);
+            width: calc(100% - #{gvariables.$gutterWidth});
+            left: gvariables.$consecutiveGridDistance;
+            height: 1px;
+            top: 0
+        }
+
+        &:after {
+            display: none !important;
+        }
+    }
+
+    .tablet-order-zero {
+        order: 0;
+    }
+
+    .tablet-order-one {
+        order: 1;
+    }
+
+    .tablet-order-two {
+        order: 2;
+    }
+
+    .tablet-order-three {
+        order: 3;
+    }
+
+    .tablet-order-four {
+        order: 4;
+    }
+}
+
+/*----------------------
+	Only (Device)
+-----------------------*/
+
+/* These include arbitrary class repetitions for forced specificity */
+
+/* Mobile Only Hide */
+@media only screen and (max-width: variables.$largestMobileScreen) {
+
+    .ui[class*="tablet only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="tablet only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="tablet only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="tablet only"].column:not(.mobile) {
+        display: none !important;
+    }
+
+    .ui[class*="computer only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="computer only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="computer only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="computer only"].column:not(.mobile) {
+        display: none !important;
+    }
+
+    .ui[class*="large screen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="large screen only"].column:not(.mobile) {
+        display: none !important;
+    }
+
+    .ui[class*="widescreen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="widescreen only"].column:not(.mobile) {
+        display: none !important;
+    }
+}
+
+/* Tablet Only Hide */
+@media only screen and (min-width: variables.$tabletBreakpoint) and (max-width: variables.$largestTabletScreen) {
+
+    .ui[class*="mobile only"].grid.grid.grid:not(.tablet),
+    .ui.grid.grid.grid>[class*="mobile only"].row:not(.tablet),
+    .ui.grid.grid.grid>[class*="mobile only"].column:not(.tablet),
+    .ui.grid.grid.grid>.row>[class*="mobile only"].column:not(.tablet) {
+        display: none !important;
+    }
+
+    .ui[class*="computer only"].grid.grid.grid:not(.tablet),
+    .ui.grid.grid.grid>[class*="computer only"].row:not(.tablet),
+    .ui.grid.grid.grid>[class*="computer only"].column:not(.tablet),
+    .ui.grid.grid.grid>.row>[class*="computer only"].column:not(.tablet) {
+        display: none !important;
+    }
+
+    .ui[class*="large screen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="large screen only"].column:not(.mobile) {
+        display: none !important;
+    }
+
+    .ui[class*="widescreen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="widescreen only"].column:not(.mobile) {
+        display: none !important;
+    }
+}
+
+/* Computer Only Hide */
+@media only screen and (min-width: variables.$computerBreakpoint) and (max-width: variables.$largestSmallMonitor) {
+
+    .ui[class*="mobile only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="mobile only"].column:not(.computer) {
+        display: none !important;
+    }
+
+    .ui[class*="tablet only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="tablet only"].column:not(.computer) {
+        display: none !important;
+    }
+
+    .ui[class*="large screen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="large screen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="large screen only"].column:not(.mobile) {
+        display: none !important;
+    }
+
+    .ui[class*="widescreen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="widescreen only"].column:not(.mobile) {
+        display: none !important;
+    }
+}
+
+/* Large Screen Only Hide */
+@media only screen and (min-width: variables.$largeMonitorBreakpoint) and (max-width: variables.$largestLargeMonitor) {
+
+    .ui[class*="mobile only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="mobile only"].column:not(.computer) {
+        display: none !important;
+    }
+
+    .ui[class*="tablet only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="tablet only"].column:not(.computer) {
+        display: none !important;
+    }
+
+    .ui[class*="widescreen only"].grid.grid.grid:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].row:not(.mobile),
+    .ui.grid.grid.grid>[class*="widescreen only"].column:not(.mobile),
+    .ui.grid.grid.grid>.row>[class*="widescreen only"].column:not(.mobile) {
+        display: none !important;
+    }
+}
+
+/* Widescreen Only Hide */
+@media only screen and (min-width: variables.$widescreenMonitorBreakpoint) {
+
+    .ui[class*="mobile only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="mobile only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="mobile only"].column:not(.computer) {
+        display: none !important;
+    }
+
+    .ui[class*="tablet only"].grid.grid.grid:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].row:not(.computer),
+    .ui.grid.grid.grid>[class*="tablet only"].column:not(.computer),
+    .ui.grid.grid.grid>.row>[class*="tablet only"].column:not(.computer) {
+        display: none !important;
+    }
+}

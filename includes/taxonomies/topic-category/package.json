@@ -1,5 +1,5 @@
 {
-	"name": "@pewresearch/taxonomies",
+	"name": "@pewresearch/taxonomies-category",
 	"description": "Taxonomies for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {

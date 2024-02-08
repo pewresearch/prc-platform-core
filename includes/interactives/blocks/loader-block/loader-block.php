@@ -39,11 +39,12 @@ class Loader_Block extends Interactives {
 		));
 
 		$is_legacy_wpackio = array_key_exists('legacyWpackIo', $attributes) && $attributes['legacyWpackIo'];
+		$is_legacy_s3 = array_key_exists('legacyAssetsS3', $attributes) && $attributes['legacyAssetsS3'];
 
 		$enqueued_handles = array();
-		if ( $is_legacy_wpackio && get_query_var('iframe') ) {
+		if ( $is_legacy_wpackio  ) {
 			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
-		} else if ( array_key_exists('legacyAssetsS3', $attributes) && $attributes['legacyAssetsS3'] ) {
+		} else if ( $is_legacy_s3 ) {
 			// Do nothing for now...
 			// @TODO: Build out the legacy assets S3 loader.
 		} else {

@@ -4,7 +4,6 @@ use WP_REST_Request;
 use WP_Error;
 
 class Legacy_Interactive_Containment_System {
-	public $query_var = 'interactivesContainment';
 
 	public function __construct($loader) {
 		$this->init($loader);
@@ -12,28 +11,118 @@ class Legacy_Interactive_Containment_System {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_action( 'init', $this, 'register_legacy_scripts_and_styles' );
-			$loader->add_filter( 'prc_platform_interactive_loader_content', $this, 'render_content_as_iframe', 10, 3 );
-			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var' );
+			$loader->add_action( 'init', $this, 'register_legacy_libraries' );
 			$loader->add_action( 'prc_platform_interactive_loader_enqueue', $this, 'enqueue_legacy_scripts_and_styles', 10, 2 );
 			$loader->add_action( 'rest_api_init', $this, 'register_legacy_firebase_endpoint' );
 		}
 	}
 
-	/**
-	 * @hook init
-	 */
-	public function register_legacy_scripts_and_styles() {
-		wp_register_style(
-			'legacy-style',
-			plugin_dir_url( __FILE__ ) . 'assets/style.css',
-			array(),
-			filemtime( __DIR__ . '/assets/style.css' )
-		);
-		$this->register_legacy_libraries();
+	public function is_legacy_interactive() {
+		// if the interactive was published before the new system was in place and uses wpackio or assets, then its considered legacy.
 	}
 
-		/**
+	/**
+	 * Enqueues the legacy styles and scripts when the `interactivesContainment` query var is set.
+	 * @hook prc_platform_interactive_loader_enqueue
+	 */
+	public function enqueue_legacy_scripts_and_styles($enqueued_handles, $is_legacy_wpackio = false) {
+		wp_enqueue_script('legacy-semantic-ui');
+		wp_add_inline_script('legacy-semantic-ui', 'window.siteURL = "' . get_site_url() . '";');
+		// @TODO: need to add a prcUrlVars shim as well....
+		wp_enqueue_style('legacy-semantic-ui');
+	}
+
+	/**
+	 * Register a legacy firebase endpoint for interactives on the v2 prc-api namespace.
+	 * @hook rest_api_init
+	 */
+	public function register_legacy_firebase_endpoint() {
+		// register v2 on the prc-api and add /interactives?slug=xyz
+		register_rest_route(
+			'prc-api/v2',
+			'/interactive',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_legacy_firebase_endpoint' ),
+				'args'                => array(
+					'slug' => array(
+						'default'           => false,
+						'validate_callback' => function( $param, $request, $key ) {
+							return is_string( $param );
+						},
+					),
+				),
+				'permission_callback' => function () {
+					return true;
+				},
+			)
+		);
+	}
+
+	private function cache_data( $db, $slug, $data ) {
+		if ( empty( $data ) ) {
+			return false;
+		}
+		wp_cache_set( $slug, $data, $db, 1 * MONTH_IN_SECONDS );
+		return $data;
+	}
+
+	public function get_db_data( $slug = null, $auth = false ) {
+		$args = array(
+			'db' => 'prc-app-prod-interactives',
+			'slug' => $slug,
+			'auth' => $auth,
+		);
+		$cache = wp_cache_get( $args['slug'], $args['db'] );
+		if ( false !== $cache ) {
+			return $cache;
+		}
+
+		$response_url = 'https://' . $args['db'] . '.firebaseio.com/' . $args['slug'] . '.json';
+		if ( array_key_exists( 'auth', $args ) ) {
+			if ( false !== $args['auth'] ) {
+				$response_url .= '&auth=' . $args['auth'];
+			}
+		}
+
+		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+			$response = vip_safe_wp_remote_get( $response_url );
+		} else {
+			$response = wp_remote_get( $response_url );
+		}
+
+		$error = false;
+		$data  = false;
+		if ( ! is_wp_error( $response ) ) {
+			// Request succeded, get the data.
+			if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+				$body = wp_remote_retrieve_body( $response );
+				$data = json_decode( $body, true );
+			} else {
+				// The response code was not what we were expecting, record the message
+				$error = $response;
+			}
+		} else {
+			$error = $response;
+		}
+
+		if ( $error ) {
+			return rest_ensure_response( $error );
+		}
+
+		return $this->cache_data( $args['db'], $args['slug'], $data );
+	}
+
+	public function get_legacy_firebase_endpoint( WP_REST_Request $request ) {
+		$slug     = $request->get_param( 'slug' );
+		$response = false;
+		if ( ! empty( $slug ) ) {
+			$response = $this->get_db_data( $slug );
+		}
+		return $response;
+	}
+
+	/**
 	 * Interactives Libraries (Highcharts, Highmaps, D3, Mapbox, etc)
 	 *
 	 * @return void
@@ -247,7 +336,7 @@ class Legacy_Interactive_Containment_System {
 				if ( substr( $args[0], 0, 2 ) === '//' ) {
 					$src = $args[0];
 				} else {
-					$src = plugin_dir_url( __FILE__ ) . 'assets/scripts' . $args[0];
+					$src = plugin_dir_url( __FILE__ ) . 'scripts-shim' . $args[0];
 				}
 
 				if ( substr( $script, 0, 1 ) === '_' ) {
@@ -269,6 +358,11 @@ class Legacy_Interactive_Containment_System {
 			}
 		}
 
+		wp_register_style(
+			'legacy-semantic-ui',
+			plugin_dir_url( __FILE__ ) . 'semantic-ui-css-shim/dist/main.css'
+		);
+
 		// Mapbox styles.
 		// wp_register_style(
 		// 	'mapbox-gl',
@@ -279,162 +373,5 @@ class Legacy_Interactive_Containment_System {
 		// 	'mapbox-gl-geocoder',
 		// 	content_url() . '/client-mu-plugins/prc-core/scripts/bower_components/mapbox-gl/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css'
 		// );
-	}
-
-
-	/**
-	 * When the interactive is a legacy interactive and there is no interactivesContainment query var then we'll load the iframe. Otherwise we'll load the content directly.
-	 * @hook prc_platform_interactive_loader_content
-	 */
-	public function render_content_as_iframe($content, $attributes, $is_legacy_wpackio) {
-		if ( get_query_var($this->query_var) ) {
-			return $content;
-		}
-		if ( true !== $is_legacy_wpackio ) {
-			return $content;
-		}
-		$id = wp_unique_id( 'prc-interactive-containment-iframe-' );
-		$url = get_permalink( get_the_ID() );
-		$iframe_url = add_query_arg( array(
-			'iframe' => true,
-			'interactivesContainment' => 'true'
-		), $url );
-		$iframe = wp_sprintf(
-			'<iframe id="%1$s" src="%2$s" height="%3$s" width="100%%" scrolling="no" frameborder="0" class="prc-interactive-containment"></iframe>',
-			$id,
-			$iframe_url,
-			'500px',
-		);
-		return $iframe;
-	}
-
-	/**
-	 * Adds the `interactivesContainment` query var to the list of query vars.
-	 * @hook prc_platform_rewrite_query_vars
-	 * @param array $query_vars
-	 * @return array
-	 */
-	public function register_query_var($query_vars) {
-		$query_vars[] = $this->query_var;
-		return $query_vars;
-	}
-
-	/**
-	 * Enqueues the legacy styles and scripts when the `interactivesContainment` query var is set.
-	 * @hook prc_platform_interactive_loader_enqueue
-	 */
-	public function enqueue_legacy_scripts_and_styles($enqueued_handles, $is_legacy_wpackio = false) {
-		if ( ! get_query_var($this->query_var) && true === $is_legacy_wpackio ) {
-			wp_enqueue_script('prc-platform-iframe-embeds-resizer-script');
-			ob_start();
-			?>
-			window.iFrameResize(
-				{
-					bodyMargin: 0,
-					bodyPadding: 0,
-					heightCalculationMethod: 'taggedElement',
-				},
-				document.querySelector('iframe.prc-interactive-containment')
-			)
-			<?php
-			$script = ob_get_clean();
-			wp_add_inline_script( 'prc-platform-iframe-embeds-resizer-script', $script );
-		}
-		if ( get_query_var($this->query_var) && true === $is_legacy_wpackio ) {
-			wp_enqueue_script('legacy-semantic-ui');
-			wp_add_inline_script( 'legacy-semantic-ui', 'window.siteURL = "' . get_site_url() . '";' );
-			wp_enqueue_style('legacy-style');
-			wp_dequeue_style('prc-block-theme-style');
-		}
-	}
-
-	/**
-	 * Register a legacy firebase endpoint for interactives on the v2 prc-api namespace.
-	 * @hook rest_api_init
-	 */
-	public function register_legacy_firebase_endpoint() {
-		// register v2 on the prc-api and add /interactives?slug=xyz
-		register_rest_route(
-			'prc-api/v2',
-			'/interactive',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( $this, 'get_legacy_firebase_endpoint' ),
-				'args'                => array(
-					'slug' => array(
-						'default'           => false,
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-				),
-				'permission_callback' => function () {
-					return true;
-				},
-			)
-		);
-	}
-
-	private function cache_data( $db, $slug, $data ) {
-		if ( empty( $data ) ) {
-			return false;
-		}
-		wp_cache_set( $slug, $data, $db, 1 * MONTH_IN_SECONDS );
-		return $data;
-	}
-
-	public function get_db_data( $slug = null, $auth = false ) {
-		$args = array(
-			'db' => 'prc-app-prod-interactives',
-			'slug' => $slug,
-			'auth' => $auth,
-		);
-		$cache = wp_cache_get( $args['slug'], $args['db'] );
-		if ( false !== $cache ) {
-			return $cache;
-		}
-
-		$response_url = 'https://' . $args['db'] . '.firebaseio.com/' . $args['slug'] . '.json';
-		if ( array_key_exists( 'auth', $args ) ) {
-			if ( false !== $args['auth'] ) {
-				$response_url .= '&auth=' . $args['auth'];
-			}
-		}
-
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			$response = vip_safe_wp_remote_get( $response_url );
-		} else {
-			$response = wp_remote_get( $response_url );
-		}
-
-		$error = false;
-		$data  = false;
-		if ( ! is_wp_error( $response ) ) {
-			// Request succeded, get the data.
-			if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
-				$body = wp_remote_retrieve_body( $response );
-				$data = json_decode( $body, true );
-			} else {
-				// The response code was not what we were expecting, record the message
-				$error = $response;
-			}
-		} else {
-			$error = $response;
-		}
-
-		if ( $error ) {
-			return rest_ensure_response( $error );
-		}
-
-		return $this->cache_data( $args['db'], $args['slug'], $data );
-	}
-
-	public function get_legacy_firebase_endpoint( WP_REST_Request $request ) {
-		$slug     = $request->get_param( 'slug' );
-		$response = false;
-		if ( ! empty( $slug ) ) {
-			$response = $this->get_db_data( $slug );
-		}
-		return $response;
 	}
 }

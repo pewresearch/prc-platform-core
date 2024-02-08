@@ -1,0 +1,448 @@
+@use "master.variables"as variables;
+@use "grid-variables"as gvariables;
+@use "functions" as functions;
+@use 'sass:math';
+
+/*******************************
+			Standard
+ *******************************/
+
+.ui.grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    padding: 0em;
+    margin-bottom: 0;
+}
+
+/*----------------------
+	  Remove Gutters
+ -----------------------*/
+
+.ui.grid {
+    margin-left: -(math.div(gvariables.$gutterWidth, 2));
+    margin-right: -(math.div(gvariables.$gutterWidth, 2));
+}
+
+.ui.relaxed.grid {
+    margin-left: -(math.div(gvariables.$relaxedGutterWidth, 2));
+    margin-right: -(math.div(gvariables.$relaxedGutterWidth, 2));
+}
+
+.ui.fitted.grid {
+    margin-top: -(math.div(gvariables.$rowSpacing, 2));
+    margin-bottom: -(math.div(gvariables.$rowSpacing, 2));
+}
+
+/* Preserve Rows Spacing on Consecutive Grids */
+.ui.grid+.grid {
+    margin-top: gvariables.$consecutiveGridDistance;
+}
+
+/*-------------------
+		Columns
+ --------------------*/
+
+/* Standard 16 column */
+.ui.grid>.column:not(.row),
+.ui.grid>.row>.column {
+    position: relative;
+    display: inline-block;
+
+    width: variables.$oneWide;
+    padding-left: math.div(gvariables.$gutterWidth, 2);
+    padding-right: math.div(gvariables.$gutterWidth, 2);
+    vertical-align: top;
+
+    &.fitted {
+        padding-bottom: 0;
+    }
+}
+
+.ui.grid>* {
+    padding-left: math.div(gvariables.$gutterWidth, 2);
+    padding-right: math.div(gvariables.$gutterWidth, 2);
+}
+
+/* Empty columns should not be displayed. Empty columns should not affect page layout. */
+.ui.grid>.column:empty {
+    display: none !important;
+}
+
+/* Vertical padding when no rows */
+.ui.grid>.column:not(.row) {
+    padding-top: math.div(gvariables.$rowSpacing, 2);
+    padding-bottom: math.div(gvariables.$rowSpacing, 2);
+}
+
+.ui.grid>.row>.column {
+    margin-top: 0em;
+    margin-bottom: 0em;
+}
+
+// This ^ but for inside the block editor.
+.ui.grid>.wp-block-prc-block-column.column:not(.row) {
+    padding-top: 0em;
+    padding-bottom: 0em;
+}
+
+/*-------------------
+		 Rows
+ --------------------*/
+
+.ui.grid>.row {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: inherit;
+    align-items: stretch;
+    width: 100% !important;
+    padding: 0rem;
+    padding-top: math.div(gvariables.$rowSpacing, 2);
+    padding-bottom: math.div(gvariables.$rowSpacing, 2);
+}
+
+/*-------------------
+	   Content
+ --------------------*/
+
+.ui.grid>.row>img,
+.ui.grid>.row>.column>img {
+    max-width: gvariables.$columnMaxImageWidth;
+}
+
+/*-------------------
+	Loose Coupling
+ --------------------*/
+
+// Control spacing of grid and elements inside a content-area
+.content-area,
+.prc-block-area {
+
+    &>.ui.grid:not(:first-child),
+    &>.ui.grid+.wp-block-group.has-background {
+        margin-top: gvariables.$contentGridTopMargin;
+    }
+}
+
+/* Sub grids inside content areas should have no bottom margin. */
+.content-area .ui.grid .ui.grid,
+.prc-block-area .ui.grid .ui.grid,
+.ui.grid .block-editor-block-list__layout .ui.grid {
+    margin-bottom: 0;
+}
+
+/* Attach Column To Grid/Row With No Padding */
+.ui.grid>.column[class*="attached top"],
+.ui.grid .row>.column[class*="attached top"] {
+    padding-top: 0px !important;
+}
+
+.ui.grid>.column[class*="attached bottom"],
+.ui.grid .row>.column[class*="attached bottom"] {
+    padding-bottom: 0px !important;
+}
+
+/* Collapse Margin on Consecutive Grid */
+.ui.grid>.ui.grid:first-child {
+    margin-top: 0em;
+}
+
+.ui.grid>.ui.grid:last-child {
+    margin-bottom: 0em;
+}
+
+/* Align Dividers with Gutter */
+.ui.grid .row+.ui.divider {
+    flex-grow: 1;
+    margin: math.div(gvariables.$rowSpacing, 2) math.div(gvariables.$gutterWidth, 2);
+}
+
+.ui.grid .column+.ui.vertical.divider {
+    height: calc(50% - #{(functions.strip-unit(math.div(gvariables.$rowSpacing, 2)))
+
+    }
+
+);
+}
+
+/*----------------------
+		Centered
+ -----------------------*/
+
+.ui.centered.grid,
+.ui.centered.grid>.row,
+.ui.grid>.centered.row {
+    text-align: center;
+    justify-content: center;
+}
+
+.ui.centered.grid>.column:not(.aligned):not(.justified):not(.row),
+.ui.centered.grid>.row>.column:not(.aligned):not(.justified),
+.ui.grid .centered.row>.column:not(.aligned):not(.justified) {
+    text-align: left;
+}
+
+.ui.grid>.centered.column,
+.ui.grid>.row>.centered.column {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*----------------------
+		Compact
+ -----------------------*/
+
+.ui.compact.grid {
+    margin-left: -(math.div(math.div(gvariables.$gutterWidth, 2), 2));
+    margin-right: -(math.div(math.div(gvariables.$gutterWidth, 2), 2));
+}
+
+.ui.compact.grid>.column:not(.row),
+.ui.compact.grid>.row>.column,
+.ui.grid>.compact.row>.column {
+    padding-left: math.div(math.div(gvariables.$gutterWidth, 2), 2);
+    padding-right: math.div(math.div(gvariables.$gutterWidth, 2), 2);
+}
+
+/*----------------------
+		Relaxed
+ -----------------------*/
+
+.ui.relaxed.grid>.column:not(.row),
+.ui.relaxed.grid>.row>.column,
+.ui.grid>.relaxed.row>.column {
+    padding-left: math.div(gvariables.$relaxedGutterWidth, 2);
+    padding-right: math.div(gvariables.$relaxedGutterWidth, 2);
+}
+
+/* Coupling with UI Divider */
+.ui.relaxed.grid .row+.ui.divider,
+.ui.grid .relaxed.row+.ui.divider {
+    margin-left: math.div(gvariables.$relaxedGutterWidth, 2);
+    margin-right: math.div(gvariables.$relaxedGutterWidth, 2);
+}
+
+/*----------------------
+		 Divided
+ -----------------------*/
+
+@mixin horizontalDividerLine() {
+    &::after {
+        display: block;
+        content: '';
+        position: absolute;
+        background-color: gvariables.$dividedBorder;
+        width: calc(100% - #{gvariables.$gutterWidth});
+        height: 1px;
+        top: 0;
+        bottom: inherit;
+        left: inherit;
+    }
+}
+
+@mixin verticalDividerLine() {
+    &::after {
+        display: block;
+        content: '';
+        position: absolute;
+        background-color: gvariables.$dividedBorder;
+        width: 1px;
+        height: calc(100% - #{gvariables.$consecutiveGridDistance});
+        top: inherit;
+        bottom: 0;
+        left: 0;
+    }
+}
+
+.ui.divided.grid,
+.ui.grid>.divided.row {
+    &>.column>.ui.grid>.ui.divided.row>.column:after {
+        height: 100%;
+    }
+
+    &:not(.stackable) {
+
+        &>.column:not(:first-child):not(.is-selected),
+        &>.wide.column+div:not([class*="sixteen wide column"]):not(:first-child):not(.is-selected) {
+            @include verticalDividerLine();
+        }
+    }
+
+    &.stackable {
+
+        &>.column:not(:first-child):not(.is-selected),
+        &>.wide.column+div:not([class*="sixteen wide column"]):not(:first-child):not(.is-selected) {
+
+            // .horizontalDividerLine();
+            @media only screen and (min-width: variables.$largestMobileScreen) {
+                @include verticalDividerLine();
+            }
+        }
+    }
+
+    // Fakes a divider line on sixteen wide columns when in conjuction with other columns (meaning this spans underneath)
+    &>.wide.column+div[class*="sixteen wide column"] {
+        margin-top: math.div(gvariables.$gutterWidth, 2);
+        padding-top: math.div(gvariables.$gutterWidth, 2);
+
+        &:not(.is-selected) {
+            @include horizontalDividerLine();
+        }
+
+        &:not(.is-selected)::after {
+            display: none;
+        }
+    }
+}
+
+.ui.divided.grid {
+
+    &[class*="has section heading"]>.column::after,
+    &[class*="has section heading"]>.column::before {
+        @media only screen and (min-width: variables.$largestMobileScreen) {
+            height: calc(100% - 45px) !important;
+        }
+    }
+}
+
+.ui.grid>.divided.row {
+
+    &[class*="has section heading"]>.column::after,
+    &[class*="has section heading"]>.column::before {
+        @media only screen and (min-width: variables.$largestMobileScreen) {
+            height: calc(100% - 30px) !important;
+        }
+    }
+}
+
+/*----------------------
+	Vertically Aligned
+ -----------------------*/
+
+/* Top Aligned */
+.ui[class*="top aligned"].grid>.column:not(.row),
+.ui[class*="top aligned"].grid>.row>.column,
+.ui.grid>[class*="top aligned"].row>.column,
+.ui.grid>[class*="top aligned"].column:not(.row),
+.ui.grid>.row>[class*="top aligned"].column {
+    flex-direction: column;
+    vertical-align: top;
+    align-self: flex-start !important;
+}
+
+/* Middle Aligned */
+.ui[class*="middle aligned"].grid>.column:not(.row),
+.ui[class*="middle aligned"].grid>.row>.column,
+.ui.grid>[class*="middle aligned"].row>.column,
+.ui.grid>[class*="middle aligned"].column:not(.row),
+.ui.grid>.row>[class*="middle aligned"].column {
+    flex-direction: column;
+    vertical-align: middle;
+    align-self: center !important;
+}
+
+/* Bottom Aligned */
+.ui[class*="bottom aligned"].grid>.column:not(.row),
+.ui[class*="bottom aligned"].grid>.row>.column,
+.ui.grid>[class*="bottom aligned"].row>.column,
+.ui.grid>[class*="bottom aligned"].column:not(.row),
+.ui.grid>.row>[class*="bottom aligned"].column {
+    flex-direction: column;
+    vertical-align: bottom;
+    align-self: flex-end !important;
+}
+
+/* Stretched */
+.ui.stretched.grid>.row>.column,
+.ui.stretched.grid>.column,
+.ui.grid>.stretched.row>.column,
+.ui.grid>.stretched.column:not(.row),
+.ui.grid>.row>.stretched.column {
+    display: inline-flex !important;
+    align-self: stretch;
+    flex-direction: column;
+}
+
+.ui.stretched.grid>.row>.column>*,
+.ui.stretched.grid>.column>*,
+.ui.grid>.stretched.row>.column>*,
+.ui.grid>.stretched.column:not(.row)>*,
+.ui.grid>.row>.stretched.column>* {
+    flex-grow: 1;
+}
+
+/*----------------------
+	 Horizontally Centered
+ -----------------------*/
+
+/* Left Aligned */
+.ui[class*="left aligned"].grid>.column,
+.ui[class*="left aligned"].grid>.row>.column,
+.ui.grid>[class*="left aligned"].row>.column,
+.ui.grid>[class*="left aligned"].column.column,
+.ui.grid>.row>[class*="left aligned"].column.column {
+    text-align: left;
+    align-self: inherit;
+}
+
+/* Center Aligned */
+.ui[class*="center aligned"].grid>.column,
+.ui[class*="center aligned"].grid>.row>.column,
+.ui.grid>[class*="center aligned"].row>.column,
+.ui.grid>[class*="center aligned"].column.column,
+.ui.grid>.row>[class*="center aligned"].column.column {
+    text-align: center;
+    align-self: inherit;
+}
+
+.ui[class*="center aligned"].grid {
+    justify-content: center;
+}
+
+/* Right Aligned */
+.ui[class*="right aligned"].grid>.column,
+.ui[class*="right aligned"].grid>.row>.column,
+.ui.grid>[class*="right aligned"].row>.column,
+.ui.grid>[class*="right aligned"].column.column,
+.ui.grid>.row>[class*="right aligned"].column.column {
+    text-align: right;
+    align-self: inherit;
+}
+
+/* Justified */
+.ui.justified.grid>.column,
+.ui.justified.grid>.row>.column,
+.ui.grid>.justified.row>.column,
+.ui.grid>.justified.column.column,
+.ui.grid>.row>.justified.column.column {
+    text-align: justify;
+    hyphens: auto;
+}
+
+/*----------------------
+		Equal Width
+ -----------------------*/
+
+.ui[class*="equal width"].grid>.column:not(.row),
+.ui[class*="equal width"].grid>.row>.column,
+.ui.grid>[class*="equal width"].row>.column,
+.ui[class*="equal width"].grid>.block-editor-block-list__layout>.column:not(.row) {
+    display: inline-block;
+    flex-grow: 1;
+}
+
+.ui[class*="equal width"].grid>.wide.column,
+.ui[class*="equal width"].grid>.row>.wide.column,
+.ui.grid>[class*="equal width"].row>.wide.column {
+    flex-grow: 0;
+}
+
+.ui[class*="equal width"].grid>.spanned.column,
+.ui[class*="equal width"].grid>.row>.spanned.column,
+.ui.grid>[class*="equal width"].row>.spanned.column {
+    flex-basis: 39.5%;
+}

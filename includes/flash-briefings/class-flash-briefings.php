@@ -70,8 +70,11 @@ class Flash_Briefings {
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
+			$screen = get_current_screen();
+			if ( in_array( $screen->post_type, array(self::$post_type) ) ) {
+				wp_enqueue_script( self::$handle );
+				wp_enqueue_style( self::$handle );
+			}
 		}
 	}
 
