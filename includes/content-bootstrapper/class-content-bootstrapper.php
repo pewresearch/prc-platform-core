@@ -59,56 +59,100 @@ class Content_Bootstrapper {
 		return false;
 	}
 
-	public function boostrap_content() {
-
+	public function bootstrap_content() {
+		$this->create_sample_topics();
+		$this->create_sample_report();
+		$this->create_sample_fact_sheet();
 	}
 
 	public function create_sample_topics() {
-
+		// create a sample "politics" and "religion" categories if they dont already exist
+		$categories = get_categories( array(
+			'hide_empty' => false,
+			'fields' => 'ids',
+			'name' => array( 'politics', 'religion' ),
+		) );
+		if ( empty( $categories ) ) {
+			$politics = wp_insert_term( 'Politics', 'category' );
+			$religion = wp_insert_term( 'Religion', 'category' );
+		}
 	}
 
 	public function create_sample_report() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_fact_sheet() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_short_read() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_interactive() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_quiz() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_chart() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_page() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_staff() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_homepage() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_dataset() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function create_sample_block_module() {
-
+		?>
+		<p>Ipsum....</p>
+		<?php
+		$content = ob_get_clean();
 	}
 
 	public function configure_sample_options() {

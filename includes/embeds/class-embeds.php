@@ -47,7 +47,7 @@ class Embeds {
 			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var', 10, 1 );
 			$loader->add_action( 'init', $this, 'iframe_endpoint', 10 );
 
-			// $loader->add_filter( 'request', $this, 'filter_request', 10, 1 );
+			$loader->add_filter( 'request', $this, 'filter_request', 10, 1 );
 			$loader->add_filter( 'the_title', $this, 'filter_title', 10, 1 );
 			$loader->add_filter( 'the_content', $this, 'filter_content', 10, 1 );
 			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
