@@ -1,13 +1,7 @@
 /**
  * WordPress Dependencies
  */
-import {
-	store,
-	navigate,
-	prefetch,
-	getElement,
-	getContext,
-} from '@wordpress/interactivity';
+import { store, getElement, getContext } from '@wordpress/interactivity';
 
 // @TODO: Faking the wordpress/url package import for now, until the new Gutenberg Module Loader is completed.
 const { addQueryArgs } = window.wp.url;
@@ -137,17 +131,23 @@ const { context, state, actions } = store(
 					state.selected[facetSlug] = [value];
 				}
 			},
-			onCheckboxMouseEnter: () => {
+			*onCheckboxMouseEnter() {
 				console.log(
 					'prc-platform/facets-context-provider',
 					'onCheckboxMouseEnter'
 				);
+				const router = yield import('@wordpress/interactivity-router');
+				const newUrl = '';
+				yield router.actions.prefetch(newUrl);
 			},
-			onButtonMouseEnter: () => {
+			*onButtonMouseEnter() {
 				console.log(
 					'prc-platform/facets-context-provider',
 					'onButtonMouseEnter'
 				);
+				const router = yield import('@wordpress/interactivity-router');
+				const newUrl = '';
+				yield router.actions.prefetch(newUrl);
 			},
 			onClear: (facetSlug) => {
 				console.log('onClear', facetSlug, state);
@@ -180,12 +180,13 @@ const { context, state, actions } = store(
 					context
 				);
 			},
-			onSelection: async () => {
+			*onSelection() {
 				const selected = state.getSelected;
 				console.log('onSelection', selected);
 				if (undefined === selected) {
 					return;
 				}
+				const router = yield import('@wordpress/interactivity-router');
 				// Only if the selection has some values.
 				if (Object.keys(selected).length > 0) {
 					const newUrl = state.getUpdatedUrl;
@@ -200,7 +201,7 @@ const { context, state, actions } = store(
 						);
 					}, state.navigateTimer);
 
-					await navigate(newUrl);
+					yield router.actions.navigate(newUrl);
 
 					clearTimeout(timeout);
 
@@ -208,7 +209,7 @@ const { context, state, actions } = store(
 				} else {
 					// If there are no selections, then we need to navigate to the base url.
 					const newUrl = window.location.href.split('?')[0];
-					await navigate(newUrl);
+					yield router.actions.navigate(newUrl);
 				}
 			},
 		},
