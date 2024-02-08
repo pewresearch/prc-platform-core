@@ -3,12 +3,19 @@
 	"description": "Homepage Modules for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/icons": "^9.31.0",
-		"@wordpress/scripts": "^26.1.0"
+		"@wordpress/icons": "^9.41.0",
+		"@wordpress/scripts": "^27.1.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build",
-		"start": "wp-scripts start",
-		"test": "wp-scripts test-unit"
+        "check-engines": "wp-scripts check-engines",
+        "check-licenses": "wp-scripts check-licenses",
+        "format": "wp-scripts format",
+        "lint:css": "wp-scripts lint-style",
+        "lint:js": "wp-scripts lint-js",
+        "lint:md:docs": "wp-scripts lint-md-docs",
+        "lint:pkg-json": "wp-scripts lint-pkg-json",
+        "packages-update": "wp-scripts packages-update",
+        "start": "wp-scripts start"
 	}
 }

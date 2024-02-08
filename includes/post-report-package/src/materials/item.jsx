@@ -19,9 +19,9 @@ import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
 /**
  * Internal Dependencies
  */
-import { TypeSelect, getLabel, getOptions } from './TypeSelect';
+import { TypeSelect, getLabel, getOptions } from './type-select';
 import { usePostReportPackage } from '../context';
-import ListItem from '../ListItem'
+import ListItem from '../lite-item';
 
 const ALLOWED_MEDIA_TYPES = [
 	'image',

@@ -17,17 +17,14 @@ import { registerBlockType } from '@wordpress/blocks';
 /**
  * Internal Dependencies
  */
-import Edit from './Edit';
+import edit from './edit';
 import metadata from './block.json';
 
 const { name } = metadata;
 
 const settings = {
 	icon,
-	/**
-	 * @see ./Edit.jsx
-	 */
-	edit: Edit,
+	edit,
 };
 
 /**

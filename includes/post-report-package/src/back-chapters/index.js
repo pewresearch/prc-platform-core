@@ -13,13 +13,14 @@ import { Button, PanelBody } from '@wordpress/components';
  */
 import { randomId } from '../utils';
 import { usePostReportPackage } from '../context';
-import ListItem from '../ListItem';
-import PostSearchByEditUrlField from './PostSearchByEditUrlField';
-import ExistingBackChapterToolbar from './ExistingBackChapterToolbar';
+import ListItem from '../list-item';
+import PostSearchByEditUrlField from './post-search-by-edit-url-field';
+import ExistingBackChapterToolbar from './existing-back-chapter-toolbar';
 
 export default function BackChapters() {
 	const ITEMS_TYPE = 'backChapters';
-	const { backChapters, reorder, append, remove, updateItem, currentPostId } = usePostReportPackage();
+	const { backChapters, reorder, append, remove, updateItem, currentPostId } =
+		usePostReportPackage();
 
 	return (
 		<PanelBody title="Back Chapters">
@@ -29,7 +30,9 @@ export default function BackChapters() {
 				onChange={({ oldIndex, newIndex }) =>
 					reorder(oldIndex, newIndex, ITEMS_TYPE)
 				}
-				renderList={({ children, props }) => <div {...props}>{children}</div>}
+				renderList={({ children, props }) => (
+					<div {...props}>{children}</div>
+				)}
 				renderItem={({ value, props, index }) => (
 					<div {...props}>
 						<ListItem
@@ -41,14 +44,23 @@ export default function BackChapters() {
 						>
 							{null === value.postId && (
 								<PostSearchByEditUrlField
-									hocOnChange={(postId) => updateItem(index, 'postId', postId, ITEMS_TYPE)}
+									hocOnChange={(postId) =>
+										updateItem(
+											index,
+											'postId',
+											postId,
+											ITEMS_TYPE
+										)
+									}
 								/>
 							)}
 							{null !== value.postId && (
-								<ExistingBackChapterToolbar {...{
-									postId: value.postId,
-									currentPostId,
-								}}/>
+								<ExistingBackChapterToolbar
+									{...{
+										postId: value.postId,
+										currentPostId,
+									}}
+								/>
 							)}
 						</ListItem>
 					</div>
@@ -56,13 +68,7 @@ export default function BackChapters() {
 			/>
 			<Button
 				variant="primary"
-				onClick={() =>
-					append(
-						randomId(),
-						{ postId: null },
-						ITEMS_TYPE,
-					)
-				}
+				onClick={() => append(randomId(), { postId: null }, ITEMS_TYPE)}
 			>
 				Add Back Chapter
 			</Button>

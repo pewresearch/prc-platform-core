@@ -5,19 +5,19 @@ import { WPEntitySearch } from '@prc/components';
 import { List } from 'react-movable';
 import styled from '@emotion/styled';
 
-
 /**
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CardDivider, PanelRow } from '@wordpress/components';
+import { Fragment } from '@wordpress/element';
+import { FormToggle, PanelRow } from '@wordpress/components';
 
 /**
  * Internal Dependencies
  */
 import { randomId } from './utils';
 import { useBylines } from './context';
-import BylineItem from './BylineItem';
+import BylineItem from './byline-item';
 
 const SearchContainer = styled.div`
 	width: 100%;
@@ -32,35 +32,34 @@ const ListWrapper = styled.div`
 	padding-top: 1em;
 `;
 
-function Acknowledgements() {
-	const { acknowledgementItems, reorder, remove, append } = useBylines();
+function Bylines() {
+	const {
+		bylineItems,
+		reorder,
+		remove,
+		append,
+		displayBylines,
+		toggleBylinesDisplay,
+	} = useBylines();
+
 	return (
-		<PanelRow>
-			<div>
-				<CardDivider />
-				<p>
-					{__(
-						`Acknowledgements will not appear on the post. People associated here will have this post listed on their staff bio page.`,
-						'prc-platform-core',
-					)}
-				</p>
+		<Fragment>
+			<PanelRow>
 				<SearchContainer>
 					<WPEntitySearch
-						placeholder="Add new acknowledgement..."
+						placeholder={__('Add new byline...', 'prc-platform-core')}
 						entityType="taxonomy"
 						entitySubType="bylines"
 						onSelect={(item) => {
-							append(randomId(), item.id, false);
+							append(randomId(), item.id, true);
 						}}
 						clearOnSelect={true}
 					>
 						<ListWrapper>
 							<List
 								lockVertically
-								values={acknowledgementItems}
-								onChange={({ oldIndex, newIndex }) =>
-									reorder(oldIndex, newIndex, false)
-								}
+								values={bylineItems}
+								onChange={({ oldIndex, newIndex }) => reorder(oldIndex, newIndex)}
 								renderList={({ children, props }) => (
 									<div {...props}>{children}</div>
 								)}
@@ -70,9 +69,9 @@ function Acknowledgements() {
 											key={value.key}
 											value={value}
 											onRemove={() => {
-												remove(index, false);
+												remove(index, true);
 											}}
-											lastItem={index === acknowledgementItems.length - 1}
+											lastItem={index === bylineItems.length - 1}
 										/>
 									</div>
 								)}
@@ -80,9 +79,18 @@ function Acknowledgements() {
 						</ListWrapper>
 					</WPEntitySearch>
 				</SearchContainer>
-			</div>
-		</PanelRow>
+			</PanelRow>
+			<PanelRow>
+				<label>Display Bylines</label>
+				<FormToggle
+					checked={displayBylines}
+					onChange={() => {
+						toggleBylinesDisplay();
+					}}
+				/>
+			</PanelRow>
+		</Fragment>
 	);
 }
 
-export default Acknowledgements;
+export default Bylines;

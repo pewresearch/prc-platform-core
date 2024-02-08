@@ -20,7 +20,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
  * Internal Dependencies
  */
 import './store';
-import ListStoreItem from './ListStoreItem';
+import ListStoreItem from './list-store-item';
 
 function randomId() {
 	// Math.random should be unique because of its seeding algorithm.

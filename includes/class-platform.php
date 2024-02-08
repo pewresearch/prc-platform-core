@@ -159,6 +159,7 @@ class Platform_Bootstrap {
 		new Block_Area_Modules( $this->get_version(), $this->get_loader() );
 		new Block_Editor( $this->get_version(), $this->get_loader() );
 		new Block_Utils\JS_Utils_Loader( $this->get_version(), $this->get_loader() );
+
 		new Convert_To_Blocks( $this->get_version(), $this->get_loader() );
 		new Courses( $this->get_version(), $this->get_loader() );
 		new Datasets( $this->get_version(), $this->get_loader() );

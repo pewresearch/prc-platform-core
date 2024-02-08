@@ -17,7 +17,7 @@ import {
 /**
  * Internal Dependencies
  */
-import ImagePopover from './ImagePopover';
+import ImagePopover from './image-popover';
 
 const GridContainer = styled.div`
 	display: flex;

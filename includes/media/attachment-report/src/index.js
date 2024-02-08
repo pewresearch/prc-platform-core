@@ -12,8 +12,8 @@ import { render, Fragment, useMemo, useState } from '@wordpress/element';
  * Internal Dependencies
  */
 import { ProvideAttachments } from './context';
-import AdminColumnButton from './AdminColumnButton';
-import AttachmentsModal from './Modal';
+import AdminColumnButton from './admin-column-button';
+import AttachmentsModal from './modal';
 
 import './style.scss';
 

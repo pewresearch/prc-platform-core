@@ -19,7 +19,11 @@ export default function ListItem({
 }) {
 	const [postTitle] = useEntityProp('postType', 'post', 'title', keyValue);
 	const labelText = useMemo(() => {
-		if (undefined === label && undefined !== postTitle && '' !== postTitle) {
+		if (
+			undefined === label &&
+			undefined !== postTitle &&
+			'' !== postTitle
+		) {
 			return decodeEntities(postTitle);
 		}
 		if (undefined !== label && '' !== label) {
@@ -62,7 +66,10 @@ export default function ListItem({
 					<IconButton
 						icon="no-alt"
 						onClick={() => {
-							if (false !== onRemove && 'function' === typeof onRemove) {
+							if (
+								false !== onRemove &&
+								'function' === typeof onRemove
+							) {
 								onRemove();
 							}
 						}}

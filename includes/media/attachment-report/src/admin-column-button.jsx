@@ -14,7 +14,7 @@ import { Spinner } from '@wordpress/components';
  * Internal Dependencies
  */
 import { useAttachments } from './context';
-import AttachmentsModal from './Modal';
+import AttachmentsModal from './modal';
 
 const Button = styled.button`
 	cursor: pointer !important;

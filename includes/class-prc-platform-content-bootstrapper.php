@@ -1,48 +1,20 @@
 <?php
-namespace PRC\Platform;
 use WP_Error;
 
 /**
  * Bootstraps content for PRC Platform development, if no data is present.
  */
-class Content_Bootstrapper {
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
+class PRC_Platform_Content_Bootstrapper {
+	public $option_name;
 
-	public static $handle = 'prc-platform-content-boostrapper';
-
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		$this->init($loader);
-	}
-
-	public function init( $loader = null ) {
-		if ( !PRC_PLATFORM_TESTING_MODE ) {
-			return;
-		}
-		if ( null !== $loader ) {
-			// $loader->add_action('', $this, 'my_func');
-			// $loader->add_filter('', $this, 'my_func');
-		}
+	public function __construct() {
+		$this->option_name = 'prc_platform_content_bootstrapped';
 	}
 
 	// Get the id of the first post of a given post type.
 	// if the ID is 1, then we know that the post type is empty so update_option( 'prc_platform_content_bootstrapped', true ); and return true, otherwise return false. check for the option first, if it's true, then return true.
 	public function detect_lack_of_content() {
-		$option = get_option( 'prc_platform_content_bootstrapped' );
+		$option = get_option( $this->option_name );
 		if ( true === $option ) {
 			return true;
 		}
@@ -59,10 +31,19 @@ class Content_Bootstrapper {
 		return false;
 	}
 
-	public function bootstrap_content() {
+	public function run() {
+		if ( !PRC_PLATFORM_TESTING_MODE ) {
+			return;
+		}
+		$already_bootstrapped = get_option( $this->option_name );
+		if ( $already_bootstrapped || true !== $this->detect_lack_of_content() ) {
+			return;
+		}
 		$this->create_sample_topics();
 		$this->create_sample_report();
 		$this->create_sample_fact_sheet();
+		$this->configure_sample_options();
+
 	}
 
 	public function create_sample_topics() {
@@ -156,6 +137,8 @@ class Content_Bootstrapper {
 	}
 
 	public function configure_sample_options() {
-
+		$tagline = 'Numbers, Facts and Trends Shaping Your World';
+		update_option( 'blogdescription', $tagline );
+		update_option( self::$option_name, true );
 	}
 }

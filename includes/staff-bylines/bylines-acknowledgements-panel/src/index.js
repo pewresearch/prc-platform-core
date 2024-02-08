@@ -11,8 +11,8 @@ import { dispatch } from '@wordpress/data';
  */
 import './style.scss';
 import { ProvideBylines } from './context';
-import Acknowledgements from './Acknowledgements';
-import Bylines from './Bylines';
+import Acknowledgements from './acknowledgements';
+import Bylines from './bylines';
 
 // @TODO lets cosntruct  a new panel in place of the official bylines taxonomy panel
 // see: https://github.com/WordPress/gutenberg/tree/9580b45e6e18dd06076af9f7e1ea66babee22bf5/packages/editor/src/components/post-taxonomies#custom-taxonomy-selector

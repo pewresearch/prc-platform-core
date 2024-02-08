@@ -10,7 +10,7 @@ import { registerStore } from '@wordpress/data';
  * Internal dependencies
  */
 import { reducer, actions, controls, selectors, resolvers } from './store';
-import ArtDirectionPanel from './Panel';
+import ArtDirectionPanel from './panel';
 
 import './style.scss';
 

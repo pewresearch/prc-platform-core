@@ -7,8 +7,8 @@
 		"@wordpress/scripts": "^26.16.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build",
-		"start": "wp-scripts start",
+		"build": "wp-scripts build --experimental-modules",
+		"start": "wp-scripts start --experimental-modules",
 		"test": "wp-scripts test-unit"
 	},
 	"dependencies": {

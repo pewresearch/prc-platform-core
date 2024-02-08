@@ -20,7 +20,7 @@ import {
 /**
  * Internal Dependencies
  */
-import Controls from './Controls';
+import Controls from './controls';
 
 const POST_TYPE = 'homepage';
 const POST_TYPE_LABEL = 'Homepage';

@@ -130,7 +130,7 @@ function BylineItem({ value, onRemove, lastItem = false }) {
 							onRemove();
 							// remove from window.prcBylineTermIds
 							const i = window.prcBylineTermIds.findIndex(
-								(t) => t.termId === termId,
+								(t) => t.termId === termId
 							);
 							if (-1 < i) {
 								window.prcBylineTermIds.splice(i, 1);

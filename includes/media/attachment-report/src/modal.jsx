@@ -13,7 +13,7 @@ import { Modal as WPComModal, SearchControl } from '@wordpress/components';
  * Internal Dependencies
  */
 import { useAttachments } from './context';
-import ImageGrid from './ImageGrid';
+import ImageGrid from './image-grid';
 
 const Modal = styled(WPComModal)`
 	* {

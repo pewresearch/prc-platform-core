@@ -13,7 +13,7 @@ import { Popover as WPComPopover } from '@wordpress/components';
 /**
  * Internal Dependencies
  */
-import ImageDetail from './ImageDetail';
+import ImageDetail from './image-detail';
 
 const Thumbnail = ({ imageUrl, thumbnailRef, onClick, isActive = false }) => {
 	const ThumbnailWrapper = styled.div`

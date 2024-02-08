@@ -10,7 +10,7 @@ import { Button, Flex, FlexBlock } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import Image from './Image';
+import Image from './image';
 
 const ResetButton = () => {
 	const [confirmation, setConfirmation] = useState(null);
