@@ -36,7 +36,7 @@ class Homepages {
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'admin_bar_menu', $this, 'add_front_page_quick_edit', 999 );
 			$loader->add_filter( 'admin_menu_order', $this, 'admin_menu_order', 999 );
-			// $this->loader->add_filter( 'post_type_link', $this, 'modify_homepage_permalink', 10, 2 );
+			$loader->add_filter( 'post_type_link', $this, 'modify_homepage_permalink', 10, 2 );
 		}
 	}
 
