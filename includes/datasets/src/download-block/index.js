@@ -11,7 +11,6 @@
 /**
  * WordPress Dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
 import { download as icon } from '@wordpress/icons';
 
@@ -29,6 +28,7 @@ import { download as icon } from '@wordpress/icons';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import edit from './edit';
+import save from './save';
 import metadata from './block.json';
 
 const { name } = metadata;
@@ -36,6 +36,7 @@ const { name } = metadata;
 const settings = {
 	icon,
 	edit,
+	save,
 };
 
 /**

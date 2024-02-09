@@ -1,0 +1,2 @@
+import*as t from"@wordpress/interactivity";var o={d:(t,e)=>{for(var r in e)o.o(e,r)&&!o.o(t,r)&&Object.defineProperty(t,r,{enumerable:!0,get:e[r]})},o:(t,o)=>Object.prototype.hasOwnProperty.call(t,o)};const e=(r={getContext:()=>t.getContext,store:()=>t.store},n={},o.d(n,r),n);var r,n;(0,e.store)("prc-platform/dataset-download",{actions:{onButtonClick:t=>{t.preventDefault();const{datasetTermId:o}=(0,e.getContext)();console.log("onButtonClick",o)}}});
+//# sourceMappingURL=view.js.map
