@@ -44,7 +44,9 @@ class PRC_Platform_Content_Bootstrapper {
 		$this->create_sample_fact_sheet();
 		$this->configure_tagline();
 		$this->create_homepage_and_set_as_front_page();
-		$this->create_publication_page_and_set_as_blog_page()
+		$this->create_publication_page_and_set_as_blog_page();
+
+		update_option( self::$option_name, true );
 
 	}
 
@@ -117,7 +119,6 @@ class PRC_Platform_Content_Bootstrapper {
 	public function configure_tagline() {
 		$tagline = 'Numbers, Facts and Trends Shaping Your World';
 		update_option( 'blogdescription', $tagline );
-		update_option( self::$option_name, true );
 	}
 
 	public function create_sample_report() {
