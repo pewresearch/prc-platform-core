@@ -1,20 +1,15 @@
 <?php
 /**
- *
- * @link              https://github.com/pewresearch/prc-platform-core
- * @since             1.0.0
- * @package           PRC_Platform
- *
  * @wordpress-plugin
  * Plugin Name:       PRC Platform Core
  * Plugin URI:        https://github.com/pewresearch/prc-platform-core
- * Description:       pewresearch.org data model and shared functionality, built for use on WordPress VIP's platform.
+ * Description:       This plugin is the foundation for all other PRC Platform plugins. It contains the core functionality and hooks for the platform.
  * Version:           1.0.0
  * Author:            Seth Rubenstein
- * Author URI:        https://sethrubenstein.info
+ * Author URI:        https://pewresearch.org
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       prc-platform
+ * Text Domain:       prc-platform-core
 
  */
 
