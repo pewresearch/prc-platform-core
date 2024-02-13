@@ -1,6 +1,10 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use GuzzleHttp\Client as GuzzleHttpClient;
+use GuzzleHttp\Psr7\HttpFactory;
+use Turnstile\Client\Client;
+use Turnstile\Turnstile;
 
 /**
  * We send all mail through Mailchimp's Mandrill service and we use Mailchimp to register newsletter subscriptions. This class handles both.
@@ -342,17 +346,25 @@ class Mailchimp {
 	 * @return bool
 	 */
 	private function verify_captcha( $response_token ) {
-		$data = array(
-            'secret' => PRC_PLATFORM_TURNSTILE_SECRET_KEY,
-            'response' => $response_token
-        );
-		$response = wp_remote_post( "https://challenges.cloudflare.com/turnstile/v0/siteverify", array('body' => $data) );
-		$body     = wp_remote_retrieve_body( $response );
-
-		$response_data = json_decode($body);
-		$response_data->key = PRC_PLATFORM_TURNSTILE_SECRET_KEY;
-		error_log('VERIFY_CAPTCHA' . print_r($response_data, true));
-		if( $response_data->success ) {
+		$secret_key = PRC_PLATFORM_TURNSTILE_SECRET_KEY;
+		if ( empty( $secret_key ) ) {
+			if ( 'local' === wp_get_environment_type(  ) ) {
+				// Dev key, always returns true.
+				return '1x0000000000000000000000000000000AA';
+			}
+		}
+		$client = new Client(
+			new GuzzleHttpClient(),
+			new HttpFactory(),
+		);
+		$turnstile = new Turnstile(
+			client: $client,
+			secretKey: $secret_key,
+		);
+		$response = $turnstile->verify(
+			token: $response_token,
+		);
+		if( $response->success ) {
 			return true;
 		} else {
 			return false;
