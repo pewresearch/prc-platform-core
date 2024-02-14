@@ -134,6 +134,7 @@ class Datasets {
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_download_endpoint' );
+			$loader->add_filter('prc_platform_rewrite_rules', $this, 'archive_rewrites' );
 
 			$download_logger = new Datasets_Download_Logger();
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
@@ -149,7 +150,7 @@ class Datasets {
 	public function register_term_data_store() {
 		register_post_type( self::$post_object_name, self::$post_object_args );
 		register_taxonomy( self::$taxonomy_object_name, self::$enabled_post_types, self::$taxonomy_object_args );
-		\TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
+		$relationship = \TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 		$this->register_dataset_fields();
 	}
 
@@ -196,19 +197,16 @@ class Datasets {
 			'route' 		      => 'datasets/get-download',
 			'methods'             => 'POST',
 			'args'                => array(
-				'id' => array(
+				'datasetId' => array(
 					'required' => true,
 					'type' => 'integer'
-				),
-				'uuid' => array(
-					'required' => true,
-					'type' => 'string'
 				),
 			),
 			'callback'            => array( $this, 'restfully_download_dataset' ),
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				$nonce = $request->get_header( 'x-wp-nonce' );
-				return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
+				// return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
+				return true;
 			},
 		);
 		array_push($endpoints, $get_download_endpoint);
@@ -221,19 +219,25 @@ class Datasets {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function restfully_download_dataset( WP_REST_Request $request ) {
-		$uuid = $request->get_param( 'uuid' );
-		$dataset_id = $request->get_param( 'id' );
-		$attachment_id = get_post_meta( $dataset_id, self::$download_meta_key, true );
+		$data = json_decode( $request->get_body(), true );
+		if ( ! array_key_exists( 'uid', $data ) ) {
+			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
+		}
+		$uid = $data['uid'];
+
+		$id = $request->get_param( 'datasetId' );
+		if ( ! $id ) {
+			return new WP_Error( 'no_id', 'No dataset ID provided.', array( 'status' => 400 ) );
+		}
+		$attachment_id = get_post_meta( $id, self::$download_meta_key, true );
+		error_log( 'Dataset Download: ' . $attachment_id);
 		if ( $attachment_id ) {
 			$attachment_url = wp_get_attachment_url( $attachment_id );
 			// Log the download.
 			$download_logger = new Datasets_Download_Logger();
-			$download_logger->increment_download_total( $dataset_id );
-			$download_logger->log_monthly_download_count( $dataset_id );
-			$download_logger->log_uuid_to_dataset( $dataset_id, $uuid );
-			// @TODO add additional checks here.
-			// ... we may check for correct download logging before allowing a download
-			// ... we may also check for a user's uuid and token and see if they're a valid user.
+			$download_logger->increment_download_total( $id );
+			$download_logger->log_monthly_download_count( $id );
+			$download_logger->log_uid_to_dataset( $id, $uid );
 			return rest_ensure_response( array(
 				'file_url' => $attachment_url,
 			) );

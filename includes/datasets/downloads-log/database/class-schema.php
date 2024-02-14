@@ -36,9 +36,9 @@ class Dataset_Download_Schema extends BerlinDB_Schema {
 			'sortable'   => false,
 		),
 
-		// serialized store of uuids
-		'uuids' => array(
-			'name'       => 'uuids',
+		// serialized store of uids
+		'uids' => array(
+			'name'       => 'uids',
 			'type'       => 'longtext',
 			'unsigned'   => true,
 			'searchable' => false,

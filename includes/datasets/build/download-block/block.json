@@ -6,11 +6,7 @@
   "title": "Dataset Download",
   "category": "theme",
   "description": "This block allows you to download the specified dataset. First it checks for user accounts credentials and then it provides a download button.",
-  "attributes": {
-    "termId": {
-      "type": "number"
-    }
-  },
+  "attributes": {},
   "supports": {
     "anchor": true,
     "html": false,

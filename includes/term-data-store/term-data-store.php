@@ -59,6 +59,8 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 *
 	 * @param string $post_type The post type slug
 	 * @param string $taxonomy  The taxonomy slug
+	 *
+	 * @return string The relationship
 	 */
 	function add_relationship( $post_type, $taxonomy ) {
 
@@ -87,8 +89,8 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		add_action( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
 		add_action( 'pre_delete_term', get_delete_term_hook( $post_type, $taxonomy ), 10, 2 );
 
-		get_relationship( $post_type, $taxonomy );
-
+		$relationship = get_relationship( $post_type, $taxonomy );
+		return $relationship;
 	}
 
 	function get_taxonomy_term_by_meta($taxonomy, $meta_key, $meta_value) {
@@ -144,9 +146,6 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	}
 
 	function establish_post_term_connection($post_type, $taxonomy, $post, $post_id) {
-		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
-			return;
-		}
 		if ( apply_filters( 'tds_balancing_from_post', balancing_relationship(), $post_type, $taxonomy, $post ) ) {
 			return;
 		}
@@ -278,13 +277,13 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return \Closure The callback
 	 */
 	function get_save_post_hook( $post_type, $taxonomy ) {
-
 		static $existing_closures;
 		if ( ! isset( $existing_closures ) ) {
 			$existing_closures = array();
 		}
 
 		$md5 = md5( $post_type . '|' . $taxonomy );
+
 		if ( isset( $existing_closures[$md5] ) ) {
 			return $existing_closures[$md5];
 		}
@@ -294,6 +293,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		};
 
 		$existing_closures[$md5] = $closure;
+
 		return $closure;
 
 	}

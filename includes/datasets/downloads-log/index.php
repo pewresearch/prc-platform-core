@@ -1,7 +1,7 @@
 <?php
 namespace PRC\Platform;
 
-use Dataset_Downloads_Log;
+use Dataset_Downloads_Log_Query;
 use WP_Error;
 use WP_REST_Request;
 
@@ -45,18 +45,15 @@ class Datasets_Download_Logger extends Datasets {
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'restfully_log_download' ),
 			'args'                => array(
-				'id' => array(
+				'datesetId' => array(
 					'required' => true,
 					'type' => 'integer'
-				),
-				'uuid' => array(
-					'required' => true,
-					'type' => 'string'
 				),
 			),
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				$nonce = $request->get_header( 'x-wp-nonce' );
-				return $this->verify_nonce( $nonce );
+				// return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
+				return true;
 			},
 		);
 		array_push($endpoints, $log_download_endpoint);
@@ -94,9 +91,31 @@ class Datasets_Download_Logger extends Datasets {
 	public function restfully_get_download_log( $object ) {
 		$post_id = (int) $object['id'];
 
+		$allow_uid_access = current_user_can( 'edit_posts' );
+		$uids = null;
+		if ( $allow_uid_access ) {
+			$query = new Dataset_Downloads_Log_Query(array(
+				'id'    => $post_id,
+				'orderby' => 'id',
+				'order'   => 'asc',
+				'number'  => 1, // Only retrieve a single record.
+				'fields'  => array( 'id', 'uids' ),
+			));
+			if ( $query->items ) {
+				// get the first item in $query->items and get the uids property from it...
+				if (!empty($query->items) && isset($query->items[0]->uids)) {
+					$uids = $query->items[0]->uids;
+				} else {
+					$uids = false;
+				}
+			}
+		}
+
 		$to_return = array(
 			'total' => (int) get_post_meta( $post_id, '_total_downloads', true ),
 			'log' => array(),
+			'uids' => $uids,
+			'authenticated' => $allow_uid_access,
 		);
 
 		$start_year = 2020;
@@ -117,13 +136,22 @@ class Datasets_Download_Logger extends Datasets {
 	 * @return array|WP_Error
 	 */
 	public function restfully_log_download( WP_REST_Request $request ) {
-		$data    = json_decode( $request->get_body(), true );
-		$id      = $data['id'];
-		$uuid    = $data['uuid'];
+		$data = json_decode( $request->get_body(), true );
+		if ( ! array_key_exists( 'uid', $data ) ) {
+			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
+		}
+		$uid = $data['uid'];
+
+		$id = $request->get_param( 'datesetId' );
+		if ( ! $id ) {
+			return new WP_Error( 'no_dataset_id', 'No dataset ID provided.', array( 'status' => 400 ) );
+		}
+
 		$return            = array();
 		$return['total']   = $this->increment_download_total( $id );
 		$return['monthly'] = $this->log_monthly_download_count( $id );
-		$this->log_uuid_to_dataset( $id, $uuid );
+		$return['uid']     = $this->log_uid_to_dataset( $id, $uid );
+
 		return $return;
 	}
 
@@ -176,36 +204,45 @@ class Datasets_Download_Logger extends Datasets {
 		}
 	}
 
-	public function log_uuid_to_dataset( $dataset_id, $uuid ) {
+	public function log_uid_to_dataset( $dataset_id, $uid ) {
 		$query_args = array(
 			'id'    => $dataset_id,
 			'orderby' => 'id',
 			'order'   => 'asc',
 			'number'  => 1, // Only retrieve a single record.
-			'fields'  => array( 'id', 'uuids' ),
+			'fields'  => array( 'id', 'uids' ),
 		);
-		$query = new Dataset_Downloads_Log($query_args);
+		$query = new Dataset_Downloads_Log_Query($query_args);
+		error_log('log_uid_to_dataset'. $dataset_id . ' ' . $uid);
 
 		$response = false;
 
 		if ( $query->items ) {
-			// If exists, update the uuids.
+			// If exists, update the uids.
 			foreach ( $query->items as $record ) {
+				$uids = maybe_unserialize( $record->uids );
+				// If the uid is already in the array, don't add it again.
+				if ( in_array( $uid, $uids ) ) {
+					return;
+				}
+				$uids = array_merge( $uids, array( $uid ) );
+				$uids = maybe_serialize( $uids );
 				$response = $query->update_item(
 					$record->id,
 					array(
-						'uuids' => array_merge( $record->uuids, array( $uuid ) ),
+						'uids' => $uids
 					)
 				);
 			}
 		} else {
 			// First time, create
-			$response = $query->create_item(
+			$response = $query->add_item(
 				array(
-					'uuids' => array( $uuid ),
+					'uids' => maybe_serialize( array( $uid ) ),
 				)
 			);
 		}
+		error_log("RESPONSE:".print_r($response, true));
 
 		return $response;
 	}

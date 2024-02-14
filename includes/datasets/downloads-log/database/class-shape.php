@@ -9,7 +9,7 @@ class Dataset_Download_Shape extends BerlinDB_Row {
 	public $id;
 	public $total;
 	public $breakdown;
-	public $uuids;
+	public $uids;
 
 	public function __construct( $item ) {
 		parent::__construct( $item );
@@ -17,7 +17,7 @@ class Dataset_Download_Shape extends BerlinDB_Row {
 		$this->id            = (int) $this->id;
 		$this->total         = (int) $this->total;
 		$this->breakdown 	 = (string) $this->breakdown;
-		$this->uuids         = (string) $this->uuids;
+		$this->uids         = (string) $this->uids;
 	}
 
 	public function display() {
@@ -41,8 +41,8 @@ class Dataset_Download_Shape extends BerlinDB_Row {
 		return json_decode( $this->breakdown );
 	}
 
-	public function get_uuids() {
-		return json_decode( $this->uuids );
+	public function get_uids() {
+		return json_decode( $this->uids );
 	}
 
 }

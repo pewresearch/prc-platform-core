@@ -57,7 +57,7 @@ class Dataset_Downloads_Log extends BerlinDB_Table {
 			id				int			NOT NULL AUTO_INCREMENT,
 			total			int			NOT NULL,
 			breakdown		longtext	NOT NULL,
-			uuids			longtext	NOT NULL,
+			uids			longtext	NOT NULL,
 			PRIMARY KEY (id)
 			';
 	}
