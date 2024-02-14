@@ -62,7 +62,8 @@ class Schema_Meta {
 	public function yoast_seo_no_index( $robots ) {
 		global $paged;
 
-		if ( is_index() && $paged > 1 ) {
+		// On publication pages AND on search pages we do not want to index the page if it is not the first page.
+		if ( is_index(true) && $paged > 1 ) {
 			$robots = 'noindex';
 		}
 
@@ -127,7 +128,7 @@ class Schema_Meta {
 	}
 
 	public function disable_parsely_json_ld( $parsely_metadata, $post, $parsely_options ) {
-		return array(); // disable the default metadata
+		return $parsely_metadata; // disable the default metadata
 	}
 
 	public function get_chart_attribute($post_id, $attribute) {

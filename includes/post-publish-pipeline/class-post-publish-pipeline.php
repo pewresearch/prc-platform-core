@@ -254,6 +254,10 @@ class Post_Publish_Pipeline {
 		// Data is actually loaded here with the opportunity for other platform plugins to hook in and add their own data. @see post-report-package
 		$ref_post = apply_filters( 'prc_platform_wp_post_object', $ref_post );
 
+		// Enforce some title conventions.
+		// Convert % to percent.
+		$ref_post['post_title'] = str_replace( '%', 'percent', $ref_post['post_title'] );
+
 		if ( is_wp_error( $ref_post ) ) {
 			return $ref_post;
 		}
