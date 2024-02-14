@@ -16,6 +16,6 @@ if ( ! $dataset_downloads->exists() ) {
 }
 
 // Uninstall the database. Uncomment this code to force the database to rebuild.
-// if( $dataset_downloads->exists() ){
-// 	$dataset_downloads->uninstall();
-// }
+if( $dataset_downloads->exists() ){
+	// $dataset_downloads->uninstall();
+}

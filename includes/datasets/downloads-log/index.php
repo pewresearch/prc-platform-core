@@ -206,14 +206,13 @@ class Datasets_Download_Logger extends Datasets {
 
 	public function log_uid_to_dataset( $dataset_id, $uid ) {
 		$query_args = array(
-			'id'    => $dataset_id,
-			'orderby' => 'id',
-			'order'   => 'asc',
-			'number'  => 1, // Only retrieve a single record.
-			'fields'  => array( 'id', 'uids' ),
+			'dataset_id' => $dataset_id,
+			'orderby'    => 'id',
+			'order'      => 'asc',
+			'number'     => 1, // Only retrieve a single record.
+			'fields'     => array( 'id', 'uids' ),
 		);
 		$query = new Dataset_Downloads_Log_Query($query_args);
-		error_log('log_uid_to_dataset'. $dataset_id . ' ' . $uid);
 
 		$response = false;
 
@@ -238,12 +237,19 @@ class Datasets_Download_Logger extends Datasets {
 			// First time, create
 			$response = $query->add_item(
 				array(
+					'dataset_id' => $dataset_id,
 					'uids' => maybe_serialize( array( $uid ) ),
 				)
 			);
 		}
-		error_log("RESPONSE:".print_r($response, true));
 
 		return $response;
+	}
+
+	public function get_datasets_by_uid($uid) {
+		$query_args = array(
+			'uids' => $uid,
+			'fields' => array( 'id' ),
+		);
 	}
 }

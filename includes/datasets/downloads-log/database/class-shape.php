@@ -15,6 +15,7 @@ class Dataset_Download_Shape extends BerlinDB_Row {
 		parent::__construct( $item );
 
 		$this->id            = (int) $this->id;
+		$this->dataset_id    = (int) $this->dataset_id;
 		$this->total         = (int) $this->total;
 		$this->breakdown 	 = (string) $this->breakdown;
 		$this->uids         = (string) $this->uids;

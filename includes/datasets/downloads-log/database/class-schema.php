@@ -8,13 +8,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Dataset_Download_Schema extends BerlinDB_Schema {
 
 	public $columns = array(
-		// dataset id
+		// entry id
 		'id' => array(
 			'name'       => 'id',
 			'type'       => 'int',
 			'unsigned'   => true,
 			'searchable' => true,
 			'primary'  	 => true,
+			'sortable'   => true,
+		),
+
+		'dataset_id' => array(
+			'name'       => 'dataset_id',
+			'type'       => 'int',
+			'unsigned'   => true,
+			'searchable' => true,
 			'sortable'   => true,
 		),
 

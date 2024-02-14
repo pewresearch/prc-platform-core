@@ -230,7 +230,6 @@ class Datasets {
 			return new WP_Error( 'no_id', 'No dataset ID provided.', array( 'status' => 400 ) );
 		}
 		$attachment_id = get_post_meta( $id, self::$download_meta_key, true );
-		error_log( 'Dataset Download: ' . $attachment_id);
 		if ( $attachment_id ) {
 			$attachment_url = wp_get_attachment_url( $attachment_id );
 			// Log the download.
@@ -238,6 +237,8 @@ class Datasets {
 			$download_logger->increment_download_total( $id );
 			$download_logger->log_monthly_download_count( $id );
 			$download_logger->log_uid_to_dataset( $id, $uid );
+
+			//@TODO: User accounts, log dataset download to user profile...
 			return rest_ensure_response( array(
 				'file_url' => $attachment_url,
 			) );

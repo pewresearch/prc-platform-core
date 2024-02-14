@@ -55,6 +55,7 @@ class Dataset_Downloads_Log extends BerlinDB_Table {
 	protected function set_schema() {
 		$this->schema = '
 			id				int			NOT NULL AUTO_INCREMENT,
+			dataset_id		int			NOT NULL,
 			total			int			NOT NULL,
 			breakdown		longtext	NOT NULL,
 			uids			longtext	NOT NULL,
