@@ -27,7 +27,6 @@ import { download as icon } from '@wordpress/icons';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import edit from './edit';
-import save from './save';
 import metadata from './block.json';
 
 const { name } = metadata;
@@ -35,7 +34,6 @@ const { name } = metadata;
 const settings = {
 	icon,
 	edit,
-	save,
 };
 
 /**
@@ -43,4 +41,4 @@ const settings = {
  *
  * @see https://developer.wordpress.org/block-editor/developers/block-api/#registering-a-block
  */
-registerBlockType( name, { ...metadata, ...settings } );
+registerBlockType(name, { ...metadata, ...settings });

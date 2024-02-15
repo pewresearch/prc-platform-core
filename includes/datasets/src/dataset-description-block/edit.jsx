@@ -7,14 +7,7 @@ import { getBlockGapSupportValue } from '@prc/block-utils';
 /**
  * WordPress Dependencies
  */
-import { useBlockProps, useInnerBlocksProps } from '@wordpress/block-editor';
-
-/**
- * Internal Dependencies
- */
-const ALLOWED_BLOCKS = ['core/button', 'core/group'];
-
-const TEMPLATE = [['core/button', {}]];
+import { useBlockProps } from '@wordpress/block-editor';
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -29,22 +22,13 @@ const TEMPLATE = [['core/button', {}]];
  * @return {WPElement} Element to render.
  */
 export default function Edit({ attributes, setAttributes }) {
-	const { allowedBlocks } = attributes;
-
 	const blockProps = useBlockProps();
-
-	const innerBlocksProps = useInnerBlocksProps(
-		{},
-		{
-			allowedBlocks: allowedBlocks || ALLOWED_BLOCKS,
-			templateLock: false,
-			template: TEMPLATE,
-		}
-	);
-
 	return (
 		<div {...blockProps}>
-			<div {...innerBlocksProps} />
+			<p>
+				Dataset Description... Lorem ipsum dolor sit amet eirmod ut
+				tempor et consetetur facilisis duis takimata
+			</p>
 		</div>
 	);
 }

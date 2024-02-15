@@ -18,34 +18,17 @@ class Dataset_Download_Schema extends BerlinDB_Schema {
 			'sortable'   => true,
 		),
 
-		'dataset_id' => array(
-			'name'       => 'dataset_id',
-			'type'       => 'int',
+		// the user id
+		'user_id' => array(
+			'name'       => 'user_id',
+			'type'       => 'mediumtext',
 			'unsigned'   => true,
 			'searchable' => true,
 			'sortable'   => true,
-		),
-
-		// total downloads
-		'total' => array(
-			'name'       => 'total',
-			'type'       => 'int',
-			'unsigned'   => true,
-			'searchable' => true,
-			'sortable'   => true,
-		),
-
-		// serialized breakdown by year / month
-		'breakdown' => array(
-			'name'       => 'breakdown',
-			'type'       => 'longtext',
-			'unsigned'   => true,
-			'searchable' => false,
-			'sortable'   => false,
 		),
 
 		// serialized store of uids
-		'uids' => array(
+		'dataset_ids' => array(
 			'name'       => 'uids',
 			'type'       => 'longtext',
 			'unsigned'   => true,

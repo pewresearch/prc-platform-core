@@ -150,7 +150,7 @@ class Datasets_Download_Logger extends Datasets {
 		$return            = array();
 		$return['total']   = $this->increment_download_total( $id );
 		$return['monthly'] = $this->log_monthly_download_count( $id );
-		$return['uid']     = $this->log_uid_to_dataset( $id, $uid );
+		$return['uid']     = $this->log_dataset_to_user( $uid, $id );
 
 		return $return;
 	}
@@ -204,13 +204,13 @@ class Datasets_Download_Logger extends Datasets {
 		}
 	}
 
-	public function log_uid_to_dataset( $dataset_id, $uid ) {
+	public function log_dataset_to_user( $uid, $dataset_id ) {
 		$query_args = array(
-			'dataset_id' => $dataset_id,
+			'user_id'    => $uid,
 			'orderby'    => 'id',
 			'order'      => 'asc',
 			'number'     => 1, // Only retrieve a single record.
-			'fields'     => array( 'id', 'uids' ),
+			'fields'     => array( 'id', 'dataset_ids' ),
 		);
 		$query = new Dataset_Downloads_Log_Query($query_args);
 
@@ -219,17 +219,17 @@ class Datasets_Download_Logger extends Datasets {
 		if ( $query->items ) {
 			// If exists, update the uids.
 			foreach ( $query->items as $record ) {
-				$uids = maybe_unserialize( $record->uids );
-				// If the uid is already in the array, don't add it again.
-				if ( in_array( $uid, $uids ) ) {
+				$dataset_ids = maybe_unserialize( $record->dataset_ids );
+				// If the dataset+od is already in the array, don't add it again.
+				if ( in_array( $dataset_id, $dataset_ids ) ) {
 					return;
 				}
-				$uids = array_merge( $uids, array( $uid ) );
-				$uids = maybe_serialize( $uids );
+				$dataset_ids = array_merge( $dataset_ids, array( $dataset_id ) );
+				$dataset_ids = maybe_serialize( $dataset_ids );
 				$response = $query->update_item(
 					$record->id,
 					array(
-						'uids' => $uids
+						'dataset_ids' => $dataset_ids
 					)
 				);
 			}
@@ -237,8 +237,8 @@ class Datasets_Download_Logger extends Datasets {
 			// First time, create
 			$response = $query->add_item(
 				array(
-					'dataset_id' => $dataset_id,
-					'uids' => maybe_serialize( array( $uid ) ),
+					'user_id' => $uid,
+					'dataset_ids' => maybe_serialize( array( $dataset_id ) ),
 				)
 			);
 		}
@@ -246,10 +246,19 @@ class Datasets_Download_Logger extends Datasets {
 		return $response;
 	}
 
-	public function get_datasets_by_uid($uid) {
+	public function get_datasets_for_user($uid) {
 		$query_args = array(
-			'uids' => $uid,
-			'fields' => array( 'id' ),
+			'user_id' => $uid,
+			'fields' => array( 'id', 'dataset_ids' ),
 		);
+		$query = new Dataset_Downloads_Log_Query($query_args);
+		$datasets = array();
+		if ( $query->items ) {
+			foreach ( $query->items as $record ) {
+				$dataset_ids = maybe_unserialize( $record->dataset_ids );
+				$datasets = array_merge( $datasets, $dataset_ids );
+			}
+		}
+		return $datasets;
 	}
 }

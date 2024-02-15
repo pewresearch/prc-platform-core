@@ -21,13 +21,10 @@
     },
     "interactivity": true
   },
-  "providesContext": {
-    "prc-platform/datasetId": "termId"
-  },
-  "textdomain": "entity-as-iframe",
+  "textdomain": "dataset-download",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
   "render": "file:./render.php",
-  "viewModule": "file:./view.js"
+  "viewScriptModule": "file:./view.js"
 }

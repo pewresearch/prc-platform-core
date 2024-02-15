@@ -133,8 +133,8 @@ class Datasets {
 			$loader->add_action( 'init', $this, 'block_init' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel' );
-			$loader->add_filter( 'prc_api_endpoints', $this, 'register_download_endpoint' );
-			$loader->add_filter('prc_platform_rewrite_rules', $this, 'archive_rewrites' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_dataset_endpoints' );
+			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'archive_rewrites' );
 
 			$download_logger = new Datasets_Download_Logger();
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
@@ -192,7 +192,7 @@ class Datasets {
 	 * Registers the download endpoint. Checks the nonce against user credentials and
 	 * @return void
 	 */
-	public function register_download_endpoint($endpoints) {
+	public function register_dataset_endpoints($endpoints) {
 		$get_download_endpoint = array(
 			'route' 		      => 'datasets/get-download',
 			'methods'             => 'POST',
@@ -209,7 +209,32 @@ class Datasets {
 				return true;
 			},
 		);
+
+		$check_atp_endpoint = array(
+			'route' 		      => 'datasets/check-atp',
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'restfully_check_atp_acceptance' ),
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$nonce = $request->get_header( 'x-wp-nonce' );
+				// return ! wp_verify_nonce( $nonce, 'prc-dataset-atp-nonce' ) || current_user_can( 'edit_posts' );
+				return true;
+			},
+		);
+
+		$accept_atp_endpoint = array(
+			'route' 		      => 'datasets/accept-atp',
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'restfully_accept_atp' ),
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$nonce = $request->get_header( 'x-wp-nonce' );
+				// return ! wp_verify_nonce( $nonce, 'prc-dataset-atp-nonce' ) || current_user_can( 'edit_posts' );
+				return true;
+			},
+		);
+
 		array_push($endpoints, $get_download_endpoint);
+		array_push($endpoints, $check_atp_endpoint);
+		array_push($endpoints, $accept_atp_endpoint);
 		return $endpoints;
 	}
 
@@ -236,9 +261,7 @@ class Datasets {
 			$download_logger = new Datasets_Download_Logger();
 			$download_logger->increment_download_total( $id );
 			$download_logger->log_monthly_download_count( $id );
-			$download_logger->log_uid_to_dataset( $id, $uid );
-
-			//@TODO: User accounts, log dataset download to user profile...
+			$download_logger->log_dataset_to_user( $uid, $id );
 			return rest_ensure_response( array(
 				'file_url' => $attachment_url,
 			) );
@@ -247,6 +270,24 @@ class Datasets {
 				'error' => 'No attachment found for dataset.',
 			) );
 		}
+	}
+
+	public function restfully_check_atp_acceptance( WP_REST_Request $request ) {
+		$data = json_decode( $request->get_body(), true );
+		if ( ! array_key_exists( 'uid', $data ) ) {
+			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
+		}
+		$uid = $data['uid'];
+		return apply_filters('prc-user-accounts/user-data/check-atp', $uid );
+	}
+
+	public function restfully_accept_atp( WP_REST_Request $request ) {
+		$data = json_decode( $request->get_body(), true );
+		if ( ! array_key_exists( 'uid', $data ) ) {
+			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
+		}
+		$uid = $data['uid'];
+		return apply_filters('prc-user-accounts/user-data/accept-atp', $uid );
 	}
 
 	public function register_dataset_fields() {
@@ -316,6 +357,7 @@ class Datasets {
 	}
 
 	public function block_init() {
+		register_block_type( __DIR__ . '/build/dataset-description-block' );
 		register_block_type( __DIR__ . '/build/download-block' );
 	}
 }
