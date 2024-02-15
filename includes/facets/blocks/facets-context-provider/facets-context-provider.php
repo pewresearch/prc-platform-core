@@ -72,9 +72,13 @@ class Facets_Context_Provider {
 	}
 
 	public function render_block_callback($attributes, $content, $block) {
-
+		wp_enqueue_script('wp-url');
+		wp_enqueue_script('wp-api-fetch');
 		// Store the facets data from memory in the browser's global store for this block.
-		wp_interactivity_state('prc-platform/facets-context-provider', $block->context['facetsContextProvider']);
+		wp_interactivity_state(
+			'prc-platform/facets-context-provider',
+			$block->context['facetsContextProvider']
+		);
 
 		$initial_context = array(
 			'isError' => false,
@@ -86,9 +90,10 @@ class Facets_Context_Provider {
 		return wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			get_block_wrapper_attributes(array(
-				'data-wp-interactive' => wp_json_encode(array('namespace' => 'prc-platform/facets-context-provider')),
+				'data-wp-interactive' => wp_json_encode(array(
+					'namespace' => 'prc-platform/facets-context-provider'
+				)),
 				'data-wp-context' => wp_json_encode($initial_context),
-				'data-wp-init' => 'callbacks.onInit',
 				'data-wp-watch--on-selection' => 'callbacks.onSelection',
 			)),
 			$content,

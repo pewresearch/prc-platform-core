@@ -8,14 +8,13 @@ import { store, getContext, getElement } from '@wordpress/interactivity';
  */
 const targetNamespace = 'prc-platform/facets-context-provider';
 
-store( 'prc-platform/facet-template',  {
+store('prc-platform/facet-template', {
 	actions: {
 		/**
 		 * When clicking on the facet expanded button, toggle the expanded state.
 		 */
 		onExpand: () => {
 			const context = getContext();
-			const {ref} = getElement();
 			context.expanded = !context.expanded;
 		},
 		/**
@@ -23,13 +22,13 @@ store( 'prc-platform/facet-template',  {
 		 */
 		onClear: () => {
 			const context = getContext();
-			const {facetSlug} = context;
-			const targetStore = store( targetNamespace );
-			if ( !targetStore.actions || !targetStore.actions.onClear ) {
+			const { facetSlug } = context;
+			const targetStore = store(targetNamespace);
+			if (!targetStore.actions || !targetStore.actions.onClear) {
 				return;
 			}
 			targetStore.actions.onClear(facetSlug);
-		}
+		},
 	},
 	callbacks: {
 		/**
@@ -37,11 +36,11 @@ store( 'prc-platform/facet-template',  {
 		 */
 		onExpand: () => {
 			const context = getContext();
-			const {expanded} = context;
-			if ( expanded ) {
-				context.expandedLabel = "- Less";
+			const { expanded } = context;
+			if (expanded) {
+				context.expandedLabel = '- Less';
 			} else {
-				context.expandedLabel = "+ More";
+				context.expandedLabel = '+ More';
 			}
 		},
 		/**
@@ -49,13 +48,16 @@ store( 'prc-platform/facet-template',  {
 		 */
 		isSelected: () => {
 			const context = getContext();
-			const {facetSlug} = context;
-			const {state} = store( 'prc-platform/facets-context-provider' );
+			const { facetSlug } = context;
+			const { state } = store('prc-platform/facets-context-provider');
 			console.log('isSelected', facetSlug, state.selected);
-			if ( state.selected[facetSlug] && state.selected[facetSlug].length > 0 ) {
+			if (
+				state.selected[facetSlug] &&
+				state.selected[facetSlug].length > 0
+			) {
 				return true;
 			}
 			return false;
-		}
+		},
 	},
-} );
+});

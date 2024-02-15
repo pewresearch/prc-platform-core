@@ -3,45 +3,7 @@
  */
 import { store, getElement, getContext } from '@wordpress/interactivity';
 
-// @TODO: Faking the wordpress/url package import for now, until the new Gutenberg Module Loader is completed.
 const { addQueryArgs } = window.wp.url;
-
-function getWpKeyFromRef(ref) {
-	let wpKey;
-	while (wpKey === undefined) {
-		ref = ref.parentElement;
-		wpKey = ref.dataset?.wpKey;
-	}
-	return wpKey;
-}
-
-function getInputAttrs(ref) {
-	console.log('getInputAttrs', ref);
-
-	let { id } = ref;
-	if (ref.tagName === 'LABEL') {
-		id = ref.parentElement.getAttribute('aria-labelledby');
-	}
-	if (ref.classList.contains('wp-block-prc-block-form-field')) {
-		id = ref.querySelector('input').id;
-	}
-	let { value } = ref;
-	if (ref.tagName === 'LABEL') {
-		value = ref.parentElement.querySelector('input').value;
-	}
-	if (ref.classList.contains('wp-block-prc-block-form-field')) {
-		value = ref.querySelector('input').value;
-	}
-	const wpKey = getWpKeyFromRef(ref);
-
-	console.log('getInputAttrs', id, wpKey, value);
-
-	return {
-		id,
-		value,
-		wpKey,
-	};
-}
 
 const { context, state, actions } = store(
 	'prc-platform/facets-context-provider',
@@ -171,15 +133,6 @@ const { context, state, actions } = store(
 			},
 		},
 		callbacks: {
-			onInit: async () => {
-				console.log(
-					'facetsContextProvider Initializing...',
-					'state:',
-					state,
-					'context:',
-					context
-				);
-			},
 			*onSelection() {
 				const selected = state.getSelected;
 				console.log('onSelection', selected);

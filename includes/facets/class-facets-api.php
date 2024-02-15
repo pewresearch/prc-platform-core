@@ -19,10 +19,6 @@ class Facets_API {
 		$this->query = $query;
 		$this->registered_facets = $this->get_registered_facets();
 		$this->selected_choices = $this->get_selected_choices();
-		do_action('qm/debug', 'PRC_Facets_API' . print_r(array(
-			'registered_facets' => $this->registered_facets,
-			'selected_choices' => $this->selected_choices,
-		), true));
 	}
 
 	public function construct_cache_key($query = array()) {

@@ -140,7 +140,7 @@ class Facets {
 	}
 
 	/**
-	 * Initialize Facets
+	 * Initialize Facets Class
 	 * @param string $version
 	 * @param mixed $loader
 	 */
@@ -205,7 +205,10 @@ class Facets {
 	}
 
 	public function restfully_query_facets( WP_REST_Request $request ) {
-		$facets_api = new Facets_API(null);
+		// @TODO check for a nonce...
+		// @TODO pass existing wp_query args into facets api where null is currently.
+		$query_args = null;
+		$facets_api = new Facets_API($query_args);
 		return $facets_api->query();
 	}
 

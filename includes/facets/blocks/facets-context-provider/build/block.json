@@ -25,5 +25,6 @@
     "facetsContextProvider"
   ],
   "textdomain": "prc-facets-context-provider",
-  "editorScript": "file:./index.js"
+  "editorScript": "file:./index.js",
+  "viewModule": "file:./view.js"
 }

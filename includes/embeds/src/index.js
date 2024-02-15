@@ -10,8 +10,8 @@ import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal Dependencies
  */
-import Controls from './Controls';
-import Icon from './Icon';
+import Controls from './controls';
+import Icon from './icon';
 
 const { prcEmbeds } = window;
 const { allowedBlocks = [] } = prcEmbeds;

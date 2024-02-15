@@ -219,11 +219,13 @@ class Facet_Template {
 			$expanded_content .= $checkbox_facet['expanded_content'];
 		}
 
+		$facet_id = 'facet-template-'.md5(wp_json_encode($attributes));
+
 		$block_wrapper_attrs = get_block_wrapper_attributes(array(
 			'data-wp-interactive' => wp_json_encode(array(
 				'namespace' => 'prc-platform/facet-template'
 			)),
-			'data-wp-navigation-id' => 'facet-template-'.md5(wp_json_encode($attributes)),
+			'data-wp-router-region' => $facet_slug,
 			'data-wp-key' => $facet_slug,
 			'data-wp-context' => wp_json_encode(array(
 				'expanded' => false,
