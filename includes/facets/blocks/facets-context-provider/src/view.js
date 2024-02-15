@@ -99,7 +99,7 @@ const { context, state, actions } = store(
 					'onCheckboxMouseEnter'
 				);
 				const router = yield import('@wordpress/interactivity-router');
-				const newUrl = '';
+				const newUrl = state.getUpdatedUrl;
 				yield router.actions.prefetch(newUrl);
 			},
 			*onButtonMouseEnter() {
@@ -108,7 +108,7 @@ const { context, state, actions } = store(
 					'onButtonMouseEnter'
 				);
 				const router = yield import('@wordpress/interactivity-router');
-				const newUrl = '';
+				const newUrl = state.getUpdatedUrl;
 				yield router.actions.prefetch(newUrl);
 			},
 			onClear: (facetSlug) => {
