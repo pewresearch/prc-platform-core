@@ -13,5 +13,6 @@
   "textdomain": "dataset-atp-legal-acceptance",
   "editorScript": "file:./index.js",
   "render": "file:./render.php",
+  "style": "file:./style-index.css",
   "viewScriptModule": "file:./view.js"
 }

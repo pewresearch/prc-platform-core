@@ -21,9 +21,10 @@ const { actions } = store('prc-platform/dataset-download', {
 					}),
 				})
 				.then((response) => {
-					console.log('DATASET DOWNLOAD', response);
+					// If there's a file_url in the response, download it...
+					// ooooo that felt... bad to type
+					// should run a file check here? only pdfs and zips? not sure theres an attack vector here
 					if (response?.file_url) {
-						// Download the file.
 						window.open(response.file_url, '_blank');
 					}
 				})
@@ -50,34 +51,41 @@ const { actions } = store('prc-platform/dataset-download', {
 			);
 
 			if (isATP) {
-				const { actions: popupActions } = store(
-					'prc-block/popup-controller'
-				);
-				window?.wp
-					?.apiFetch({
-						path: `/prc-api/v3/datasets/check-atp/`,
-						method: 'POST',
-						headers: {
-							// 'X-WP-Nonce': window.wpApiSettings.nonce,
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							uid: userId,
-							userToken,
-						}),
-					})
-					.then((response) => {
-						console.log('ATP CHECK', response);
-						if (true === response) {
-							popupActions.open();
-							// actions.downloadDataset(datasetId, userId, userToken);
-						} else {
-							// Activate modal...
-							popupActions.open();
-						}
-					});
+				console.log('isATP');
+				actions.checkATP(userId, userToken, datasetId);
 			} else {
 				actions.downloadDataset(datasetId, userId, userToken);
+			}
+		},
+		async checkATP(userId, userToken, datasetId) {
+			const { ref } = getElement();
+
+			const response = await window?.wp?.apiFetch({
+				path: `/prc-api/v3/datasets/check-atp/`,
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					uid: userId,
+					userToken,
+				}),
+			});
+
+			console.log('CHECK ATP', response);
+			if (true === response) {
+				actions.downloadDataset(datasetId, userId, userToken);
+			}
+			if (false === response) {
+				const popupID =
+					ref.parentElement.parentElement.parentElement.getAttribute(
+						'id'
+					);
+				const { actions: popupActions, state: popupState } = store(
+					'prc-block/popup-controller'
+				);
+				console.log('POP', popupState, popupID);
+				popupActions.open(null, popupID);
 			}
 		},
 	},

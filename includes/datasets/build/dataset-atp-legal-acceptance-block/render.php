@@ -11,12 +11,11 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 ));
 
 echo wp_sprintf(
-	'<div %1$s>%2$s %3$s %4$s</div>',
+	'<div %1$s>%2$s<div class="wp-block-prc-platform-dataset-atp-legal-acceptance__buttons">%3$s %4$s</div></div>',
 	$block_wrapper_attrs,
 	wp_sprintf(
-		'<textarea class="atp-legal-text" readonly>%1$s</textarea>',
-		'This is a legal agreement (this “Agreement”) between you, the end user (“you” or “User”), and Pew Research Center (the “Center”). By downloading the American Trends Panel survey data made available on this web site (“Data”) you are agreeing to be bound by the terms and conditions of this Agreement. If you do not agree to be bound by these terms, do not download or use the Data.',
+		'<textarea class="wp-block-prc-platform-dataset-atp-legal-acceptance__textarea" readonly data-wp-text="state.atpLegalText"></textarea>',
 	),
-	'<button class="atp-agree" data-wp-on--click="actions.atpModalAgree">Agree</button>',
-	'<button class="atp-disagree" data-wp-on--click="actions.atpModalDisagree">Disagree</button>',
+	'<button class="wp-element-button" data-wp-on--click="actions.accept">Accept</button>',
+	'<button class="wp-element-button" data-wp-on--click="actions.cancel">Cancel</button>',
 );
