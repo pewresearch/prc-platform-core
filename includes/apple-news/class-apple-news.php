@@ -34,7 +34,7 @@ class Apple_News {
 	}
 
 	/**
-	 * Returns bylines from our staff-bylines hybrid system.
+	 * Returns bylines from our staff-bylines hybrid system for Apple News articles.
 	 *
 	 * @hook apple_news_exporter_byline
 	 *
@@ -48,13 +48,16 @@ class Apple_News {
 	}
 
 	/**
-	 * If the post is not on production, skip pushing to Apple News.
+	 * If the post is not on production or is not published, skip pushing to Apple News.
+	 *
 	 * @hook apple_news_skip_push
+	 *
 	 * @param mixed $post_id
 	 * @return bool
 	 */
 	public function skip_push_on_non_prod_env($post_id) {
-		// @TODO Check post status, if its post_hidden, skip.
-		return 'production' !== wp_get_environment_type();
+		// get the post status for $post_id
+		$post_status = get_post_status($post_id);
+		return 'publish' !== $post_status || 'production' !== wp_get_environment_type();
 	}
 }
