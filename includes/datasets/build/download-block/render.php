@@ -21,9 +21,7 @@ if ( $is_atp ) {
 <!-- /wp:prc-block/popup-content -->
 
 <!-- wp:prc-block/popup-modal {"title":"Accept ATP","backgroundColor":"white"} -->
-<!-- wp:paragraph -->
-<p>ATP Acceptance Content Goes Here</p>
-<!-- /wp:paragraph -->
+<!-- wp:prc-platform/dataset-atp-legal-acceptance -->
 <!-- /wp:prc-block/popup-modal -->
 <!-- /wp:prc-block/popup-controller -->
 	<?php
@@ -39,6 +37,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 		'datasetId' => $dataset_id,
 		'isATP' => $is_atp,
 	)),
+	'data-wp-bind--data-dataset-id' => 'context.datasetId',
 ));
 
 echo wp_sprintf(

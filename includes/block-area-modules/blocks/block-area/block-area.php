@@ -6,7 +6,6 @@ use WP_Term;
 use WP_Post;
 
 class Block_Area extends Block_Area_Modules {
-
 	/**
 	 * Initialize the class and set its properties.
 	 *

@@ -357,6 +357,7 @@ class Datasets {
 	}
 
 	public function block_init() {
+		register_block_type( __DIR__ . '/build/dataset-atp-legal-acceptance-block' );
 		register_block_type( __DIR__ . '/build/dataset-description-block' );
 		register_block_type( __DIR__ . '/build/download-block' );
 	}
