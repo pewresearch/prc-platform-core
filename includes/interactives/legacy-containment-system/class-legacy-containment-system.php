@@ -358,20 +358,21 @@ class Legacy_Interactive_Containment_System {
 			}
 		}
 
+		// Semantic UI
 		wp_register_style(
 			'legacy-semantic-ui',
 			plugin_dir_url( __FILE__ ) . 'semantic-ui-css-shim/dist/main.css'
 		);
 
 		// Mapbox styles.
-		// wp_register_style(
-		// 	'mapbox-gl',
-		// 	content_url() . '/client-mu-plugins/prc-core/scripts/bower_components/mapbox-gl/dist/mapbox-gl.css'
-		// );
+		wp_register_style(
+			'mapbox-gl',
+			plugin_dir_url( __FILE__ ) . 'scripts-shim/bower_components/mapbox-gl/dist/mapbox-gl.css'
+		);
 
-		// wp_register_style(
-		// 	'mapbox-gl-geocoder',
-		// 	content_url() . '/client-mu-plugins/prc-core/scripts/bower_components/mapbox-gl/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css'
-		// );
+		wp_register_style(
+			'mapbox-gl-geocoder',
+			plugin_dir_url( __FILE__ ) . 'scripts-shim/bower_components/mapbox-gl/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css'
+		);
 	}
 }
