@@ -79,8 +79,8 @@ function find_block($blocks, $pattern = 'prc-block/', $depth = 0) {
 
 /**
  * If a inner block is an input element, return its value.
- * @param mixed $content 
- * @return mixed 
+ * @param mixed $content
+ * @return mixed
  */
 function get_wp_interactive_input_value($content) {
 	$processor = new WP_HTML_Tag_Processor($content);
@@ -241,4 +241,18 @@ function get_color_by_slug($slug) {
 		'slug' => $slug,
 		'name' => $name,
 	);
+}
+
+/**
+ * This mimics core get_block_wrapper_attributes($extra_attributes = array()) for when we're intercepting a block render and global $block data is lost.
+ * @TODO: @sethrubenstein in #3584, move this to a new utils.php file.
+ * @param array $extra_attributes
+ * @return mixed
+ */
+function get_block_html_attributes( $attributes = array() ) {
+	$normalized_attributes = array();
+	foreach ( $attributes as $key => $value ) {
+		$normalized_attributes[] = $key . '="' . esc_attr( $value ) . '"';
+	}
+	return implode( ' ', $normalized_attributes );
 }
