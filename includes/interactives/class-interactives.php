@@ -252,7 +252,7 @@ class Interactives {
 	public function get_assets( ) {
 		$interactives = array();
 
-		$interactives_dir = plugin_dir_path( __FILE__ ) . '../../interactives';
+		$interactives_dir = plugin_dir_path( __FILE__ ) . '../../../interactives';
 		// using glob to get all directories (except /blocks) in the interactives directory
 		$research_teams = glob( $interactives_dir . '/*', GLOB_ONLYDIR );
 		foreach ( $research_teams as $research_team ) {
