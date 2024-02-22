@@ -32,6 +32,7 @@ class Post_Publish_Pipeline {
 	 */
 	protected $allowed_post_types = array(
 		'post',
+		'interactive',
 		'interactives',
 		'quiz',
 		'fact-sheets',

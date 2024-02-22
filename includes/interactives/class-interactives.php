@@ -547,6 +547,7 @@ class Interactives {
 			return false;
 		}
 
+
 		$patterns = $rewrites;
 
 		// Double sanity check that we have an array of patterns.
@@ -562,8 +563,13 @@ class Interactives {
 			$index_data[ $post_slug ] = array();
 		}
 
+		error_log('update_rewrite A' . $post_id . ' - ' . print_r($index_data, true));
+
+
 		$i = 0;
 		foreach ( $patterns as $pattern ) {
+			error_log('...pattern' . print_r($pattern, true));
+			$pattern = $pattern['pattern'];
 			// Setup empty array, also if there is any prior data here this will empty it and recreate the entry ensuring we have the latest data.
 			$index_data[ $post_slug ][ $i ] = array();
 			// Get pattern values.
@@ -577,7 +583,13 @@ class Interactives {
 			$i++;
 		}
 
+		error_log('update_rewrite B' . $post_id . ' - ' . print_r($index_data, true));
+
 		update_option( self::$rewrites_option_key, $index_data );
+
+		if ( ! empty( $index_data ) ) {
+			flush_rewrite_rules();
+		}
 	}
 
 	/**
@@ -590,12 +602,14 @@ class Interactives {
 		if ( self::$post_type !== $post->post_type ) {
 			return;
 		}
-		$this->update_rewrite( $post->ID, $post->post_name, get_post_meta( $post->ID, self::$rewrites_meta_key, true ) );
+		$rewrites = get_post_meta( $post->ID, self::$rewrites_meta_key, true );
+		error_log("rewrite_update_hook should be running:: " .$post->ID . '  ' . print_r($rewrites, true));
+		$this->update_rewrite( $post->ID, $post->post_name, $rewrites);
 	}
 
 	/**
 	 * Register the rewrite tags for all interactives.
-	 * @TODO: change this to use the centralized prc_platform_rewrite_tags filter
+	 * @TODO: change this to use the centralized prc_platform_rewrite_rules filter
 	 * @hook init
 	 */
 	public function rewrite_tags() {
@@ -642,8 +656,8 @@ class Interactives {
 					$i++;
 				}
 				add_rewrite_rule(
-					"interactives\/{$post_slug}\/{$rewrite_string}?$",
-					"index.php?interactives={$post_slug}&{$options_string}",
+					"interactive\/{$post_slug}\/{$rewrite_string}?$",
+					"index.php?interactive={$post_slug}&{$options_string}",
 					'top'
 				);
 			}
@@ -655,7 +669,8 @@ class Interactives {
 	 * @return void|false|array
 	 */
 	public function get_rewrites_params() {
-		$index = get_option( self::$rewrites_option_key );
+		$index = get_option( self::$rewrites_option_key, array() );
+		error_log('get_rewrites_params: ' . print_r($index, true));
 		if ( ! is_singular( self::$post_type ) || false == $index || empty( $index ) ) {
 			return;
 		}

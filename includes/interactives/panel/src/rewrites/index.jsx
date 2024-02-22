@@ -15,7 +15,7 @@ import { useEntityProp } from '@wordpress/core-data';
 /**
  * Internal Dependencies
  */
-import {STORE_NAME, registerStore} from './store';
+import { STORE_NAME, registerStore } from './store';
 import ListStoreItem from './list-store-item';
 
 registerStore();
@@ -27,11 +27,7 @@ function randomId() {
 	return `_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-export default function RewritesPanel({
-	postType,
-	postId,
-	postSlug,
-}) {
+export default function RewritesPanel({ postType, postId, postSlug }) {
 	const { append, reorder } = useDispatch(STORE_NAME);
 	const items = useSelect((select) => select(STORE_NAME).getItems());
 
@@ -45,7 +41,11 @@ export default function RewritesPanel({
 	}, [items]);
 
 	return (
-		<BaseControl help={__('You can add rewrites to your interactive by using the `{myVar}` syntax to indicate URL parameters that you want to be accessible in the `prcPlatformInteractives` window namespace.')}>
+		<BaseControl
+			help={__(
+				'You can add rewrites to your interactive by using the `{myVar}` syntax to indicate URL parameters that you want to be accessible in the `prcPlatformInteractives` window namespace.'
+			)}
+		>
 			<List
 				lockVertically
 				values={items}
@@ -55,7 +55,9 @@ export default function RewritesPanel({
 						to: newIndex,
 					})
 				}
-				renderList={({ children, props }) => <div {...props}>{children}</div>}
+				renderList={({ children, props }) => (
+					<div {...props}>{children}</div>
+				)}
 				renderItem={({ value, props, index }) => (
 					<div {...props}>
 						<ListStoreItem
@@ -68,12 +70,15 @@ export default function RewritesPanel({
 					</div>
 				)}
 			/>
-			<Button variant="primary" onClick={() => {
-				append({
-					key: randomId(),
-					pattern: '{myNewParam}/{myOtherNewParam}',
-				});
-			}}>
+			<Button
+				variant="primary"
+				onClick={() => {
+					append({
+						key: randomId(),
+						pattern: '{myNewParam}/{myOtherNewParam}',
+					});
+				}}
+			>
 				Add New Rewrite
 			</Button>
 		</BaseControl>
