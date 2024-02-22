@@ -6,7 +6,7 @@ import { store, getContext, getElement } from '@wordpress/interactivity';
 
 const { actions } = store('prc-platform/dataset-download', {
 	actions: {
-		downloadDataset: (datasetId, userId, userToken) => {
+		downloadDataset: (datasetId, uid, token) => {
 			window?.wp
 				?.apiFetch({
 					path: `/prc-api/v3/datasets/get-download/?datasetId=${datasetId}`,
@@ -16,8 +16,8 @@ const { actions } = store('prc-platform/dataset-download', {
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({
-						uid: userId,
-						userToken,
+						uid,
+						userToken: token,
 					}),
 				})
 				.then((response) => {
@@ -37,24 +37,22 @@ const { actions } = store('prc-platform/dataset-download', {
 			const context = getContext();
 			const { datasetId, isATP } = context;
 
-			const contentGateContext = getContext(
-				'prc-user-accounts/content-gate'
-			);
-			const { userToken, userId } = contentGateContext;
+			const { state } = store('prc-user-accounts/content-gate');
+			const { token, uid } = state;
 
 			console.log(
 				'onButtonClick: "Hit the api with this information..." ->',
-				contentGateContext,
-				userToken,
-				userId,
+				state,
+				token,
+				uid,
 				datasetId
 			);
 
 			if (isATP) {
 				console.log('isATP');
-				actions.checkATP(userId, userToken, datasetId);
+				actions.checkATP(uid, token, datasetId);
 			} else {
-				actions.downloadDataset(datasetId, userId, userToken);
+				actions.downloadDataset(datasetId, uid, token);
 			}
 		},
 		async checkATP(userId, userToken, datasetId) {
