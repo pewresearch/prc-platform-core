@@ -595,6 +595,7 @@ class Interactives {
 
 	/**
 	 * Register the rewrite tags for all interactives.
+	 * @TODO: change this to use the centralized prc_platform_rewrite_tags filter
 	 * @hook init
 	 */
 	public function rewrite_tags() {
@@ -616,6 +617,7 @@ class Interactives {
 
 	/**
 	 * Register the rewrite rules for all interactives.
+	 * @TODO: change this to use the centralized prc_platform_rewrite_rules filter
 	 * @hook init
 	 */
 	public function rewrite_index() {
