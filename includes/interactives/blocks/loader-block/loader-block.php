@@ -49,7 +49,6 @@ class Loader_Block extends Interactives {
 			// @TODO: Build out the legacy assets S3 loader.
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
-			do_action('qm/debug', print_r($enqueued_handles,true));
 		}
 
 		// we need to remove the wpackio stuff when we're loading on the main frontend, that should only load on an iframe...
@@ -65,10 +64,13 @@ class Loader_Block extends Interactives {
 			// $enqueued_handles['script'];
 			$script_handle =
 			'prc-platform-interactive-' . $attributes['slug'];
+			if ( $is_legacy_wpackio ) {
+				$script_handle = $enqueued_handles['script'];
+			}
 			// Use wp_add_inline_script to localize the script instead of wp_localize_script because we want to add the data before the script is enqueued and we want to support multiple localizations for the same script.
 			wp_add_inline_script(
 				$script_handle,
-				'if ( typeof prcPlatformInteractives === "undefined" ) { var prcPlatformInteractives = {}; } prcPlatformInteractives["' . $attributes['slug'] . '"] = ' . json_encode(array(
+				'if ( typeof prcPlatformInteractives === "undefined" ) { var prcPlatformInteractives = {}; } prcPlatformInteractives = ' . json_encode(array(
 					'urlVars' => $url_rewrites,
 				)) . ';',
 				'before'
@@ -99,4 +101,3 @@ class Loader_Block extends Interactives {
 		);
 	}
 }
-
