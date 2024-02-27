@@ -134,7 +134,6 @@ class Platform_Bootstrap {
 		$this->include('post-report-package/class-post-report-package.php');
 		$this->include('post-visibility/class-post-visibility.php');
 		$this->include('press-releases/class-press-releases.php');
-		$this->include('decoded/class-decoded.php');
 		$this->include('related-posts/class-related-posts.php');
 		$this->include('rest-api/class-rest-api.php');
 		$this->include('rss/class-rss.php');
@@ -189,7 +188,6 @@ class Platform_Bootstrap {
 		new Post_Report_Package( $this->get_version(), $this->get_loader() );
 		new Post_Visibility( $this->get_version(), $this->get_loader() );
 		new Press_Releases( $this->get_version(), $this->get_loader() );
-		new Decoded( $this->get_version(), $this->get_loader() );
 		new Related_Posts( $this->get_version(), $this->get_loader() );
 		new Rest_API( $this->get_version(), $this->get_loader() );
 		new RSS_Feeds( $this->get_version(), $this->get_loader() );
