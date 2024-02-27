@@ -43,7 +43,7 @@ export default function RewritesPanel({ postType, postId, postSlug }) {
 	return (
 		<BaseControl
 			help={__(
-				'You can add rewrites to your interactive by using the `{myVar}` syntax to indicate URL parameters that you want to be accessible in the `prcPlatformInteractives` window namespace.'
+				'You can add rewrites to your interactive by using the `{myVar}` syntax to indicate URL parameters that you want to be accessible in the `prcURLVars` window namespace.'
 			)}
 		>
 			<List

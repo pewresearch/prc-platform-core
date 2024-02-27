@@ -530,6 +530,7 @@ class Interactives {
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			$screen = get_current_screen();
 			if ( in_array( $screen->post_type, array(self::$post_type) ) ) {
+				do_action('qm/debug', print_r(self::$handle, true));
 				wp_enqueue_script( self::$handle );
 			}
 		}

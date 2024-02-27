@@ -42,7 +42,8 @@ class Loader_Block extends Interactives {
 		$is_legacy_s3 = array_key_exists('legacyAssetsS3', $attributes) && $attributes['legacyAssetsS3'];
 
 		$enqueued_handles = array();
-		if ( $is_legacy_wpackio  ) {
+		if ( $is_legacy_wpackio ) {
+			wp_enqueue_script('firebase');
 			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
 		} else if ( $is_legacy_s3 ) {
 			// Do nothing for now...
@@ -70,9 +71,7 @@ class Loader_Block extends Interactives {
 			// Use wp_add_inline_script to localize the script instead of wp_localize_script because we want to add the data before the script is enqueued and we want to support multiple localizations for the same script.
 			wp_add_inline_script(
 				$script_handle,
-				'if ( typeof prcPlatformInteractives === "undefined" ) { var prcPlatformInteractives = {}; } prcPlatformInteractives = ' . json_encode(array(
-					'urlVars' => $url_rewrites,
-				)) . ';',
+				'if ( typeof prcURLVars === "undefined" ) { var prcURLVars = {}; } prcURLVars = ' . wp_json_encode($url_rewrites) . ';',
 				'before'
 			);
 		}
@@ -80,7 +79,7 @@ class Loader_Block extends Interactives {
 		$content = wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			$block_wrapper_attrs,
-			json_encode($attributes),
+			wp_json_encode($attributes),
 		);
 
 		// Allow for filtering of the interactive content by other plugins.
