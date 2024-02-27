@@ -78,4 +78,59 @@ class User_Permissions {
 	public function enforce_two_factor($value) {
 		return defined('VIP_GO_APP_ENVIRONMENT') && 'production' === \VIP_GO_APP_ENVIRONMENT;
 	}
+
+	public function register_common_user_meta() {
+		register_meta(
+			'user',
+			'prc_copilot_settings',
+			array(
+				'type' => 'object',
+				'description' => 'Settings for PRC Copilot plugin',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+		register_meta(
+			'user',
+			'prc_staff_id',
+			array(
+				'type' => 'number',
+				'description' => 'Links a staff record to a user record',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+		register_meta(
+			'user',
+			'prc_staff_benefeciary_id',
+			array(
+				'type' => 'number',
+				'description' => 'When a user is deleted this user is the benefeciary of their db records',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+	}
+
+	/**
+	 * Fires after a new user has been registered, checks for the existence of default meta and if none
+	 * sets accordingly.
+	 *
+	 * @hook register_new_user
+	 * @return void
+	 */
+	public function set_default_meta_on_new_user_creation() {
+		$copilot_defaults = array(
+			'allowed' => true,
+			'tokenBudget' => 1000,
+			'allowances' => array(
+				'excerpt' => true, // Do we allow the user to use the copilot excerpt generation function
+				'title' => true, // Do we allow the user to use the copilot title generation function
+				'content' => false, // Do we allow the user to use the copilot content generation function
+			)
+		);
+		if ( ! get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
+			add_user_meta( $user_id, 'prc_copilot_settings', $copilot_defaults, true );
+		}
+	}
 }
