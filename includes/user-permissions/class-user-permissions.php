@@ -31,6 +31,8 @@ class User_Permissions {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'wpcom_vip_enable_two_factor', $this, 'enforce_two_factor', 10, 1 );
 			$loader->add_action( 'admin_init', $this, 'autoload_user_roles' );
+			$loader->add_action( 'init', $this, 'register_common_user_meta' );
+			$loader->add_action( 'register_new_user', $this, 'set_default_meta_on_new_user_creation', 10, 1 );
 		}
 	}
 
@@ -77,5 +79,67 @@ class User_Permissions {
 	 */
 	public function enforce_two_factor($value) {
 		return defined('VIP_GO_APP_ENVIRONMENT') && 'production' === \VIP_GO_APP_ENVIRONMENT;
+	}
+
+	/**
+	 * @hook init
+	 * @return void
+	 */
+	public function register_common_user_meta() {
+		register_meta(
+			'user',
+			'prc_copilot_settings',
+			array(
+				'type' => 'object',
+				'description' => 'Settings for PRC Copilot plugin',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+		register_meta(
+			'user',
+			'prc_staff_id',
+			array(
+				'type' => 'number',
+				'description' => 'Links a staff record to a user record. When a name is updated for a user the staff name is updated as well and vice versa.',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+		register_meta(
+			'user',
+			'prc_user_beneficiary_id',
+			array(
+				'type' => 'number',
+				'description' => 'When a user is deleted this user is the benefeciary of their db records',
+				'single' => true,
+				'show_in_rest' => true,
+			)
+		);
+	}
+
+	/**
+	 * Fires after a new user has been registered, checks for the existence of default meta and if none
+	 * sets accordingly.
+	 *
+	 * @hook register_new_user
+	 * @return void
+	 */
+	public function set_default_meta_on_new_user_creation($user_id) {
+		if ( ! $user_id ) {
+			return;
+		}
+		$copilot_defaults = array(
+			'allowed' => true,
+			'tokenBudget' => 1000,
+			'allowances' => array(
+				'excerpt' => true, // Do we allow the user to use the copilot excerpt generation function
+				'title' => true, // Do we allow the user to use the copilot title generation function
+				'content' => false, // Do we allow the user to use the copilot content generation function
+			)
+		);
+		if ( ! get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
+			add_user_meta( $user_id, 'prc_copilot_settings', $copilot_defaults, true );
+		}
 	}
 }

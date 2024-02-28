@@ -420,13 +420,14 @@ class Interactives {
 				'version' => '1.0',
 			)
 		);
+		$args = \array_change_key_case($args, CASE_LOWER);
 		$enqueued = array();
 
 		if ( is_admin() ) {
 			return;
 		}
 
-		$app_name     = array_key_exists( 'appname', $args ) ? $args['appname'] : $args['appName'];
+		$app_name     = array_key_exists( 'appname', $args ) ? $args['appname'] : false;
 
 		if ( ! $app_name ) {
 			return false;

@@ -30,26 +30,6 @@
 					"type": "string"
 				},
 				"deps":{
-					"type": "array",
-					"items": {
-						"type": "string"
-					}
-				}
-			}
-		},
-		"legacyAssetsS3": {
-			"type": "object",
-			"properties": {
-				"path": {
-					"type": "string"
-				},
-				"react": {
-					"type": "string"
-				},
-				"libraries": {
-					"type": "string"
-				},
-				"styles": {
 					"type": "string"
 				}
 			}
