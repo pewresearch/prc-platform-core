@@ -1,8 +1,6 @@
 <?php
 namespace PRC\Platform;
 use TDS\Invalid_Input_Exception;
-use TDS\get_related_post;
-use TDS\get_related_term;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -138,9 +136,6 @@ class Datasets {
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_dataset_endpoints' );
 			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'archive_rewrites' );
 
-			$loader->add_filter( 'post_type_link', $this, 'modify_dataset_permalink', 20, 2 );
-			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
-
 			$download_logger = new Datasets_Download_Logger();
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
@@ -190,67 +185,6 @@ class Datasets {
 			array(
 				'datasets/?$' => 'index.php?post_type=dataset',
 			),
-		);
-	}
-
-	/**
-	 * Modifies the dataset permalink to point to the datasets term archive permalink.
-	 *
-	 * @hook post_link
-	 * @param string $url
-	 * @param WP_Post $post
-	 * @return string
-	 */
-	public function modify_dataset_permalink( $url, $post ) {
-		if ( 'publish' !== $post->post_status ) {
-			return $url;
-		}
-		if ( self::$post_object_name === $post->post_type ) {
-			// Get the matching term...
-			$dataset_term = \TDS\get_related_term( $post->ID );
-			if (!$dataset_term) {
-				return $url;
-			}
-			// get the term link
-			$matched_url = get_term_link( $dataset_term, self::$taxonomy_object_name );
-			if ( !is_wp_error( $matched_url ) ) {
-				return $matched_url;
-			}
-		}
-		return $url;
-	}
-
-	/**
-	 * @hook admin_bar_menu
-	 * @param mixed $admin_bar
-	 * @return void
-	 */
-	public function modify_admin_bar_edit_link( $admin_bar ) {
-		if ( ! is_tax( self::$taxonomy_object_name ) ) {
-			return;
-		}
-
-		$term_id = get_queried_object()->term_id;
-		// get the associated post id...
-		$dataset_id = \TDS\get_related_post( $term_id, self::$taxonomy_object_name );
-
-		if ( is_wp_error( $dataset_id ) ) {
-			return;
-		}
-
-		$admin_bar->remove_menu( 'edit' );
-
-		$link     = get_edit_post_link( $dataset_id );
-		$admin_bar->add_menu(
-			array(
-				'parent' => false,
-				'id'     => 'edit_dataset',
-				'title'  => __( 'Edit Dataset' ),
-				'href'   => $link,
-				'meta'   => array(
-					'title' => __( 'Edit Dataset' ),
-				),
-			)
 		);
 	}
 
