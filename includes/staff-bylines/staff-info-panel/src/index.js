@@ -29,7 +29,7 @@ function StaffInfoPanel() {
 			<ToggleControl
 				label={__('Display Byline Link')}
 				help={__(
-					'All staff are assigned a byline tem, however not all staff have a link to a byline archive "staff bio" page. If this staff member has a bio page, enable this option to link their byline to their bio page.',
+					'All staff are assigned a byline tem, however not all staff have a link to a byline archive "staff bio" page. If this staff member has a bio page, enable this option to link their byline to their bio page.'
 				)}
 				checked={bylineLinkEnabled}
 				onChange={() => {
