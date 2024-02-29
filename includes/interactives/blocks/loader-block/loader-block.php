@@ -39,12 +39,15 @@ class Loader_Block extends Interactives {
 		));
 
 		$is_legacy_wpackio = array_key_exists('legacyWpackIo', $attributes) && $attributes['legacyWpackIo'];
-		// We are purposefully not looking for s3 legacy interactives. We're going to let those break.
+		$is_legacy_s3 = array_key_exists('legacyAssetsS3', $attributes) && $attributes['legacyAssetsS3'];
 
 		$enqueued_handles = array();
 		if ( $is_legacy_wpackio ) {
 			wp_enqueue_script('firebase');
 			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
+		} else if ( $is_legacy_s3 ) {
+			// Do nothing for now...
+			// @TODO: Build out the legacy assets S3 loader.
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}
