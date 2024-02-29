@@ -24,7 +24,8 @@ class Embeds {
 		'prc-block/tabs',
 		'prc-block/accordion-controller',
 		'prc-block/chart',
-		'prc-block/quiz'
+		'prc-block/audio-player',
+		'prc-block/quiz',
 	);
 
 	public static $handle = 'prc-platform-iframe-embeds';
@@ -343,6 +344,30 @@ class Embeds {
 					}
 					html {
 						margin: 0!important;
+					}
+					.prc-platform__iframe__content {
+						container-type: inline-size;
+						container-name: prcIframeContent;
+					}
+					@container prcIframeContent (width < 480px) {
+						.wp-block-image.alignright,
+						.wp-block-image.alignleft {
+							float: none!important;
+							margin: auto!important;
+							margin-inline-start: auto!important;
+							margin-inline-end: auto!important;
+						}
+					}
+					@container prcIframeContent (width > 480px) {
+						.wp-block-image.alignright {
+							float: right!important;
+							margin: 5px 0px 15px 15px!important;
+						}
+
+						.wp-block-image.alignleft {
+							float: left!important;
+							margin: 5px 15px 15px 0px!important;
+						}
 					}
 				</style>
 				<?php
