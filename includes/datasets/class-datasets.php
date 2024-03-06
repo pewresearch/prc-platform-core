@@ -145,21 +145,7 @@ class Datasets {
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
 			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_logger_endpoint' );
-			// $loader->add_filter('prc_platform_pub_listing_default_args', 'filter_pub_listing_query_args', 10, 1);
 		}
-	}
-
-	/**
-	 * @hook prc_platform_pub_listing_default_args
-	 * @param mixed $query
-	 * @return mixed
-	 */
-	public function filter_pub_listing_query_args($query) {
-		if ( is_admin() || !is_array($query) ) {
-			return $query;
-		}
-		do_action('qm/debug', print_r($query, true));
-		return $query;
 	}
 
 	/**

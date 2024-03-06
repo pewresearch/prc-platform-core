@@ -30,6 +30,26 @@
           "type": "string"
         },
         "deps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "legacyAssetsS3": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "react": {
+          "type": "string"
+        },
+        "libraries": {
+          "type": "string"
+        },
+        "styles": {
           "type": "string"
         }
       }
@@ -49,6 +69,5 @@
     "postType"
   ],
   "textdomain": "prc-platform-interactive-loader",
-  "editorScript": "file:./index.js",
-  "style": "file:./style-index.css"
+  "editorScript": "file:./index.js"
 }
