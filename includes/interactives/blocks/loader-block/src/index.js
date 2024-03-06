@@ -20,6 +20,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import metadata from './block.json';
 import edit from './edit';
 import transforms from './transforms';
+import './style.scss';
 
 const { name } = metadata;
 
