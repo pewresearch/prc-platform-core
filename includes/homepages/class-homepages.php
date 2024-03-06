@@ -205,8 +205,8 @@ class Homepages {
 			$admin_bar->remove_menu( 'edit' );
 			$admin_bar->add_menu(
 				array(
-					'id'    => 'edit-homepage',
-					'title' => '<span class="ab-icon dashicons dashicons-admin-home"></span>' . _( 'Edit Homepage' ),
+					'id'    => 'edit',
+					'title' => __( 'Edit Homepage' ),
 					'href'  => $link,
 					'meta'  => array(
 						'title' => __( 'Edit Homepage' ),

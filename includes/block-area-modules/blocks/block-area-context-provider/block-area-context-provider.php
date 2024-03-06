@@ -83,15 +83,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 
 			$query_args = $context['query'] ?? array();
 
-			$default_pub_listing_args = apply_filters('prc_platform_pub_listing_default_args', array());
-
-			// change the snake_case keys to camelCase
-			$default_pub_listing_args = array_combine(array_map(function($key) {
-				return lcfirst(str_replace('_', '', ucwords($key, '_')));
-			}, array_keys($default_pub_listing_args)), array_values($default_pub_listing_args));
-
-			// $query_args['inherit'] = false;
-
 			$not_in = array_key_exists('post__not_in', $query_args) ? $query_args['post__not_in'] : array();
 
 			$query_args['post__not_in'] = array_merge($not_in, $story_item_ids);

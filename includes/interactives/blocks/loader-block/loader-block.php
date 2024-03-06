@@ -44,17 +44,7 @@ class Loader_Block extends Interactives {
 		$enqueued_handles = array();
 		if ( $is_legacy_wpackio ) {
 			wp_enqueue_script('firebase');
-			// try to load the legacy wpackio, and if it fails, then log the error and return empty string.
-			try {
-				$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']['appName']);
-			} catch ( \Exception $e ) {
-				if ( function_exists( 'wp_sentry_safe' ) ) {
-					wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ( $e ) {
-						$client->captureException( $e );
-					} );
-				}
-				return;
-			}
+			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}
