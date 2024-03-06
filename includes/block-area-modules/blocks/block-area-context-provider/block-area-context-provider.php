@@ -83,7 +83,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 
 			$query_args = $context['query'] ?? array();
 
-			$default_pub_listing_args = apply_filters('prc_platform_pub_listing_default_args', array());
+			$default_pub_listing_args = apply_filters('prc_platform_pub_listing_default_args', null);
 
 			// change the snake_case keys to camelCase
 			$default_pub_listing_args = array_combine(array_map(function($key) {
