@@ -203,8 +203,6 @@ class Staff_Bylines {
 
 			$loader->add_action( 'enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets' );
 			$loader->add_action( 'enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets' );
-
-			$loader->add_filter('prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1);
 		}
 	}
 
@@ -267,16 +265,16 @@ class Staff_Bylines {
 	 */
 	public function hide_former_staff( $query ) {
 		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {
-			// $query->set(
-			// 	'tax_query',
-			// 	array(
-			// 		array(
-			// 			'taxonomy' => 'staff-type',
-			// 			'field'    => 'slug',
-			// 			'terms'    => array( 'staff', 'executive-team', 'managing-directors' ),
-			// 		),
-			// 	)
-			// );
+			$query->set(
+				'tax_query',
+				array(
+					array(
+						'taxonomy' => 'staff-type',
+						'field'    => 'slug',
+						'terms'    => array( 'staff', 'executive-team', 'managing-directors' ),
+					),
+				)
+			);
 		}
 	}
 
@@ -596,28 +594,4 @@ class Staff_Bylines {
 
         return $data;
     }
-
-	/**
-	 * @hook prc_platform_pub_listing_default_args
-	 * @param mixed $query
-	 * @return mixed
-	 */
-	public function filter_pub_listing_query_args($query) {
-		if ( is_admin() || !is_array($query) ) {
-			return $query;
-		}
-		global $wp_query;
-		if ( $wp_query->is_main_query() && $wp_query->is_tax( self::$taxonomy_object_name ) ) {
-			$current_term_slug = $wp_query->get_queried_object()->slug;
-			$query['tax_query'] = array(
-				array(
-					'taxonomy' => self::$taxonomy_object_name,
-					'field'    => 'slug',
-					'terms'    => $current_term_slug,
-				),
-			);
-		}
-		do_action('qm/debug', 'filter_pub_listing_query_args' . print_r($query, true) );
-		return $query;
-	}
 }

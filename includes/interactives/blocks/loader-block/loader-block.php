@@ -43,8 +43,25 @@ class Loader_Block extends Interactives {
 
 		$enqueued_handles = array();
 		if ( $is_legacy_wpackio ) {
+			error_log('Enqueuing firebase for legacy wpackio');
 			wp_enqueue_script('firebase');
-			$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
+			// try to load the legacy wpackio, and if it fails, then log the error and return empty string.
+			try {
+				error_log('Loading legacy wpackio for ' . $attributes['legacyWpackIo']['appName']);
+				$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']['appName']);
+			} catch ( \Exception $e ) {
+				error_log('Error loading legacy wpackio for ' . $attributes['legacyWpackIo']['appName']);
+				if ( function_exists( 'wp_sentry_safe' ) ) {
+					error_log('Logging error to sentry');
+					wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ( $e ) {
+						$client->withScope(function (\Sentry\State\Scope $scope) use ($client, $e) {
+							$scope->setTag('interactiveType', 'wpackio');
+							$client->captureException($e);
+						});
+					} );
+				}
+				return;
+			}
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}

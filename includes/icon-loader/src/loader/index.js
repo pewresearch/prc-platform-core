@@ -13,5 +13,5 @@ library.add(icons);
 
 domReady(() => {
 	dom.i2svg();
-	//dom.watch();
+	// dom.watch();
 });

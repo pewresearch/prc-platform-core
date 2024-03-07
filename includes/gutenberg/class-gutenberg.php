@@ -76,7 +76,6 @@ class Gutenberg {
 	/**
 	 * Enable revisions for reusable blocks.
 	 * @hook init
-	 * @TODO: Look into this, I'm pretty sure a recent Gutenberg release defaulted to this.
 	 */
 	public function add_revisions_to_reusable_blocks() {
 		add_post_type_support( 'wp_block', 'revisions' );
@@ -92,8 +91,12 @@ class Gutenberg {
 		$new_menu_order = array();
 
 		$reorder = array(
-			'edit.php?post_type=block_module',
-			'edit.php?post_type=wp_block',
+			'edit.php?post_type=topic-page', // Legacy
+			'edit.php?post_type=template-block', // Legacy
+			'edit.php?post_type=block_module', // New
+			'edit.php?post_type=wp_block', // Core Patterns
+			'edit.php?post_type=blockmeister_pattern', // Block Meister Patterns
+			'admin.php?page=blockmeister', // Block Meister Settings
 		);
 
 		foreach ( $menu_order as $index => $item ) {

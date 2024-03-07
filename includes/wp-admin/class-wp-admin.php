@@ -41,9 +41,7 @@ class WP_Admin {
 
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
 			$loader->add_action( 'login_enqueue_scripts', $this, 'login_logo' );
-			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_admin_bar', 100 );
-			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_tools_menu', 101 );
-			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_edit_menu', 102 );
+			$loader->add_action( 'wp_before_admin_bar_render', $this, 'admin_bar_tweaks' );
 			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
 			$loader->add_action( 'admin_print_footer_scripts', $this, 'admin_footer' );
 			$loader->add_filter( 'disabled_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
@@ -89,15 +87,11 @@ class WP_Admin {
 		<?php
 	}
 
-	public function manage_tools_menu() {
+	public function admin_bar_tweaks() {
 		global $wp_admin_bar;
 
-		$tools_id = 'tools';
-		$edit_id = 'edit';
+		$tools_id = 'prc-tools';
 
-		/**
-		 * Tools Menu
-		 */
 		$vip_cache_tool = $wp_admin_bar->get_node('vip-purge-page');
 		if ( $vip_cache_tool ) {
 			$vip_cache_tool->parent = $tools_id;
@@ -111,6 +105,7 @@ class WP_Admin {
 			$bitly_tool->parent = $tools_id;
 			$bitly_tool = (array) $bitly_tool;
 			$wp_admin_bar->remove_node('reset-bitly-link');
+
 		}
 
 		$parsely_tool = $wp_admin_bar->get_node('parsely-stats');
@@ -120,21 +115,7 @@ class WP_Admin {
 			$wp_admin_bar->remove_node('parsely-stats');
 		}
 
-		$yoast_redirect_tool = $wp_admin_bar->get_node('wpseo-premium-create-redirect');
-		if ( $yoast_redirect_tool ) {
-			$yoast_redirect_tool->parent = $tools_id;
-			$yoast_redirect_tool = (array) $yoast_redirect_tool;
-			$wp_admin_bar->remove_node('wpseo-premium-create-redirect');
-		}
-
-		$duplicate_post = $wp_admin_bar->get_node('duplicate-post');
-		if ( $duplicate_post ) {
-			$duplicate_post->parent = $tools_id;
-			$duplicate_post = (array) $duplicate_post;
-			$wp_admin_bar->remove_node('duplicate-post');
-		}
-
-		// Create the new Attachment Report tool
+		// create a new wp_admin bar node for my Attachments Report tool
 		$attachments_tool = array(
 			'id'    => 'attachments-report',
 			'title' => 'Attachments Report',
@@ -145,7 +126,7 @@ class WP_Admin {
 			),
 		);
 
-		if ( $vip_cache_tool || $bitly_tool || $parsely_tool || $attachments_tool || $yoast_redirect_tool || $duplicate_post ) {
+		if ( $vip_cache_tool || $bitly_tool || $parsely_tool || $attachments_tool ) {
 			$wp_admin_bar->add_menu(
 				array(
 					'id'    => $tools_id,
@@ -153,6 +134,7 @@ class WP_Admin {
 					'href'  => '#',
 				)
 			);
+
 			if ( $vip_cache_tool ) {
 				$wp_admin_bar->add_node( $vip_cache_tool );
 			}
@@ -165,65 +147,6 @@ class WP_Admin {
 			if ( $attachments_tool ) {
 				$wp_admin_bar->add_node( $attachments_tool );
 			}
-			if ( $yoast_redirect_tool ) {
-				$wp_admin_bar->add_node( $yoast_redirect_tool );
-			}
-			if ( $duplicate_post ) {
-				$wp_admin_bar->add_node( $duplicate_post );
-			}
-		}
-	}
-
-	public function manage_edit_menu() {
-		global $wp_admin_bar;
-		$edit_id = 'edit';
-
-		/**
-		 * Edit Menu
-		 */
-		// Check for the current post type...
-		$post_type = get_post_type();
-		$edit_node_name = 'post' === $post_type ? 'edit' : 'edit_' . $post_type;
-		$edit = $wp_admin_bar->get_node($edit_node_name);
-		if ( !$edit && is_user_logged_in() ) {
-			$wp_admin_bar->add_menu(
-				array(
-					'id'    => $edit_node_name,
-					'title' => 'Edit',
-					'href'  => '#',
-				)
-			);
-		}
-		$site_editor = $wp_admin_bar->get_node('site-editor');
-		if ( $site_editor ) {
-			$site_editor->title = 'Edit Template';
-			// now remove the existing node and then add it back again with the updated title
-			$site_editor->parent = $edit_node_name;
-			$wp_admin_bar->remove_node('site-editor');
-			$wp_admin_bar->add_node($site_editor);
-		}
-	}
-
-	public function manage_admin_bar() {
-		global $wp_admin_bar;
-		/**
-		 * Other/Misc
-		 */
-
-		// Get rid of the "Howdy" in the Profile link
-		$my_account = $wp_admin_bar->get_node('my-account');
-		if ( $my_account ) {
-			// I actualy just want to remove the "Howdy" part of the greeting, make it just the username.
-			$my_account->title = str_replace('Howdy, ', '', $my_account->title);
-			// now remove the existing node and then add it back again with the updated title
-			$wp_admin_bar->remove_node('my-account');
-			$wp_admin_bar->add_node($my_account);
-		}
-
-		// Remove Search
-		$search = $wp_admin_bar->get_node('search');
-		if ( $search ) {
-			$wp_admin_bar->remove_node('search');
 		}
 
 		// Remove fwp cache, comments
@@ -233,7 +156,9 @@ class WP_Admin {
 		if ( ! is_search() ) {
 			$wp_admin_bar->remove_menu( 'vip-search-dev-tools' );
 		}
-		$wp_admin_bar->remove_menu( 'customize' );
+		if ( ! is_user_admin() ) {
+			$wp_admin_bar->remove_menu( 'customize' );
+		}
 	}
 
 	public function register_assets() {
@@ -283,7 +208,7 @@ class WP_Admin {
 		global $post_type;
 		if ( isset( $post_type ) && is_string( $post_type ) ) {
 			// add the post type to the javascript global object window.prcEditorPostType
-			echo wp_sprintf( '<script>window.prcEditorPostType = "%s";</script>', esc_js($post_type) );
+			echo '<script>window.prcEditorPostType = "' . $post_type . '";</script>';
 		}
 	}
 

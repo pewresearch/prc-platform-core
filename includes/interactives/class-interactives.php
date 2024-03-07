@@ -426,11 +426,10 @@ class Interactives {
 		if ( is_admin() ) {
 			return;
 		}
-
 		$app_name     = array_key_exists( 'appname', $args ) ? $args['appname'] : false;
 
 		if ( ! $app_name ) {
-			return false;
+			throw new \LogicException( 'No app_name found. Please check that the interactive exists in the file structure.');
 		}
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-legacy-wpackio-loader.php' );
