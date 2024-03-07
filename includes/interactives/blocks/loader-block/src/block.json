@@ -49,5 +49,6 @@
 		"postType"
 	],
 	"textdomain": "prc-platform-interactive-loader",
-	"editorScript": "file:./index.js"
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css"
 }
