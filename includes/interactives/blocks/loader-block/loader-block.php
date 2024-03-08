@@ -42,11 +42,12 @@ class Loader_Block extends Interactives {
 		// We are purposefully not looking for s3 legacy interactives. We're going to let those break.
 
 		$enqueued_handles = array();
+
 		if ( $is_legacy_wpackio ) {
 			wp_enqueue_script('firebase');
-			// try to load the legacy wpackio, and if it fails, then log the error and return empty string.
+			// try to load the legacy wpackio, and if it fails, then log the error and return.
 			try {
-				$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']['appName']);
+				$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
 			} catch ( \Exception $e ) {
 				if ( function_exists( 'wp_sentry_safe' ) ) {
 					wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ( $e ) {
