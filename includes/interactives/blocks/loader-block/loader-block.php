@@ -51,7 +51,7 @@ class Loader_Block extends Interactives {
 				if ( function_exists( 'wp_sentry_safe' ) ) {
 					wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ( $e ) {
 						$client->withScope(function (\Sentry\State\Scope $scope) use ($client, $e) {
-							$scope->setTag('interactiveType', 'wpackio');
+							$scope->setTag('interactive_type', 'wpackio');
 							$client->captureException($e);
 						});
 					} );
