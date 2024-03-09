@@ -474,6 +474,70 @@ class Interactives {
 	}
 
 	/**
+	 * Load a single interactive, via S3 (legacy) by slug.
+	 *
+	 * @param mixed $args
+	 * @return void|false|array
+	 * @throws LogicException
+	 */
+	public function load_legacy_S3($args) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'id' => '',
+				'path' => '',
+				'libraries' => false,
+				'styles' => false,
+			)
+		);
+		$args = \array_change_key_case($args, CASE_LOWER);
+		$enqueued = array(
+			'script' => '',
+			'style' => []
+		);
+
+		if ( is_admin() ) {
+			return;
+		}
+		$path = array_key_exists( 'path', $args ) ? $args['path'] : false;
+
+		if ( ! $path ) {
+			throw new \LogicException( 'No path found. Please check the interactive block.');
+		}
+
+		$deps = array('jquery', 'wp-element');
+		if ( false !== $args['deps'] && ! empty( $args['libraries'] )) {
+			$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
+		}
+
+		$styles = [];
+		if ( false !== $args['styles'] ) {
+			$styles = explode( ',', $args['styles'] );
+		}
+
+		$js_src = '//assets.pewresearch.org/interactives/' . $args['path'] . '.js';
+		$script_ver = '1.0';
+
+		$script_registered = wp_register_script( $args['id'] . '-js', $js_src, $deps, $script_ver, true );
+		if ( false === $script_registered ) {
+			return false;
+		}
+		$script_handle = $args['id'] . '-js';
+		if ( $script_handle ) {
+			$enqueued['script'] = $script_handle;
+			wp_enqueue_script( $script_handle );
+		}
+		if ( $styles ) {
+			foreach ( $styles as $style ) {
+				$enqueued['style'] = $style;
+				wp_enqueue_style( $style );
+			}
+		}
+
+		return $enqueued;
+	}
+
+	/**
 	 * Include all blocks from the /blocks directory.
 	 * @return void
 	 */

@@ -39,7 +39,7 @@ class Loader_Block extends Interactives {
 		));
 
 		$is_legacy_wpackio = array_key_exists('legacyWpackIo', $attributes) && $attributes['legacyWpackIo'];
-		// We are purposefully not looking for s3 legacy interactives. We're going to let those break.
+		$is_legacy_s3 = array_key_exists('legacyS3', $attributes) && $attributes['legacyS3'];
 
 		$enqueued_handles = array();
 
@@ -59,24 +59,24 @@ class Loader_Block extends Interactives {
 				}
 				return;
 			}
+		} elseif( $is_legacy_s3 ) {
+			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}
 
 		// we need to remove the wpackio stuff when we're loading on the main frontend, that should only load on an iframe...
 
-		do_action('prc_platform_interactive_loader_enqueue', $enqueued_handles, $is_legacy_wpackio);
+		do_action('prc_platform_interactive_loader_enqueue', $enqueued_handles, array(
+			'is_legacy' => $is_legacy_wpackio || $is_legacy_s3,
+		));
 
 		$url_rewrites = $this->get_rewrites_params();
 
 		if ( $url_rewrites ) {
-			do_action('qm/debug', 'URL REWRITES:'.print_r($url_rewrites, true));
-
-			// We want to localize whatever script the loader returns.
-			// $enqueued_handles['script'];
 			$script_handle =
 			'prc-platform-interactive-' . $attributes['slug'];
-			if ( $is_legacy_wpackio ) {
+			if ( $is_legacy_wpackio || $is_legacy_s3 ) {
 				$script_handle = $enqueued_handles['script'];
 			}
 			// Use wp_add_inline_script to localize the script instead of wp_localize_script because we want to add the data before the script is enqueued and we want to support multiple localizations for the same script.

@@ -5,18 +5,18 @@ import { createBlock } from '@wordpress/blocks';
 
 const BLOCKNAME = 'prc-platform/interactive-loader';
 
-function convertLegacyLoader({id, appName, path, deps, version}) {
+function convertLegacyLoader({ id, appName, path, deps, version }) {
 	return createBlock(BLOCKNAME, {
 		slug: id,
 		legacyWpackIo: {
 			appName,
 			path,
 			deps,
-		}
+		},
 	});
 }
 
-function convertAssetsS3Interactive({id, path, react, libraries, styles}) {
+function convertAssetsS3Interactive({ id, path, react, libraries, styles }) {
 	return createBlock(BLOCKNAME, {
 		slug: id,
 		legacyAssetsS3: {
@@ -24,7 +24,7 @@ function convertAssetsS3Interactive({id, path, react, libraries, styles}) {
 			react,
 			libraries,
 			styles,
-		}
+		},
 	});
 }
 
@@ -46,7 +46,7 @@ function converTextRaw(text) {
 	console.log('isJsInteractive', isJsInteractive);
 	console.log(text);
 
-	if ( isLoadInteractive ) {
+	if (isLoadInteractive) {
 		return convertLegacyLoader({
 			id: null !== id ? id[1] : null,
 			appName: null !== appName ? appName[1] : null,
@@ -56,7 +56,7 @@ function converTextRaw(text) {
 		});
 	}
 
-	if ( isJsInteractive ) {
+	if (isJsInteractive) {
 		return convertAssetsS3Interactive({
 			id: null !== id ? id[1] : null,
 			path: null !== path ? path[1] : null,
@@ -72,9 +72,7 @@ const transforms = {
 		{
 			type: 'shortcode',
 			tag: 'load_interactive',
-			transform({
-				named: { id, appName, path, deps, version },
-			}) {
+			transform({ named: { id, appName, path, deps, version } }) {
 				console.log('name', named);
 				return convertLegacyLoader({
 					id,
@@ -91,9 +89,7 @@ const transforms = {
 		{
 			type: 'shortcode',
 			tag: 'js_interactive',
-			transform({
-				named: { id, path, libraries, styles, react },
-			}) {
+			transform({ named: { id, path, libraries, styles, react } }) {
 				console.log('name', named);
 				return convertAssetsS3Interactive({
 					id,
@@ -104,7 +100,7 @@ const transforms = {
 				});
 			},
 			isMatch({ named: { path, react } }) {
-				return path, react
+				return path, react;
 			},
 		},
 		{

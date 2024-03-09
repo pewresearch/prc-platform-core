@@ -28,7 +28,6 @@ class Legacy_Interactive_Containment_System {
 	public function enqueue_legacy_scripts_and_styles($enqueued_handles, $is_legacy_wpackio = false) {
 		wp_enqueue_script('legacy-semantic-ui');
 		wp_add_inline_script('legacy-semantic-ui', 'window.siteURL = "' . get_site_url() . '";');
-		// @TODO: need to add a prcUrlVars shim as well....
 		wp_enqueue_style('legacy-semantic-ui');
 	}
 
