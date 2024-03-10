@@ -706,15 +706,21 @@ class Post_Report_Package {
 			return $cached_toc;
 		}
 
+		$internal_chapters = $this->get_internal_chapters( $parent_id );
+		$back_chapters = $this->get_back_chapters( $parent_id );
+		if ( empty( $internal_chapters ) && empty( $back_chapters ) ) {
+			return false;
+		}
+
 		$constructed_toc = array_merge( array(
 			array(
 				'id' => $parent_id,
 				'title' => get_the_title( $parent_id ),
 				'slug' => get_post_field( 'post_name', $parent_id ),
 				'link' => get_permalink( $parent_id ),
-				'internal_chapters' => $this->get_internal_chapters( $parent_id ),
+				'internal_chapters' => $internal_chapters
 			),
-		), $this->get_back_chapters( $parent_id ) );
+		), $back_chapters );
 
 		$this->update_toc_cache( $post_id, $constructed_toc );
 
