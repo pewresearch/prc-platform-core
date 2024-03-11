@@ -429,7 +429,9 @@ class Interactives {
 		$app_name     = array_key_exists( 'appname', $args ) ? $args['appname'] : false;
 
 		if ( ! $app_name ) {
-			throw new \LogicException( 'No app_name found. Please check that the interactive exists in the file structure.');
+			global $post;
+			$post_id = property_exists($post, 'ID') ? $post->ID : null;
+			throw new \LogicException( 'No app_name found. Please check that the interactive exists in the file structure. Post ID: ' . $post_id);
 		}
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-legacy-wpackio-loader.php' );
@@ -502,7 +504,9 @@ class Interactives {
 		$path = array_key_exists( 'path', $args ) ? $args['path'] : false;
 
 		if ( ! $path ) {
-			throw new \LogicException( 'No path found. Please check the interactive block.');
+			global $post;
+			$post_id = property_exists($post, 'ID') ? $post->ID : null;
+			throw new \LogicException( 'No path to legacy s3 files found. Please check the interactive block. Post ID: ' . $post_id);
 		}
 
 		$deps = array('jquery', 'wp-element');
