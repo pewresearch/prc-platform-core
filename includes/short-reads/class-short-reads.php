@@ -93,9 +93,9 @@ class Short_Reads {
 	 */
 	public function get_short_read_permalink($url, $post, $leavename) {
 		if ( self::$post_type == get_post_type($post) ) {
-			$url = str_replace( "%year%", get_the_date('Y', $post), $url );
-			$url = str_replace( "%monthnum%", get_the_date('m', $post), $url );
-			$url = str_replace( "%day%", get_the_date('d', $post), $url );
+			$url = str_replace( "%year%", get_the_date('Y'), $url );
+			$url = str_replace( "%monthnum%", get_the_date('m'), $url );
+			$url = str_replace( "%day%", get_the_date('d'), $url );
 		}
 		return $url;
 	}
