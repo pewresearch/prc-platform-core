@@ -12,6 +12,6 @@ import domReady from '@wordpress/dom-ready';
 library.add(icons);
 
 domReady(() => {
-	dom.i2svg();
+	// dom.i2svg();
 	//dom.watch();
 });

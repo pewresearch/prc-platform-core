@@ -1,9 +1,7 @@
 /**
  * External Dependencies
  */
-import {
-	icon
-} from '@fortawesome/fontawesome-svg-core';
+import { icon } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 /**
@@ -14,5 +12,5 @@ if (!window.prcIcons) {
 		icons: {},
 		icon,
 		Icon,
-	}
+	};
 }
