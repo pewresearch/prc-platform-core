@@ -1,13 +1,13 @@
 <?php
 
 return array (
-  'version' => '6.4.6',
+  'version' => '6.3.5',
   'list_screen' => 
   array (
-    'title' => 'Default View',
+    'title' => '',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1710194641,
+    'updated' => 1697487968,
     'columns' => 
     array (
       'title' => 
@@ -21,8 +21,6 @@ return array (
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
-        'filter' => 'off',
-        'filter_label' => '',
         'name' => 'title',
       ),
       'date' => 
@@ -31,14 +29,14 @@ return array (
         'label' => 'Date',
         'width' => '',
         'width_unit' => '%',
-        'filter' => 'on',
-        'filter_label' => '',
-        'filter_format' => 'range',
         'export' => 'on',
         'sort' => 'on',
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
+        'filter' => 'on',
+        'filter_label' => '',
+        'filter_format' => 'range',
         'name' => 'date',
       ),
       '64d1ade4fb22d0' => 
@@ -71,7 +69,6 @@ return array (
         'bulk_edit' => 'on',
         'search' => 'on',
         'filter' => 'on',
-        'filter_label' => '',
         'name' => 'categories',
       ),
       'taxonomy-bylines' => 
@@ -154,7 +151,18 @@ return array (
         'width' => '',
         'width_unit' => '%',
         'export' => 'on',
+        'filter' => 'on',
+        'filter_label' => 'All Posts',
         'name' => '64c9bb6a50a3d8',
+      ),
+      '652d9c5ed0624c' => 
+      array (
+        'type' => 'editor',
+        'label' => 'Editor',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'name' => '652d9c5ed0624c',
       ),
     ),
     'settings' => 
@@ -190,7 +198,6 @@ return array (
       'horizontal_scrolling' => 'off',
       'primary_column' => '',
       'filter_segment' => '',
-      'wrapping' => 'wrap',
     ),
   ),
 );

@@ -93,6 +93,7 @@ class WP_Admin {
 		global $wp_admin_bar;
 
 		$tools_id = 'tools';
+		$edit_id = 'edit';
 
 		/**
 		 * Tools Menu
@@ -176,12 +177,12 @@ class WP_Admin {
 	public function manage_edit_menu() {
 		global $wp_admin_bar;
 		$edit_id = 'edit';
+
 		/**
 		 * Edit Menu
 		 */
 		// Check for the current post type...
 		$post_type = get_post_type();
-		do_action('qm/debug', print_r($wp_admin_bar, true));
 		$edit_node_name = 'post' === $post_type ? 'edit' : 'edit_' . $post_type;
 		$edit = $wp_admin_bar->get_node($edit_node_name);
 		if ( !$edit && is_user_logged_in() ) {
