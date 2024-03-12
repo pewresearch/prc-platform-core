@@ -42,6 +42,7 @@ class Post_Publish_Pipeline {
 		'mini-course',
 		'press-release',
 		'block_module',
+		'decoded'
 	);
 
 	/**

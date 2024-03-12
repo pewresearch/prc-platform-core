@@ -37,6 +37,7 @@ class Decoded {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_filter( 'post_type_link', $this, 'get_decoded_permalink', 10, 3);
+			$loader->add_action('prc_platform_on_incremental_save', $this, 'enforce_decoded_format', 10, 1);
 		}
 	}
 
@@ -109,9 +110,29 @@ class Decoded {
 	// Convert the %year% and %monthnum% placeholders in the post type's rewrite slug to the actual year and month.
 	public function get_decoded_permalink($url, $post) {
 		if ( self::$post_type == get_post_type($post) ) {
-			$url = str_replace( "%year%", get_the_date('Y'), $url );
-			$url = str_replace( "%monthnum%", get_the_date('m'), $url );
+			$url = str_replace( "%year%", get_the_date('Y', $post->ID), $url );
+			$url = str_replace( "%monthnum%", get_the_date('m', $post->ID), $url );
 		}
 		return $url;
+	}
+
+	/**
+	 * Whenever a decoded post is updated it should have the decoded format enforced. This function will enforce that.
+	 * @hook prc_platform_on_incremental_save
+	 * @return void
+	 */
+	public function enforce_decoded_format($post) {
+		if ( $post->post_type === self::$post_type ) {
+			error_log('enforce_decoded_format'. print_r($post, true));
+			// Check if the post already has the decoded format, if not, append it.
+			$format = wp_get_object_terms($post->ID, 'formats');
+			$has_decoded_format = array_filter($format, function($term) {
+				return $term->slug === 'decoded';
+			});
+			$has_decoded_format = !empty($has_decoded_format);
+			if ( !$has_decoded_format ) {
+				wp_set_object_terms($post->ID, 'decoded', 'formats', true);
+			}
+		}
 	}
 }
