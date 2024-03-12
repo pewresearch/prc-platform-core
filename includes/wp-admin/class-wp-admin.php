@@ -181,9 +181,13 @@ class WP_Admin {
 		 */
 		// Check for the current post type...
 		$post_type = get_post_type();
-		do_action('qm/debug', print_r($wp_admin_bar, true));
 		$edit_node_name = 'post' === $post_type ? 'edit' : 'edit_' . $post_type;
 		$edit = $wp_admin_bar->get_node($edit_node_name);
+		if ( !$edit ) {
+			// Fallback to just edit.
+			$edit_node_name = 'edit';
+			$edit = $wp_admin_bar->get_node($edit_node_name);
+		}
 		if ( !$edit && is_user_logged_in() ) {
 			$wp_admin_bar->add_menu(
 				array(

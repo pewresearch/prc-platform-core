@@ -61,10 +61,11 @@ class Facet_Template {
 			$opts = array(
 				'value' => $choice['value'],
 				'label' => $choice['label'] . ' (' . $choice['count'] . ')',
+				'isSelected' => false,
 			);
 			if ( in_array($choice['value'], $selected_choices) ) {
 				$field_value = $choice['value'];
-				$opts['selected'] = true;
+				$opts['isSelected'] = true;
 			}
 			$options[] = $opts;
 		}
