@@ -16,9 +16,7 @@
     "html": false,
     "reusable": false,
     "multiple": false,
-    "interactivity": {
-      "clientNavigation": true
-    }
+    "interactivity": true
   },
   "usesContext": [
     "postType",
@@ -28,5 +26,5 @@
   ],
   "textdomain": "prc-facets-context-provider",
   "editorScript": "file:./index.js",
-  "viewScriptModule": "file:./view.js"
+  "viewModule": "file:./view.js"
 }
