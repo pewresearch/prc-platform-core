@@ -14,7 +14,7 @@ class Icon_Loader {
 	 */
 	private $version;
 
-	public $handle = 'prc-platform-icons-loader';
+	public $handle = 'prc-icons';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -30,20 +30,15 @@ class Icon_Loader {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_loader', 99 );
+			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_loader', 10 );
 		}
 	}
 
-	public function register_icon_loader_script($register_prc_icons = true) {
+	public function register_icon_loader_assets() {
 		$asset_file = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$dependencies = $asset_file['dependencies'];
-		if ( false === $register_prc_icons ) {
-			$dependencies = array_filter($dependencies, function($handle) {
-				return $handle !== 'prc-icons';
-			});
-		}
 
-		$registered = wp_register_script(
+		$script = wp_register_script(
 			$this->handle,
 			plugins_url( 'build/index.js', __FILE__ ),
 			$dependencies,
@@ -54,7 +49,17 @@ class Icon_Loader {
 			),
 		);
 
-		return $registered;
+		$style = wp_register_style(
+			$this->handle,
+			plugins_url( 'build/style-index.css', __FILE__ ),
+			array(),
+			$asset_file['version'],
+		);
+
+		return [
+			'script' => $script,
+			'style' => $style,
+		];
 	}
 
 	/**
@@ -62,20 +67,10 @@ class Icon_Loader {
 	 * @return void
 	 */
 	public function enqueue_icon_loader($register_prc_icons = true) {
-		if ( !wp_script_is( $this->handle, 'enqueued' ) ) {
-			$this->register_icon_loader_script($register_prc_icons);
+		if ( !wp_script_is( $this->handle, 'enqueued' ) || !wp_style_is( $this->handle, 'enqueued' ) ) {
+			$this->register_icon_loader_assets($register_prc_icons);
 		}
 		wp_enqueue_script( $this->handle );
-	}
-
-	/**
-	 * Quick fallback check, if the icon library is not registered then we should change the handle of the loader to match. This will allow other platform plugins that are dependent on prc-icons to load but use the fallback (empty) icon set.
-	 * @hook enqueue_block_assets
-	 * @return void
-	 */
-	public function enqueue_icon_library_fallback() {
-		if ( !wp_script_is( 'prc-icons', 'enqueued' ) ) {
-			wp_enqueue_script( 'prc-icons' );
-		}
+		wp_enqueue_style( $this->handle );
 	}
 }
