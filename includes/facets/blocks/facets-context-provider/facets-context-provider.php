@@ -66,6 +66,7 @@ class Facets_Context_Provider {
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
+			'buttonId' => 'update-results-button'
 		);
 
 		return $context;
@@ -74,7 +75,7 @@ class Facets_Context_Provider {
 	public function render_block_callback($attributes, $content, $block) {
 		wp_enqueue_script('wp-url');
 		wp_enqueue_script('wp-api-fetch');
-		// Store the facets data from memory in the browser's global store for this block.
+
 		wp_interactivity_state(
 			'prc-platform/facets-context-provider',
 			$block->context['facetsContextProvider']

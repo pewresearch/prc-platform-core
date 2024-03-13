@@ -54,7 +54,8 @@ class Formats extends Taxonomies {
 			'interactive',
 			'press-release',
 			'quiz',
-			'stub',
+			'decoded',
+			'stub'
 		) );
 
 		register_taxonomy( $taxonomy_name, $post_types, $args );

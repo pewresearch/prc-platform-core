@@ -58,13 +58,17 @@ class Facet_Template {
 		$options = array();
 		$field_value = null;
 		foreach ($facet_choices as $choice) {
+			// Check if the label is a datetime string...
+			$label_is_datetime = strtotime($choice['label']) !== false;
+			$label = $label_is_datetime ? gmdate('Y', strtotime($choice['label'])) : $choice['label'];
 			$opts = array(
 				'value' => $choice['value'],
-				'label' => $choice['label'] . ' (' . $choice['count'] . ')',
+				'label' => $label . ' (' . $choice['count'] . ')',
+				'isSelected' => false,
 			);
 			if ( in_array($choice['value'], $selected_choices) ) {
 				$field_value = $choice['value'];
-				$opts['selected'] = true;
+				$opts['isSelected'] = true;
 			}
 			$options[] = $opts;
 		}
@@ -203,7 +207,6 @@ class Facet_Template {
 		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
 		$facet_slug = '_' . $facet['name'];
 
-
 		$new_content = '';
 		$expanded_content = '';
 
@@ -219,13 +222,14 @@ class Facet_Template {
 			$expanded_content .= $checkbox_facet['expanded_content'];
 		}
 
-		$facet_id = 'facet-template-'.md5(wp_json_encode($attributes));
+		// Keep in place, we will come back and reimplement wordpress/interactivity-router once it's more stable.
+		$facet_router_region = md5(strtolower($facet['name']));
 
 		$block_wrapper_attrs = get_block_wrapper_attributes(array(
 			'data-wp-interactive' => wp_json_encode(array(
 				'namespace' => 'prc-platform/facet-template'
 			)),
-			'data-wp-router-region' => $facet_slug,
+			// 'data-wp-router-region' => $facet_router_region,
 			'data-wp-key' => $facet_slug,
 			'data-wp-context' => wp_json_encode(array(
 				'expanded' => false,

@@ -1,6 +1,8 @@
 <?php
 namespace PRC\Platform;
 
+use FacetCache_Table, FacetCache_Query;
+
 class Cache extends Facets {
 	public static $memached_enabled = false;
 	public static $memcached_ttl = 30 * MINUTE_IN_SECONDS;
@@ -102,7 +104,6 @@ class Cache extends Facets {
 			'run_on_creation'=> true,
 			'args' => array()
 		);
-//@TODO use action scheduler.
 	}
 
 	public function clear_cache() {
