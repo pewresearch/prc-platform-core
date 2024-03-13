@@ -47,6 +47,41 @@ const { context, state, actions } = store(
 			},
 		},
 		actions: {
+			updateResults: () => {
+				const selected = state.getSelected;
+				console.log('updateResults', selected);
+				if (undefined === selected) {
+					return;
+				}
+				if (Object.keys(selected).length > 0) {
+					const newUrl = state.getUpdatedUrl;
+
+					window.location.href = newUrl;
+
+					// const timeout = setTimeout(() => {
+					// 	state.isProcessing = true;
+					// 	console.log(
+					// 		'rendering diff results...',
+					// 		context,
+					// 		state,
+					// 		newUrl
+					// 	);
+					// }, state.navigateTimer);
+
+					// yield router.actions.navigate(newUrl);
+
+					// clearTimeout(timeout);
+
+					// state.isProcessing = false;
+				} else {
+					// If there are no selections, then we need to navigate to the base url.
+					const newUrl = window.location.href.split('?')[0];
+					window.location.href = newUrl;
+				}
+			},
+			onButtonClick: () => {
+				actions.updateResults();
+			},
 			onCheckboxClick: (event) => {
 				if (event.target.tagName === 'LABEL') {
 					event.preventDefault();
@@ -80,9 +115,8 @@ const { context, state, actions } = store(
 				console.log('onCheckboxClick', ref, state, id, context);
 			},
 			onSelectChange: (value, ref) => {
-				console.log('onSelectChange', value, ref);
-				const id = ref.getAttribute('aria-controls');
-				const facetSlug = document.getElementById(id).dataset.wpKey;
+				const facetSlug = ref.parentElement.dataset.wpKey;
+				console.log('onSelectChange', facetSlug, value, ref);
 				if (!state.selected[facetSlug]) {
 					state.selected[facetSlug] = [];
 				}
@@ -94,26 +128,26 @@ const { context, state, actions } = store(
 					state.selected[facetSlug] = [value];
 				}
 			},
-			*onCheckboxMouseEnter() {
-				console.log(
-					'prc-platform/facets-context-provider',
-					'onCheckboxMouseEnter'
-				);
-				const router = yield import('@wordpress/interactivity-router');
-				const newUrl = state.getUpdatedUrl;
-				console.log('onCheckboxMouseEnter', newUrl);
-				yield router.actions.prefetch(newUrl);
-			},
-			*onButtonMouseEnter() {
-				console.log(
-					'prc-platform/facets-context-provider',
-					'onButtonMouseEnter'
-				);
-				const router = yield import('@wordpress/interactivity-router');
-				const newUrl = state.getUpdatedUrl;
-				console.log('onButtonMouseEnter', newUrl);
-				yield router.actions.prefetch(newUrl);
-			},
+			// *onCheckboxMouseEnter() {
+			// 	console.log(
+			// 		'prc-platform/facets-context-provider',
+			// 		'onCheckboxMouseEnter'
+			// 	);
+			// 	const router = yield import('@wordpress/interactivity-router');
+			// 	const newUrl = state.getUpdatedUrl;
+			// 	console.log('onCheckboxMouseEnter', newUrl);
+			// 	yield router.actions.prefetch(newUrl);
+			// },
+			// *onButtonMouseEnter() {
+			// 	console.log(
+			// 		'prc-platform/facets-context-provider',
+			// 		'onButtonMouseEnter'
+			// 	);
+			// 	const router = yield import('@wordpress/interactivity-router');
+			// 	const newUrl = state.getUpdatedUrl;
+			// 	console.log('onButtonMouseEnter', newUrl);
+			// 	yield router.actions.prefetch(newUrl);
+			// },
 			onClear: (facetSlug) => {
 				console.log('onClear', facetSlug, state);
 				const tmp = state.selected;
@@ -136,37 +170,11 @@ const { context, state, actions } = store(
 			},
 		},
 		callbacks: {
+			onInit() {
+
+			},
 			*onSelection() {
-				const selected = state.getSelected;
-				console.log('onSelection', selected);
-				if (undefined === selected) {
-					return;
-				}
-				const router = yield import('@wordpress/interactivity-router');
-				// Only if the selection has some values.
-				if (Object.keys(selected).length > 0) {
-					const newUrl = state.getUpdatedUrl;
-
-					const timeout = setTimeout(() => {
-						state.isProcessing = true;
-						console.log(
-							'rendering diff results...',
-							context,
-							state,
-							newUrl
-						);
-					}, state.navigateTimer);
-
-					yield router.actions.navigate(newUrl);
-
-					clearTimeout(timeout);
-
-					state.isProcessing = false;
-				} else {
-					// If there are no selections, then we need to navigate to the base url.
-					const newUrl = window.location.href.split('?')[0];
-					yield router.actions.navigate(newUrl);
-				}
+				//
 			},
 		},
 	}
