@@ -31,14 +31,11 @@ class Icon_Loader {
 	public function init($loader = null) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_loader', 99 );
-			// Load fallback prc-icons (if needed).
-			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_icon_library_fallback', 98 );
-			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_library_fallback', 98 );
 		}
 	}
 
 	public function register_icon_loader_script($register_prc_icons = true) {
-		$asset_file = include(  plugin_dir_path( __FILE__ )  . 'build/loader/index.asset.php' );
+		$asset_file = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$dependencies = $asset_file['dependencies'];
 		if ( false === $register_prc_icons ) {
 			$dependencies = array_filter($dependencies, function($handle) {
@@ -48,25 +45,8 @@ class Icon_Loader {
 
 		$registered = wp_register_script(
 			$this->handle,
-			plugins_url( 'build/loader/index.js', __FILE__ ),
+			plugins_url( 'build/index.js', __FILE__ ),
 			$dependencies,
-			$asset_file['version'],
-			array(
-				'in_footer' => true,
-				'strategy' => 'defer',
-			),
-		);
-
-		return $registered;
-	}
-
-	public function register_icon_library_fallback_script() {
-		$asset_file = include(  plugin_dir_path( __FILE__ )  . 'build/library-fallback/index.asset.php' );
-
-		$registered = wp_register_script(
-			'prc-icons',
-			plugins_url( 'build/library-fallback/index.js', __FILE__ ),
-			$asset_file['dependencies'],
 			$asset_file['version'],
 			array(
 				'in_footer' => true,
@@ -95,7 +75,6 @@ class Icon_Loader {
 	 */
 	public function enqueue_icon_library_fallback() {
 		if ( !wp_script_is( 'prc-icons', 'enqueued' ) ) {
-			$this->register_icon_library_fallback_script();
 			wp_enqueue_script( 'prc-icons' );
 		}
 	}

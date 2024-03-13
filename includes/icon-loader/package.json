@@ -11,10 +11,6 @@
 		"babel-plugin-macros": "^3.1.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build src/loader/index.js --output-path=build/loader; wp-scripts build src/library-fallback/index.js --output-path=build/library-fallback"
-	},
-	"dependencies": {
-		"@fortawesome/fontawesome-svg-core": "^6.5.1",
-		"@fortawesome/react-fontawesome": "^0.2.0"
+		"build": "wp-scripts build src/index.js"
 	}
 }
