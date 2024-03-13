@@ -66,6 +66,7 @@ class Facets_Context_Provider {
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
+			'buttonId' => 'update-results-button'
 		);
 
 		return $context;
@@ -94,7 +95,6 @@ class Facets_Context_Provider {
 					'namespace' => 'prc-platform/facets-context-provider'
 				)),
 				'data-wp-context' => wp_json_encode($initial_context),
-				'data-wp-init' => 'callbacks.onInit',
 				'data-wp-watch--on-selection' => 'callbacks.onSelection',
 			)),
 			$content,

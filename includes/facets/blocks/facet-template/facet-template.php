@@ -53,9 +53,6 @@ class Facet_Template {
 	public function render_dropdown_facet($facet, $inner_blocks) {
 		$field = $inner_blocks[0];
 		$facet_choices = $facet['choices'];
-		if ( empty($facet_choices) ) {
-			return '';
-		}
 		$selected_choices = $facet['selected'];
 
 		$options = array();
@@ -76,9 +73,7 @@ class Facet_Template {
 			$options[] = $opts;
 		}
 		$field['attrs']['options'] = $options;
-		if (null !== $field_value) {
-			$field['attrs']['value'] = $field_value;
-		}
+		$field['attrs']['value'] = $field_value;
 		$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
 		$parsed = new WP_Block_Parser_Block(
 			$field['blockName'],
@@ -144,8 +139,8 @@ class Facet_Template {
 	public function render_date_range_facet($facet, $inner_blocks) {
 		// Minimum Range
 		$min = array(
-			'min' => gmdate('Y', strtotime($facet['settings']['range']['min']['minDate'])),
-			'max' => gmdate('Y', strtotime($facet['settings']['range']['min']['maxDate'])),
+			'min' => date('Y', strtotime($facet['settings']['range']['min']['minDate'])),
+			'max' => date('Y', strtotime($facet['settings']['range']['min']['maxDate'])),
 		);
 		$min_options = array();
 		foreach (range($min['min'], $min['max']) as $year) {
@@ -228,16 +223,13 @@ class Facet_Template {
 		}
 
 		// Keep in place, we will come back and reimplement wordpress/interactivity-router once it's more stable.
-		$facet_router_region = md5(wp_json_encode([
-			'name' => $facet['name'],
-			'type' => $facet_type,
-		]));
+		$facet_router_region = md5(strtolower($facet['name']));
 
 		$block_wrapper_attrs = get_block_wrapper_attributes(array(
 			'data-wp-interactive' => wp_json_encode(array(
 				'namespace' => 'prc-platform/facet-template'
 			)),
-			'data-wp-router-region' => $facet_router_region,
+			// 'data-wp-router-region' => $facet_router_region,
 			'data-wp-key' => $facet_slug,
 			'data-wp-context' => wp_json_encode(array(
 				'expanded' => false,
