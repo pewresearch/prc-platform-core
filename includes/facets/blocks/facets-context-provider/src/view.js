@@ -154,11 +154,14 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const selected = state.getSelected;
 			console.log('onSelection', selected, Object.keys(selected));
 			if (Object.keys(selected).length > 0) {
+				console.log("If there are no selected facets, don't enable the button and dont run the query...");
 				state['update-results-button'].isDisabled = false;
 				// let's run a quick router to refresh the components...
 				// with the caching layer on the backend we have now (if this is the first such query) cached
 				// the results for the next user. this will last an hour.
-				yield actions.updateResults();
+				setTimeout(() => {
+					actions.updateResults();
+				}, 500);
 			}
 		},
 	},
