@@ -9,10 +9,7 @@ import { getBlockGapSupportValue } from '@prc/block-utils';
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment, useMemo } from 'react';
-import {
-	useBlockProps,
-	RichText,
-} from '@wordpress/block-editor';
+import { useBlockProps, RichText } from '@wordpress/block-editor';
 
 /**
  * Internal Dependencies
@@ -34,55 +31,67 @@ import Controls from './controls';
  *
  * @return {WPElement} Element to render.
  */
-export default function Edit( {
+export default function Edit({
 	attributes,
 	setAttributes,
 	context,
 	clientId,
 	isSelected,
-} ) {
+}) {
 	const { facetName, facetType, facetLabel } = attributes;
 
 	const blockProps = useBlockProps({
+		className: `is-type-${facetType}`,
 		style: {
 			'--block-gap': getBlockGapSupportValue(attributes),
-		}
+		},
 	});
 
-	const templateContexts = useMemo(()=>{
-		if ( ['dropdown','yearly','date_range'].includes(facetType) ) {
-			return [{
-				label: "Dropdown"
-			}];
+	const templateContexts = useMemo(() => {
+		if (['dropdown', 'yearly', 'date_range'].includes(facetType)) {
+			return [
+				{
+					label: 'Dropdown',
+				},
+			];
 		}
-		return [{
-			label: "Item 1"
-		}, {
-			label: "Item 2"
-		}, {
-			label: "Item 3"
-		}];
+		return [
+			{
+				label: 'Item 1',
+			},
+			{
+				label: 'Item 2',
+			},
+			{
+				label: 'Item 3',
+			},
+		];
 	}, [facetType]);
 
 	return (
 		<Fragment>
-			<Controls { ...{ attributes, setAttributes, context, clientId } } />
+			<Controls {...{ attributes, setAttributes, context, clientId }} />
 			<div {...blockProps}>
 				<RichText
 					tagName="h5"
-					placeholder={ __( 'Facet Template', 'prc' ) }
-					value={ facetLabel }
-					onChange={ ( value ) => setAttributes( { facetLabel: value } ) }
+					placeholder={__('Facet Template', 'prc')}
+					value={facetLabel}
+					onChange={(value) => setAttributes({ facetLabel: value })}
 					keepPlaceholderOnFocus
-					className='wp-block-prc-platform-facet-template__label'
+					className="wp-block-prc-platform-facet-template__label"
 				/>
-				<InnerBlocksAsContextTemplate {...{
-					clientId,
-					allowedBlocks: [ 'prc-block/form-input-checkbox', 'prc-block/form-input-select' ],
-					blockContexts: templateContexts,
-					isResolving: false,
-					loadingLabel: 'Loading Facet...',
-				}}/>
+				<InnerBlocksAsContextTemplate
+					{...{
+						clientId,
+						allowedBlocks: [
+							'prc-block/form-input-checkbox',
+							'prc-block/form-input-select',
+						],
+						blockContexts: templateContexts,
+						isResolving: false,
+						loadingLabel: 'Loading Facet...',
+					}}
+				/>
 			</div>
 		</Fragment>
 	);

@@ -7,6 +7,7 @@ const { addQueryArgs } = window.wp.url;
 
 const { state, actions } = store('prc-platform/facets-context-provider', {
 	state: {
+		processing: false,
 		mouseEnterPreFetchTimer: 500,
 		navigateTimer: 1000,
 		get getSelected() {
@@ -51,7 +52,7 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			console.log('updateResults', selected, Object.keys(selected));
 			const newUrl = state.getUpdatedUrl;
 			console.log('updating...', newUrl, Object.keys(selected), selected);
-			yield router.actions.navigate(newUrl);
+			// yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
 		},
 		*onButtonClick() {
