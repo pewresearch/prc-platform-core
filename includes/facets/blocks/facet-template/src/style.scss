@@ -50,24 +50,3 @@
 		border-radius: 50%;
 	}
 }
-
-
-.wp-block-prc-platform-facet-template.is-type-date_range {
-	&:not(.wp-block) {
-		flex-direction: row;
-		display: flex;
-		flex-wrap: wrap;
-		.wp-block-prc-platform-facet-template__label {
-			width: 100%;
-			flex-grow: 1;
-		}
-		.wp-block-prc-block-form-input-select {
-			width: 48%;
-		}
-	}
-	&.wp-block .block-editor-block-list__layout {
-		flex-direction: row;
-		display: flex;
-		gap: var(--block-gap);
-	}
-}
