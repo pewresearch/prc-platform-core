@@ -209,8 +209,9 @@ class Facet_Template {
 	public function render_block_callback($attributes, $content, $block) {
 		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
 		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
+		$facet_slug = '_' . $facet_name;
+		do_action('qm/debug', print_r($block->context['facetsContextProvider']['data']['facets'], true));
 		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
-		$facet_slug = '_' . $facet['name'];
 
 		$new_content = '';
 		$expanded_content = '';
@@ -259,11 +260,13 @@ class Facet_Template {
 			$template = '<div %1$s>%2$s<div class="wp-block-prc-block-facet-template-list">%3$s</div>%4$s</div>';
 		}
 
+		$clear_icon =  \PRC\Platform\Icons\Render('solid', 'circle-xmark');
+
 		$label = wp_sprintf(
 			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">%3$s</button></span></h5>',
 			array_key_exists('facetLabel', $attributes) ? $attributes['facetLabel'] : '',
 			'actions.onClear',
-			\PRC\Platform\Icons\Render('solid', 'circle-xmark'),
+			$clear_icon,
 		);
 
 		$expanded_content = !empty($expanded_content) ? wp_sprintf(

@@ -65,9 +65,9 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 
 			console.log(
 				'facets-context-provider::updateResults (CHANGE DETECTED)',
-				selected,
 				Object.keys(selected),
-				newUrl
+				newUrl,
+				currentUrl
 			);
 
 			const router = yield import('@wordpress/interactivity-router');

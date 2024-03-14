@@ -48,6 +48,7 @@ class Facets_API {
 		$registered_facets = array();
 		$facets = json_decode($settings, true)['facets'];
 		foreach ($facets as $facet) {
+			$facet_slug = '_' . $facet['name'];
 			$registered_facets[$facet['name']] = $this->get_current_selection('_' . $facet['name']);
 		}
 		return $registered_facets;
