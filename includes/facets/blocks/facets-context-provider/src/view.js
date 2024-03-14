@@ -14,7 +14,7 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			return state.selected;
 		},
 		get getUpdatedUrl() {
-			console.log('getUpdatedUrl...', state);
+			console.log('facets-context-provider::getUpdatedUrl...', state);
 			const tmp = {};
 			if (undefined === state.selected) {
 				return;
@@ -40,18 +40,38 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			// if stableUrl has /page/x/ in it, we need to remove that.
 			const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
 			const newUrl = addQueryArgs(stableUrlClean, tmp);
-			console.log('getUpdatedUrl=', stableUrlClean, tmp, newUrl);
+			console.log(
+				'facets-context-provider::getUpdatedUrl = :::::',
+				stableUrlClean,
+				tmp,
+				newUrl
+			);
 			return newUrl;
 		},
 	},
 	actions: {
 		*updateResults() {
 			const selected = state.getSelected;
+			const currentUrl = window.location.href;
+			const newUrl = state.getUpdatedUrl;
+
+			if (newUrl === currentUrl) {
+				console.log(
+					'facets-context-provider::updateResults (NO CHANGE)',
+					'No change...'
+				);
+				return;
+			}
+
+			console.log(
+				'facets-context-provider::updateResults (CHANGE DETECTED)',
+				selected,
+				Object.keys(selected),
+				newUrl
+			);
+
 			const router = yield import('@wordpress/interactivity-router');
 
-			console.log('updateResults', selected, Object.keys(selected));
-			const newUrl = state.getUpdatedUrl;
-			console.log('updating...', newUrl, Object.keys(selected), selected);
 			// yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
 		},
@@ -88,11 +108,21 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 					value,
 				];
 			}
-			console.log('onCheckboxClick', ref, state, id, context);
+			console.log(
+				'facets-context-provider::onCheckboxClick',
+				ref,
+				state,
+				id,
+				context
+			);
 		},
 		onSelectChange: (value, ref) => {
 			const facetSlug = ref.parentElement.dataset.wpKey;
-			console.log('onSelectChange', facetSlug, value, ref);
+			console.log(
+				'facets-context-provider::onSelectChange',
+				facetSlug,
+				value
+			);
 			if (!state.selected[facetSlug]) {
 				state.selected[facetSlug] = [value];
 			}
@@ -125,7 +155,7 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		// 	yield router.actions.prefetch(newUrl);
 		// },
 		onClear: (facetSlug) => {
-			console.log('onClear', facetSlug, state);
+			console.log('facets-context-provider::onClear', facetSlug, state);
 			const tmp = state.selected;
 			// Clear all inputs that have the value of the facetSlug.
 			Object.keys(state).find((key) => {
@@ -149,18 +179,29 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		onInit() {
 			// set the button to disabled to start...
 			state['update-results-button'].isDisabled = true;
-			console.log('facets context provider onInit', state);
+			console.log('facets-context-provider::onInit', state);
 		},
 		*onSelection() {
 			const selected = state.getSelected;
-			console.log('onSelection', selected, Object.keys(selected));
-			if (Object.keys(selected).length > 0) {
-				console.log("If there are no selected facets, don't enable the button and dont run the query...");
+			console.log(
+				'facets-context-provider::onSelection',
+				selected,
+				Object.keys(selected)
+			);
+			if (Object.keys(selected).length <= 0) {
+				console.log(
+					"If there are no selected facets, don't enable the button and dont run the query..."
+				);
 				state['update-results-button'].isDisabled = false;
+			} else {
 				// let's run a quick router to refresh the components...
 				// with the caching layer on the backend we have now (if this is the first such query) cached
 				// the results for the next user. this will last an hour.
 				setTimeout(() => {
+					console.log(
+						'Looks like we do have some selectiosn...',
+						Object.keys(selected)
+					);
 					actions.updateResults();
 				}, 500);
 			}

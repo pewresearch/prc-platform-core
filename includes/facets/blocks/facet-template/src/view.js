@@ -50,11 +50,9 @@ store('prc-platform/facet-template', {
 			const context = getContext();
 			const { facetSlug } = context;
 			const { state } = store('prc-platform/facets-context-provider');
-			console.log('isSelected', facetSlug, state?.selected);
-			if (
-				state.selected[facetSlug] &&
-				state.selected[facetSlug].length > 0
-			) {
+			const selected = state.getSelected;
+			console.log('facets-template::isSelected', facetSlug, selected);
+			if (selected[facetSlug] && selected[facetSlug].length > 0) {
 				return true;
 			}
 			return false;

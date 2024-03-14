@@ -260,9 +260,10 @@ class Facet_Template {
 		}
 
 		$label = wp_sprintf(
-			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">x</button></span></h5>',
+			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">%3$s</button></span></h5>',
 			array_key_exists('facetLabel', $attributes) ? $attributes['facetLabel'] : '',
-			'actions.onClear'
+			'actions.onClear',
+			\PRC\Platform\Icons\Render('solid', 'circle-xmark'),
 		);
 
 		$expanded_content = !empty($expanded_content) ? wp_sprintf(
