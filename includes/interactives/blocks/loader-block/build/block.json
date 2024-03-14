@@ -33,6 +33,23 @@
           "type": "string"
         }
       }
+    },
+    "legacyS3": {
+      "type": "object",
+      "properties": {
+        "libraries": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "styles": {
+          "type": "string"
+        },
+        "react": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "supports": {

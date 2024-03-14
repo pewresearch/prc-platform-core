@@ -248,6 +248,9 @@ class Facet_Template {
 			'data-wp-class--is-expanded' => 'context.expanded',
 			'data-wp-class--has-selections' => 'callbacks.isSelected',
 			'style' => '--block-gap: ' . $this->get_block_gap_support_value($attributes) . ';',
+			'class' => \PRC\Platform\Block_Utils\classNames(array(
+				'is-type-' . $facet_type,
+			))
 		));
 
 		if ( in_array($facet_type, array('dropdown','yearly','date_range')) ) {

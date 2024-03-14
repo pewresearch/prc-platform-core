@@ -7,6 +7,7 @@ const { addQueryArgs } = window.wp.url;
 
 const { state, actions } = store('prc-platform/facets-context-provider', {
 	state: {
+		processing: false,
 		mouseEnterPreFetchTimer: 500,
 		navigateTimer: 1000,
 		get getSelected() {
@@ -50,17 +51,13 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 
 			console.log('updateResults', selected, Object.keys(selected));
 			const newUrl = state.getUpdatedUrl;
-			console.log(
-				'navigating...',
-				newUrl,
-				Object.keys(selected),
-				selected
-			);
-			yield router.actions.navigate(newUrl);
+			console.log('updating...', newUrl, Object.keys(selected), selected);
+			// yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
 		},
 		*onButtonClick() {
-			yield actions.updateResults();
+			// Refresh the page, go render the next page of results...
+			window.location.href = window.location.href;
 		},
 		onCheckboxClick: (event) => {
 			if (event.target.tagName === 'LABEL') {
@@ -158,7 +155,14 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const selected = state.getSelected;
 			console.log('onSelection', selected, Object.keys(selected));
 			if (Object.keys(selected).length > 0) {
+				console.log("If there are no selected facets, don't enable the button and dont run the query...");
 				state['update-results-button'].isDisabled = false;
+				// let's run a quick router to refresh the components...
+				// with the caching layer on the backend we have now (if this is the first such query) cached
+				// the results for the next user. this will last an hour.
+				setTimeout(() => {
+					actions.updateResults();
+				}, 500);
 			}
 		},
 	},

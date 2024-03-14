@@ -176,7 +176,7 @@ class Interactives {
 	 */
 	public function register_endpoints($endpoints) {
 		$get_assets = array(
-			'route' => '/interactives/get-assets',
+			'route' => 'interactive/get-assets',
 			'methods' => 'GET',
 			'callback' => array( $this, 'get_assets_restfully' ),
 			'permission_callback' => function() {
@@ -185,7 +185,7 @@ class Interactives {
 		);
 
 		$get_data = array(
-			'route' => '/interactives/get-data/(?P<attachmentId>\d+)',
+			'route' => 'interactive/get-data/(?P<attachmentId>\d+)',
 			'methods' => 'GET',
 			'callback' => array( $this, 'get_data_restfully' ),
 			'args' => array(
