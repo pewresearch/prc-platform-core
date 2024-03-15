@@ -1,26 +1,20 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "prc-platform/facet-template",
+	"name": "prc-platform/facets-update-button",
 	"version": "0.1.0",
-	"title": "Facet Template",
+	"title": "Facets Update Button",
 	"category": "theme",
-	"description": "Display a facet given its slug and type as a block",
-	"attributes": {
-		"facetName": {
-			"type": "string",
-			"default": ""
-		},
-		"facetType": {
-			"type": "string"
-		},
-		"facetLabel": {
-			"type": "string"
-		}
-	},
+	"description": "Provides a selection aware button to update the page results and/or clear all selections",
+	"attributes": {},
 	"supports": {
 		"anchor": true,
 		"html": false,
+		"color": {
+			"text": true,
+			"background": true,
+			"button": true
+		},
 		"spacing": {
 			"blockGap": true,
 			"margin": [ "top", "bottom" ],
@@ -45,35 +39,10 @@
 		},
 		"interactivity": true
 	},
-	"selectors": {
-		"root": ".wp-block-prc-platform-facet-template",
-		"typography": "h5"
-	},
-	"usesContext": [
-		"postType",
-		"templateSlug",
-		"previewPostType",
-		"facetsContextProvider"
-	],
-	"providesContext": {
-		"prc-facets/template/facetType": "facetType",
-		"prc-facets/template/facetName": "facetName",
-		"prc-facets/template/facetLabel": "facetLabel"
-	},
-	"styles": [
-		{
-			"name": "default",
-			"label": "Default",
-			"isDefault": true
-		},
-		{
-			"name": "no-label",
-			"label": "No Label"
-		}
-	],
-	"textdomain": "facet-template",
+	"textdomain": "facets-update-button",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
 	"style": "file:./style-index.css",
+	"render": "file:./render.php",
 	"viewScriptModule": "file:./view.js"
 }

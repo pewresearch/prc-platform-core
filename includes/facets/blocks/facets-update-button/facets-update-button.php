@@ -2,20 +2,16 @@
 namespace PRC\Platform;
 
 /**
- * Block Name:        {{title}}
-{{#description}}
- * Description:       {{description}}
-{{/description}}
+ * Block Name:        Facets Update Button
+ * Description:       Provides a selection aware button to update the page results and&#x2F;or clear all selections
  * Requires at least: 6.4
  * Requires PHP:      8.1
-{{#author}}
- * Author:            {{author}}
-{{/author}}
+ * Author:            Pew Research Center
  *
- * @package           {{namespace}}
+ * @package           prc-platform
  */
 
-class {{slugSnakeCase}} {
+class Facets_Update_Button {
 	public function __construct($loader) {
 		$this->init($loader);
 	}

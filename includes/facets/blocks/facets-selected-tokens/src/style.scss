@@ -1,0 +1,42 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-prc-platform-facets-selected-tokens {
+	color: inherit;
+	background: inherit;
+	padding: 0;
+	margin: 0;
+	display: none;
+	list-style: none;
+	flex-direction: row;
+	align-items: center;
+
+	@keyframes fadeIn {
+		0% {opacity: 0;}
+		100% {opacity: 1;}
+	}
+
+	&.has-tokens {
+		display: flex;
+		animation: fadeIn 0.3s ease-in-out;
+	}
+
+	&__token {
+		color: inherit;
+		background: inherit;
+		border: 1px solid currentColor;
+		border-radius: 4px;
+		padding: 0.5em 0.75em;
+		display: inline-block;
+		cursor: pointer;
+	}
+
+	& > li:last-of-type {
+		flex-grow: 1;
+		text-align: right;
+	}
+}

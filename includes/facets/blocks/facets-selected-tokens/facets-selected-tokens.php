@@ -2,20 +2,16 @@
 namespace PRC\Platform;
 
 /**
- * Block Name:        {{title}}
-{{#description}}
- * Description:       {{description}}
-{{/description}}
+ * Block Name:        Facet Selected Tokens
+ * Description:       Display a list of selected, active facets as tokens
  * Requires at least: 6.4
  * Requires PHP:      8.1
-{{#author}}
- * Author:            {{author}}
-{{/author}}
+ * Author:            Seth Rubenstein
  *
- * @package           {{namespace}}
+ * @package           prc-platform
  */
 
-class {{slugSnakeCase}} {
+class Facets_Selected_Tokens {
 	public function __construct($loader) {
 		$this->init($loader);
 	}
