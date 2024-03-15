@@ -29,6 +29,7 @@ class Facets_API {
 		$current_url = home_url( add_query_arg( null, null ) );
 		$current_query = wp_parse_url($current_url, PHP_URL_QUERY);
 		$current_selection = null;
+		$facet_slug = '_' . $facet_slug;
 		// see if $facetwp_facet_slug is in the query string
 		// if it is, then we're going to store it in $new_content
 		if ( $current_query ) {
@@ -49,7 +50,7 @@ class Facets_API {
 		$facets = json_decode($settings, true)['facets'];
 		foreach ($facets as $facet) {
 			$facet_slug = '_' . $facet['name'];
-			$registered_facets[$facet['name']] = $this->get_current_selection('_' . $facet['name']);
+			$registered_facets[$facet['name']] = $this->get_current_selection($facet['name']);
 		}
 		return $registered_facets;
 	}

@@ -22,9 +22,9 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			// Construct a comma separated string for each selected facet.
 			Object.keys(state.selected).forEach((key) => {
 				if (Array.isArray(state.selected[key])) {
-					tmp[key] = state.selected[key].join(',');
+					tmp[`_${key}`] = state.selected[key].join(',');
 				} else {
-					tmp[key] = state.selected[key];
+					tmp[`_${key}`] = state.selected[key];
 				}
 			});
 			// Double check tmp, if it has a key with empty value, remove it.
@@ -72,7 +72,7 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 
 			const router = yield import('@wordpress/interactivity-router');
 
-			// yield router.actions.navigate(newUrl);
+			yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
 		},
 		*onButtonClick() {
@@ -117,22 +117,21 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 		},
 		onSelectChange: (value, ref) => {
-			const facetSlug = ref.parentElement.dataset.wpKey;
-			console.log(
-				'facets-context-provider::onSelectChange',
-				facetSlug,
-				value
-			);
-			if (!state.selected[facetSlug]) {
-				state.selected[facetSlug] = [value];
+			const facetSlug =
+				ref.parentElement.parentElement.parentElement.dataset.wpKey;
+			const currentSelected = state.getSelected;
+			const newSelected = currentSelected;
+			if (!currentSelected[facetSlug]) {
+				newSelected[facetSlug] = [value];
 			}
-			if (state.selected[facetSlug].includes(value)) {
-				state.selected[facetSlug] = state.selected[facetSlug].filter(
+			if (currentSelected[facetSlug].includes(value)) {
+				newSelected[facetSlug] = newSelected[facetSlug].filter(
 					(item) => item !== value
 				);
 			} else {
-				state.selected[facetSlug] = [value];
+				newSelected[facetSlug] = [value];
 			}
+			state.selected = newSelected;
 		},
 		// *onCheckboxMouseEnter() {
 		// 	console.log(
@@ -183,27 +182,21 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		},
 		*onSelection() {
 			const selected = state.getSelected;
+			const keysLength = Object.keys(selected).length;
 			console.log(
 				'facets-context-provider::onSelection',
 				selected,
-				Object.keys(selected)
+				Object.keys(selected),
+				keysLength
 			);
-			if (Object.keys(selected).length <= 0) {
-				console.log(
-					"If there are no selected facets, don't enable the button and dont run the query..."
-				);
-				state['update-results-button'].isDisabled = false;
+			// No selections? Disable the update button.
+			if (keysLength <= 0) {
+				console.log('disabling button', Object.keys(selected).length);
+				state['update-results-button'].isDisabled = true;
 			} else {
-				// let's run a quick router to refresh the components...
-				// with the caching layer on the backend we have now (if this is the first such query) cached
-				// the results for the next user. this will last an hour.
-				setTimeout(() => {
-					console.log(
-						'Looks like we do have some selectiosn...',
-						Object.keys(selected)
-					);
-					actions.updateResults();
-				}, 500);
+				// Once we have some selections, lets run a refresh.
+				actions.updateResults();
+				state['update-results-button'].isDisabled = false;
 			}
 		},
 	},

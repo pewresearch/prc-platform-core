@@ -209,8 +209,8 @@ class Facet_Template {
 	public function render_block_callback($attributes, $content, $block) {
 		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
 		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
-		$facet_slug = '_' . $facet_name;
-		do_action('qm/debug', print_r($block->context['facetsContextProvider']['data']['facets'], true));
+		// $facet_slug = '_' . $facet_name;
+		$facet_slug = $facet_name;
 		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
 
 		$new_content = '';
@@ -228,9 +228,13 @@ class Facet_Template {
 			$expanded_content .= $checkbox_facet['expanded_content'];
 		}
 
+		if ( empty($new_content) ) {
+			return '';
+		}
+
 		// Keep in place, we will come back and reimplement wordpress/interactivity-router once it's more stable.
 		$facet_router_region = md5(wp_json_encode([
-			'name' => $facet['name'],
+			'slug' => $facet_slug,
 			'type' => $facet_type,
 		]));
 
