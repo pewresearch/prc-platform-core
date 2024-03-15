@@ -7,6 +7,7 @@ const { addQueryArgs } = window.wp.url;
 
 const { state, actions } = store('prc-platform/facets-context-provider', {
 	state: {
+		processing: false,
 		mouseEnterPreFetchTimer: 500,
 		navigateTimer: 1000,
 		get getSelected() {
@@ -61,8 +62,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 				);
 				return;
 			}
-
-			state.isProcessing = true;
 
 			console.log(
 				'facets-context-provider::updateResults (CHANGE DETECTED)',
@@ -134,32 +133,26 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			}
 			state.selected = newSelected;
 		},
-		*prefetch() {
-			const router = yield import('@wordpress/interactivity-router');
-			const newUrl = state.getUpdatedUrl;
-
-			// check if newUrl is in state.prefetched and if not then 1. add it to the state.prefetched and 2. prefetch it. otherwise return.
-			if (state.prefetched.includes(newUrl)) {
-				return;
-			}
-
-			state.prefetched.push(newUrl);
-
-			console.log(
-				'facets-context-provider::prefetch',
-				newUrl,
-				state.prefetched
-			);
-			yield router.actions.prefetch(newUrl);
-		},
-		*onCheckboxMouseEnter() {
-			console.log('facets-context-provider::onCheckboxMouseEnter');
-			yield actions.prefetch();
-		},
-		*onButtonMouseEnter() {
-			console.log('facets-context-provider::onButtonMouseEnter');
-			yield actions.prefetch();
-		},
+		// *onCheckboxMouseEnter() {
+		// 	console.log(
+		// 		'prc-platform/facets-context-provider',
+		// 		'onCheckboxMouseEnter'
+		// 	);
+		// 	const router = yield import('@wordpress/interactivity-router');
+		// 	const newUrl = state.getUpdatedUrl;
+		// 	console.log('onCheckboxMouseEnter', newUrl);
+		// 	yield router.actions.prefetch(newUrl);
+		// },
+		// *onButtonMouseEnter() {
+		// 	console.log(
+		// 		'prc-platform/facets-context-provider',
+		// 		'onButtonMouseEnter'
+		// 	);
+		// 	const router = yield import('@wordpress/interactivity-router');
+		// 	const newUrl = state.getUpdatedUrl;
+		// 	console.log('onButtonMouseEnter', newUrl);
+		// 	yield router.actions.prefetch(newUrl);
+		// },
 		onClear: (facetSlug) => {
 			console.log('facets-context-provider::onClear', facetSlug, state);
 			const tmp = state.selected;
