@@ -3,9 +3,9 @@
   "apiVersion": 3,
   "name": "prc-platform/facets-selected-tokens",
   "version": "0.1.0",
-  "title": "Facet Selected Tokens",
+  "title": "Facets Selected Tokens",
   "category": "theme",
-  "description": "Display a list of selected, active facets as tokens",
+  "description": "Display a list of selected facets styled as tokens.",
   "attributes": {
     "orientation": {
       "type": "string",

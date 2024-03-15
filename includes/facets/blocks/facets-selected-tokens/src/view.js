@@ -8,6 +8,14 @@ import { store, getElement } from '@wordpress/interactivity';
  */
 const targetNamespace = 'prc-platform/facets-context-provider';
 
+const createPagerText = (pager) => {
+	const { page, per_page, total_pages, total_rows } = pager;
+	// return something like "Displaying 1 - 10 of 100"
+	const start = page <= 1 ? 1 : ( page * per_page ) + 1;
+	const end = page <= 1 ? per_page : ( page * per_page ) + per_page;
+	return `Displaying ${start} - ${end} of ${total_rows} results`;
+};
+
 const { state } = store('prc-platform/facets-selected-tokens', {
 	state: {
 		tokens: [],
@@ -30,7 +38,7 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 				return;
 			}
 			targetStore.actions.onClear();
-		}
+		},
 	},
 	callbacks: {
 		hasTokens: () => {
@@ -44,6 +52,10 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 			if (!targetStore.state) {
 				return;
 			}
+			const { pager } = targetStore.state.data;
+
+			state.pagerText = createPagerText(pager);
+
 			const selected = targetStore.state.getSelected;
 			// map selected onto tokens...
 			const tokens = Object.keys(selected).map((slug) => {

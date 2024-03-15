@@ -10,33 +10,57 @@
 	background: inherit;
 	padding: 0;
 	margin: 0;
-	display: none;
 	list-style: none;
+	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
+	gap: 10px;
 
 	@keyframes fadeIn {
 		0% {opacity: 0;}
 		100% {opacity: 1;}
 	}
 
-	&.has-tokens {
+	& > li {
 		display: flex;
-		animation: fadeIn 0.3s ease-in-out;
-	}
-
-	&__token {
-		color: inherit;
-		background: inherit;
-		border: 1px solid currentColor;
-		border-radius: 4px;
-		padding: 0.5em 0.75em;
-		display: inline-block;
-		cursor: pointer;
+		flex-direction: row;
+		align-items: center;
+		gap: 5px;
+		min-width: fit-content;
 	}
 
 	& > li:last-of-type {
 		flex-grow: 1;
 		text-align: right;
 	}
+
+	&:not(.wp-block) > li:not(:first-of-type) {
+		display: none;
+	}
+	&.has-tokens > li:not(:first-of-type) {
+		display: flex;
+		animation: fadeIn 0.3s ease-in-out;
+	}
+
+	&__pager {
+		width: 100%;
+	}
+
+	&__token {
+		border: none;
+		cursor: pointer;
+		background-color: var(--wp--preset--color--ui-gray-very-light);
+		color: inherit;
+		background: inherit;
+		border: 1px solid currentColor;
+		border-radius: 0.285714rem;
+		font-weight: 700;
+		font-size: 0.9em;
+		line-height: 1;
+		padding: 0.5833em 0.833em;
+		text-transform: none;
+		transition: background 0.1s ease 0s;
+	}
+
 }

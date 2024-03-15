@@ -29,9 +29,14 @@ $token_list = wp_sprintf(
 	$token_template,
 );
 
+$pager = wp_sprintf(
+	'<li class="wp-block-prc-platform-facets-selected-tokens__pager" data-wp-text="state.pagerText"></li>',
+);
+
 echo wp_sprintf(
-	'<ul %1$s><li>Filtering by:</li>%2$s<li data-wp-on--click="actions.onReset">Reset %3$s</li></ul>',
+	'<ul %1$s>%4$s<li><span>Filtering by:</span></li>%2$s<li data-wp-on--click="actions.onReset"><span>Reset</span> %3$s</li></ul>',
 	$block_wrapper_attrs,
 	$token_list,
 	$clear_icon,
+	$pager,
 );

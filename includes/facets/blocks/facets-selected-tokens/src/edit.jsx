@@ -1,26 +1,17 @@
 /**
  * External Dependencies
  */
-
+import { Icon } from '@prc/icons';
 /**
  * WordPress Dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Fragment } from '@wordpress/element';
-import {
-	useBlockProps,
-	RichText,
-	useInnerBlocksProps,
-	InnerBlocks,
-} from '@wordpress/block-editor';
-import { withNotices } from '@wordpress/components';
+import { Fragment, useMemo } from 'react';
+import { useBlockProps, RichText } from '@wordpress/block-editor';
 
 /**
  * Internal Dependencies
  */
 import Controls from './controls';
-
-const ALLOWED_BLOCKS = [ 'core/group', 'core/paragraph' ];
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -37,22 +28,41 @@ const ALLOWED_BLOCKS = [ 'core/group', 'core/paragraph' ];
  *
  * @return {WPElement} Element to render.
  */
-export default function Edit( {
+export default function Edit({
 	attributes,
 	setAttributes,
 	context,
 	clientId,
 	isSelected,
-} ) {
+}) {
 	const blockProps = useBlockProps();
+
+	const MemoizedCloseIcon = useMemo(() => <Icon icon="circle-xmark" />, []);
 
 	return (
 		<Fragment>
-			<Controls { ...{ attributes, setAttributes, context: false } } />
-			<ul { ...blockProps }>
-				<span class="wp-block-prc-platform-facets-selected-tokens__token">Topics: X, Y, Z</span>
-				<span class="wp-block-prc-platform-facets-selected-tokens__token">Formats: X, Y, Z</span>
-				<span class="wp-block-prc-platform-facets-selected-tokens__token">Year: 2021</span>
+			<Controls {...{ attributes, setAttributes, context: false }} />
+			<ul {...blockProps}>
+				<li className="wp-block-prc-platform-facets-selected-tokens__pager">
+					Displaying 1-10 of 20 results
+				</li>
+				<li>Filtering by:</li>
+				<li className="wp-block-prc-platform-facets-selected-tokens__token">
+					<span>Topics: X, Y, Z</span>
+					{MemoizedCloseIcon}
+				</li>
+				<li className="wp-block-prc-platform-facets-selected-tokens__token">
+					<span>Formats: X, Y, Z</span>
+					{MemoizedCloseIcon}
+				</li>
+				<li className="wp-block-prc-platform-facets-selected-tokens__token">
+					<span>Year: 2021</span>
+					{MemoizedCloseIcon}
+				</li>
+				<li>
+					<span>Reset</span>
+					{MemoizedCloseIcon}
+				</li>
 			</ul>
 		</Fragment>
 	);

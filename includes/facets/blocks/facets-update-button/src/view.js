@@ -17,11 +17,12 @@ const { actions, state } = store('prc-platform/facets-update-button', {
 	},
 	actions: {
 		onClear: () => {
-			const targetStore = store(targetNamespace);
-			if (!targetStore.actions || !targetStore.actions.onClear) {
-				return;
-			}
-			targetStore.actions.onClear();
+			// We're clearing all, so lets just redirect without any filters...
+			setTimeout(() => {
+				// get the base url without any url params and redirect there...
+				const url = window.location.href.split('?')[0];
+				window.location.href = url;
+			}, 100);
 		},
 		onButtonClick() {
 			// Refresh the page, go render the next page of results...
