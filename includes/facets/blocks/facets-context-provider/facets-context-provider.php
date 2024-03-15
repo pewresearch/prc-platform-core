@@ -54,21 +54,19 @@ class Facets_Context_Provider {
 	 * @return mixed
 	 */
 	public function add_facet_data_to_context($context, $parsed_block, $parent_block_instance) {
-		if ( !in_array($parsed_block['blockName'], [
+		if ( !in_array($parsed_block['blockName'], array(
 			'prc-platform/facets-context-provider',
 			'prc-platform/facet-template',
 			'prc-platform/selected-tokens',
-		]) ) {
+		)) ) {
 			return $context;
 		}
 
-		$context['facetsContextProvider'] = [
+		$context['facetsContextProvider'] = array(
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
-			'isDisabled' => true, // We start off by setting disabled to true, this is set to false once there are selections. This ensures the update-button block can't be used.
-			'prefetched' => [],
-		];
+		);
 
 		return $context;
 	}
@@ -82,12 +80,20 @@ class Facets_Context_Provider {
 			$block->context['facetsContextProvider']
 		);
 
+		$initial_context = array(
+			'isError' => false,
+			'isSuccess' => false,
+			'isProcessing' => false,
+			'isDisabled' => false,
+		);
+
 		return wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			get_block_wrapper_attributes(array(
 				'data-wp-interactive' => wp_json_encode(array(
 					'namespace' => 'prc-platform/facets-context-provider'
 				)),
+				'data-wp-context' => wp_json_encode($initial_context),
 				'data-wp-init' => 'callbacks.onInit',
 				'data-wp-watch--on-selection' => 'callbacks.onSelection',
 			)),

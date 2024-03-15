@@ -163,8 +163,7 @@ class Facets {
 			// Blocks:
 			new Facets_Context_Provider($loader);
 			new Facet_Template($loader);
-			new Facets_Update_Button($loader);
-			new Facets_Selected_Tokens($loader);
+			new Selected_Tokens($loader);
 		}
 	}
 

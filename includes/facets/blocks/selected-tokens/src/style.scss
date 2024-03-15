@@ -1,0 +1,22 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-prc-platform-selected-tokens {
+	color: inherit;
+	background: inherit;
+
+	.wp-block-prc-platform-selected-tokens__token {
+		color: inherit;
+		background: inherit;
+		border: 1px solid currentColor;
+		border-radius: 4px;
+		padding: 0.5em 0.75em;
+		margin: 0 0.5em 0.5em 0;
+		display: inline-block;
+		cursor: pointer;
+	}
+}

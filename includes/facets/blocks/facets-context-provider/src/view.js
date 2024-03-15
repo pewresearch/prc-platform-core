@@ -7,6 +7,7 @@ const { addQueryArgs } = window.wp.url;
 
 const { state, actions } = store('prc-platform/facets-context-provider', {
 	state: {
+		processing: false,
 		mouseEnterPreFetchTimer: 500,
 		navigateTimer: 1000,
 		get getSelected() {
@@ -62,8 +63,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 				return;
 			}
 
-			state.isProcessing = true;
-
 			console.log(
 				'facets-context-provider::updateResults (CHANGE DETECTED)',
 				Object.keys(selected),
@@ -75,6 +74,10 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 
 			yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
+		},
+		*onButtonClick() {
+			// Refresh the page, go render the next page of results...
+			window.location.href = window.location.href;
 		},
 		onCheckboxClick: (event) => {
 			if (event.target.tagName === 'LABEL') {
@@ -130,38 +133,29 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			}
 			state.selected = newSelected;
 		},
-		*prefetch() {
-			const router = yield import('@wordpress/interactivity-router');
-			const newUrl = state.getUpdatedUrl;
-
-			// check if newUrl is in state.prefetched and if not then 1. add it to the state.prefetched and 2. prefetch it. otherwise return.
-			if (state.prefetched.includes(newUrl)) {
-				return;
-			}
-
-			state.prefetched.push(newUrl);
-
-			console.log(
-				'facets-context-provider::prefetch',
-				newUrl,
-				state.prefetched
-			);
-			yield router.actions.prefetch(newUrl);
-		},
-		*onCheckboxMouseEnter() {
-			console.log('facets-context-provider::onCheckboxMouseEnter');
-			yield actions.prefetch();
-		},
+		// *onCheckboxMouseEnter() {
+		// 	console.log(
+		// 		'prc-platform/facets-context-provider',
+		// 		'onCheckboxMouseEnter'
+		// 	);
+		// 	const router = yield import('@wordpress/interactivity-router');
+		// 	const newUrl = state.getUpdatedUrl;
+		// 	console.log('onCheckboxMouseEnter', newUrl);
+		// 	yield router.actions.prefetch(newUrl);
+		// },
+		// *onButtonMouseEnter() {
+		// 	console.log(
+		// 		'prc-platform/facets-context-provider',
+		// 		'onButtonMouseEnter'
+		// 	);
+		// 	const router = yield import('@wordpress/interactivity-router');
+		// 	const newUrl = state.getUpdatedUrl;
+		// 	console.log('onButtonMouseEnter', newUrl);
+		// 	yield router.actions.prefetch(newUrl);
+		// },
 		onClear: (facetSlug) => {
 			console.log('facets-context-provider::onClear', facetSlug, state);
 			const tmp = state.selected;
-			// if there is no facetSlug then clear all...
-			if (!facetSlug) {
-				state.selected = {};
-				// lets also re-run the updateResults.
-				actions.updateResults();
-				return;
-			}
 			// Clear all inputs that have the value of the facetSlug.
 			Object.keys(state).find((key) => {
 				if (
@@ -174,8 +168,18 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			delete tmp[facetSlug];
 			state.selected = { ...tmp };
 		},
+		onFacetTokenClick: () => {
+			const { ref, props } = getElement();
+			const facetSlug = `_${props['data-wp-key']}`;
+			actions.onClear(facetSlug);
+		},
 	},
 	callbacks: {
+		onInit() {
+			// set the button to disabled to start...
+			state['update-results-button'].isDisabled = true;
+			console.log('facets-context-provider::onInit', state);
+		},
 		*onSelection() {
 			const selected = state.getSelected;
 			const keysLength = Object.keys(selected).length;
@@ -187,12 +191,12 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 			// No selections? Disable the update button.
 			if (keysLength <= 0) {
-				console.log('disabling...', Object.keys(selected).length);
-				state.isDisabled = true;
+				console.log('disabling button', Object.keys(selected).length);
+				state['update-results-button'].isDisabled = true;
 			} else {
 				// Once we have some selections, lets run a refresh.
 				actions.updateResults();
-				state.isDisabled = false;
+				state['update-results-button'].isDisabled = false;
 			}
 		},
 	},
