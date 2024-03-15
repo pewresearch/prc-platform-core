@@ -252,6 +252,7 @@ class Facet_Template {
 			'data-wp-watch--on-expand' => 'callbacks.onExpand',
 			'data-wp-class--is-expanded' => 'context.expanded',
 			'data-wp-class--has-selections' => 'callbacks.isSelected',
+			'data-wp-class--is-processing' => 'prc-platform/facets-context-provider::state.isProcessing',
 			'style' => '--block-gap: ' . $this->get_block_gap_support_value($attributes) . ';',
 			'class' => \PRC\Platform\Block_Utils\classNames(array(
 				'is-type-' . $facet_type,
