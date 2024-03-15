@@ -76,10 +76,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			yield router.actions.navigate(newUrl);
 			state.isProcessing = false;
 		},
-		*onButtonClick() {
-			// Refresh the page, go render the next page of results...
-			window.location.href = window.location.href;
-		},
 		onCheckboxClick: (event) => {
 			if (event.target.tagName === 'LABEL') {
 				event.preventDefault();
@@ -156,13 +152,16 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			console.log('facets-context-provider::onCheckboxMouseEnter');
 			yield actions.prefetch();
 		},
-		*onButtonMouseEnter() {
-			console.log('facets-context-provider::onButtonMouseEnter');
-			yield actions.prefetch();
-		},
 		onClear: (facetSlug) => {
 			console.log('facets-context-provider::onClear', facetSlug, state);
 			const tmp = state.selected;
+			// if there is no facetSlug then clear all...
+			if (!facetSlug) {
+				state.selected = {};
+				// lets also re-run the updateResults.
+				actions.updateResults();
+				return;
+			}
 			// Clear all inputs that have the value of the facetSlug.
 			Object.keys(state).find((key) => {
 				if (
@@ -175,18 +174,8 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			delete tmp[facetSlug];
 			state.selected = { ...tmp };
 		},
-		onFacetTokenClick: () => {
-			const { ref, props } = getElement();
-			const facetSlug = `_${props['data-wp-key']}`;
-			actions.onClear(facetSlug);
-		},
 	},
 	callbacks: {
-		onInit() {
-			// set the button to disabled to start...
-			state['update-results-button'].isDisabled = true;
-			console.log('facets-context-provider::onInit', state);
-		},
 		*onSelection() {
 			const selected = state.getSelected;
 			const keysLength = Object.keys(selected).length;
@@ -198,12 +187,12 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 			// No selections? Disable the update button.
 			if (keysLength <= 0) {
-				console.log('disabling button', Object.keys(selected).length);
-				state['update-results-button'].isDisabled = true;
+				console.log('disabling...', Object.keys(selected).length);
+				state.isDisabled = true;
 			} else {
 				// Once we have some selections, lets run a refresh.
 				actions.updateResults();
-				state['update-results-button'].isDisabled = false;
+				state.isDisabled = false;
 			}
 		},
 	},

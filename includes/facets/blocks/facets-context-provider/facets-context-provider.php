@@ -66,7 +66,7 @@ class Facets_Context_Provider {
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
-			'isDisabled' => false,
+			'isDisabled' => true, // We start off by setting disabled to true, this is set to false once there are selections. This ensures the update-button block can't be used.
 			'prefetched' => [],
 		];
 
@@ -88,7 +88,6 @@ class Facets_Context_Provider {
 				'data-wp-interactive' => wp_json_encode(array(
 					'namespace' => 'prc-platform/facets-context-provider'
 				)),
-				'data-wp-context' => wp_json_encode($initial_context),
 				'data-wp-init' => 'callbacks.onInit',
 				'data-wp-watch--on-selection' => 'callbacks.onSelection',
 			)),
