@@ -54,19 +54,21 @@ class Facets_Context_Provider {
 	 * @return mixed
 	 */
 	public function add_facet_data_to_context($context, $parsed_block, $parent_block_instance) {
-		if ( !in_array($parsed_block['blockName'], array(
+		if ( !in_array($parsed_block['blockName'], [
 			'prc-platform/facets-context-provider',
 			'prc-platform/facet-template',
 			'prc-platform/selected-tokens',
-		)) ) {
+		]) ) {
 			return $context;
 		}
 
-		$context['facetsContextProvider'] = array(
+		$context['facetsContextProvider'] = [
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
-		);
+			'isDisabled' => false,
+			'prefetched' => [],
+		];
 
 		return $context;
 	}
@@ -78,13 +80,6 @@ class Facets_Context_Provider {
 		wp_interactivity_state(
 			'prc-platform/facets-context-provider',
 			$block->context['facetsContextProvider']
-		);
-
-		$initial_context = array(
-			'isError' => false,
-			'isSuccess' => false,
-			'isProcessing' => false,
-			'isDisabled' => false,
 		);
 
 		return wp_sprintf(
