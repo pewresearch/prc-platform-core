@@ -105,6 +105,10 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/quiz/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]';
 					// Add attachment rule:
 					$new_rules[$term_name . '/quiz/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
+					// Add /results rules:
+					$new_rules[$term_name . '/quiz/([^/]+)/results/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
+					// A new, cacheable, results archetype rule.
+					$new_rules[$term_name . '/quiz/([^/]+)/results/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
 				} else if ( 'interactive' === $post_type ) {
 					$new_rules[$term_name . '/interactive/([^/]+)/?$'] = 'index.php?post_type=interactive&name=$matches[1]';
 					// Add attachment rule:
