@@ -32,10 +32,12 @@ class Post_Publish_Pipeline {
 	 */
 	protected $allowed_post_types = array(
 		'post',
-		'interactive',
-		'interactives',
+		'interactive', // @benwormald leave in place
+		'interactives', // @benwormald leave in place
+		'feature', // for the future
 		'quiz',
 		'fact-sheets',
+		'fact-sheet',
 		'short-read',
 		'topic-page',
 		'events',

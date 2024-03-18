@@ -3,9 +3,24 @@ namespace PRC\Platform;
 
 class Formats extends Taxonomies {
 	protected static $taxonomy = 'formats';
+	protected static $enforced_post_type_pairs = [
+		'short-read' => 'short-read',
+		'interactive' => 'feature',
+		'fact-sheet' => 'fact-sheet',
+		'press-release' => 'press-release',
+		'quiz' => 'quiz',
+		'decoded' => 'decoded',
+	];
 
 	public function __construct($loader) {
-		$loader->add_action( 'init', $this, 'register' );
+		$this->init($loader);
+	}
+
+	public function init($loader = null) {
+		if ( null !== $loader ) {
+			$loader->add_action( 'init', $this, 'register' );
+			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'enforce_post_type_formats', 10, 1 );
+		}
 	}
 
 	public function register() {
@@ -59,5 +74,31 @@ class Formats extends Taxonomies {
 		) );
 
 		register_taxonomy( $taxonomy_name, $post_types, $args );
+	}
+
+	/**
+	 * @hook prc_platform_on_incremental_save
+	 * @param mixed $post_types
+	 * @return array
+	 */
+	/**
+	 * Whenever a short-read post is updated it should have the short-read format enforced. This function will enforce that.
+	 * @hook prc_platform_on_incremental_save
+	 * @return void
+	 */
+	public function enforce_post_type_formats($post) {
+		$post_types = array_keys(self::$enforced_post_type_pairs);
+		if ( $post_types && in_array($post->post_type, $post_types) ) {
+			$format_term_slug = self::$enforced_post_type_pairs[$post->post_type];
+			// Check if the post already has the format, if not, append it.
+			$format = wp_get_object_terms($post->ID, 'formats');
+			$has_enforced_term = array_filter($format, function($term) use ($format_term_slug) {
+				return $term->slug === $format_term_slug;
+			});
+			$has_enforced_term = !empty($has_enforced_term);
+			if ( !$has_enforced_term ) {
+				wp_set_object_terms($post->ID, $format_term_slug, 'formats', true);
+			}
+		}
 	}
 }

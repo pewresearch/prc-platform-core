@@ -33,7 +33,6 @@ class Short_Reads {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_filter( 'post_type_link', $this, 'get_short_read_permalink', 10, 3 );
-			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'enforce_short_read_format', 10, 1 );
 		}
 	}
 
@@ -101,23 +100,4 @@ class Short_Reads {
 		return $url;
 	}
 
-	/**
-	 * Whenever a short-read post is updated it should have the short-read format enforced. This function will enforce that.
-	 * @hook prc_platform_on_incremental_save
-	 * @return void
-	 */
-	public function enforce_short_read_format($post) {
-		if ( $post->post_type === self::$post_type ) {
-			error_log('enforce_short_read_format'. print_r($post, true));
-			// Check if the post already has the short-read format, if not, append it.
-			$format = wp_get_object_terms($post->ID, 'formats');
-			$has_short_reads = array_filter($format, function($term) {
-				return $term->slug === 'short-read';
-			});
-			$has_short_reads = !empty($has_short_reads);
-			if ( !$has_short_reads ) {
-				wp_set_object_terms($post->ID, 'short-read', 'formats', true);
-			}
-		}
-	}
 }
