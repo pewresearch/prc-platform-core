@@ -11,6 +11,11 @@ class Related_Posts_API extends Related_Posts {
 	);
 
 	public function __construct($post_id, $args = array()) {
+		// Check if the post is a child of another post, if so, use the parent post ID.
+		$post_parent_id = wp_get_post_parent_id( $post_id );
+		if ( 0 !== $post_parent_id ) {
+			$post_id = $post_parent_id;
+		}
 		$this->ID = $post_id;
 		$post_type = get_post_type($post_id);
 		if ( false === $post_type ) {
@@ -137,11 +142,6 @@ class Related_Posts_API extends Related_Posts {
 		$per_page = 5;
 
 		$related_posts = array();
-
-		// Only get related posts from parent posts.
-		if ( 0 !== wp_get_post_parent_id( $post_id ) ) {
-			$post_id = wp_get_post_parent_id( $post_id );
-		}
 
 		// Check for cached data
 		$related_posts = wp_cache_get( $post_id, self::$cache_key );
