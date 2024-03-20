@@ -75,7 +75,6 @@ class Research_Teams extends Taxonomies {
 			'staff',
 			'dataset',
 			'stub',
-			'decoded'
 		) );
 
 		return register_taxonomy( self::$taxonomy, $post_types, $args );

@@ -51,7 +51,6 @@ class Mode_Of_Analysis extends Taxonomies {
 			'fact-sheet',
 			'fact-sheets',
 			'stub',
-			'decoded'
 		) );
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );
