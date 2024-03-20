@@ -2,7 +2,7 @@
 namespace PRC\Platform;
 
 class Collections extends Taxonomies {
-	protected static $post_types = array( 'post', 'page', 'fact-sheets','fact-sheet', 'interactives', 'interactive' );
+	protected static $post_types = array( 'post', 'page', 'fact-sheets','fact-sheet', 'interactives', 'interactive', 'decoded' );
 	protected static $taxonomy = 'collection';
 
 	public function __construct($loader) {
