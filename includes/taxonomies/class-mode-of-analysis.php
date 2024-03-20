@@ -48,6 +48,7 @@ class Mode_Of_Analysis extends Taxonomies {
 			'post',
 			'interactives',
 			'interactive',
+			'feature',
 			'fact-sheet',
 			'fact-sheets',
 			'stub',

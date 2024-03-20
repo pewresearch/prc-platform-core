@@ -1,0 +1,56 @@
+@use "sass:math";
+@use "master.variables" as variables;
+
+@mixin box-shadow($string) {
+	-webkit-box-shadow: $string;
+	-moz-box-shadow: $string;
+	box-shadow: $string;
+}
+
+@mixin uppercaseTitle(
+	$fontWeight: 400,
+	$color: black,
+	$fontSize: variables.$absoluteSmall,
+	$letterSpacing: 0.1em
+) {
+	font-weight: $fontWeight;
+	font-size: $fontSize;
+	letter-spacing: $letterSpacing;
+	font-family: variables.$sansSerifFont;
+	text-transform: uppercase;
+	color: $color;
+}
+
+@mixin fontSize($desiredFontSize) {
+	font-size: math.div($desiredFontSize, $baseUnit) rem;
+}
+
+/** Custom Mixins **/
+@mixin projectColor($primaryColor, $secondaryColor) {
+	.report,
+	.interactive,
+	.feature,
+	.demographic-profile,
+	.blog-post,
+	.fact-sheet {
+		&.bg {
+			background-color: $primaryColor;
+		}
+
+		&.border {
+			border-color: $primaryColor;
+		}
+	}
+
+	.pseudo-link {
+		color: $secondaryColor !important;
+	}
+}
+
+@mixin clearfix() {
+	&:after {
+		content: "";
+		display: table;
+		clear: both;
+	}
+}

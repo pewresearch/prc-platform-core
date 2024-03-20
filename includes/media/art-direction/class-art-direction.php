@@ -99,6 +99,7 @@ class Art_Direction {
 		'post',
 		'interactives',
 		'interactive',
+		'feature',
 		'chart',
 		'fact-sheets',
 		'fact-sheet',

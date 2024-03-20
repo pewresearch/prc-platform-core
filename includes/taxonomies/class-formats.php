@@ -67,6 +67,7 @@ class Formats extends Taxonomies {
 			'fact-sheet',
 			'interactives',
 			'interactive',
+			'feature',
 			'press-release',
 			'quiz',
 			'decoded',
