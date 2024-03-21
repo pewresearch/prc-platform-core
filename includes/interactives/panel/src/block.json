@@ -1,7 +1,0 @@
-{
-	"name": "prc-platform/interactive-options-panel",
-	"version": "1.0.0",
-	"title": "Interactive Options Panel",
-	"description": "Provide a panel to manage options; like rewrites, for an individual interactive",
-	"editorScript": "file:./index.js"
-}
