@@ -457,6 +457,19 @@ class Post_Report_Package {
 		);
 	}
 
+	public function get_datasets_for_post( $post_id ) {
+		// get the dataset terms for this post...
+		$datasets = wp_get_post_terms( $post_id, 'datasets' );
+		return array_map( function( $dataset ) {
+			return array(
+				'type' => 'dataset',
+				'id' => $dataset->term_id,
+				'label' => $dataset->name,
+				'url' => get_term_link( $dataset ),
+			);
+		}, $datasets );
+	}
+
 	/**
 	 * REPORT MATERIALS
 	 */
@@ -468,7 +481,11 @@ class Post_Report_Package {
 			$post_id = $parent_id;
 		}
 
-		return get_post_meta( $post_id, self::$report_materials_meta_key, true );
+		$materials = get_post_meta( $post_id, self::$report_materials_meta_key, true );
+		// Check if the post has a dataset, if so, lets add that in as welll...
+		$materials = array_merge( $materials, $this->get_datasets_for_post( $post_id ) );
+
+		return $materials;
 	}
 
 	public function get_constructed_report_materials( $post_id ) {
@@ -603,7 +620,7 @@ class Post_Report_Package {
 						'link' => $permalink . '#' . $id,
 					);
 				} elseif ( 'prc-block/chapter' === $array['blockName'] ) {
-					// @TODO: This is legacy and needs to be migrated at some point. We flag that here and provide meta down below to do this automatically/editorially at some point.
+					/// @TODO: In the future I want to log usages of this, there should be no prc-block/chapter blocks after the migration.
 					$needs_migration = true;
 					$id = $array['attrs']['id'];
 					// Ensure the ID is clean and none of the core/heading block id stuff gets added.
