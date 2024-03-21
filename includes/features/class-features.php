@@ -314,9 +314,7 @@ class Features {
 	 * @return mixed Array|false
 	 */
 	public function get_asset($feature_slug) {
-		do_action('qm/debug', print_r($feature_slug, true));
 		$features = $this->get_assets();
-		do_action('qm/debug', print_r($features, true));
 		// TODO: FWIW sometimes we do have multiple features with the same slug (eg. restrictions). We might want to enforce unique slugs somehow
 		foreach ( $features as $research_team_name => $years ) {
 			foreach ( $years as $year_name => $features ) {
