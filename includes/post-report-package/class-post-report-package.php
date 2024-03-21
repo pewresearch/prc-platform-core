@@ -19,7 +19,7 @@ class Post_Report_Package {
 	public static $report_package_key = 'report_package';
 	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case
 	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case
-	protected $bypass_caching = true;
+	protected $bypass_caching = false;
 
 	public static $report_materials_schema_properties = array(
 		'key'          => array(
@@ -709,7 +709,7 @@ class Post_Report_Package {
 			return null;
 		}
 		$cache_key = self::$report_package_key . '_toc';
-		return wp_cache_set( $post_id, $toc, $cache_key, 5 * MINUTE_IN_SECONDS );
+		return wp_cache_set( $post_id, $toc, $cache_key, 30 * MINUTE_IN_SECONDS );
 	}
 
 	/**

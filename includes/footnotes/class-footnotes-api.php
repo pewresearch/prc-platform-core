@@ -30,7 +30,6 @@ class Footnotes_API {
 		}
 		return [
 			'footnotes' => $footnotes,
-			'index'     => $this->index,
 			'start'     => $this->start,
 		];
 	}
@@ -55,7 +54,6 @@ class Footnotes_API {
 			$matches[4] = numoffset value: 5
 			$matches[5] = The footnote text: This is a footnote
 			*/
-			$this->index[ $post_id ] = array();
 			$this->footnotes[ $post_id ] = array();
 
 			foreach ( $matches[0] as $index => $target ) {
@@ -76,16 +74,6 @@ class Footnotes_API {
 			$n = $this->start;
 
 			foreach ( $matches[0] as $index => $target ) {
-				$text                      = trim( $matches[5][ $index ] );
-				$text                      = str_replace( '{{', '[', $text );
-				$text                      = str_replace( '}}', ']', $text );
-				$this->index[ $post_id ][] = wp_sprintf(
-					'<li id="%s" value="%s">{$text} <span class="footnotereverse"><a href="%s">&#8617;</a></span></li>',
-					"fn-{$post_id}-{$n}",
-					"{$n}.", // The number
-					"#fnref-{$post_id}-{$n}",
-				);
-
 				$content = str_replace(
 					$target,
 					wp_sprintf(
