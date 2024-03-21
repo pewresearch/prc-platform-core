@@ -51,7 +51,6 @@ class Regions_Countries extends Taxonomies {
 			'post',
 			'interactives',
 			'interactive',
-			'feature',
 			'fact-sheet',
 			'fact-sheets',
 			'short-read',

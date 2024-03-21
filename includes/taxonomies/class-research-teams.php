@@ -68,7 +68,6 @@ class Research_Teams extends Taxonomies {
 			'post',
 			'interactives',
 			'interactive',
-			'feature',
 			'fact-sheet',
 			'fact-sheets',
 			'quiz',
@@ -112,9 +111,9 @@ class Research_Teams extends Taxonomies {
 					// A new, cacheable, results archetype rule.
 					$new_rules[$term_name . '/quiz/([^/]+)/results/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
 				} else if ( 'interactive' === $post_type ) {
-					$new_rules[$term_name . '/feature/([^/]+)/?$'] = 'index.php?post_type=feature&name=$matches[1]';
+					$new_rules[$term_name . '/interactive/([^/]+)/?$'] = 'index.php?post_type=interactive&name=$matches[1]';
 					// Add attachment rule:
-					$new_rules[$term_name . '/feature/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
+					$new_rules[$term_name . '/interactive/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'dataset' === $post_type ) {
 					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?post_type=dataset&name=$matches[1]';
 					// Add attachment rule:

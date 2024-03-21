@@ -125,7 +125,7 @@ class Platform_Bootstrap {
 		$this->include('homepages/class-homepages.php');
 		$this->include('housekeeping/class-housekeeping.php');
 		$this->include('icon-loader/class-icon-loader.php');
-		$this->include('features/class-features.php');
+		$this->include('interactives/class-interactives.php');
 		$this->include('jetpack/class-jetpack.php');
 		$this->include('mailchimp/class-mailchimp.php');
 		$this->include('media/class-media.php');
@@ -173,7 +173,7 @@ class Platform_Bootstrap {
 		new Homepages( $this->get_version(), $this->get_loader() );
 		new Housekeeping( $this->get_version(), $this->get_loader() );
 		new Icon_Loader( $this->get_version(), $this->get_loader() );
-		new Features( $this->get_version(), $this->get_loader() );
+		new Interactives( $this->get_version(), $this->get_loader() );
 		new Jetpack( $this->get_version(), $this->get_loader() );
 		new Mailchimp( $this->get_version(), $this->get_loader() );
 		new Media( $this->get_version(), $this->get_loader() );

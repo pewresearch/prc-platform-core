@@ -1,7 +1,0 @@
-{
-  "name": "prc-platform/feature-options-panel",
-  "version": "1.0.0",
-  "title": "Feature Options Panel",
-  "description": "Provide a panel to manage options; like rewrites, for an individual feature",
-  "editorScript": "file:./index.js"
-}

@@ -1,0 +1,71 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "prc-platform/interactive-loader",
+	"version": "0.1.0",
+	"title": "Interactive Loader",
+	"description": "Load a interactive's JS and CSS files.",
+	"category": "media",
+	"keywords": [
+		"interactive",
+		"loader"
+	],
+	"attributes": {
+		"slug": {
+			"type": "string"
+		},
+		"dataAttachmentId": {
+			"type": "integer"
+		},
+		"interactivePropType": {
+			"type": "string"
+		},
+		"legacyWpackIo": {
+			"type": "object",
+			"properties": {
+				"appName": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"deps":{
+					"type": "string"
+				}
+			}
+		},
+		"legacyS3": {
+			"type": "object",
+			"properties": {
+				"libraries": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"styles":{
+					"type": "string"
+				},
+				"react": {
+					"type": "boolean"
+				}
+			}
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false
+	},
+	"usesContext": [
+		"queryId",
+		"query",
+		"queryContext",
+		"templateSlug",
+		"previewPostType",
+		"postId",
+		"postType"
+	],
+	"textdomain": "prc-platform-interactive-loader",
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css"
+}

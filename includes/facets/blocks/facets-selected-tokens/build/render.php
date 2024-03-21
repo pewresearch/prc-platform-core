@@ -10,7 +10,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes([
 		'namespace' => 'prc-platform/facets-selected-tokens'
 	]),
 	'id' => $selected_tokens_id,
-	'data-wp-router-region' => $selected_tokens_id,
+	// 'data-wp-router-region' => $selected_tokens_id,
 	'data-wp-watch--update-tokens' => 'callbacks.updateTokens',
 	'data-wp-class--has-tokens' => 'callbacks.hasTokens',
 ]);
