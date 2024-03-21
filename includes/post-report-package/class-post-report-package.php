@@ -481,9 +481,13 @@ class Post_Report_Package {
 			$post_id = $parent_id;
 		}
 
+		$datasets = $this->get_datasets_for_post( $post_id );
+
 		$materials = get_post_meta( $post_id, self::$report_materials_meta_key, true );
-		// Check if the post has a dataset, if so, lets add that in as welll...
-		$materials = array_merge( $materials, $this->get_datasets_for_post( $post_id ) );
+
+		if (!empty($datasets)) {
+			$materials = array_merge($materials, $datasets);
+		}
 
 		return $materials;
 	}

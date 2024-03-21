@@ -121,6 +121,7 @@ class Platform_Bootstrap {
 		$this->include('facets/class-facets.php');
 		$this->include('fact-sheets/class-fact-sheets.php');
 		$this->include('flash-briefings/class-flash-briefings.php');
+		$this->include('footnotes/class-footnotes.php');
 		$this->include('gutenberg/class-gutenberg.php');
 		$this->include('homepages/class-homepages.php');
 		$this->include('housekeeping/class-housekeeping.php');
@@ -169,6 +170,7 @@ class Platform_Bootstrap {
 		new Facets( $this->get_version(), $this->get_loader() );
 		new Fact_Sheets( $this->get_version(), $this->get_loader() );
 		new Flash_Briefings( $this->get_version(), $this->get_loader() );
+		new Footnotes( $this->get_version(), $this->get_loader() );
 		new Gutenberg( $this->get_version(), $this->get_loader() );
 		new Homepages( $this->get_version(), $this->get_loader() );
 		new Housekeeping( $this->get_version(), $this->get_loader() );
