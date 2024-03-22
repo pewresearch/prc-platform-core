@@ -48,6 +48,9 @@ class Bylines {
 	}
 
 	private function format_string($return_html = false) {
+		if ( !is_array($this->bylines) ) {
+			return '';
+		}
 		$output = '';
 		$total  = count( $this->bylines );
 		$and    = 'and';

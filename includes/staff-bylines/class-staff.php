@@ -4,7 +4,7 @@ use WP_Error;
 use TDS;
 
 /**
- * Pass in an id get a fully formed staff member object
+ * This is the primary means of accessing a unified Staff member. Combining both term and post type.
  * @package PRC\Platform
  */
 class Staff {
@@ -88,6 +88,9 @@ class Staff {
 		}
 	}
 
+	/**
+	 * Set the staff object properties based on the staff/byline hybrid.
+	 */
 	public function set_staff($post_id) {
 		if ( true === $this->get_cache($post_id) ) {
 			return;
