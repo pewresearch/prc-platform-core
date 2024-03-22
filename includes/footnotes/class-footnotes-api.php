@@ -22,6 +22,9 @@ class Footnotes_API {
 	}
 
 	public function get_footnotes($format = 'array') {
+		if ( ! array_key_exists($this->post_id, $this->footnotes) || empty($this->footnotes[$this->post_id])) {
+			return false;
+		}
 		$footnotes = $this->footnotes[ $this->post_id ];
 		if ( 'array' === $format ) {
 			$footnotes = $footnotes;

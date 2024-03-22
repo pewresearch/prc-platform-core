@@ -82,7 +82,7 @@ class Decoded {
 			'description'         => __( 'A post type for Decoded blog posts.', 'text_domain' ),
 			'labels'              => $labels,
 			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields' ),
-			'taxonomies'          => array( 'category', 'research-teams', 'collection', 'languages', 'formats' ),
+			'taxonomies'          => array( 'decoded-category', 'research-teams', 'collection', 'languages', 'formats' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,

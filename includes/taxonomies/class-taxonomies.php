@@ -29,6 +29,7 @@ class Taxonomies {
 
 		require_once( plugin_dir_path( __FILE__ ) . 'topic-category/class-topic-category.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-collections.php' );
+		require_once( plugin_dir_path( __FILE__ ) . 'class-decoded-category.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-formats.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-languages.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-mode-of-analysis.php' );
@@ -56,6 +57,7 @@ class Taxonomies {
 			// Register the taxonomies.
 			new Topic_Category($loader);
 			new Collections($loader);
+			new Decoded_Category($loader);
 			new Formats($loader);
 			new Languages($loader);
 			new Mode_Of_Analysis($loader);
