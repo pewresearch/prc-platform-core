@@ -104,7 +104,9 @@ const useProvideBylines = () => {
 	useEffect(() => {
 		if (!isLoaded) {
 			console.log('initializing bylines...', meta);
-			setBylines([...bylines]);
+			if (Array.isArray(bylines)) {
+				setBylines([...bylines]);
+			}
 			// check if acknowledgements is an array, if not, set it to an empty array
 			if (Array.isArray(acknowledgements)) {
 				setAcknowledgements([...acknowledgements]);
