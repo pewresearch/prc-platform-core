@@ -531,21 +531,29 @@ class Staff_Bylines {
 		}
 		$staff_data = get_object_vars( $staff );
 
+		$staff_link = $staff['link'];
+		$staff_name_as_link = wp_sprintf(
+			'<a href="%1$s">%2$s</a>&nbsp;',
+			$staff_link,
+			$staff_data['name']
+		);
+
 		$data = array(
-			'staffName'      => $staff_data['name'],
-			'staffJobTitle'  => $staff_data['job_title'],
-			'staffImage'     => false,
-			'staffTwitter'   => null, // @TODO need to re-think
-			'staffExpertise' => $staff_data['expertise'],
-			'staffBio'       => $staff_data['bio'],
-			'staffMiniBio'   => $staff_data['job_title_extended'],
-			'staffLink'		 => $staff_data['link'],
+			'staffName'                 => $staff_data['name'],
+			'staffJobTitle'             => $staff_data['job_title'],
+			'staffImage'                => false,
+			'staffTwitter'              => null, // @TODO: Will rethink social after launch.
+			'staffExpertise'            => $staff_data['expertise'],
+			'staffBio'                  => $staff_data['bio'],
+			'staffBioShort'             => $staff_name_as_link . ' is ' . $staff_data['job_title_extended'],
+			'staffJobTitleExtended'     => $staff_data['job_title_extended'],
+			'staffLink'		            => $staff_data['link'],
 		);
 
 		if ( false === $staff_data['is_currently_employed'] ) {
 			$data['staffJobTitle'] = 'Former ' . $data['staffJobTitle'];
 			// mini bio replace "a" or "an" with "a former"
-			$data['staffMiniBio'] = preg_replace( '/(a|an) /', 'a former ', $data['staffMiniBio'] );
+			$data['staffJobTitleExtended'] = preg_replace( '/(a|an) /', 'a former ', $data['staffJobTitleExtended'] );
 		}
 
 		if ( $staff_data['photo'] ) {
