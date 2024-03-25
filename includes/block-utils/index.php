@@ -155,14 +155,14 @@ function get_wp_interactive_context($content) {
 function get_block_gap_support_value($attributes, $dimension_to_return = false) {
 	$block_gap = array_key_exists('style', $attributes) && array_key_exists('spacing', $attributes['style']) && array_key_exists('blockGap', $attributes['style']['spacing']) ? $attributes['style']['spacing']['blockGap'] : false;
 	if ( false === $block_gap ) {
-		return 'inherit';
+		return '';
 	}
 
 	if ( is_array($block_gap) && false !== $dimension_to_return ) {
 		$check_key = 'horizontal' === $dimension_to_return ? 'left' : 'top';
 		$block_gap = array_key_exists($check_key, $block_gap) ? $block_gap[$check_key] : '';
 	} elseif (is_array($block_gap)) {
-		$block_gap = 'inherit';
+		$block_gap = '';
 	}
 
 	// if $block_gap is like var:preset|spacing|60 then it should be var(--wp--preset--spacing--60) otherwise just return the value like 1rem or whatever.
