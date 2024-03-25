@@ -2,8 +2,8 @@
 namespace PRC\Platform;
 
 /**
- * Block Name:        Facet Selected Tokens
- * Description:       Display a list of selected, active facets as tokens
+ * Block Name:        Feature Loader Block
+ * Description:       A block that loads a feature on the front end.
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Seth Rubenstein

@@ -3,7 +3,7 @@
  */
 import { createBlock } from '@wordpress/blocks';
 
-const BLOCKNAME = 'prc-platform/feature-loader';
+const BLOCKNAME = 'prc-platform/interactive-loader';
 
 function convertLegacyLoader({ id, appName, path, deps, version }) {
 	return createBlock(BLOCKNAME, {

@@ -44,8 +44,7 @@ class Bylines {
 	}
 
 	private function determine_bylines_display() {
-		$should_display = get_post_meta( $this->post_id, 'displayBylines', true );
-		return true !== rest_sanitize_boolean($should_display) ? false : true;
+		return get_post_meta( $this->post_id, 'displayBylines', true );
 	}
 
 	private function format_string($return_html = false) {
