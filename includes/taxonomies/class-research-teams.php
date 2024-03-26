@@ -12,6 +12,7 @@ class Research_Teams extends Taxonomies {
 		'fact-sheet',
 		'dataset',
 		'interactive',
+		'feature',
 		'quiz',
 	);
 
@@ -94,6 +95,10 @@ class Research_Teams extends Taxonomies {
 			return $term->slug;
 		}, $terms);
 		foreach($term_names as $term_name) {
+			// Skip Decoded
+			if ( 'decoded' === $term_name ) {
+				continue;
+			}
 			foreach(self::$post_types as $post_type) {
 				if ( 'post' === $post_type ) {
 					$new_rules[$term_name. '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/?$'] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]';

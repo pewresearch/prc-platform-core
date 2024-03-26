@@ -71,6 +71,8 @@ class Facets_API {
 		$query_args = array_merge($query_args, array(
 			'paged' => 1
 		));
+		// $query_args go in and we get a cache key from this...
+		// if we match, then return, otherwise continue with query.
 		// Default to Elasticsearch if we have a search query.
 		if ( !empty($query_args['s']) ) {
 			$query_args['es'] = true;
