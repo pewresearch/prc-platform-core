@@ -18,7 +18,7 @@ class Facets_API {
 	public $selected_choices = array();
 
 	public function __construct($query) {
-		$this->query_args = $this->construct_query_args(array());
+		$this->query_args = $this->construct_query_args($query);
 		$this->cache_key = $this->construct_cache_key($query);
 		$this->registered_facets = $this->get_registered_facets();
 		$this->selected_choices = $this->get_selected_choices();
