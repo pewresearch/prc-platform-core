@@ -38,7 +38,6 @@ class Decoded {
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_filter( 'post_type_link', $this, 'get_decoded_permalink', 10, 3);
 			$loader->add_action('prc_platform_on_incremental_save', $this, 'enforce_decoded_format', 10, 1);
-			$loader->add_filter('prc_platform_rewrite_rules', $this, 'add_decoded_archive_rewrite_rules', 10, 1);
 		}
 	}
 
@@ -108,16 +107,6 @@ class Decoded {
 		return $post_types;
 	}
 
-	/**
-	 * @hook prc_platform_rewrite_rules
-	 */
-	public function add_decoded_archive_rewrite_rules($rules) {
-		$new_rules = array(
-			'decoded/?$' => 'index.php?post_type=decoded',
-		);
-		return $new_rules + $rules;
-	}
-
 	// Convert the %year% and %monthnum% placeholders in the post type's rewrite slug to the actual year and month.
 	public function get_decoded_permalink($url, $post) {
 		if ( self::$post_type == get_post_type($post) ) {
@@ -134,6 +123,7 @@ class Decoded {
 	 */
 	public function enforce_decoded_format($post) {
 		if ( $post->post_type === self::$post_type ) {
+			error_log('enforce_decoded_format'. print_r($post, true));
 			// Check if the post already has the decoded format, if not, append it.
 			$format = wp_get_object_terms($post->ID, 'formats');
 			$has_decoded_format = array_filter($format, function($term) {
@@ -145,6 +135,4 @@ class Decoded {
 			}
 		}
 	}
-
-	// set the default visibility to be hide in index....
 }

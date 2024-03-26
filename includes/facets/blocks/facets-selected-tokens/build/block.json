@@ -17,10 +17,6 @@
     "html": false,
     "multiple": false,
     "reusable": false,
-    "color": {
-      "text": true,
-      "link": true
-    },
     "spacing": {
       "blockGap": true,
       "margin": [
