@@ -375,7 +375,6 @@ class Features {
 	public function load($slug) {
 		$features = new Features(null, null);
 		$assets = $features->get_asset($slug);
-		do_action('qm/debug', 'loading feature: ' . print_r($assets, true));
 		$enqueued = array();
 		if ( $assets['css_file'] ) {
 			$styled = wp_enqueue_style(
@@ -415,8 +414,6 @@ class Features {
 	 * @throws LogicException
 	 */
 	public function load_legacy_wpackIO($args) {
-		do_action('qm/debug', 'loading legacy wpackio'.print_r($args, true));
-
 		$args = wp_parse_args(
 			$args,
 			array(
@@ -604,7 +601,7 @@ class Features {
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			$screen = get_current_screen();
 			if ( in_array( $screen->post_type, array(self::$post_type) ) ) {
-				do_action('qm/debug', print_r(self::$handle, true));
+
 				wp_enqueue_script( self::$handle );
 			}
 		}
