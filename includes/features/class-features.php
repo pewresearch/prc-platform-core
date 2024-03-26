@@ -313,25 +313,16 @@ class Features {
 	 * @param mixed $feature_slug
 	 * @return mixed Array|false
 	 */
-	public function get_asset($feature_slug, $research_team, $year) {
+	public function get_asset($feature_slug) {
 		$features = $this->get_assets();
 		// TODO: FWIW sometimes we do have multiple features with the same slug (eg. restrictions). We might want to enforce unique slugs somehow
-		// foreach ( $features as $research_team_name => $years ) {
-		// 	foreach ( $years as $year_name => $features ) {
-		// 		foreach ( $features as $feature ) {
-		// 			if ( $feature['slug'] === $feature_slug ) {
-		// 				return $feature;
-		// 			}
-		// 		}
-		// 	}
-		// }
-		if ( ! array_key_exists( $research_team, $features ) || ! array_key_exists( $year, $features[$research_team] ) ) {
-			return false;
-		}
-
-		foreach ( $features[$research_team][$year] as $feature ) {
-			if ( $feature['slug'] === $feature_slug ) {
-				return $feature;
+		foreach ( $features as $research_team_name => $years ) {
+			foreach ( $years as $year_name => $features ) {
+				foreach ( $features as $feature ) {
+					if ( $feature['slug'] === $feature_slug ) {
+						return $feature;
+					}
+				}
 			}
 		}
 
@@ -350,7 +341,7 @@ class Features {
 				foreach ( $features as $feature ) {
 					if ( $feature['css_file'] ) {
 						wp_enqueue_style(
-							'prc-platform-feature-' . $research_team . '-' . $year . '-' . $feature['slug'],
+							'prc-platform-feature-' . $feature['slug'],
 							$feature['css_file'],
 							array(),
 							$feature['version']
@@ -358,7 +349,7 @@ class Features {
 					}
 					if ( $feature['js_file'] ) {
 						wp_enqueue_script(
-							'prc-platform-feature-' . $research_team . '-' . $year . '-' . $feature['slug'],
+							'prc-platform-feature-' . $feature['slug'],
 							$feature['js_file'],
 							$feature['dependencies'],
 							$feature['version'],
@@ -381,26 +372,26 @@ class Features {
 	 * @param mixed $slug
 	 * @return string[]
 	 */
-	public function load($slug, $research_team, $year) {
+	public function load($slug) {
 		$features = new Features(null, null);
-		$assets = $features->get_asset($slug, $research_team, $year);
+		$assets = $features->get_asset($slug);
 		do_action('qm/debug', 'loading feature: ' . print_r($assets, true));
 		$enqueued = array();
 		if ( $assets['css_file'] ) {
 			$styled = wp_enqueue_style(
-				'prc-platform-feature-' . $research_team . '-' . $year . '-' . $slug,
+				'prc-platform-feature-' . $slug,
 				$assets['css_file'],
 				array(),
 				$assets['version']
 			);
 			if ( $styled ) {
-				$enqueued['style'] = 'prc-platform-feature-' . $research_team . '-' . $year . '-' . $slug;
+				$enqueued['style'] = 'prc-platform-feature-' . $slug;
 
 			}
 		}
 		if ( $assets['js_file'] ) {
 			$scripted = wp_enqueue_script(
-				'prc-platform-feature-' . $research_team . '-' . $year . '-' . $slug,
+				'prc-platform-feature-' . $slug,
 				$assets['js_file'],
 				$assets['dependencies'],
 				$assets['version'],
@@ -410,7 +401,7 @@ class Features {
 				)
 			);
 			if ( $scripted ) {
-				$enqueued['script'] = 'prc-platform-feature-' . $research_team . '-' . $year . '-' . $slug;
+				$enqueued['script'] = 'prc-platform-feature-' . $slug;
 			}
 		}
 		return $enqueued;

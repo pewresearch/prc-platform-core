@@ -99,7 +99,7 @@ class Loader_Block extends Features {
 		} elseif( $is_legacy_s3 ) {
 			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
-			$enqueued_handles = $this->load($attributes['slug'], $attributes['researchArea'], $attributes['year']);
+			$enqueued_handles = $this->load($attributes['slug']);
 		}
 
 		// we need to remove the wpackio stuff when we're loading on the main frontend, that should only load on an iframe...
