@@ -145,4 +145,6 @@ class Decoded {
 			}
 		}
 	}
+
+	// set the default visibility to be hide in index....
 }
