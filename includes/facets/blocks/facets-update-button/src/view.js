@@ -1,14 +1,14 @@
 /**
  * WordPress Dependencies
  */
-import { store, getContext, getElement } from '@wordpress/interactivity';
+import { store } from '@wordpress/interactivity';
 
 /**
  * Internal Dependencies
  */
 const targetNamespace = 'prc-platform/facets-context-provider';
 
-const { actions, state } = store('prc-platform/facets-update-button', {
+const { state } = store('prc-platform/facets-update-button', {
 	state: {
 		// update-results is the id of our button, we can use it to target the button disabled state but also hide the "clear all" button.
 		'update-results': {

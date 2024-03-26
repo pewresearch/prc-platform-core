@@ -606,6 +606,7 @@ class Staff_Bylines {
     }
 
 	/**
+	 * Sets byline archives to only show posts with the current byline.
 	 * @hook prc_platform_pub_listing_default_args
 	 * @param mixed $query
 	 * @return mixed
@@ -625,7 +626,6 @@ class Staff_Bylines {
 				),
 			);
 		}
-		do_action('qm/debug', 'filter_pub_listing_query_args' . print_r($query, true) );
 		return $query;
 	}
 }

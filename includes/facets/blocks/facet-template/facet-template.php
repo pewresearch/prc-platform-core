@@ -232,7 +232,6 @@ class Facet_Template {
 			return '';
 		}
 
-		// Keep in place, we will come back and reimplement wordpress/interactivity-router once it's more stable.
 		$facet_router_region = md5(wp_json_encode([
 			'slug' => $facet_slug,
 			'type' => $facet_type,

@@ -7,22 +7,36 @@ use WP_Query;
 use WP_REST_Request;
 use WP_REST_Response;
 
+/**
+ * A PHP based API for interacting with Facets WP data via the REST API.
+ */
 class Facets_API {
-	public $query;
+	public $query_args;
 	public $query_id;
 	public $cache_key;
 	public $registered_facets = array();
 	public $selected_choices = array();
 
 	public function __construct($query) {
+		$this->query_args = $this->construct_query_args(array());
 		$this->cache_key = $this->construct_cache_key($query);
-		$this->query = $query;
 		$this->registered_facets = $this->get_registered_facets();
 		$this->selected_choices = $this->get_selected_choices();
 	}
 
 	public function construct_cache_key($query = array()) {
 		return md5(wp_json_encode($query));
+	}
+
+	public function construct_query_args($query_args = array()) {
+		$query_args = apply_filters('prc_platform_pub_listing_default_args', $query_args);
+		$query_args = array_merge($query_args, array(
+			'paged' => 1
+		));
+		if ( !empty($query_args['s']) ) {
+			$query_args['es'] = true;
+		}
+		return $query_args;
 	}
 
 	public function get_current_selection($facet_slug) {
@@ -65,22 +79,10 @@ class Facets_API {
 		return $selected_choices;
 	}
 
-	public function query( $query_args = array() ) {
-		// We can pass in $query to this array(), which would be useful for detecting if its a search query or not...
-		$query_args = apply_filters('prc_platform_pub_listing_default_args', $query_args);
-		$query_args = array_merge($query_args, array(
-			'paged' => 1
-		));
-		// $query_args go in and we get a cache key from this...
-		// if we match, then return, otherwise continue with query.
-		// Default to Elasticsearch if we have a search query.
-		if ( !empty($query_args['s']) ) {
-			$query_args['es'] = true;
-		}
-
-		$args =  apply_filters('prc_platform_facets_api_args', array(
+	public function query() {
+		$args = apply_filters('prc_platform_facets_api_args', array(
 			'facets'     => $this->registered_facets,
-			'query_args' => $query_args,
+			'query_args' => $this->query_args,
 			'settings'   => array(
 				'first_load' => true,
 			),

@@ -11,7 +11,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes([
 	]),
 	'id' => $selected_tokens_id,
 	// 'data-wp-router-region' => $selected_tokens_id,
-	// 'data-wp-watch--update-tokens' => 'callbacks.updateTokens',
+	'data-wp-init--update-tokens' => 'callbacks.updateTokens',
 	'data-wp-class--has-tokens' => 'callbacks.hasTokens',
 ]);
 

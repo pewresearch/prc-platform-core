@@ -16,7 +16,7 @@ class Cache extends Facets {
 		require_once plugin_dir_path( __FILE__ ) . '/class-table.php';
 
 		if ( true === $init ) {
-			// Instantiate the Facet Cache Table class.
+			// Initialize the Facet Cache Table class.
 			$this->cache_db_table = new FacetCache_Table();
 
 			// Uninstall the database. Uncomment this code to force the database to rebuild.

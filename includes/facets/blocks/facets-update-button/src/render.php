@@ -11,6 +11,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 	'data-wp-interactive' => wp_json_encode(array(
 		'namespace' => 'prc-platform/facets-update-button',
 	)),
+	'data-wp-router-region' => 'facets-update-button',
 	'data-wp-watch--for-disabled-state' => 'callbacks.watchDisabledState',
 ));
 

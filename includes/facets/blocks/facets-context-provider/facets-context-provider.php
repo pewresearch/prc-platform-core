@@ -40,6 +40,7 @@ class Facets_Context_Provider {
 	public function hoist_facet_data_to_pre_render_stage($pre_render, $parsed_block, $parent_block_instance) {
 		if ( 'prc-platform/facets-context-provider' === $parsed_block['blockName'] ) {
 			global $wp_query;
+			// @TODO pass in the wp_query object into the Facets_API constructor
 			$facets_api = new Facets_API(null);
 			$this->data = $facets_api->query();
 			$this->selected = $facets_api->selected_choices;
