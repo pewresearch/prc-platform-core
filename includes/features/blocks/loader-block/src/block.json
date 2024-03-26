@@ -11,6 +11,12 @@
 		"slug": {
 			"type": "string"
 		},
+		"researchArea": {
+			"type": "string"
+		},
+		"year": {
+			"type": "string"
+		},
 		"dataAttachmentId": {
 			"type": "integer"
 		},

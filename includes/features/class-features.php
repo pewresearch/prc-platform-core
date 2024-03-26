@@ -371,7 +371,7 @@ class Features {
 	 * @param mixed $slug
 	 * @return string[]
 	 */
-	public function load($slug) {
+	public function load($slug, $research_area, $year) {
 		$features = new Features(null, null);
 		$assets = $features->get_asset($slug);
 		$enqueued = array();
@@ -412,6 +412,8 @@ class Features {
 	 * @throws LogicException
 	 */
 	public function load_legacy_wpackIO($args) {
+		do_action('qm/debug', 'loading legacy wpackio'.print_r($args, true));
+
 		$args = wp_parse_args(
 			$args,
 			array(
@@ -447,7 +449,7 @@ class Features {
 		$enqueue = new WPackio( $app_name, 'dist', $args['version'], 'plugin', $dir );
 
 		$feature_manifest = $enqueue->register(
-			'feature',
+			'interactive',
 			'main',
 			array(
 				'js'        => true,

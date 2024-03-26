@@ -43,11 +43,17 @@ function findFeatureBySlug(obj, slug) {
 export default function Edit({ attributes, setAttributes, clientId, context }) {
 	const { postId } = context;
 	const blockProps = useBlockProps();
-	const [researchArea, setResearchArea] = useState(null);
-	const [year, setYear] = useState(null);
+	// const [researchArea, setResearchArea] = useState(null);
+	// const [year, setYear] = useState(null);
 	const [dataViewerOpen, setDataViewerOpen] = useState(false);
-	const { slug, dataAttachmentId, legacyWpackIo, legacyAssetsS3 } =
-		attributes;
+	const {
+		slug,
+		year,
+		researchArea,
+		dataAttachmentId,
+		legacyWpackIo,
+		legacyAssetsS3,
+	} = attributes;
 
 	const isLegacy = useMemo(() => {
 		return legacyWpackIo || legacyAssetsS3;
@@ -161,7 +167,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 									value={researchArea}
 									options={researchAreaOptions}
 									onChange={(value) => {
-										setResearchArea(value);
+										setAttributes({ researchArea: value });
 									}}
 								/>
 							</FlexItem>
@@ -171,7 +177,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 									value={year}
 									options={yearOptions}
 									onChange={(value) => {
-										setYear(value);
+										setAttributes({ year: value });
 									}}
 								/>
 							</FlexItem>

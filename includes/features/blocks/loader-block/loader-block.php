@@ -22,6 +22,45 @@ class Loader_Block extends Features {
 		}
 	}
 
+	public function shortcode_fallback($attributes, $content) {
+		$args = wp_parse_args(
+			$attributes,
+			array(
+				'appname' => false,
+				'path'    => false,
+				'deps'    => false,
+				'version' => '1.0',
+			)
+		);
+
+		$args = array(
+			'slug' => $args['id'],
+			'legacyWpackIo' => $args,
+		);
+
+
+		if ( function_exists( 'wp_sentry_safe' ) ) {
+			$slug = $args['slug'];
+			$message = 'Feature with slug: ' . $slug . ' did not migrate as expected.';
+			wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ($message) {
+				$client->withScope(function (\Sentry\State\Scope $scope) use ($client, $message) {
+					$scope->setTag('features-migration', true);
+					$client->captureMessage($message, \Sentry\Severity::debug() );
+				});
+			} );
+		}
+
+		$block = new \WP_Block_Parser_Block(
+			'prc-platform/feature-loader',
+			$args,
+			array(),
+			'',
+			array()
+		);
+		$rendered = render_block((array) $block);
+		return $rendered;
+	}
+
 	/**
 	 * Loads the necessary script and attachment markup for an feature to load on the front end.
 	 * @param mixed $attributes
@@ -33,7 +72,6 @@ class Loader_Block extends Features {
 		if ( is_admin() ) {
 			return;
 		}
-
 		$block_wrapper_attrs = get_block_wrapper_attributes(array(
 			'id' => "js-{$attributes['slug']}"
 		));
@@ -61,7 +99,7 @@ class Loader_Block extends Features {
 		} elseif( $is_legacy_s3 ) {
 			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
-			$enqueued_handles = $this->load($attributes['slug']);
+			$enqueued_handles = $this->load($attributes['slug'], $attributes['researchArea'], $attributes['year']);
 		}
 
 		// we need to remove the wpackio stuff when we're loading on the main frontend, that should only load on an iframe...
@@ -108,5 +146,6 @@ class Loader_Block extends Features {
 				'render_callback' => array( $this, 'render_feature_loader_callback' ),
 			)
 		);
+		add_shortcode('load_interactive', array($this, 'shortcode_fallback'));
 	}
 }
