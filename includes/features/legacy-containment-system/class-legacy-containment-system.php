@@ -12,7 +12,7 @@ class Legacy_Interactive_Containment_System {
 	public function init($loader = null) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_legacy_libraries' );
-			$loader->add_action( 'prc_platform_interactive_loader_enqueue', $this, 'enqueue_legacy_scripts_and_styles', 10, 2 );
+			$loader->add_action( 'prc_platform_feature_loader_enqueue', $this, 'enqueue_legacy_scripts_and_styles', 10, 2 );
 			$loader->add_action( 'rest_api_init', $this, 'register_legacy_firebase_endpoint' );
 		}
 	}
