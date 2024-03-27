@@ -19,16 +19,13 @@ class Facets_API {
 
 	public function __construct($query) {
 		$this->query_args = $this->construct_query_args($query);
+		$this->cache_key = $this->construct_cache_key($query);
 		$this->registered_facets = $this->get_registered_facets();
 		$this->selected_choices = $this->get_selected_choices();
-		$this->cache_key = $this->construct_cache_key($query);
 	}
 
 	public function construct_cache_key($query = array()) {
-		return md5(wp_json_encode([
-			'query' => $query,
-			'selected' => $this->selected_choices,
-		]));
+		return md5(wp_json_encode($query));
 	}
 
 	public function construct_query_args($query_args = array()) {
@@ -83,9 +80,8 @@ class Facets_API {
 	}
 
 	public function query() {
-		do_action('qm/debug', 'Facets Query:'.print_r($this->cache_key, true));
-		$cache = new Facets_Cache();
-		$cached_data = $cache->get($this->cache_key, 'facets_group');
+		$cached = new Cache();
+		$cached_data = $cached->get($this->cache_key, 'facets_group');
 		if ( $cached_data ) {
 			return $cached_data;
 		}
@@ -109,8 +105,7 @@ class Facets_API {
 
 		$data = apply_filters('prc_platform_facets_api_response', $data);
 
-		$cache->store($this->cache_key, 'facets_group', $data);
-
+		$cached->store($this->cache_key, 'facets_group', $data);
 		return $data;
 	}
 }
