@@ -30,7 +30,6 @@ class Cache extends Facets {
 			}
 
 			add_action( 'init', array($this, 'schedule_cron_job') );
-
 			add_action( 'wpcom_vip_cache_pre_execute_purges', array( $this, 'purge_with_vip_cache_flush' ), 10, 1 );
 		}
 	}

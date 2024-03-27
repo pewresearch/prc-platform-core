@@ -80,6 +80,12 @@ class Facets_API {
 	}
 
 	public function query() {
+		$cached = new Cache();
+		$cached_data = $cached->get($this->cache_key, 'facets_group');
+		if ( $cached_data ) {
+			return $cached_data;
+		}
+
 		$args = apply_filters('prc_platform_facets_api_args', array(
 			'facets'     => $this->registered_facets,
 			'query_args' => $this->query_args,
@@ -97,6 +103,9 @@ class Facets_API {
 		$server   = rest_get_server();
 		$data     = $server->response_to_data( $response, false );
 
-		return apply_filters('prc_platform_facets_api_response', $data);
+		$data = apply_filters('prc_platform_facets_api_response', $data);
+
+		$cached->store($this->cache_key, 'facets_group', $data);
+		return $data;
 	}
 }
