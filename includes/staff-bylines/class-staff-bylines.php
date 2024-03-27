@@ -531,7 +531,7 @@ class Staff_Bylines {
 		}
 		$staff_data = get_object_vars( $staff );
 
-		$staff_link = $staff['link'];
+		$staff_link = $staff_data['link'];
 		$staff_name_as_link = wp_sprintf(
 			'<a href="%1$s">%2$s</a>&nbsp;',
 			$staff_link,

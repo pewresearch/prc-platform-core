@@ -424,7 +424,11 @@ class Features {
 			)
 		);
 		$args = \array_change_key_case($args, CASE_LOWER);
-		$enqueued = array();
+		// check if $path is enclosed in '' and if so remove them
+		$args = array_map( function( $value ) {
+			return preg_replace('/\'/', '', $value);
+		}, $args );
+		$enqueued = [];
 
 		if ( is_admin() ) {
 			return;
