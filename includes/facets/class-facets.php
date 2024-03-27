@@ -154,6 +154,8 @@ class Facets {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
+			new Facets_Cache($loader);
+
 			// FacetWP:
 			$loader->add_filter( 'facetwp_api_can_access', $this, 'allow_facetwp_api_access' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
