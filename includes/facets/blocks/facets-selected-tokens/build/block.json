@@ -10,6 +10,12 @@
     "orientation": {
       "type": "string",
       "default": "vertical"
+    },
+    "tokenBorderColor": {
+      "type": "string"
+    },
+    "tokenBackgroundColor": {
+      "type": "string"
     }
   },
   "supports": {
