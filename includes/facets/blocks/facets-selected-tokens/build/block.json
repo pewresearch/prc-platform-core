@@ -46,7 +46,9 @@
         "__experimentalFontFamily": true
       }
     },
-    "interactivity": true
+    "interactivity": {
+      "clientNavigation": true
+    }
   },
   "usesContext": [
     "postType",
