@@ -21,7 +21,7 @@ import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
  */
 import { TypeSelect, getLabel, getOptions } from './type-select';
 import { usePostReportPackage } from '../context';
-import ListItem from '../lite-item';
+import ListItem from '../list-item';
 
 const ALLOWED_MEDIA_TYPES = [
 	'image',
@@ -55,9 +55,7 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 			<MediaUploadCheck>
 				<MediaUpload
 					title={__(
-						null === value
-							? `Upload ${title}`
-							: `Change ${title}`
+						null === value ? `Upload ${title}` : `Change ${title}`
 					)}
 					allowedTypes={ALLOWED_MEDIA_TYPES}
 					value={value}
@@ -67,7 +65,11 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 					}}
 					render={({ open }) => {
 						return (
-							<Button variant="secondary" disabled={!allowEditing} onClick={open}>
+							<Button
+								variant="secondary"
+								disabled={!allowEditing}
+								onClick={open}
+							>
 								{__(
 									null === value
 										? `Upload File`
@@ -82,27 +84,24 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 	};
 
 	const UploadIconButton = ({ title, value }) => {
-		return(
+		return (
 			<MediaUploadCheck>
 				<MediaUpload
 					title={__(
-						null === value
-							? `Upload ${title}`
-							: `Change ${title}`
+						null === value ? `Upload ${title}` : `Change ${title}`
 					)}
 					value={value}
 					onSelect={(img) => {
 						updateItem(index, 'icon', img.url, ITEMS_TYPE);
-						updateItem(
-							index,
-							'attachmentId',
-							img.id,
-							ITEMS_TYPE
-						);
+						updateItem(index, 'attachmentId', img.id, ITEMS_TYPE);
 					}}
 					render={({ open }) => {
 						return (
-							<Button variant="secondary" disabled={!allowEditing} onClick={open}>
+							<Button
+								variant="secondary"
+								disabled={!allowEditing}
+								onClick={open}
+							>
 								{__(
 									null === value
 										? `Upload Icon`
@@ -114,25 +113,29 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 				/>
 			</MediaUploadCheck>
 		);
-	}
+	};
 
 	return (
-		<ListItem label={getLabel(type)} index={index} onRemove={() => remove(index, ITEMS_TYPE)}>
+		<ListItem
+			label={getLabel(type)}
+			index={index}
+			onRemove={() => remove(index, ITEMS_TYPE)}
+		>
 			<div
 				style={{
 					paddingTop: '10px',
 				}}
 			>
 				{['presentation', 'pressRelease'].includes(type) && (
-					<Fragment>
-						<TextControl
-							autoComplete={false}
-							label="URL"
-							value={url}
-							onChange={(u) => updateItem(index, 'url', u, ITEMS_TYPE)}
-							disabled={!allowEditing}
-						/>
-					</Fragment>
+					<TextControl
+						autoComplete={false}
+						label="URL"
+						value={url}
+						onChange={(u) =>
+							updateItem(index, 'url', u, ITEMS_TYPE)
+						}
+						disabled={!allowEditing}
+					/>
 				)}
 				{['link', 'promo', 'qA', 'supplemental'].includes(type) && (
 					<Fragment>
@@ -140,14 +143,18 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 							autoComplete={false}
 							label="Label"
 							value={label}
-							onChange={(c) => updateItem(index, 'label', c, ITEMS_TYPE)}
+							onChange={(c) =>
+								updateItem(index, 'label', c, ITEMS_TYPE)
+							}
 							disabled={!allowEditing}
 						/>
 						<TextControl
 							autoComplete={false}
 							label="URL"
 							value={url}
-							onChange={(u) => updateItem(index, 'url', u, ITEMS_TYPE)}
+							onChange={(u) =>
+								updateItem(index, 'url', u, ITEMS_TYPE)
+							}
 							disabled={!allowEditing}
 						/>
 						{'link' === type && (
@@ -174,10 +181,16 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 						'pressRelease',
 						'topline',
 					].includes(type) && (
-						<UploadFileButton title={getLabel(type)} value={attachmentId} />
+						<UploadFileButton
+							title={getLabel(type)}
+							value={attachmentId}
+						/>
 					)}
 					{'promo' === type && (
-						<UploadIconButton title={getLabel(type)} value={attachmentId} />
+						<UploadIconButton
+							title={getLabel(type)}
+							value={attachmentId}
+						/>
 					)}
 					<Button
 						variant="secondary"
@@ -195,7 +208,12 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 								// Set up the new type
 								updateItem(index, 'type', newType, ITEMS_TYPE);
 								// Reset everything else
-								updateItem(index, 'attachmentId', null, ITEMS_TYPE);
+								updateItem(
+									index,
+									'attachmentId',
+									null,
+									ITEMS_TYPE
+								);
 								updateItem(index, 'url', '', ITEMS_TYPE);
 								updateItem(index, 'label', '', ITEMS_TYPE);
 								updateItem(index, 'icon', '', ITEMS_TYPE);
