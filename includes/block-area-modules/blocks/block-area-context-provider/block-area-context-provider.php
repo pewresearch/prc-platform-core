@@ -54,10 +54,13 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @param mixed $query
 	 */
 	public function execute_on_main_query($query) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+			return $query;
+		}
 		if ( $query->is_archive() && $query->is_category() && $query->is_main_query() ) {
-			// Wee neeed to standardized block-area-names
-			// so on category page, it should be category-lede.
-			$this->query_block_module_for_story_items('category-lede', $query->get_queried_object()->slug);
+			// Wee need to standardized block-area-names
+			// so on category page, it should be topic-lede.
+			$this->query_block_module_for_story_items('topic-lede', $query->get_queried_object()->slug);
 
 			$not_in = $query->get('post__not_in');
 

@@ -296,24 +296,14 @@ class Embeds {
 	 * @return string
 	 */
 	public function get_template_post_content() {
-		$is_interactive_containment = get_query_var('interactivesContainment', false);
 		$post_content = '';
 		while ( have_posts() ) {
 			the_post();
 			$post_content = get_the_content();
-			if ( $is_interactive_containment ) {
-				$blocks = parse_blocks( $post_content );
-				foreach ( $blocks as $block ) {
-					if ( array_key_exists('blockName', $block) && in_array( $block['blockName'], array('prc-platform/interactive-loader') ) ) {
-						$post_content = apply_filters( 'the_content', render_block( $block ) );
-					}
-				}
+			if ( $this->test_for_embeddable_blocks( $post_content ) ) {
+				$post_content = $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
 			} else {
-				if ( $this->test_for_embeddable_blocks( $post_content ) ) {
-					$post_content = $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
-				} else {
-					$post_content = apply_filters( 'the_content', $post_content );
-				}
+				$post_content = apply_filters( 'the_content', $post_content );
 			}
 		}
 		wp_reset_postdata();
