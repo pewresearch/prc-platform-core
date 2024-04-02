@@ -85,9 +85,6 @@ class Research_Teams extends Taxonomies {
 
 	// Adds a rewrite rule for each research term for the approved post types.
 	public function add_rewrite_rules($rules) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $rules;
-		}
 		$new_rules = array();
 		// get all the terms from this taxonomy...
 		$terms = get_terms(array(

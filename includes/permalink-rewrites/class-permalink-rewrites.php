@@ -42,9 +42,6 @@ class Permalink_Rewrites {
 	 * @uses prc_platform_rewrite_rules
 	 */
 	public function register_rewrites() {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return;
-		}
 		$rewrite_rules = apply_filters( 'prc_platform_rewrite_rules', array() );
 		foreach ( $rewrite_rules as $rule => $query ) {
 			add_rewrite_rule( $rule, $query, 'top' );
@@ -58,9 +55,6 @@ class Permalink_Rewrites {
 	 * @return void
 	 */
 	public function register_tags() {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return;
-		}
 		$rewrite_tags = apply_filters( 'prc_platform_rewrite_tags', array() );
 		foreach ( $rewrite_tags as $tag ) {
 			add_rewrite_tag( $tag['tag'], $tag['regex'], $tag['query'] );
@@ -75,9 +69,6 @@ class Permalink_Rewrites {
 	 * @return array $query_vars
 	 */
 	public function register_query_vars($query_vars) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $query_vars;
-		}
 		$rewrite_query_vars = apply_filters( 'prc_platform_rewrite_query_vars', array() );
 		foreach ( $rewrite_query_vars as $var ) {
 			$query_vars[] = $var;
