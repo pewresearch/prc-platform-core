@@ -26,6 +26,7 @@ class Embeds {
 		'prc-block/chart',
 		'prc-block/audio-player',
 		'prc-block/quiz',
+		'prc-block/embed-wrapper'
 	);
 
 	public static $handle = 'prc-platform-iframe-embeds';
