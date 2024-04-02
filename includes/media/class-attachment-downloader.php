@@ -30,22 +30,9 @@ class Attachment_Downloader {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'register_rewrite' );
 			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var' );
 			$loader->add_filter( 'template_include', $this, 'download_attachment_template' );
 		}
-	}
-
-	/**
-	 * Download Image Attachments by adding /download/ to the end of an attachment page URL
-	 * @hook prc_platform_rewrite_rules
-	 * @param  [type] $rules [description]
-	 * @return [type]        [description]
-	 */
-	public function register_rewrite($rewrite_rules) {
-		return array_merge($rewrite_rules, array(
-			'[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/download/?$' => 'index.php?attachment=$matches[1]&attachment-download=1',
-		));
 	}
 
 	/**
