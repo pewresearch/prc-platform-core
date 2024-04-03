@@ -262,3 +262,19 @@ class Datasets_Download_Logger extends Datasets {
 		return $datasets;
 	}
 }
+
+function query_datasets_log_for_user($user_id) {
+	$query_args = array(
+		'user_id' => $user_id,
+		'fields' => array( 'id', 'dataset_ids' ),
+	);
+	$query = new Dataset_Downloads_Log_Query($query_args);
+	$datasets = array();
+	if ( $query->items ) {
+		foreach ( $query->items as $record ) {
+			$dataset_ids = maybe_unserialize( $record->dataset_ids );
+			$datasets = array_merge( $datasets, $dataset_ids );
+		}
+	}
+	return $datasets;
+}
