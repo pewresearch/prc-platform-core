@@ -119,7 +119,7 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/quiz/([^/]+)/results/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
 					// A new, cacheable, results archetype rule.
 					$new_rules[$term_name . '/quiz/([^/]+)/results/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
-				} else if ( 'interactive' === $post_type ) {
+				} else if ( 'feature' === $post_type ) {
 					$new_rules[$term_name . '/feature/([^/]+)/?$'] = 'index.php?post_type=feature&name=$matches[1]';
 					// Add attachment rule, very, very specific. This will only hit for attachment names that are 5 or more characters long.
 					// This rule allows for the possibilitiy of other interactive rewrites
