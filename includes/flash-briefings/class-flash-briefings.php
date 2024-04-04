@@ -4,7 +4,7 @@ use WP_Error;
 use WP_Query;
 
 class Flash_Briefings {
-	public static $post_type = 'daily-brief';
+	public static $post_type = 'flash-brief';
 
 	/**
 	 * The version of this plugin.
@@ -79,7 +79,7 @@ class Flash_Briefings {
 	}
 
 	/**
-	 * Register the custom post type for the daily brief.
+	 * Register the custom post type for the flash brief.
 	 * @hook init
 	 */
 	public function register_type() {
@@ -175,6 +175,7 @@ class Flash_Briefings {
 				return true;
 			}
 		);
+		// @TODO:
 		$siri = array(
 			'route' 			  => '/flash-briefing/siri',
 			'methods'             => 'GET',
@@ -191,6 +192,7 @@ class Flash_Briefings {
 				return true;
 			}
 		);
+		// @TODO:
 		$google = array(
 			'route' 			  => '/flash-briefing/google',
 			'methods'             => 'GET',
@@ -226,7 +228,7 @@ class Flash_Briefings {
 				$query->the_post();
 				$post_id      = get_the_ID();
 				$date         = get_the_date( 'c', $post_id );
-				$content = wp_strip_all_tags( get_the_content() ) . ' For more, visit pew research dot org.';
+				$content      = wp_strip_all_tags( get_the_content() ) . ' For more, visit pew research dot org.';
 				$link         = get_post_meta( $post_id, '_yoast_wpseo_canonical', true );
 				if ( empty( $link ) ) {
 					$link = get_permalink( $post_id );

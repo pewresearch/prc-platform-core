@@ -26,19 +26,33 @@ import { useEntityProp } from '@wordpress/core-data';
 /**
  * Internal Dependencies
  */
+import ColorControls from './color-controls';
 
-function InspectorPanel( { attributes, setAttributes, context } ) {
+function InspectorPanel({ colors, clientId }) {
 	return (
-		<InspectorControls>
-			<PanelBody title="Block Controls">
-				<BaseControl label="Do Something">
-					<Button variant="primary">Do Something</Button>
-				</BaseControl>
-			</PanelBody>
-		</InspectorControls>
+		<Fragment>
+			<InspectorControls>
+				<PanelBody title="Block Controls">
+					<BaseControl label="Do Something">
+						<Button variant="primary">Do Something</Button>
+					</BaseControl>
+				</PanelBody>
+			</InspectorControls>
+			<ColorControls colors={colors} clientId={clientId} />
+		</Fragment>
 	);
 }
 
-export default function Controls( { attributes, setAttributes, context } ) {
-	return <InspectorPanel { ...{ attributes, setAttributes, context } } />;
+export default function Controls({
+	attributes,
+	setAttributes,
+	context,
+	colors,
+	clientId,
+}) {
+	return (
+		<InspectorPanel
+			{...{ attributes, setAttributes, context, colors, clientId }}
+		/>
+	);
 }

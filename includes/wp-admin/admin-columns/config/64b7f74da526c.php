@@ -7,9 +7,28 @@ return array (
     'title' => 'Default View',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1710194641,
+    'updated' => 1712244806,
     'columns' => 
     array (
+      '544f164c31eb84' => 
+      array (
+        'type' => 'column-featured_image',
+        'label' => 'Featured Image',
+        'width' => '',
+        'width_unit' => '%',
+        'featured_image_display' => 'image',
+        'image_size' => 'cpac-custom',
+        'image_size_w' => '60',
+        'image_size_h' => '60',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'off',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '544f164c31eb84',
+      ),
       'title' => 
       array (
         'type' => 'title',

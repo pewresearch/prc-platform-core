@@ -51,6 +51,7 @@ class Features {
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'init', $this, 'rewrite_tags' );
 			$loader->add_action( 'init', $this, 'rewrite_index', 11 );
+			$loader->add_action( 'wp_enqueue_scripts', $this, 'register_assets' );
 			$loader->add_action( 'prc_platform_on_publish', $this, 'rewrite_update_hook' );
 			$loader->add_action( 'prc_platform_on_update', $this, 'rewrite_update_hook' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
@@ -255,6 +256,13 @@ class Features {
 		$features_dir = plugin_dir_path( __FILE__ ) . '../../../prc-features';
 		// using glob to get all directories (except /blocks) in the features directory
 		$research_teams = glob( $features_dir . '/*', GLOB_ONLYDIR );
+		// loop through $research_teams which are coming out like /wp/wp-content/plugins/prc-platform-core/includes/features/../../../prc-features/global and replace plugins/prc-platform-core/includes/features/../../../prc-features with plugins/prc-features
+		$research_teams = array_map( function( $research_team ) use ( $features_dir ) {
+			$path = str_replace( $features_dir, PRC_FEATURES_DIR, $research_team );
+			// make sure $Path doesnt have a //
+			$path = preg_replace( '/\/\//', '/', $path );
+			return $path;
+		}, $research_teams );
 		foreach ( $research_teams as $research_team ) {
 			if ( basename( $research_team ) === 'blocks' || basename( $research_team ) === '.template' ) {
 				continue;
@@ -316,21 +324,20 @@ class Features {
 	public function get_asset($feature_slug) {
 		$features = $this->get_assets();
 		// TODO: FWIW sometimes we do have multiple features with the same slug (eg. restrictions). We might want to enforce unique slugs somehow
+		$selected = false;
 		foreach ( $features as $research_team_name => $years ) {
 			foreach ( $years as $year_name => $features ) {
 				foreach ( $features as $feature ) {
 					if ( $feature['slug'] === $feature_slug ) {
-						return $feature;
+						$selected = $feature;
 					}
 				}
 			}
 		}
-
-		return false;
+		return $selected;
 	}
 
 	/**
-	 * WIP: I'm not sure I want to pre-register all the features into the scripts registry like this. I think I'd rather just register them as they are enqueued.
 	 * Register the assets for all features.
 	 * @hook init
 	 */
@@ -340,7 +347,7 @@ class Features {
 			foreach ( $years as $year => $features ) {
 				foreach ( $features as $feature ) {
 					if ( $feature['css_file'] ) {
-						wp_enqueue_style(
+						wp_register_style(
 							'prc-platform-feature-' . $feature['slug'],
 							$feature['css_file'],
 							array(),
@@ -348,7 +355,7 @@ class Features {
 						);
 					}
 					if ( $feature['js_file'] ) {
-						wp_enqueue_script(
+						wp_register_script(
 							'prc-platform-feature-' . $feature['slug'],
 							$feature['js_file'],
 							$feature['dependencies'],
@@ -373,32 +380,20 @@ class Features {
 	 * @return string[]
 	 */
 	public function load($slug) {
-		$features = new Features(null, null);
-		$assets = $features->get_asset($slug);
+		$assets = $this->get_asset($slug);
+		error_log(print_r($assets, true));
 		$enqueued = array();
-		if ( $assets['css_file'] ) {
-			$styled = wp_enqueue_style(
-				'prc-platform-feature-' . $slug,
-				$assets['css_file'],
-				array(),
-				$assets['version']
-			);
+		if (false === $assets) {
+			return $enqueued;
+		}
+		if ( array_key_exists('css_file', $assets) && $assets['css_file'] ) {
+			$styled = wp_enqueue_style( 'prc-platform-feature-' . $slug );
 			if ( $styled ) {
 				$enqueued['style'] = 'prc-platform-feature-' . $slug;
-
 			}
 		}
-		if ( $assets['js_file'] ) {
-			$scripted = wp_enqueue_script(
-				'prc-platform-feature-' . $slug,
-				$assets['js_file'],
-				$assets['dependencies'],
-				$assets['version'],
-				array(
-					'strategy' =>'defer',
-					'in_footer' => true,
-				)
-			);
+		if ( array_key_exists('js_file', $assets) && $assets['js_file'] ) {
+			$scripted = wp_enqueue_script( 'prc-platform-feature-' . $slug );
 			if ( $scripted ) {
 				$enqueued['script'] = 'prc-platform-feature-' . $slug;
 			}
@@ -424,10 +419,14 @@ class Features {
 			)
 		);
 		$args = \array_change_key_case($args, CASE_LOWER);
-		// check if $path is enclosed in '' and if so remove them
-		$args = array_map( function( $value ) {
-			return preg_replace('/\'/', '', $value);
-		}, $args );
+		if (isset($args['path'])) {
+			$args['path'] = preg_replace('/\'/', '', $args['path']);
+		}
+		if (!isset($args['path'])) {
+			global $post;
+			$post_id = property_exists($post, 'ID') ? $post->ID : null;
+			throw new \LogicException( 'No WPACKIO path found. Please check that the feature exists in the file structure. Post ID: ' . $post_id);
+		}
 		$enqueued = [];
 
 		if ( is_admin() ) {
@@ -445,7 +444,12 @@ class Features {
 
 		$deps = array('jquery', 'wp-element');
 		if ( false !== $args['deps'] && ! empty( $args['deps'] )) {
-			$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
+			// check if $deps is a string or an array
+			if ( is_string( $args['deps'] ) ) {
+				$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
+			} else {
+				$deps = array_merge( $deps, $args['deps'] );
+			}
 		}
 
 		$dir = WP_PLUGIN_DIR . '/prc-features/' . $args['path'] . '/src';
@@ -517,8 +521,13 @@ class Features {
 		}
 
 		$deps = array('jquery', 'wp-element');
-		if ( false !== $args['deps'] && ! empty( $args['libraries'] )) {
-			$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
+		if ( false !== $args['libraries'] && ! empty( $args['libraries'] )) {
+			// check if $deps is a string or an array
+			if ( is_string( $args['libraries'] ) ) {
+				$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
+			} else {
+				$deps = array_merge( $deps, $args['libraries'] );
+			}
 		}
 
 		$styles = [];
@@ -731,8 +740,19 @@ class Features {
 					$rewrite_string .= '([^/]*)\/';
 					$i++;
 				}
+				// get the primary research-team taxonomy term slug for this based on the $post_slug
+				$post = get_page_by_path( $post_slug, OBJECT, self::$post_type );
+				$primary_research_term = wp_get_post_terms( $post->ID, 'research-teams', array( 'fields' => 'names' ) );
+				// check if we have a primary research term
+				if ( ! empty( $primary_research_term ) ) {
+					$primary_research_term = $primary_research_term[0];
+					$primary_research_term = sanitize_key( $primary_research_term ); // extra sanitization, makes lowercase.
+				} else {
+					$primary_research_term = '';
+				}
+				$url_prefix = $primary_research_term ? $primary_research_term . '/' : '';
 				add_rewrite_rule(
-					"feature\/{$post_slug}\/{$rewrite_string}?$",
+					"{$url_prefix}feature/{$post_slug}/{$rewrite_string}?$",
 					"index.php?feature={$post_slug}&{$options_string}",
 					'top'
 				);

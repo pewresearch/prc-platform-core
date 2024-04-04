@@ -375,3 +375,54 @@ class Legacy_Interactive_Containment_System {
 		);
 	}
 }
+
+class PRC_Firebase {
+	protected $expiry = 1 * MONTH_IN_SECONDS;
+	public $data      = false;
+
+	public function __construct( $operation = false, $args = array() ) {
+		if ( false === $operation ) {
+			return;
+		}
+
+		/**
+		 * Parse incoming $args into an array and merge it with $defaults
+		 */
+		$args = wp_parse_args(
+			$args,
+			array(
+				'db'   => false,
+				'slug' => false,
+				'data' => false,
+			)
+		);
+
+		if ( false === $args['db'] && false === $args['slug'] ) {
+			return false;
+		}
+
+		$containment_system = new Legacy_Interactive_Containment_System(null);
+
+		if ( 'interactive' === $operation ) {
+			$this->data = $containment_system->get_db_data(
+				array(
+					'db'   => 'prc-app-prod-interactives',
+					'slug' => $args['slug'],
+				)
+			);
+		}
+
+		if ( 'get' === $operation ) {
+			$this->data = $containment_system->get_db_data(
+				array(
+					'db'   => $args['db'],
+					'slug' => $args['slug'],
+				)
+			);
+		}
+
+		if ( 'push' === $operation ) {
+			return new WP_Error( 'prc_firebase_operation_not_supported', __( 'Operation not supported.', 'prc' ) );
+		}
+	}
+}

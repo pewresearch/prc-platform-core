@@ -87,7 +87,7 @@ class Facets_API {
 		$cache = new Facets_Cache();
 		$cached_data = $cache->get($this->cache_key, 'facets_group');
 		if ( $cached_data ) {
-			return $cached_data;
+			// return $cached_data;
 		}
 
 		$args = apply_filters('prc_platform_facets_api_args', array(
@@ -109,7 +109,7 @@ class Facets_API {
 
 		$data = apply_filters('prc_platform_facets_api_response', $data);
 
-		$cache->store($this->cache_key, 'facets_group', $data);
+		// $cache->store($this->cache_key, 'facets_group', $data);
 
 		return $data;
 	}

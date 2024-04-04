@@ -54,10 +54,13 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @param mixed $query
 	 */
 	public function execute_on_main_query($query) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+			return $query;
+		}
 		if ( $query->is_archive() && $query->is_category() && $query->is_main_query() ) {
-			// Wee neeed to standardized block-area-names
-			// so on category page, it should be category-lede.
-			$this->query_block_module_for_story_items('category-lede', $query->get_queried_object()->slug);
+			// Wee need to standardized block-area-names
+			// so on category page, it should be topic-lede.
+			$this->query_block_module_for_story_items('topic-lede', $query->get_queried_object()->slug);
 
 			$not_in = $query->get('post__not_in');
 
@@ -74,6 +77,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @return mixed
 	 */
 	public function execute_block_context( $context, $parsed_block, $parent_block_obj ) {
+		return $context;
 		if ( 'core/post-template' === $parsed_block['blockName'] ) {
 			$story_item_ids = $this->collected_story_item_ids;
 			// Quit early if no story item ids.
@@ -129,7 +133,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 			$block_modules = new WP_Query($query_args);
 			if ( $block_modules->have_posts() ) {
 				$block_module_id = $block_modules->posts[0];
-
 				$this->collected_story_item_ids = get_post_meta($block_module_id, '_story_item_ids', true);
 			}
 			wp_reset_postdata();

@@ -1,16 +1,15 @@
 /**
  * WordPress Dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
-export default function useFeaturesList(researchArea, year) {
+export default function useFeaturesList() {
 	const [features, setFeatures] = useState([]);
 
 	useEffect(() => {
 		apiFetch({ path: '/prc-api/v3/feature/get-assets' }).then((data) => {
-			console.log({ data });
+			console.log('features->get_assets->', { data });
 			setFeatures(data);
 		});
 	}, []);
