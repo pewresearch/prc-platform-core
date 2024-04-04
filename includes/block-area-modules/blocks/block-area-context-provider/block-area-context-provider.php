@@ -35,7 +35,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @hook render_block_context, 1
 	 */
 	public function construct_block_context( $context, $parsed_block, $parent_block_obj ) {
-		return $context;
 		if ( 'prc-platform/block-area-context-provider' !== $parsed_block['blockName'] ) {
 			return $context;
 		}

@@ -424,10 +424,14 @@ class Features {
 			)
 		);
 		$args = \array_change_key_case($args, CASE_LOWER);
-		// check if $path is enclosed in '' and if so remove them
-		$args = array_map( function( $value ) {
-			return preg_replace('/\'/', '', $value);
-		}, $args );
+		if (isset($args['path'])) {
+			$args['path'] = preg_replace('/\'/', '', $args['path']);
+		}
+		if (!isset($args['path'])) {
+			global $post;
+			$post_id = property_exists($post, 'ID') ? $post->ID : null;
+			throw new \LogicException( 'No WPACKIO path found. Please check that the feature exists in the file structure. Post ID: ' . $post_id);
+		}
 		$enqueued = [];
 
 		if ( is_admin() ) {
@@ -445,7 +449,12 @@ class Features {
 
 		$deps = array('jquery', 'wp-element');
 		if ( false !== $args['deps'] && ! empty( $args['deps'] )) {
-			$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
+			// check if $deps is a string or an array
+			if ( is_string( $args['deps'] ) ) {
+				$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
+			} else {
+				$deps = array_merge( $deps, $args['deps'] );
+			}
 		}
 
 		$dir = WP_PLUGIN_DIR . '/prc-features/' . $args['path'] . '/src';
@@ -518,7 +527,12 @@ class Features {
 
 		$deps = array('jquery', 'wp-element');
 		if ( false !== $args['deps'] && ! empty( $args['libraries'] )) {
-			$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
+			// check if $deps is a string or an array
+			if ( is_string( $args['libraries'] ) ) {
+				$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
+			} else {
+				$deps = array_merge( $deps, $args['libraries'] );
+			}
 		}
 
 		$styles = [];
