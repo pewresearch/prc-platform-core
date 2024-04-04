@@ -3,7 +3,7 @@
 	"description": "Post Report Package functionality (formerly 'Multisection Reports') for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/icons": "^9.45.0",
+		"@wordpress/icons": "^9.33.0",
 		"@wordpress/scripts": "^26.1.0"
 	},
 	"scripts": {

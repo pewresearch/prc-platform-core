@@ -25,6 +25,9 @@ class Schema_Meta {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		if ( class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
+			require_once plugin_dir_path( __FILE__ ) . 'class-parsely-meta.php';
+		}
 		$this->init($loader);
 	}
 
@@ -202,17 +205,17 @@ class Schema_Meta {
 		if ( is_admin() ) {
 			return $presenters;
 		}
-		if ( class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
-			require_once plugin_dir_path( __FILE__ ) . 'class-parsely-meta.php';
-			$presenters[] = new Parsely_Title();
-			$presenters[] = new Parsely_Link();
-			$presenters[] = new Parsely_Type();
-			$presenters[] = new Parsely_Image_URL();
-			$presenters[] = new Parsely_Section();
-			$presenters[] = new Parsely_Tags();
-			$presenters[] = new Parsely_Pub_Date();
-			$presenters[] = new Parsely_Authors();
+		if ( ! class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && ! class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
+			return $presenters;
 		}
+		$presenters[] = new Parsely_Title();
+		$presenters[] = new Parsely_Link();
+		$presenters[] = new Parsely_Type();
+		$presenters[] = new Parsely_Image_URL();
+		$presenters[] = new Parsely_Section();
+		$presenters[] = new Parsely_Tags();
+		$presenters[] = new Parsely_Pub_Date();
+		$presenters[] = new Parsely_Authors();
 		return $presenters;
 	}
 

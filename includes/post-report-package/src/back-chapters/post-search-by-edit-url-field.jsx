@@ -70,10 +70,7 @@ const PostSearchByEditUrlField = ({ hocOnChange = false }) => {
 							toggleLoading(true);
 							setSearchValue(val);
 						}}
-						placeholder={__(
-							`Paste Back Chatper's edit (…/wp-admin/post.php?post=) url…`,
-							'prc-platform-post-report-package'
-						)}
+						placeholder={__(Paste Back Chatper's edit (…/wp-admin/post.php?post=) url…, 'prc-platform-post-report-package')}
 						autoComplete="off"
 					/>
 				</div>
@@ -119,8 +116,10 @@ const PostSearchByEditUrlField = ({ hocOnChange = false }) => {
 							}
 						},
 						onDeny: () => {
-							setSearchValue('');
-							setSearchResult(false);
+							() => {
+								setSearchValue('');
+								setSearchResult(false);
+							};
 						},
 					}}
 				/>

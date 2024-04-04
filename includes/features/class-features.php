@@ -424,14 +424,10 @@ class Features {
 			)
 		);
 		$args = \array_change_key_case($args, CASE_LOWER);
-		if (isset($args['path'])) {
-			$args['path'] = preg_replace('/\'/', '', $args['path']);
-		}
-		if (!isset($args['path'])) {
-			global $post;
-			$post_id = property_exists($post, 'ID') ? $post->ID : null;
-			throw new \LogicException( 'No WPACKIO path found. Please check that the feature exists in the file structure. Post ID: ' . $post_id);
-		}
+		// check if $path is enclosed in '' and if so remove them
+		$args = array_map( function( $value ) {
+			return preg_replace('/\'/', '', $value);
+		}, $args );
 		$enqueued = [];
 
 		if ( is_admin() ) {
@@ -449,12 +445,7 @@ class Features {
 
 		$deps = array('jquery', 'wp-element');
 		if ( false !== $args['deps'] && ! empty( $args['deps'] )) {
-			// check if $deps is a string or an array
-			if ( is_string( $args['deps'] ) ) {
-				$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
-			} else {
-				$deps = array_merge( $deps, $args['deps'] );
-			}
+			$deps = array_merge( $deps, explode( ',', $args['deps'] ) );
 		}
 
 		$dir = WP_PLUGIN_DIR . '/prc-features/' . $args['path'] . '/src';
@@ -527,12 +518,7 @@ class Features {
 
 		$deps = array('jquery', 'wp-element');
 		if ( false !== $args['deps'] && ! empty( $args['libraries'] )) {
-			// check if $deps is a string or an array
-			if ( is_string( $args['libraries'] ) ) {
-				$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
-			} else {
-				$deps = array_merge( $deps, $args['libraries'] );
-			}
+			$deps = array_merge( $deps, explode( ',', $args['libraries'] ) );
 		}
 
 		$styles = [];
@@ -745,19 +731,8 @@ class Features {
 					$rewrite_string .= '([^/]*)\/';
 					$i++;
 				}
-				// get the primary research-team taxonomy term slug for this based on the $post_slug
-				$post = get_page_by_path( $post_slug, OBJECT, self::$post_type );
-				$primary_research_term = wp_get_post_terms( $post->ID, 'research-teams', array( 'fields' => 'names' ) );
-				// check if we have a primary research term
-				if ( ! empty( $primary_research_term ) ) {
-					$primary_research_term = $primary_research_term[0];
-					$primary_research_term = sanitize_key( $primary_research_term ); // extra sanitization, makes lowercase.
-				} else {
-					$primary_research_term = '';
-				}
-				$url_prefix = $primary_research_term ? $primary_research_term . '/' : '';
 				add_rewrite_rule(
-					"{$url_prefix}feature/{$post_slug}/{$rewrite_string}?$",
+					"feature\/{$post_slug}\/{$rewrite_string}?$",
 					"index.php?feature={$post_slug}&{$options_string}",
 					'top'
 				);

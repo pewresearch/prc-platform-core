@@ -10,12 +10,6 @@
 		"orientation": {
 			"type": "string",
 			"default": "vertical"
-		},
-		"tokenBorderColor": {
-			"type": "string"
-		},
-		"tokenBackgroundColor": {
-			"type": "string"
 		}
 	},
 	"supports": {
@@ -29,7 +23,7 @@
 		},
 		"spacing": {
 			"blockGap": true,
-			"margin": ["top", "bottom"],
+			"margin": [ "top", "bottom" ],
 			"padding": true,
 			"__experimentalDefaultControls": {
 				"padding": true
@@ -43,9 +37,7 @@
 				"__experimentalFontFamily": true
 			}
 		},
-		"interactivity": {
-			"clientNavigation": true
-		}
+		"interactivity": true
 	},
 	"usesContext": [
 		"postType",

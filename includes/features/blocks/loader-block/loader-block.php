@@ -97,7 +97,6 @@ class Loader_Block extends Features {
 				return;
 			}
 		} elseif( $is_legacy_s3 ) {
-			wp_enqueue_script('firebase');
 			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);

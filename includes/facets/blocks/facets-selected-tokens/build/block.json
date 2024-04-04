@@ -10,12 +10,6 @@
     "orientation": {
       "type": "string",
       "default": "vertical"
-    },
-    "tokenBorderColor": {
-      "type": "string"
-    },
-    "tokenBackgroundColor": {
-      "type": "string"
     }
   },
   "supports": {
@@ -46,9 +40,7 @@
         "__experimentalFontFamily": true
       }
     },
-    "interactivity": {
-      "clientNavigation": true
-    }
+    "interactivity": true
   },
   "usesContext": [
     "postType",
