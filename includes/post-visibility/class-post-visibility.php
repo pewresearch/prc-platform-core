@@ -255,17 +255,13 @@ class Post_Visibility {
 	 * @param mixed $query
 	 */
 	public function filter_pre_get_posts($query) {
-		if ( is_admin() || ! $query->is_main_query() || $query->is_page() ) {
-			return $query;
-		}
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $query;
+		if ( true !== $query->get('isPubListingQuery') ) {
+			return;
 		}
 
-		// On "publication listing" only allow "publish" and "hidden from search" posts. Hidden from index posts wont appear.
-		if ( $query->is_home() || $query->is_archive() || $query->is_tax() ) {
-			$query->set( 'post_status', $this->show_publish_and_hidden_from_search() );
-		}
+		// On default "publication listings" only allow "publish" and "hidden from search" posts. Hidden from index posts wont appear.
+		$query->set( 'post_status', $this->show_publish_and_hidden_from_search() );
+
 		// On search only allow "publish" and "hidden from index" posts. Hidden from search posts wont appear.
 		if ( $query->is_search() ) {
 			$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );

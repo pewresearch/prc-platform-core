@@ -35,6 +35,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @hook render_block_context, 1
 	 */
 	public function construct_block_context( $context, $parsed_block, $parent_block_obj ) {
+		return $context;
 		if ( 'prc-platform/block-area-context-provider' !== $parsed_block['blockName'] ) {
 			return $context;
 		}
@@ -77,6 +78,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @return mixed
 	 */
 	public function execute_block_context( $context, $parsed_block, $parent_block_obj ) {
+		return $context;
 		if ( 'core/post-template' === $parsed_block['blockName'] ) {
 			$story_item_ids = $this->collected_story_item_ids;
 			// Quit early if no story item ids.
@@ -132,7 +134,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 			$block_modules = new WP_Query($query_args);
 			if ( $block_modules->have_posts() ) {
 				$block_module_id = $block_modules->posts[0];
-
 				$this->collected_story_item_ids = get_post_meta($block_module_id, '_story_item_ids', true);
 			}
 			wp_reset_postdata();

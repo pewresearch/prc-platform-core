@@ -235,11 +235,8 @@ class Post_Report_Package {
 	 * @hook pre_get_posts
 	 */
 	public function hide_back_chapter_posts($query) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $query;
-		}
 		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
-		if ( ! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_post_type_archive() || $query->is_tax()) && false === $show_back_chapters ) {
+		if ( true === $query->get('isPubListingQuery') && false === $show_back_chapters ) {
 			$query->set( 'post_parent', 0 );
 		}
 	}
