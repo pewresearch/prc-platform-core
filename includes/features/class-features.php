@@ -251,6 +251,9 @@ class Features {
 	 * @return Array|WP_Error
 	 */
 	public function get_assets( ) {
+		if ( ! defined( 'PRC_FEATURES_DIR' ) ) {
+			return new WP_Error( 'no_features_dir', 'No features directory defined, ensure prc-features plugin is active.' );
+		}
 		$features = array();
 
 		$features_dir = plugin_dir_path( __FILE__ ) . '../../../prc-features';
@@ -258,7 +261,7 @@ class Features {
 		$research_teams = glob( $features_dir . '/*', GLOB_ONLYDIR );
 		// loop through $research_teams which are coming out like /wp/wp-content/plugins/prc-platform-core/includes/features/../../../prc-features/global and replace plugins/prc-platform-core/includes/features/../../../prc-features with plugins/prc-features
 		$research_teams = array_map( function( $research_team ) use ( $features_dir ) {
-			$path = str_replace( $features_dir, PRC_FEATURES_DIR, $research_team );
+			$path = str_replace( $features_dir, \PRC_FEATURES_DIR, $research_team );
 			// make sure $Path doesnt have a //
 			$path = preg_replace( '/\/\//', '/', $path );
 			return $path;
