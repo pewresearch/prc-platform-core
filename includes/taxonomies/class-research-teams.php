@@ -85,6 +85,9 @@ class Research_Teams extends Taxonomies {
 
 	// Adds a rewrite rule for each research term for the approved post types.
 	public function add_rewrite_rules($rules) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+			return $rules;
+		}
 		$new_rules = array();
 		// get all the terms from this taxonomy...
 		$terms = get_terms(array(
@@ -116,10 +119,14 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/quiz/([^/]+)/results/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
 					// A new, cacheable, results archetype rule.
 					$new_rules[$term_name . '/quiz/([^/]+)/results/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
-				} else if ( 'interactive' === $post_type ) {
+				} else if ( 'feature' === $post_type ) {
 					$new_rules[$term_name . '/feature/([^/]+)/?$'] = 'index.php?post_type=feature&name=$matches[1]';
-					// Add attachment rule:
-					$new_rules[$term_name . '/feature/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
+					// Add attachment rule, very, very specific. This will only hit for attachment names that are 5 or more characters long.
+					// This rule allows for the possibilitiy of other interactive rewrites
+					// example url: https://orange-goggles-p7vp96jxg27xvw-80.app.github.dev/pewresearch-org/global/feature/testing-feature-loader/cleanshot-2024-03-23-at-00-19-002x/
+					// make a regex using the example url where it would capture the attachment name but only so long as its longer than 4 characters
+					$new_rules[$term_name . '/feature/[^/]+/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
+					// $new_rules[$term_name . '/feature/([^/]+)/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'dataset' === $post_type ) {
 					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?post_type=dataset&name=$matches[1]';
 					// Add attachment rule:

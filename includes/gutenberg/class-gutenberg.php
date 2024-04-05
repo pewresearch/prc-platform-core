@@ -21,6 +21,7 @@ class Gutenberg {
 	);
 
 	protected static $third_party_post_types = array(
+		'block_pattern',
 		'blockmeister_pattern',
 		'newsletterglue',
 		'ngl_template',

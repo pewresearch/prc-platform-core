@@ -15,8 +15,8 @@ import { Button, PanelBody } from '@wordpress/components';
  */
 import { randomId } from '../utils';
 import { usePostReportPackage } from '../context';
-import Item from './Item';
-import { TypeSelect, getLabel } from './TypeSelect';
+import Item from './item';
+import { TypeSelect, getLabel } from './type-select';
 
 function ReportMaterials() {
 	const [popoverVisible, toggleVisibility] = useState(false);

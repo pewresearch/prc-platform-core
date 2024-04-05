@@ -10,6 +10,14 @@
 		"orientation": {
 			"type": "string",
 			"default": "vertical"
+		},
+		"tokenBorderColor": {
+			"type": "string",
+			"default": "ui-gray-light"
+		},
+		"tokenBackgroundColor": {
+			"type": "string",
+			"default": "ui-gray-very-light"
 		}
 	},
 	"supports": {
@@ -23,7 +31,7 @@
 		},
 		"spacing": {
 			"blockGap": true,
-			"margin": [ "top", "bottom" ],
+			"margin": ["top", "bottom"],
 			"padding": true,
 			"__experimentalDefaultControls": {
 				"padding": true
@@ -37,7 +45,9 @@
 				"__experimentalFontFamily": true
 			}
 		},
-		"interactivity": true
+		"interactivity": {
+			"clientNavigation": true
+		}
 	},
 	"usesContext": [
 		"postType",

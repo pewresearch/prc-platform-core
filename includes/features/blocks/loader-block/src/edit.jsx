@@ -43,8 +43,6 @@ function findFeatureBySlug(obj, slug) {
 export default function Edit({ attributes, setAttributes, clientId, context }) {
 	const { postId } = context;
 	const blockProps = useBlockProps();
-	// const [researchArea, setResearchArea] = useState(null);
-	// const [year, setYear] = useState(null);
 	const [dataViewerOpen, setDataViewerOpen] = useState(false);
 	const {
 		slug,
@@ -59,7 +57,7 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 		return legacyWpackIo || legacyAssetsS3;
 	}, [legacyWpackIo, legacyAssetsS3]);
 
-	const { features } = useFeaturesList(researchArea, year);
+	const { features } = useFeaturesList();
 
 	const selectedFeature = useMemo(() => {
 		if (features && slug) {
@@ -75,15 +73,15 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 	const researchAreaOptions = useMemo(() => {
 		const defaultValue = { label: 'Select Research Area', value: null };
 		const options = [defaultValue];
-		if (features) {
-			Object.keys(features).forEach((researchArea) => {
+		if (null !== features && Object.keys(features).length > 0) {
+			Object.keys(features).forEach((researchAreaSlug) => {
 				// const label which is researchArea but with the first letter capitalized
 				const label =
-					researchArea.charAt(0).toUpperCase() +
-					researchArea.slice(1);
+					researchAreaSlug.charAt(0).toUpperCase() +
+					researchAreaSlug.slice(1);
 				options.push({
 					label,
-					value: researchArea,
+					value: researchAreaSlug,
 				});
 			});
 		}
@@ -93,11 +91,15 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 	const yearOptions = useMemo(() => {
 		const defaultValue = { label: 'Select Year', value: null };
 		const options = [defaultValue];
-		if (features && researchArea) {
-			Object.keys(features[researchArea]).forEach((year) => {
+		if (
+			null !== features &&
+			Object.keys(features).length > 0 &&
+			researchArea
+		) {
+			Object.keys(features[researchArea]).forEach((yr) => {
 				options.push({
-					label: year,
-					value: year,
+					label: yr,
+					value: yr,
 				});
 			});
 		}
@@ -139,9 +141,9 @@ export default function Edit({ attributes, setAttributes, clientId, context }) {
 						.
 					</p>
 					<p>
-						Please update this feature's code and bring it into{' '}
+						Please update this feature&apos;s code and bring it into{' '}
 						<i>/features</i> and up to <i>@wordpress/scripts</i>{' '}
-						build and loading compliance at earliest convenience
+						compliance at earliest convenience
 					</p>
 					<Button
 						isDestructive
