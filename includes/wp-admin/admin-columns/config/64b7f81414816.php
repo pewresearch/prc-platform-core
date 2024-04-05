@@ -7,7 +7,7 @@ return array (
     'title' => 'Social Editors View',
     'type' => 'post',
     'id' => '64b7f81414816',
-    'updated' => 1712244191,
+    'updated' => 1710194630,
     'columns' => 
     array (
       'title' => 

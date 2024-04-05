@@ -136,9 +136,6 @@ class Staff {
 		}
 	}
 
-	/**
-	 * Returns an array of expertise terms for the staff member.
-	 */
 	public function get_expertise($staff_post_id = false) {
 		if ( false === $staff_post_id ) {
 			$staff_post_id = $this->ID;
@@ -147,7 +144,6 @@ class Staff {
 			return false;
 		}
 		$terms     = get_the_terms( $staff_post_id, 'areas-of-expertise' );
-
 		$expertise = array();
 		if ( $terms ) {
 			foreach ( $terms as $term ) {
