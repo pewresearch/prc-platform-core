@@ -130,7 +130,6 @@ class Platform_Bootstrap {
 		$this->include('jetpack/class-jetpack.php');
 		$this->include('mailchimp/class-mailchimp.php');
 		$this->include('media/class-media.php');
-		$this->include('multisite-post-migration/class-cli-commands.php');
 		$this->include('permalink-rewrites/class-permalink-rewrites.php');
 		$this->include('post-publish-pipeline/class-post-publish-pipeline.php');
 		$this->include('post-report-package/class-post-report-package.php');

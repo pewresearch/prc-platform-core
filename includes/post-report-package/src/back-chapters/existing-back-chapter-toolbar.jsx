@@ -12,29 +12,29 @@ export default function ExistingBackChapterToolbar({ postId, currentPostId }) {
 	if (postId === currentPostId) {
 		return null;
 	}
-	const editLink = `/pewresearch-org/wp-admin/post.php?post=${postId}&action=edit`;
-	const previewLink = `/pewresearch-org/?p=${postId}&preview=true`;
 	return (
 		<ButtonGroup>
 			<Button
 				variant="link"
 				size="compact"
-				href={editLink}
+				href={`/pewresearch-org/wp-admin/post.php?post=${postId}&action=edit`}
 				target="_blank"
 				icon={edit}
 				label={__('Edit back chapter; opens in new tab')}
 				showTooltip
+				shortcut="e"
 			>
 				Edit
 			</Button>
 			<Button
 				variant="link"
 				size="compact"
-				href={previewLink}
+				href="www.google.com"
 				target="_blank"
 				icon={external}
 				label={__('Preview back chapter; opens in new tab')}
 				showTooltip
+				shortcut="p"
 			>
 				Preview
 			</Button>

@@ -8,7 +8,6 @@ import { registerPlugin } from '@wordpress/plugins';
 import { PluginPostStatusInfo } from '@wordpress/edit-post';
 
 function PRCPostVisibility() {
-	// Detect if this is the site editor and if so then return early...
 	const postVisibility = useSelect((select) => {
 		const meta = select('core/editor').getEditedPostAttribute('meta');
 		const { _postVisibility } = meta;

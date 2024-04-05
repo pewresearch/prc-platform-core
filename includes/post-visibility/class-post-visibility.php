@@ -258,9 +258,6 @@ class Post_Visibility {
 		if ( is_admin() || ! $query->is_main_query() || $query->is_page() ) {
 			return $query;
 		}
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $query;
-		}
 
 		// On "publication listing" only allow "publish" and "hidden from search" posts. Hidden from index posts wont appear.
 		if ( $query->is_home() || $query->is_archive() || $query->is_tax() ) {
