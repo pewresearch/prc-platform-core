@@ -169,15 +169,13 @@ class Staff {
 		$staff_photo = wp_get_attachment_image_src($staff_photo_id, 'full');
 		$staff_portrait = wp_get_attachment_image_src($staff_photo_id, '160-portrait');
 		if ( false !== $staff_photo || false !== $staff_portrait ) {
-			$staff_photo = array(
-				'id' => $staff_photo_id,
-			);
+			$staff_photo = [];
 		}
 		if ( false !== $staff_photo ) {
-			$staff_photo['full'] = $staff_photo[0];
+			$staff_photo['full'] = $staff_photo;
 		}
 		if ( false !== $staff_portrait ) {
-			$staff_photo['thumbnail'] = $staff_portrait[0];
+			$staff_photo['thumbnail'] = $staff_portrait;
 		}
 		return $staff_photo;
 	}
