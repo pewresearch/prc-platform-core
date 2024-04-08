@@ -68,7 +68,7 @@ class Block_Area_Modules {
 			$loader->add_action(
 				'pre_get_posts',
 				$block_area_context_provider,
-				'execute_on_main_query',
+				'execute_on_main_query'
 			);
 
 			// Init Blocks

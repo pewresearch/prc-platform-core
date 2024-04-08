@@ -19,7 +19,6 @@ class Loader_Block extends Features {
 	public function init($loader = null) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'block_init' );
-			$loader->add_filter( 'pre_render_block', $this, 'feature_loader_pre_render_enqueue_assets', 10, 3 );
 		}
 	}
 
@@ -63,15 +62,19 @@ class Loader_Block extends Features {
 	}
 
 	/**
-	 * @hook pre_render_block
-	 *
+	 * Loads the necessary script and attachment markup for an feature to load on the front end.
+	 * @param mixed $attributes
+	 * @param mixed $content
+	 * @param mixed $block
+	 * @return string
 	 */
-	public function feature_loader_pre_render_enqueue_assets($pre_render, $parsed_block, $parent_block_obj) {
-		if ( 'prc-platform/feature-loader' !== $parsed_block['blockName'] ) {
-			return $pre_render;
+	public function render_feature_loader_callback($attributes, $content, $block) {
+		if ( is_admin() ) {
+			return;
 		}
-		$attributes = $parsed_block['attrs'];
-
+		$block_wrapper_attrs = get_block_wrapper_attributes(array(
+			'id' => "js-{$attributes['slug']}"
+		));
 		$is_legacy_wpackio = array_key_exists('legacyWpackIo', $attributes) && $attributes['legacyWpackIo'];
 		$is_legacy_s3 = array_key_exists('legacyS3', $attributes) && $attributes['legacyS3'];
 
@@ -94,11 +97,12 @@ class Loader_Block extends Features {
 				return;
 			}
 		} elseif( $is_legacy_s3 ) {
-			wp_enqueue_script('firebase');
 			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}
+
+		// we need to remove the wpackio stuff when we're loading on the main frontend, that should only load on an iframe...
 
 		do_action('prc_platform_feature_loader_enqueue', $enqueued_handles, array(
 			'is_legacy' => $is_legacy_wpackio || $is_legacy_s3,
@@ -120,24 +124,6 @@ class Loader_Block extends Features {
 			);
 		}
 
-		return $pre_render;
-	}
-
-	/**
-	 * Loads the necessary script and attachment markup for an feature to load on the front end.
-	 * @param mixed $attributes
-	 * @param mixed $content
-	 * @param mixed $block
-	 * @return string
-	 */
-	public function render_feature_loader_callback($attributes, $content, $block) {
-		if ( is_admin() ) {
-			return;
-		}
-		$block_wrapper_attrs = get_block_wrapper_attributes(array(
-			'id' => "js-{$attributes['slug']}"
-		));
-
 		$content = wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			$block_wrapper_attrs,
@@ -149,6 +135,7 @@ class Loader_Block extends Features {
 			'prc_platform_feature_loader_content',
 			$content,
 			$attributes,
+			$is_legacy_wpackio
 		);
 	}
 

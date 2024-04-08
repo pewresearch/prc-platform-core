@@ -12,12 +12,10 @@
       "default": "vertical"
     },
     "tokenBorderColor": {
-      "type": "string",
-      "default": "ui-gray-light"
+      "type": "string"
     },
     "tokenBackgroundColor": {
-      "type": "string",
-      "default": "ui-gray-very-light"
+      "type": "string"
     }
   },
   "supports": {

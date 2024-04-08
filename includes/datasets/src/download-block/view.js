@@ -21,7 +21,6 @@ const { actions } = store('prc-platform/dataset-download', {
 					}),
 				})
 				.then((response) => {
-					console.log('Download response', response);
 					// If there's a file_url in the response, download it...
 					// ooooo that felt... bad to type
 					// should run a file check here? only pdfs and zips? not sure theres an attack vector here

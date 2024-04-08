@@ -111,7 +111,10 @@ class Staff {
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
 		$this->job_title = get_post_meta( $staff_post_id, 'jobTitle', true );
 		$this->job_title_extended = get_post_meta( $staff_post_id, 'jobTitleExtended', true );
-		$this->photo = $this->get_staff_photo($staff_post_id);
+		$this->photo = array(
+			'thumbnail' => get_the_post_thumbnail_url( $staff_post_id, '160-portrait' ),
+			'full' => get_the_post_thumbnail_url( $staff_post_id, 'full' ),
+		);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);
 		$this->is_currently_employed = $this->check_employment_status($staff_post_id);
@@ -133,9 +136,6 @@ class Staff {
 		}
 	}
 
-	/**
-	 * Returns an array of expertise terms for the staff member.
-	 */
 	public function get_expertise($staff_post_id = false) {
 		if ( false === $staff_post_id ) {
 			$staff_post_id = $this->ID;
@@ -144,7 +144,6 @@ class Staff {
 			return false;
 		}
 		$terms     = get_the_terms( $staff_post_id, 'areas-of-expertise' );
-
 		$expertise = array();
 		if ( $terms ) {
 			foreach ( $terms as $term ) {
@@ -161,23 +160,6 @@ class Staff {
 			}
 		}
 		return $expertise;
-	}
-
-	public function get_staff_photo($staff_post_id = false) {
-		$staff_photo = false;
-		$staff_photo_id = get_post_thumbnail_id($staff_post_id);
-		$staff_photo = wp_get_attachment_image_src($staff_photo_id, 'full');
-		$staff_portrait = wp_get_attachment_image_src($staff_photo_id, '160-portrait');
-		if ( false !== $staff_photo || false !== $staff_portrait ) {
-			$staff_photo = [];
-		}
-		if ( false !== $staff_photo ) {
-			$staff_photo['full'] = $staff_photo;
-		}
-		if ( false !== $staff_portrait ) {
-			$staff_photo['thumbnail'] = $staff_portrait;
-		}
-		return $staff_photo;
 	}
 
 	public function get_social_profiles($staff_post_id = false) {

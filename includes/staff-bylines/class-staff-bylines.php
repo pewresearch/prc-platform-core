@@ -204,7 +204,7 @@ class Staff_Bylines {
 			$loader->add_action( 'enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets' );
 			$loader->add_action( 'enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets' );
 
-			$loader->add_filter('pre_get_posts', $this, 'filter_pre_get_posts', 10, 1);
+			$loader->add_filter('prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1);
 		}
 	}
 
@@ -607,26 +607,25 @@ class Staff_Bylines {
 
 	/**
 	 * Sets byline archives to only show posts with the current byline.
-	 * @hook pre_get_posts
+	 * @hook prc_platform_pub_listing_default_args
 	 * @param mixed $query
 	 * @return mixed
 	 */
-	public function filter_pre_get_posts($query) {
-		if ( true === $query->get('isPubListingQuery') && $query->is_tax( self::$taxonomy_object_name ) ) {
-			$current_term_slug = $query->get_queried_object()->slug;
-			// Lets do a quick sanity check and make sure we have a tax_query array, if not we'll set the correct type, if so we'll set the relationship to be AND
-			$tax_query = $query->get('tax_query');
-			if ( !is_array($tax_query) ) {
-				$tax_query = array();
-			} else {
-				$tax_query['relation'] = 'AND';
-			}
-			// Add the current term to the tax_query
-			$tax_query[] = array(
-				'taxonomy' => self::$taxonomy_object_name,
-				'field'    => 'slug',
-				'terms'    => $current_term_slug,
+	public function filter_pub_listing_query_args($query) {
+		if ( is_admin() || !is_array($query) ) {
+			return $query;
+		}
+		global $wp_query;
+		if ( $wp_query->is_main_query() && $wp_query->is_tax( self::$taxonomy_object_name ) ) {
+			$current_term_slug = $wp_query->get_queried_object()->slug;
+			$query['tax_query'] = array(
+				array(
+					'taxonomy' => self::$taxonomy_object_name,
+					'field'    => 'slug',
+					'terms'    => $current_term_slug,
+				),
 			);
 		}
+		return $query;
 	}
 }

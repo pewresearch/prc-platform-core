@@ -30,7 +30,7 @@ class Facets_Context_Provider {
 	}
 
 	/**
-	 * Fetch the facets data ONCE and store it in memory. Later, we'll make this data accessible via block context in the add_facet_data_to_context method.
+	 * Fetch the facets data ONCE and store it in memory.
 	 * @hook pre_render_block
 	 * @param mixed $pre_render
 	 * @param mixed $parsed_block
