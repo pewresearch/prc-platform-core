@@ -18,7 +18,7 @@ class Dataset_Download_Schema extends BerlinDB_Schema {
 			'sortable'   => true,
 		),
 
-		// the user id
+		// the user id, sometimes referred to as the uid
 		'user_id' => array(
 			'name'       => 'user_id',
 			'type'       => 'mediumtext',
@@ -27,7 +27,7 @@ class Dataset_Download_Schema extends BerlinDB_Schema {
 			'sortable'   => true,
 		),
 
-		// serialized store of uids
+		// serialized store of dataset_ids
 		'dataset_ids' => array(
 			'name'       => 'uids',
 			'type'       => 'longtext',

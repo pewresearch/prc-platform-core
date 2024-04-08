@@ -98,7 +98,7 @@ class Post_Report_Package {
 			'filter_next_post', 10, 5 );
 			$loader->add_filter( 'get_previous_post_where', $this,
 			'filter_prev_post', 10, 5 );
-			$loader->add_action( 'pre_get_posts', $this, 'hide_back_chapter_posts', 10, 1 );
+			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 10, 1 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'hide_back_chapter_on_non_inherited_query_loops', 9, 1 );
 		}
 	}
@@ -234,12 +234,9 @@ class Post_Report_Package {
 	 * - homepage/frontpage
 	 * @hook pre_get_posts
 	 */
-	public function hide_back_chapter_posts($query) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
-			return $query;
-		}
+	public function filter_pre_get_posts($query) {
 		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
-		if ( ! is_admin() && $query->is_main_query() && ($query->is_home() || $query->is_post_type_archive() || $query->is_tax()) && false === $show_back_chapters ) {
+		if ( true === $query->get('isPubListingQuery') && false === $show_back_chapters ) {
 			$query->set( 'post_parent', 0 );
 		}
 	}
