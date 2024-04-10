@@ -1,13 +1,13 @@
 <?php
 
 return array (
-  'version' => '6.3.3',
+  'version' => '6.4.6',
   'list_screen' => 
   array (
     'title' => '',
     'type' => 'block_module',
     'id' => '650b70949a3e3',
-    'updated' => 1695248532,
+    'updated' => 1712782144,
     'columns' => 
     array (
       'title' => 
@@ -21,6 +21,8 @@ return array (
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
         'name' => 'title',
       ),
       'author' => 
@@ -34,6 +36,8 @@ return array (
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
         'name' => 'author',
       ),
       'categories' => 
@@ -49,6 +53,7 @@ return array (
         'bulk_edit' => 'on',
         'search' => 'on',
         'filter' => 'on',
+        'filter_label' => '',
         'name' => 'categories',
       ),
       'taxonomy-block_area' => 
@@ -67,106 +72,31 @@ return array (
         'filter_label' => '',
         'name' => 'taxonomy-block_area',
       ),
-      'distributor' => 
-      array (
-        'type' => 'distributor',
-        'label' => '<img src="[cpac_site_url]/wp-content/plugins/distributor/assets/img/icon.svg" alt="Posts distributed from another site." title="Posts distributed from another site."> <span class="dt-column-header">Distributor</span>',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'name' => 'distributor',
-      ),
       'date' => 
       array (
         'type' => 'date',
         'label' => 'Date',
         'width' => '',
         'width_unit' => '%',
-        'export' => 'on',
-        'sort' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'search' => 'on',
         'filter' => 'off',
         'filter_label' => '',
         'filter_format' => '',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
         'name' => 'date',
       ),
-      'wpseo-score' => 
+      '1d7b271e6a7efa' => 
       array (
-        'type' => 'wpseo-score',
-        'label' => '<span class="yoast-column-seo-score yoast-column-header-has-tooltip" data-tooltip-text="SEO score"><span class="screen-reader-text">SEO score</span></span></span>',
-        'width' => '63',
-        'width_unit' => 'px',
-        'export' => 'on',
-        'sort' => 'on',
-        'name' => 'wpseo-score',
-      ),
-      'wpseo-score-readability' => 
-      array (
-        'type' => 'wpseo-score-readability',
-        'label' => '<span class="yoast-column-readability yoast-column-header-has-tooltip" data-tooltip-text="Readability score"><span class="screen-reader-text">Readability score</span></span></span>',
+        'type' => 'column-post_gutenberg_blocks',
+        'label' => 'Gutenberg Blocks',
         'width' => '',
         'width_unit' => '%',
+        'gutenberg_display' => 'count',
         'export' => 'on',
-        'sort' => 'on',
-        'name' => 'wpseo-score-readability',
-      ),
-      'wpseo-title' => 
-      array (
-        'type' => 'wpseo-title',
-        'label' => 'SEO Title',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'search' => 'on',
-        'name' => 'wpseo-title',
-      ),
-      'wpseo-metadesc' => 
-      array (
-        'type' => 'wpseo-metadesc',
-        'label' => 'Meta Desc.',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'sort' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'search' => 'on',
-        'name' => 'wpseo-metadesc',
-      ),
-      'wpseo-focuskw' => 
-      array (
-        'type' => 'wpseo-focuskw',
-        'label' => 'Keyphrase',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'sort' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'name' => 'wpseo-focuskw',
-      ),
-      'wpseo-links' => 
-      array (
-        'type' => 'wpseo-links',
-        'label' => '<span class="yoast-linked-to yoast-column-header-has-tooltip" data-tooltip-text="Number of outgoing internal links in this post. See "Yoast Columns" text in the help tab for more info."><span class="screen-reader-text">Outgoing internal links</span></span>',
-        'width' => '',
-        'width_unit' => '%',
-        'sort' => 'on',
-        'name' => 'wpseo-links',
-      ),
-      'wpseo-cornerstone' => 
-      array (
-        'type' => 'wpseo-cornerstone',
-        'label' => '<span class="yoast-column-cornerstone yoast-column-header-has-tooltip" data-tooltip-text="Is this cornerstone content?"><span class="screen-reader-text">Cornerstone content</span></span>',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'sort' => 'on',
-        'name' => 'wpseo-cornerstone',
+        'name' => '1d7b271e6a7efa',
       ),
     ),
     'settings' => 
@@ -192,8 +122,8 @@ return array (
       'hide_filters' => 'off',
       'hide_filter_post_date' => 'off',
       'hide_filter_category' => 'off',
-      'hide_filter_yoast_seo_scores' => 'off',
-      'hide_filter_yoast_readability_score' => 'off',
+      'hide_filter_yoast_seo_scores' => 'on',
+      'hide_filter_yoast_readability_score' => 'on',
       'hide_submenu' => 'off',
       'hide_search' => 'off',
       'hide_bulk_actions' => 'off',
@@ -201,6 +131,7 @@ return array (
       'horizontal_scrolling' => 'off',
       'primary_column' => '',
       'filter_segment' => '',
+      'wrapping' => 'wrap',
     ),
   ),
 );
