@@ -338,5 +338,4 @@ class Block_Area_Modules {
 		);
 	}
 
-
 }
