@@ -183,7 +183,6 @@ class WP_Admin {
 		$post_type = get_post_type();
 		$edit_node_name = 'post' === $post_type ? 'edit' : 'edit_' . $post_type;
 		$edit = $wp_admin_bar->get_node($edit_node_name);
-		// @TODO: Lets check for a block area module query, and if detected we'll grab all those available and create edit menus fro them.
 		if ( !$edit ) {
 			// Fallback to just edit.
 			$edit_node_name = 'edit';
