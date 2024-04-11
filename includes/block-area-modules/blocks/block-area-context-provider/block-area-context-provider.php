@@ -58,11 +58,13 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 			return $query;
 		}
 		if ( $query->is_archive() && $query->is_category() && $query->is_main_query() ) {
-			// Look for Topic-Lede block-area story items and exclude them from the main query.
+			// Wee need to standardized block-area-names
+			// so on category page, it should be topic-lede.
 			$this->query_block_module_for_story_items('topic-lede', $query->get_queried_object()->slug);
+
 			$not_in = $query->get('post__not_in');
+
 			$query->set('post__not_in', array_merge($not_in, $this->collected_story_item_ids));
-			return $query;
 		}
 	}
 
@@ -123,7 +125,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 		$cache_id = $this->get_cache_id($block_area_slug, $category_slug);
 		$cached = wp_cache_get($cache_id, self::$cache_key);
 
-		if ( false !== $cached && !is_preview() && is_array($cached) ) {
+		if ( false !== $cached && !is_preview() ) {
 			$this->collected_story_item_ids = $cached;
 		} else {
 			$query_args = $this->get_query_args($category_slug, $block_area_slug);
@@ -131,10 +133,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 			$block_modules = new WP_Query($query_args);
 			if ( $block_modules->have_posts() ) {
 				$block_module_id = $block_modules->posts[0];
-				$story_item_ids = get_post_meta($block_module_id, '_story_item_ids', true);
-				if ( is_array($story_item_ids) ) {
-					$this->collected_story_item_ids = $story_item_ids;
-				}
+				$this->collected_story_item_ids = get_post_meta($block_module_id, '_story_item_ids', true);
 			}
 			wp_reset_postdata();
 
