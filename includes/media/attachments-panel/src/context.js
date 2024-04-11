@@ -58,6 +58,7 @@ function useProvideAttachments() {
 	);
 	const { insertBlock } = useDispatch(blockEditorStore);
 
+	const [selected, setSelected] = useState(null);
 	const [attachments, setAttachments] = useState([]);
 	const [searchTerm, setSearchTerm] = useState('');
 	const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -116,19 +117,32 @@ function useProvideAttachments() {
 		insertBlock(newImageBlock, insertionIndex);
 	};
 
-	const mediaEditor = media({
-		title: 'Edit Media Attachments',
-		button: {
-			text: 'Update',
-		},
-		library: {
-			uploadedTo: postId,
-		},
-	});
+	const mediaEditor = useMemo(() => {
+		return media({
+			title: 'Edit Attachments',
+			button: {
+				text: 'Update',
+			},
+			library: {
+				uploadedTo: postId,
+				selected: [selected],
+			},
+		});
+	}, [postId, selected]);
+
 	// When the media library closes, refresh the attachments.
 	mediaEditor.on('close', () => {
 		updateAttachments();
 	});
+
+	const openMediaLibrary = (attachmentId = null) => {
+		// set the selected to...
+		setSelected(attachmentId);
+		mediaEditor.open();
+		mediaEditor.on('close', () => {
+			setSelected(null);
+		});
+	};
 
 	const insertedImageIds = useMemo(() => {
 		console.log(
@@ -208,6 +222,7 @@ function useProvideAttachments() {
 		onDropImage,
 		handleImageInsertion,
 		mediaEditor,
+		openMediaLibrary,
 	};
 }
 

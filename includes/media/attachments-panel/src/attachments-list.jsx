@@ -9,6 +9,7 @@ import {
 	Spinner,
 	TextControl,
 	CardDivider,
+	TabPanel,
 } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
 
@@ -18,19 +19,16 @@ import { Fragment } from '@wordpress/element';
 import { useAttachments } from './context';
 import DragAndDropZone from './drag-and-drop-zone';
 import Image from './image';
+import File from './file';
 
-function AttachmentsList() {
-	const {
-		attachments,
-		loading,
-		searchTerm,
-		debouncedSearchTerm,
-		setSearchTerm,
-		mediaEditor,
-	} = useAttachments();
+function Images() {
+	const { attachments, loading, debouncedSearchTerm } = useAttachments();
 
+	const images = attachments.filter((attachment) =>
+		attachment.type.startsWith('image/')
+	);
 	// Sort attachments by title
-	const sortedAttachments = attachments.sort((a, b) => {
+	const sortedAttachments = images.sort((a, b) => {
 		if (a.title.toLowerCase() < b.title.toLowerCase()) {
 			return -1;
 		}
@@ -49,8 +47,59 @@ function AttachmentsList() {
 	);
 
 	return (
+		<div>
+			{loading ? (
+				<Spinner />
+			) : (
+				filteredAttachments.map((image) => <Image {...image} />)
+			)}
+		</div>
+	);
+}
+
+function Files() {
+	const { attachments, loading, debouncedSearchTerm } = useAttachments();
+
+	const files = attachments.filter((attachment) =>
+		attachment.type.startsWith('application/')
+	);
+	// Sort attachments by title
+	const sortedAttachments = files.sort((a, b) => {
+		if (a.title.toLowerCase() < b.title.toLowerCase()) {
+			return -1;
+		}
+		if (a.title.toLowerCase() > b.title.toLowerCase()) {
+			return 1;
+		}
+		return 0;
+	});
+
+	const filteredAttachments = sortedAttachments.filter(
+		(attachment) =>
+			'' === debouncedSearchTerm ||
+			attachment.title
+				.toLowerCase()
+				.includes(debouncedSearchTerm.toLowerCase())
+	);
+
+	return (
+		<div>
+			{loading ? (
+				<Spinner />
+			) : (
+				filteredAttachments.map((file) => <File {...file} />)
+			)}
+		</div>
+	);
+}
+
+function AttachmentsList() {
+	const { attachments, searchTerm, setSearchTerm, mediaEditor } =
+		useAttachments();
+
+	return (
 		<PanelBody
-			title={__('Attached Images')}
+			title={__('Attachments')}
 			initialOpen
 			className="prc-attachments-list"
 		>
@@ -73,17 +122,40 @@ function AttachmentsList() {
 					</Fragment>
 				)}
 				<TextControl
-					label={__('Search')}
+					label={__('Filter Attachments')}
 					value={searchTerm}
 					onChange={(value) => setSearchTerm(value)}
 				/>
 				<CardDivider />
 				<DragAndDropZone />
-				{loading ? (
-					<Spinner />
-				) : (
-					filteredAttachments.map((image) => <Image {...image} />)
-				)}
+				<TabPanel
+					className="prc-attachments-tabs"
+					activeClass="active-tab"
+					onSelect={(tabName) => {
+						console.log('Selecting tab', tabName);
+					}}
+					tabs={[
+						{
+							name: 'images',
+							title: 'Images',
+							className: 'tab-images',
+						},
+						{
+							name: 'files',
+							title: 'Files',
+							className: 'tab-files',
+						},
+					]}
+				>
+					{(tab) => {
+						switch (tab.name) {
+							case 'images':
+								return <Images />;
+							case 'files':
+								return <Files />;
+						}
+					}}
+				</TabPanel>
 			</BaseControl>
 		</PanelBody>
 	);
