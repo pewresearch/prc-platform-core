@@ -92,34 +92,34 @@ class Datasets_Download_Logger extends Datasets {
 		$post_id = (int) $object['id'];
 
 		$allow_uid_access = current_user_can( 'edit_posts' );
-		$uids = null;
-		if ( $allow_uid_access ) {
-			$query = new Dataset_Downloads_Log_Query(array(
-				'id'    => $post_id,
-				'orderby' => 'id',
-				'order'   => 'asc',
-				'number'  => 1, // Only retrieve a single record.
-				'fields'  => array( 'id', 'uids' ),
-			));
-			if ( $query->items ) {
-				// get the first item in $query->items and get the uids property from it...
-				if (!empty($query->items) && isset($query->items[0]->uids)) {
-					$uids = $query->items[0]->uids;
-				} else {
-					$uids = false;
-				}
-			}
-		}
+		// $uids = null;
+		// if ( $allow_uid_access ) {
+		// 	$query = new Dataset_Downloads_Log_Query(array(
+		// 		'id'    => $post_id,
+		// 		'orderby' => 'id',
+		// 		'order'   => 'asc',
+		// 		'number'  => 1, // Only retrieve a single record.
+		// 		'fields'  => array( 'id', 'uids' ),
+		// 	));
+		// 	if ( $query->items ) {
+		// 		// get the first item in $query->items and get the uids property from it...
+		// 		if (!empty($query->items) && isset($query->items[0]->uids)) {
+		// 			$uids = $query->items[0]->uids;
+		// 		} else {
+		// 			$uids = false;
+		// 		}
+		// 	}
+		// }
 
 		$to_return = array(
 			'total' => (int) get_post_meta( $post_id, '_total_downloads', true ),
 			'log' => array(),
-			'uids' => $uids,
+			// 'uids' => $uids,
 			'authenticated' => $allow_uid_access,
 		);
 
 		$start_year = 2020;
-		$current_year = (int) date( 'Y' );
+		$current_year = (int) gmdate( 'Y' );
 		$years = range( $start_year, $current_year );
 
 		foreach($years as $year) {
@@ -217,10 +217,10 @@ class Datasets_Download_Logger extends Datasets {
 		$response = false;
 
 		if ( $query->items ) {
-			// If exists, update the uids.
+			// If exists, update
 			foreach ( $query->items as $record ) {
 				$dataset_ids = maybe_unserialize( $record->dataset_ids );
-				// If the dataset+od is already in the array, don't add it again.
+				// If the dataset idis already in the array, don't add it again.
 				if ( in_array( $dataset_id, $dataset_ids ) ) {
 					return;
 				}
