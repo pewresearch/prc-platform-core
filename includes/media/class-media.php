@@ -43,6 +43,8 @@ class Media {
 		require_once plugin_dir_path( __FILE__ ) . 'art-direction/class-art-direction.php';
 		// Load the attachment report functionality.
 		require_once plugin_dir_path( __FILE__ ) . 'attachment-report/class-attachment-report.php';
+		// Load the attachment panel functionality.
+		require_once plugin_dir_path( __FILE__ ) . 'attachments-panel/class-attachments-panel.php';
 
 		$this->init($loader);
 	}
@@ -64,6 +66,7 @@ class Media {
 			new Attachment_Downloader( $this->version, $loader );
 			new Art_Direction( $this->version, $loader );
 			new Attachment_Report( $this->version, $loader );
+			new Attachments_Panel( $this->version, $loader );
 		}
 	}
 

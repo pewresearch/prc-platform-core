@@ -16,8 +16,8 @@ import { Fragment } from '@wordpress/element';
  * Internal Dependencies
  */
 import { useAttachments } from './context';
-import DragAndDropZone from './DragAndDropZone';
-import Image from './Image';
+import DragAndDropZone from './drag-and-drop-zone';
+import Image from './image';
 
 function AttachmentsList() {
 	const {
@@ -45,24 +45,28 @@ function AttachmentsList() {
 			'' === debouncedSearchTerm ||
 			attachment.title
 				.toLowerCase()
-				.includes(debouncedSearchTerm.toLowerCase()),
+				.includes(debouncedSearchTerm.toLowerCase())
 	);
 
 	return (
 		<PanelBody
 			title={__('Attached Images')}
 			initialOpen
-			className="prc-media-assets-panel"
+			className="prc-attachments-list"
 		>
 			<BaseControl
+				id="prc-media-zone"
 				label={__(
 					'Drag and drop images to attach them to the post. Click on an image to select the image size to insert into the editor, or "shift + click" an image to insert at 640-wide.',
-					'prc-block-plugins',
+					'prc-block-plugins'
 				)}
 			>
 				{0 < attachments.length && (
 					<Fragment>
-						<Button variant="secondary" onClick={() => mediaEditor.open()}>
+						<Button
+							variant="secondary"
+							onClick={() => mediaEditor.open()}
+						>
 							Edit Attachments
 						</Button>
 						<CardDivider />
