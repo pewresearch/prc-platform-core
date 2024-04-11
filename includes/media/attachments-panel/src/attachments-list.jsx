@@ -98,66 +98,53 @@ function AttachmentsList() {
 		useAttachments();
 
 	return (
-		<PanelBody
-			title={__('Attachments')}
-			initialOpen
-			className="prc-attachments-list"
-		>
-			<BaseControl
-				id="prc-media-zone"
-				label={__(
-					'Drag and drop images to attach them to the post. Click on an image to select the image size to insert into the editor, or "shift + click" an image to insert at 640-wide.',
-					'prc-block-plugins'
-				)}
+		<Fragment>
+			<PanelBody
+				title={__('Attachments')}
+				initialOpen
+				className="prc-attachments-list"
 			>
-				{0 < attachments.length && (
-					<Fragment>
-						<Button
-							variant="secondary"
-							onClick={() => mediaEditor.open()}
-						>
-							Edit Attachments
-						</Button>
-						<CardDivider />
-					</Fragment>
-				)}
-				<TextControl
-					label={__('Filter Attachments')}
-					value={searchTerm}
-					onChange={(value) => setSearchTerm(value)}
-				/>
-				<CardDivider />
-				<DragAndDropZone />
-				<TabPanel
-					className="prc-attachments-tabs"
-					activeClass="active-tab"
-					onSelect={(tabName) => {
-						console.log('Selecting tab', tabName);
-					}}
-					tabs={[
-						{
-							name: 'images',
-							title: 'Images',
-							className: 'tab-images',
-						},
-						{
-							name: 'files',
-							title: 'Files',
-							className: 'tab-files',
-						},
-					]}
+				<BaseControl
+					id="prc-media-zone"
+					label={__(
+						'Drag and drop images to attach them to the post. Click on an image to select the image size to insert into the editor, or "shift + click" an image to insert at 640-wide.',
+						'prc-block-plugins'
+					)}
 				>
-					{(tab) => {
-						switch (tab.name) {
-							case 'images':
-								return <Images />;
-							case 'files':
-								return <Files />;
-						}
-					}}
-				</TabPanel>
-			</BaseControl>
-		</PanelBody>
+					{0 < attachments.length && (
+						<Fragment>
+							<Button
+								variant="secondary"
+								onClick={() => mediaEditor.open()}
+							>
+								Edit Attachments
+							</Button>
+							<CardDivider />
+						</Fragment>
+					)}
+					<TextControl
+						label={__('Filter Attachments')}
+						value={searchTerm}
+						onChange={(value) => setSearchTerm(value)}
+					/>
+					<DragAndDropZone />
+				</BaseControl>
+			</PanelBody>
+			<PanelBody
+				title={__('Images')}
+				initialOpen={attachments.length > 0}
+				className="prc-attachments-list__images"
+			>
+				<Images />
+			</PanelBody>
+			<PanelBody
+				title={__('Files')}
+				className="prc-attachments-list__files"
+				initialOpen={false}
+			>
+				<Files />
+			</PanelBody>
+		</Fragment>
 	);
 }
 
