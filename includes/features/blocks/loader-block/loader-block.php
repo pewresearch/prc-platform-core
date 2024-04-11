@@ -23,7 +23,7 @@ class Loader_Block extends Features {
 		}
 	}
 
-	public function shortcode_fallback($attributes, $content) {
+	public function loader_shortcode_fallback($attributes, $content) {
 		$args = wp_parse_args(
 			$attributes,
 			array(
@@ -152,6 +152,101 @@ class Loader_Block extends Features {
 		);
 	}
 
+	/**
+	 * @TODO: Work In Progress: Until we have time to create the embed block.
+	 * [interactives_shortcode description]
+	 *
+	 * @param  [type] $attr [description]
+	 * @return [type]       [description]
+	 */
+	public function feature_embed_shortcode_fallback($attr = array()) {
+		// Don't render features on archive pages or on admin.
+		if ( is_admin() || is_archive() ) {
+			return;
+		}
+
+		$attr = wp_parse_args(
+			$attr,
+			array(
+				'id'        => false,
+				'siteid'    => false,
+				'align'     => '',
+				'showtitle' => false,
+			)
+		);
+
+		if ( ! $attr['id'] && ! $attr['slug'] ) {
+			return '<!-- No ID, Slug set for the [interactive] shortcode -->';
+		}
+
+		$output = '';
+
+		// Because this is in legacy usage we're going to need to do a lookup regardless using the distributor original post and original blog id
+		$feature_query = new \WP_Query(
+			array(
+				'post_type'      => 'feature',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key' => 'dt_original_post_id',
+						'value' => $attr['id'],
+						'compare' => '='
+					],
+					[
+						'key' => 'dt_original_blog_id',
+						'value' => $attr['siteid'],
+						'compare' => '='
+					]
+				]
+			)
+		);
+
+		if ( $feature_query->have_posts() ) {
+			$feature_query->the_post();
+			$post_id = get_the_ID();
+			$title_elm = 'h2';
+			$title = get_the_title( $post_id );
+			if ( $attr['showtitle'] ) {
+				if ( in_array( strtolower( $attr['showtitle'] ), array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ) {
+					$title_elm = strtolower( $attr['showtitle'] );
+				}
+			}
+			$permalink = get_permalink( $post_id );
+			$post_name = get_post_field( 'post_name', $post_id );
+			ob_start();
+			?>
+			<figure class="shortcode shortcode--interactive <?php echo esc_attr( $attr['align'] ); ?>" data-slug="<?php echo esc_attr( $post_name ); ?>">
+				<?php
+				if ( $attr['showtitle'] ) {
+					echo wp_sprintf(
+						'<%1$s>%2$s</%1$s>',
+						esc_html( $title_elm ),
+						esc_html( $title )
+					);
+				}
+				if ( function_exists( 'apple_news_is_exporting' ) && apple_news_is_exporting() ) {
+					echo '<a href="' . esc_url( $permalink ) . '">';
+					the_post_thumbnail( 'large' );
+					echo '<div class="ui button">Go To Interactive</div>';
+					echo '</a>';
+				} else {
+					the_content();
+				}
+				?>
+			</figure>
+			<?php
+			$output = ob_get_clean();
+			wp_reset_postdata();
+		} else {
+			\PRC\Platform\log_error( 'No feature found for the [interactive] shortcode, looking for ID: ' . esc_html( $attr['id'] ) . ' and Site ID: ' . esc_html( $attr['siteid'] ) );
+			return '<!-- No feature found for the [interactive] shortcode, looking for ID: ' . esc_html( $attr['id'] ) . ' and Site ID: ' . esc_html( $attr['siteid'] ) . ' -->';
+		}
+
+		return $output;
+	}
+
 	public function block_init() {
 		register_block_type(
 			__DIR__ . '/build',
@@ -159,6 +254,7 @@ class Loader_Block extends Features {
 				'render_callback' => array( $this, 'render_feature_loader_callback' ),
 			)
 		);
-		add_shortcode('load_interactive', array($this, 'shortcode_fallback'));
+		add_shortcode('load_interactive', array($this, 'loader_shortcode_fallback'));
+		add_shortcode('interactive', array($this, 'feature_embed_shortcode_fallback'));
 	}
 }
