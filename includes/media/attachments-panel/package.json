@@ -10,6 +10,7 @@
 		"start": "wp-scripts start src/index.js"
 	},
 	"dependencies": {
-		"@emotion/styled": "^11.11.5"
+		"@emotion/styled": "^11.11.5",
+		"blob-util": "^2.0.2"
 	}
 }

@@ -1,4 +1,9 @@
 /**
+ * External Dependencies
+ */
+import { imgSrcToBlob } from 'blob-util';
+
+/**
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -9,9 +14,11 @@ import {
 	Spinner,
 	TextControl,
 	CardDivider,
-	TabPanel,
 } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
+import { useSelect, select } from '@wordpress/data';
+import { uploadMedia } from '@wordpress/media-utils';
 
 /**
  * Internal Dependencies
@@ -20,6 +27,93 @@ import { useAttachments } from './context';
 import DragAndDropZone from './drag-and-drop-zone';
 import Image from './image';
 import File from './file';
+
+const fetchImagesFromLegacyContent = (postId, postType = 'post') => {
+	// using getEntityRecord from select('core') lets get the meta for this postId and then get the dt_original_post_id and dt_original_blog_id from that and set them as legacyPostId and legacyBlogId accordingly...
+	let legacyPostId = 0;
+	let legacyBlogId = 0;
+
+	const post = select('core').getEntityRecord('postType', postType, postId);
+	if (post) {
+		console.log('post...', post.meta?.dt_original_post_id);
+		legacyPostId = post.meta?.dt_original_post_id;
+		legacyBlogId = post.meta?.dt_original_blog_id;
+	}
+	// Make a request to the WordPress REST API
+	fetch(
+		`https://prc-platform.vipdev.lndo.site/religion/wp-json/wp/v2/posts/${legacyPostId}?_fields=content`
+	)
+		.then((response) => response.json())
+		.then((data) => {
+			const imagesArray = [];
+			const content = data.content.rendered;
+			const parser = new DOMParser();
+			const htmlDoc = parser.parseFromString(content, 'text/html');
+			const figures = htmlDoc.querySelectorAll('figure');
+
+			figures.forEach((figure) => {
+				const img = figure.querySelector('img');
+				if (img) {
+					const src = img.getAttribute('src');
+					const figureClass = figure.getAttribute('class');
+					const aTag = figure.querySelector('a');
+
+					let id;
+					const regexClass = /wp-image-(\d+)/;
+					const matchClass = figureClass.match(regexClass);
+					if (matchClass) {
+						id = matchClass[1];
+					} else {
+						const rel = aTag ? aTag.getAttribute('rel') : null;
+						const regexRel = /wp-att-(\d+)/;
+						const matchRel = rel ? rel.match(regexRel) : null;
+						if (matchRel) {
+							id = matchRel[1];
+						}
+					}
+
+					if (id) {
+						imagesArray.push({ src, id });
+					}
+				}
+			});
+
+			console.log('images inside content...', imagesArray);
+			if (0 < imagesArray.length) {
+				loadListOfImageUrlsIntoMediaLibrary(imagesArray, postId)
+					.then((success) => console.log('success', success))
+					.catch((error) => console.error('error', error));
+			}
+		})
+		.catch((error) => console.error(error));
+};
+
+const loadListOfImageUrlsIntoMediaLibrary = (
+	imagesArray,
+	postId,
+	whenDone = () => {}
+) => {
+	console.log(
+		'imagesArray...',
+		imagesArray.map((image) => image.src)
+	);
+	return new Promise((resolve, reject) => {
+		apiFetch({
+			path: '/prc-api/v3/migration-tools/migrate-attachments',
+			method: 'POST',
+			data: {
+				urls: imagesArray.map((image) => image.src),
+				postId,
+			},
+		})
+			.then((data) => {
+				resolve(data);
+			})
+			.catch((error) => {
+				reject(error);
+			});
+	});
+};
 
 function Images() {
 	const { attachments, loading, debouncedSearchTerm } = useAttachments();
@@ -96,6 +190,9 @@ function Files() {
 function AttachmentsList() {
 	const { attachments, searchTerm, setSearchTerm, mediaEditor } =
 		useAttachments();
+	const postId = useSelect((select) =>
+		select('core/editor').getCurrentPostId()
+	);
 
 	return (
 		<Fragment>
@@ -143,6 +240,20 @@ function AttachmentsList() {
 				initialOpen={false}
 			>
 				<Files />
+			</PanelBody>
+			<PanelBody
+				title={__('Danger Zone')}
+				className="prc-attachments-list__danger-zone"
+				initialOpen={false}
+			>
+				<Button
+					isDestructive
+					onClick={() => {
+						fetchImagesFromLegacyContent(postId);
+					}}
+				>
+					Copy Attachments From Legacy
+				</Button>
 			</PanelBody>
 		</Fragment>
 	);

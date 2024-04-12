@@ -121,4 +121,6 @@ function log_error($error) {
 	} else {
 		error_log(print_r($error, true));
 	}
+
+	return $error;
 }
