@@ -180,7 +180,7 @@ class Multisite_Post_Migration {
 	}
 
 	public function get_remote_attachment_info_by_url($image_url) {
-		$response = wp_remote_get('https://legacy.pewresearch.org/wp-json/prc-api/v2/attachment-url-to-id/?url=' . $image_url);
+		$response = wp_remote_get('https://pewresearch-org-legacy.go-vip.net/wp-json/prc-api/v2/attachment-url-to-id/?url=' . $image_url);
 		if (is_wp_error($response)) {
 			return \PRC\Platform\log_error($response);
 		} else {
