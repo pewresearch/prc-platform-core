@@ -10,9 +10,11 @@ class Dataset_Download_Shape extends BerlinDB_Row {
 	public $total;
 	public $breakdown;
 	public $uids;
+
 	public function __construct( $item ) {
 		parent::__construct( $item );
-		$this->id = (int) $this->id;
+
+		$this->id            = (int) $this->id;
 	}
 
 

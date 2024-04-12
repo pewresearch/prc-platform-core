@@ -14,9 +14,6 @@ class Footnotes {
 	}
 
 	public function filter_content($content) {
-		if ( ! is_singular() ) {
-			return $content;
-		}
 		global $post;
 		$post_id = $post->ID;
 		$footnotes_api = new Footnotes_API( $post_id, $content );

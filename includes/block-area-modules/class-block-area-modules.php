@@ -63,8 +63,7 @@ class Block_Area_Modules {
 				'render_block_context',
 				$block_area_context_provider,
 				'execute_block_context',
-				100,
-				3
+				100, 3
 			);
 			$loader->add_action(
 				'pre_get_posts',
@@ -338,5 +337,6 @@ class Block_Area_Modules {
 			$story_item_ids,
 		);
 	}
+
 
 }

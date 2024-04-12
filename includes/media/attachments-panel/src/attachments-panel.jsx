@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 // A panel that uses filters to allow adding additional panels.
 // https://github.com/WordPress/gutenberg/tree/d5915916abc45e6682f4bdb70888aa41e98aa395/packages/components/src/higher-order/with-filters
 
@@ -13,6 +12,7 @@
 /**
  * WordPress Dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import { withFilters } from '@wordpress/components';
 import { PluginSidebar, PluginPrePublishPanel } from '@wordpress/edit-post';
@@ -22,17 +22,16 @@ import { PluginSidebar, PluginPrePublishPanel } from '@wordpress/edit-post';
  */
 import './style.scss';
 import { ProvideAttachments } from './context';
-import AttachmentsList from './attachments-list';
+import AttachmentsList from './AttachmentsList';
 
-const HOOK_NAME = 'prc-platform/attachments-panel';
-// With this hook other plugins can add their own panels to the attachments panel. For example, Chart Builder could potentially show it's chart exports. The entire idea of this plugin is to provide a central universe of all media assets for a post/page.
+const HOOK_NAME = 'prc-block-plugins/media-assets-panel';
 
-const AttachmentsPanel = withFilters(HOOK_NAME)(() => (
+const MediaAssetsPanel = withFilters(HOOK_NAME)(() => (
 	// const { flashPrePublishWarning } = useAttachments();
 	<Fragment>
 		<PluginSidebar
-			name="prc-attachments-panel"
-			title="Attachments"
+			name="prc-media-assets-panel"
+			title="Media Assets"
 			icon="admin-media"
 		>
 			<ProvideAttachments>
@@ -61,4 +60,4 @@ const AttachmentsPanel = withFilters(HOOK_NAME)(() => (
 	</Fragment>
 ));
 
-export default AttachmentsPanel;
+export default MediaAssetsPanel;

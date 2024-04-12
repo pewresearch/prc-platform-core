@@ -419,7 +419,7 @@ class Staff_Bylines {
 					'show_in_rest'  => true,
 					'single'        => true,
 					'type'          => 'boolean',
-					'default'       => true,
+					'default'       => false,
 					'auth_callback' => function() {
 						return current_user_can( 'edit_posts' );
 					},

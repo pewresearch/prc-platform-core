@@ -1,4 +1,4 @@
-.prc-attachments-list {
+.prc-media-assets-panel {
 	&__image {
 		span {
 			text-align: left;
@@ -21,13 +21,5 @@
 		&--in-use {
 			opacity: 0.5;
 		}
-	}
-}
-
-
-.prc-attachments-tabs {
-	.active-tab {
-		background: var(--wp-admin-theme-color);
-		color: white;
 	}
 }

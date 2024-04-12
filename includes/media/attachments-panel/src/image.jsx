@@ -2,7 +2,7 @@
  * External Dependencies
  */
 import classNames from 'classnames';
-import { useKeyPress } from '@prc/hooks';
+import { useKeyPress } from '@prc-app/shared';
 
 /**
  * WordPress Dependencies
@@ -66,8 +66,8 @@ function Image({ id, url, title, type }) {
 			<button
 				type="button"
 				key={id}
-				className={classNames('prc-attachments-list__image', {
-					'prc-attachments-list__image--in-use': isActive,
+				className={classNames('prc-media-assets-panel__image', {
+					'prc-media-assets-panel__image--in-use': isActive,
 				})}
 				onClick={() => {
 					if (isActive) {
@@ -91,9 +91,7 @@ function Image({ id, url, title, type }) {
 						label="Select Image Size"
 						value={null}
 						options={IMAGE_SIZES}
-						onChange={(newSize) =>
-							handleImageInsertion(id, url, newSize)
-						}
+						onChange={(newSize) => handleImageInsertion(id, url, newSize)}
 					/>
 				</Modal>
 			)}
