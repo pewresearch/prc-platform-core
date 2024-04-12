@@ -223,9 +223,11 @@ class Schema_Meta {
 	public function ascii() {
 		?>
 	<!--
-	#   Pew Research Center Publishing Platform
+	#   Pew Research Center Digital Publishing Platform (PRC-Platform)
 	#   Github: https://github.com/pewresearch/prc-platform-core
 	#   Version: <?php echo esc_html($this->version); ?>
+	#
+	#   Powered by WordPress VIP
 	#
 	-->
 		<?php
