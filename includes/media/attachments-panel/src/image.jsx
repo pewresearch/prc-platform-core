@@ -34,7 +34,7 @@ const IMAGE_SIZES = [
 	{ label: '1400 Wide', value: '1400-wide' },
 ];
 
-function Image({ id, url, title, type }) {
+function Image({ id, url, title, type, filename, editLink, attachmentLink }) {
 	const { insertedImageIds, handleImageInsertion, handleImageReplacement } =
 		useAttachments();
 	const { selectBlock } = useDispatch(blockEditorStore);
@@ -43,6 +43,7 @@ function Image({ id, url, title, type }) {
 	const [modalActive, toggleModal] = useState(false);
 	const leftShiftKeyPressed = useKeyPress('Shift');
 	const leftOptKeyPressed = useKeyPress('Alt');
+	const leftCommandKeyPressed = useKeyPress('Meta');
 
 	// const ref = useRef(null);
 
@@ -77,7 +78,9 @@ function Image({ id, url, title, type }) {
 					} else if (leftShiftKeyPressed) {
 						handleImageInsertion(id, url, '640-wide');
 					} else if (leftOptKeyPressed) {
-						handleImageReplacement(id, url);
+						handleImageReplacement(id, url, attachmentLink);
+					} else if (leftCommandKeyPressed) {
+						window.open(editLink, '_blank');
 					} else {
 						toggleModal(true);
 					}

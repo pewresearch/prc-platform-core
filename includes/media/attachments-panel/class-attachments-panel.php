@@ -121,6 +121,9 @@ class Attachments_Panel {
 					'id'   => get_the_ID(),
 					'title' => get_the_title(),
 					'type' => get_post_mime_type(),
+					'filename' => basename( get_attached_file( get_the_ID() ) ),
+					'editLink' => get_edit_post_link( get_the_ID() ),
+					'attachmentLink' => get_attachment_link( get_the_ID() ),
 					'url' => wp_get_attachment_image_src( get_the_ID(), 'large' )[0], // Why large? Because we don't need the absolute raw image for our preview purposes.
 				);
 			}

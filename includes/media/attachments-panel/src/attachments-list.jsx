@@ -168,10 +168,14 @@ function Files() {
 		return 0;
 	});
 
+	// Filter attachments by title and filename.
 	const filteredAttachments = sortedAttachments.filter(
 		(attachment) =>
 			'' === debouncedSearchTerm ||
 			attachment.title
+				.toLowerCase()
+				.includes(debouncedSearchTerm.toLowerCase()) ||
+			attachment.name
 				.toLowerCase()
 				.includes(debouncedSearchTerm.toLowerCase())
 	);

@@ -127,11 +127,9 @@ function useProvideAttachments() {
 		insertBlock(newImageBlock, insertionIndex);
 	};
 
-	const handleImageReplacement = (id, url) => {
+	const handleImageReplacement = (id, url, attachmentLink) => {
 		// Check that what we're replacing is actually an image.
 		if (selectedBlockIsImageBlock) {
-			const m = select('core').getMedia(id, { context: 'view' });
-			const link = m?.link;
 			// get the attachment page
 			// get the sizeSlug from the existing block if it exists..., otherwise default to 640-wide
 			const sizeSlug = selectedBlockAttrs.sizeSlug || '310-wide';
@@ -139,8 +137,8 @@ function useProvideAttachments() {
 			attrs.id = id;
 			attrs.url = url;
 			attrs.sizeSlug = sizeSlug;
-			if (undefined !== attrs.href && link) {
-				attrs.href = link;
+			if (attachmentLink) {
+				attrs.href = attachmentLink;
 			}
 			const newImageBlock = createBlock('core/image', { ...attrs });
 			replaceBlock(selectedBlockClientId, newImageBlock);
