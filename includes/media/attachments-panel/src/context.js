@@ -19,7 +19,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { store as editorStore } from '@wordpress/editor';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { createBlock } from '@wordpress/blocks';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect, useDispatch, select } from '@wordpress/data';
 import { useEntityProp } from '@wordpress/core-data';
 import { uploadMedia } from '@wordpress/media-utils';
 
@@ -130,12 +130,18 @@ function useProvideAttachments() {
 	const handleImageReplacement = (id, url) => {
 		// Check that what we're replacing is actually an image.
 		if (selectedBlockIsImageBlock) {
+			const m = select('core').getMedia(id, { context: 'view' });
+			const link = m?.link;
+			// get the attachment page
 			// get the sizeSlug from the existing block if it exists..., otherwise default to 640-wide
-			const sizeSlug = selectedBlockAttrs.sizeSlug || '640-wide';
+			const sizeSlug = selectedBlockAttrs.sizeSlug || '310-wide';
 			const attrs = selectedBlockAttrs;
 			attrs.id = id;
 			attrs.url = url;
 			attrs.sizeSlug = sizeSlug;
+			if (undefined !== attrs.href && link) {
+				attrs.href = link;
+			}
 			const newImageBlock = createBlock('core/image', { ...attrs });
 			replaceBlock(selectedBlockClientId, newImageBlock);
 		}
