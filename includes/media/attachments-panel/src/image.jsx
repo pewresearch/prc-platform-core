@@ -43,7 +43,7 @@ function Image({ id, url, title, type, filename, editLink, attachmentLink }) {
 	const [modalActive, toggleModal] = useState(false);
 	const leftShiftKeyPressed = useKeyPress('Shift');
 	const leftOptKeyPressed = useKeyPress('Alt');
-	const leftCommandKeyPressed = useKeyPress('Meta');
+	const leftCommandKeyPressed = useKeyPress('metaKey');
 
 	// const ref = useRef(null);
 
