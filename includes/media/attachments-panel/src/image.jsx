@@ -35,7 +35,7 @@ const IMAGE_SIZES = [
 ];
 
 function Image({ id, url, title, type }) {
-	const { insertedImageIds, handleImageInsertion, handleImpageReplacement } =
+	const { insertedImageIds, handleImageInsertion, handleImageReplacement } =
 		useAttachments();
 	const { selectBlock } = useDispatch(blockEditorStore);
 
@@ -77,8 +77,7 @@ function Image({ id, url, title, type }) {
 					} else if (leftShiftKeyPressed) {
 						handleImageInsertion(id, url, '640-wide');
 					} else if (leftOptKeyPressed) {
-						// Can we make it such that we see if a block is selected in the editor, if so lets get its client id, is it a core/image block? Thenn lets replace that block with a new block with this image...
-						handleImpageReplacement(id, url);
+						handleImageReplacement(id, url);
 					} else {
 						toggleModal(true);
 					}
