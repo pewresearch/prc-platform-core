@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 use WP_Error;
+use WP_Query;
 
 // For admin notices see https://github.com/Automattic/vip-go-mu-plugins/tree/develop/admin-notice
 // AND https://github.com/Automattic/vip-go-mu-plugins/blob/develop/async-publish-actions.php
@@ -174,7 +175,7 @@ class WP_Admin {
 	}
 
 	public function manage_edit_menu() {
-		global $wp_admin_bar;
+		global $wp_admin_bar, $wp_query;
 		$edit_id = 'edit';
 		/**
 		 * Edit Menu
@@ -197,6 +198,39 @@ class WP_Admin {
 				)
 			);
 		}
+
+		if ( $wp_query->is_category() && $wp_query->is_main_query() ) {
+			$queried_object = $wp_query->get_queried_object();
+			$block_modules = get_posts(array(
+				'post_type' => 'block_module',
+				'tax_query' => array(
+					array(
+						'taxonomy' => 'category',
+						'field' => 'slug',
+						'terms' => $queried_object->slug,
+						'include_children' => false,
+					),
+				),
+				'fields' => 'ids',
+				'posts_per_page' => 3,
+			));
+			if ( $block_modules ) {
+				foreach ( $block_modules as $block_module_id ) {
+					$block_area = wp_get_object_terms( $block_module_id, 'block_area', array( 'fields' => 'names' ));
+					if ( ! empty( $block_area ) ) {
+						$block_area = $block_area[0];
+						$new_node = array(
+							'id' => 'edit-block-module-' . $block_module_id,
+							'title' => 'Edit ' . $block_area,
+							'href' => get_edit_post_link( $block_module_id ),
+							'parent' => $edit_id,
+						);
+						$wp_admin_bar->add_node( $new_node );
+					}
+				}
+			}
+		}
+
 		$site_editor = $wp_admin_bar->get_node('site-editor');
 		if ( $site_editor ) {
 			$site_editor->title = 'Edit Template';

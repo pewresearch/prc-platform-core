@@ -13,7 +13,11 @@ import { useAttachments } from './context';
 function DragAndDropZone() {
 	const { onDropImage } = useAttachments();
 	return (
-		<MediaUploadCheck fallback={__(`Fallback Instructions Should Go Here`)}>
+		<MediaUploadCheck
+			fallback={__(
+				`Drag and drop your files here and they will be attached to this post.`
+			)}
+		>
 			<DropZone
 				onFilesDrop={(a) => onDropImage(a)}
 				onHTMLDrop={(b) => console.log('onHTMLDrop...', b)}

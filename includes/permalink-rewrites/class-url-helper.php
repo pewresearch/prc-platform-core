@@ -11,9 +11,12 @@ class URL_Helper {
 		'platform.pewresearch.org',
 		'pewresearch.org',
 		'www.pewresearch.org',
-		'pewresearch-org-preprod.go-vip.co',
-		'pewresearch-org-alpha.go-vip.co',
+		'prc-platform-alpha.go-vip.net',
+		'prc-platform-beta.go-vip.net',
+		'prc-platform.vipdev.lndo.site',
+		// To Deprecate:
 		'pewresearch-org-beta.go-vip.co',
+		'pewresearch-org-beta.go-vip.net',
 		'prc-local.vipdev.lndo.site',
 	);
 
@@ -30,7 +33,7 @@ class URL_Helper {
 		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
 			return new \WP_Error( '404', 'No url in data, this is not a valid url' );
 		}
-		if ( ! in_array( wp_parse_url( $url, PHP_URL_HOST ), self::$allowed_domains, true ) ) {
+		if ( ! in_array( wp_parse_url( $url, PHP_URL_HOST ), self::$allowed_domains, true ) && strpos( $url, 'app.github.dev' ) === false ) {
 			return new \WP_Error( '404', 'No url in data, this domain is not allowed' );
 		}
 		$this->url = $url;

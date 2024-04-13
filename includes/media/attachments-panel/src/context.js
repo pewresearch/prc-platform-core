@@ -3,7 +3,7 @@
 /**
  * External Dependencies
  */
-import { useDebounce } from '@prc-app/shared';
+import { useDebounce } from '@prc/hooks';
 
 /**
  * WordPress dependencies
@@ -34,6 +34,8 @@ function useProvideAttachments() {
 		postType,
 		imageBlocks = [],
 		coverBlocks = [],
+		chartBlocks = [],
+		videoBlocks = [],
 		getBlockInsertionPoint,
 	} = useSelect(
 		(select) => ({
@@ -56,6 +58,7 @@ function useProvideAttachments() {
 	);
 	const { insertBlock } = useDispatch(blockEditorStore);
 
+	const [selected, setSelected] = useState(null);
 	const [attachments, setAttachments] = useState([]);
 	const [searchTerm, setSearchTerm] = useState('');
 	const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -68,10 +71,10 @@ function useProvideAttachments() {
 		if ('number' === typeof postId && false === processing) {
 			toggleProcessing(true);
 			apiFetch({
-				path: `/prc-api/v2/media-assets/?postId=${postId}`,
+				path: `/prc-api/v3/attachments-panel/?postId=${postId}`,
 			}).then((data) => {
 				console.log(
-					'Attachments found in media-assets rest request...',
+					'Objects found in attachments rest request...',
 					data
 				);
 				setAttachments([...data]);
@@ -114,19 +117,32 @@ function useProvideAttachments() {
 		insertBlock(newImageBlock, insertionIndex);
 	};
 
-	const mediaEditor = media({
-		title: 'Edit Media Attachments',
-		button: {
-			text: 'Update',
-		},
-		library: {
-			uploadedTo: postId,
-		},
-	});
+	const mediaEditor = useMemo(() => {
+		return media({
+			title: 'Edit Attachments',
+			button: {
+				text: 'Update',
+			},
+			library: {
+				uploadedTo: postId,
+				selected: [selected],
+			},
+		});
+	}, [postId, selected]);
+
 	// When the media library closes, refresh the attachments.
 	mediaEditor.on('close', () => {
 		updateAttachments();
 	});
+
+	const openMediaLibrary = (attachmentId = null) => {
+		// set the selected to...
+		setSelected(attachmentId);
+		mediaEditor.open();
+		mediaEditor.on('close', () => {
+			setSelected(null);
+		});
+	};
 
 	const insertedImageIds = useMemo(() => {
 		console.log(
@@ -155,6 +171,10 @@ function useProvideAttachments() {
 		return { ...imageBlockIds, ...coverBlockIds };
 	}, [coverBlocks, imageBlocks]);
 
+	/**
+	 * Checks for unused images attached to the post but not present in the editor.
+	 * This is just to let the user know that they have unused images.
+	 */
 	const flashPrePublishWarning = useMemo(() => {
 		console.log('insertedImageIds has changed');
 		if (0 < attachments.length) {
@@ -202,6 +222,7 @@ function useProvideAttachments() {
 		onDropImage,
 		handleImageInsertion,
 		mediaEditor,
+		openMediaLibrary,
 	};
 }
 

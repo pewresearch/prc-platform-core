@@ -130,7 +130,7 @@ class Platform_Bootstrap {
 		$this->include('jetpack/class-jetpack.php');
 		$this->include('mailchimp/class-mailchimp.php');
 		$this->include('media/class-media.php');
-		$this->include('multisite-post-migration/class-cli-commands.php');
+		$this->include('multisite-post-migration/class-multisite-post-migration.php');
 		$this->include('permalink-rewrites/class-permalink-rewrites.php');
 		$this->include('post-publish-pipeline/class-post-publish-pipeline.php');
 		$this->include('post-report-package/class-post-report-package.php');
@@ -187,6 +187,7 @@ class Platform_Bootstrap {
 				add_post_type_support( 'page', 'custom-fields' );
 			}
 		);
+		new Multisite_Post_Migration( $this->get_version(), $this->get_loader() );
 		new Permalink_Rewrites( $this->version, $this->get_loader() );
 		new Post_Publish_Pipeline( $this->get_version(), $this->get_loader() );
 		new Post_Report_Package( $this->get_version(), $this->get_loader() );
