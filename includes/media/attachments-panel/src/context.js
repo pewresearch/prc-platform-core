@@ -38,6 +38,8 @@ function useProvideAttachments() {
 		videoBlocks = [],
 		getBlockInsertionPoint,
 		selectedBlockClientId,
+		selectedBlockIsImageBlock,
+		selectedBlockAttrs,
 	} = useSelect(
 		(select) => ({
 			postType: select(editorStore).getCurrentPostType(),
@@ -54,7 +56,13 @@ function useProvideAttachments() {
 				),
 			getBlockInsertionPoint:
 				select(blockEditorStore).getBlockInsertionPoint,
-			selectedBlockClientId: select(blockEditorStore).getSelectedBlockClientId(),
+			selectedBlockClientId:
+				select(blockEditorStore).getSelectedBlockClientId(),
+			selectedBlockIsImageBlock:
+				select(blockEditorStore).getSelectedBlock()?.name ===
+				'core/image',
+			selectedBlockAttrs:
+				select(blockEditorStore).getSelectedBlock()?.attributes,
 		}),
 		[]
 	);
@@ -119,23 +127,17 @@ function useProvideAttachments() {
 		insertBlock(newImageBlock, insertionIndex);
 	};
 
-	/**
-	 * Instead of inserting a new image block, replace the existing image block with a new image block.
-	 */
 	const handleImageReplacement = (id, url) => {
-		const block = selectedBlockClientId
-			? blockEditorStore.getBlock(selectedBlockClientId)
-			: null;
 		// Check that what we're replacing is actually an image.
-		if (block && 'core/image' === block.name) {
+		if (selectedBlockIsImageBlock) {
 			// get the sizeSlug from the existing block if it exists..., otherwise default to 640-wide
-			const sizeSlug = block.attributes.sizeSlug || '640-wide';
-			const attrs = block.attributes;
+			const sizeSlug = selectedBlockAttrs.sizeSlug || '640-wide';
+			const attrs = selectedBlockAttrs;
 			attrs.id = id;
 			attrs.url = url;
 			attrs.sizeSlug = sizeSlug;
-			const newImageBlock = createBlock('core/image', {...attrs});
-			replaceBlock(block.clientId, newImageBlock);
+			const newImageBlock = createBlock('core/image', { ...attrs });
+			replaceBlock(selectedBlockClientId, newImageBlock);
 		}
 	};
 
