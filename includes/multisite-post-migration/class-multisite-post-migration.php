@@ -284,13 +284,14 @@ class Multisite_Post_Migration {
 				error_log("failed actions found: " . print_r($action_id, true));
 				$hook = $action->get_hook();
 				$args = $action->get_args();
-				$scheduled = as_enqueue_async_action($hook, $args, $group, false);
+				// 30 seconds into the future...
+				$timestamp = time() + 30;
+				$scheduled = as_schedule_single_action($timestamp, $hook, $args, $group, false);
 				if ( 0 !== $scheduled ) {
 					return rest_ensure_response(array(
 						'success' => true,
 					));
 				}
-				error_log("New action scheduled: " . print_r($scheduled, true));
 			}
 		} else {
 			error_log("no failed actions found, we should check for images again...");

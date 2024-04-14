@@ -40,7 +40,20 @@ function resetAttachmentsMigration(postId) {
 		.then((data) => {
 			console.log(data);
 			if (data.success) {
-				window.location.reload();
+				// alert the user that we will refresh in 3 minutes...
+				alert(
+					'Attachments have been reset. This page will refresh in 3 minutes. Do not navigate away from this page after clicking "OK".'
+				);
+
+				const confirmReload = confirm(
+					'Click "OK" to set the refresh timer, we will refresh when the migration is complete. Do not navigate away from this page after clicking "OK".'
+				);
+
+				if (confirmReload) {
+					setTimeout(() => {
+						location.reload();
+					}, 180000);
+				}
 			}
 		})
 		.catch((error) => {

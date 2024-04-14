@@ -43,8 +43,8 @@ class Attachments_Migration extends Multisite_Migration {
 		if ( $is_next ) {
 			as_unschedule_action($is_next);
 		}
-		// Schedule the meta mapping 5 minutes later
-		$timestamp = time() + (60 * 4);
+		// Schedule the meta mapping 1 minute later
+		$timestamp = time() + 60;
 		$group = $this->original_site_id . '_' . $this->original_post_id . '_' . $this->target_post_id;
 		return as_schedule_single_action(
 			$timestamp,
@@ -72,8 +72,8 @@ class Attachments_Migration extends Multisite_Migration {
 		if ( $is_next ) {
 			as_unschedule_action($is_next);
 		}
-		// Schedule the block media matching 5 minutes later
-		$timestamp = time() + (60 * 4);
+		// Schedule the meta mapping 2 minute later
+		$timestamp = time() + 120;
 		$group = $this->original_site_id . '_' . $this->original_post_id . '_' . $this->target_post_id;
 		return as_schedule_single_action(
 			$timestamp,
