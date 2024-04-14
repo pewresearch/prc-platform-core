@@ -31,7 +31,7 @@ import File from './file';
 function resetAttachmentsMigration(postId) {
 	console.log(`resetAttachmentsMigration(${postId}):`);
 	apiFetch({
-		path: '/prc-api/v3/migration/migrate-attachments/',
+		path: '/prc-api/v3/migration-tools/migrate-attachments/',
 		method: 'POST',
 		data: {
 			postId,

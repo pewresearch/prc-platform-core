@@ -270,12 +270,36 @@ class Multisite_Post_Migration {
 	public function restfully_migrate_attachments(\WP_REST_Request $request) {
 		$body = json_decode($request->get_body(), true);
 		$post_id = $body['postId'];
-		// lets check for an existing action... and see if it failed or not.
-		// if it failed then lets just use the data that was there, if that doesnt work again we can move onto the fallback option of processing that migration data again.
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
+		$group = $original_site_id . '_' . $original_post_id . '_' . $post_id;
 
+		$failed_actions = as_get_scheduled_actions(array(
+			'hook' => 'prc_distributor_queue_attachment_migration',
+			'group' => $group,
+		));
 
+		if (count($failed_actions) > 0) {
+			foreach ( $failed_actions as $action_id => $action ) {
+				error_log("failed actions found: " . print_r($action_id, true));
+				$hook = $action->get_hook();
+				$args = $action->get_args();
+				$scheduled = as_enqueue_async_action($hook, $args, $group, false);
+				if ( 0 !== $scheduled ) {
+					return rest_ensure_response(array(
+						'success' => true,
+					));
+				}
+				error_log("New action scheduled: " . print_r($scheduled, true));
+			}
+		} else {
+			error_log("no failed actions found, we should check for images again...");
+		}
+
+		return rest_ensure_response(array(
+			'group' => $group,
+			'failed_actions' => $failed_actions,
+		));
 	}
 
 	public function register_rest_endpoints() {
