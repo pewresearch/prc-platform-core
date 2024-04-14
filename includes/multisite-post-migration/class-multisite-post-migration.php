@@ -75,6 +75,35 @@ class Multisite_Post_Migration {
 		}
 	}
 
+	/**
+	 * Get the original blog id from the post meta.
+	 * @param mixed $post_id
+	 * @return int|null
+	 */
+	public function get_original_blog_id($post_id) {
+		$value = get_post_meta($post_id, 'dt_original_blog_id', true);
+		// make the value into an integer if it can be.
+		if (is_numeric($value)) {
+			return intval($value);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Get the original post id from the post meta.
+	 * @param mixed $post_id
+	 * @return int|null
+	 */
+	public function get_original_post_id($post_id) {
+		$value = get_post_meta($post_id, 'dt_original_post_id', true);
+		if (is_numeric($value)) {
+			return intval($value);
+		} else {
+			return null;
+		}
+	}
+
 	public function register_fallback_meta() {
 		// Register fallback Distributor meta
 		register_post_meta(
@@ -241,59 +270,12 @@ class Multisite_Post_Migration {
 	public function restfully_migrate_attachments(\WP_REST_Request $request) {
 		$body = json_decode($request->get_body(), true);
 		$post_id = $body['postId'];
-		$urls = $body['urls'];
-		$migrated = $this->upload_remote_image_to_media_library($urls, $post_id);
-		return rest_ensure_response($migrated);
+		// lets check for an existing action... and see if it failed or not.
+		// if it failed then lets just use the data that was there, if that doesnt work again we can move onto the fallback option of processing that migration data again.
+		$original_site_id = $this->get_original_blog_id($post_id);
+		$original_post_id = $this->get_original_post_id($post_id);
 
-	}
 
-	public function get_remote_attachment_info_by_url($image_url) {
-		// @TODO: Change to legacy.pewresearch.org once PCT IT gets with it
-		$response = wp_remote_get('https://pewresearch-org-legacy.go-vip.net/wp-json/prc-api/v2/attachment-url-to-id/?url=' . $image_url);
-		if (is_wp_error($response)) {
-			return \PRC\Platform\log_error($response);
-		} else {
-			$body = wp_remote_retrieve_body($response);
-			return json_decode($body, true);
-		}
-	}
-
-	public function upload_remote_image_to_media_library($image_urls, $post_id) {
-		require_once(ABSPATH . 'wp-admin/includes/image.php');
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		require_once(ABSPATH . 'wp-admin/includes/media.php');
-		$updated = false;
-		foreach ($image_urls as $image_url) {
-			// Get attachment post info from API
-			$attachment_info = $this->get_remote_attachment_info_by_url($image_url);
-			if (is_wp_error($attachment_info)) {
-				return $attachment_info;
-			}
-			if ($attachment_info) {
-				// Download image
-				$tmp = download_url($image_url);
-				$file_array = array(
-					'name' => basename($image_url),
-					'tmp_name' => $tmp
-				);
-
-				// Handle sideloading
-				$attachment_id = media_handle_sideload($file_array, $post_id);
-				if (!is_wp_error($attachment_id)) {
-					// Add additional information to the attachment post
-					$updated = wp_update_post(array(
-						'ID' => $attachment_id,
-						'post_date' => $attachment_info['post_date'],
-						'post_title' => $attachment_info['post_title']
-					));
-				}
-			}
-		}
-		if ($updated) {
-			return true;
-		} else {
-			return new WP_Error('attachment_upload_failed', 'One or more attachments failed to upload', array('status' => 500));
-		}
 	}
 
 	public function register_rest_endpoints() {

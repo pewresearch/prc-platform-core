@@ -28,92 +28,25 @@ import DragAndDropZone from './drag-and-drop-zone';
 import Image from './image';
 import File from './file';
 
-const fetchImagesFromLegacyContent = (postId, postType = 'post') => {
-	// using getEntityRecord from select('core') lets get the meta for this postId and then get the dt_original_post_id and dt_original_blog_id from that and set them as legacyPostId and legacyBlogId accordingly...
-	let legacyPostId = 0;
-	let legacyBlogId = 0;
-
-	const post = select('core').getEntityRecord('postType', postType, postId);
-	if (post) {
-		console.log('post...', post.meta?.dt_original_post_id);
-		legacyPostId = post.meta?.dt_original_post_id;
-		legacyBlogId = post.meta?.dt_original_blog_id;
-	}
-	// Make a request to the WordPress REST API
-	fetch(
-		`https://prc-platform.vipdev.lndo.site/religion/wp-json/wp/v2/posts/${legacyPostId}?_fields=content`
-	)
-		.then((response) => response.json())
+function resetAttachmentsMigration(postId) {
+	console.log(`resetAttachmentsMigration(${postId}):`);
+	apiFetch({
+		path: '/prc-api/v3/migration/migrate-attachments/',
+		method: 'POST',
+		data: {
+			postId,
+		},
+	})
 		.then((data) => {
-			const imagesArray = [];
-			const content = data.content.rendered;
-			const parser = new DOMParser();
-			const htmlDoc = parser.parseFromString(content, 'text/html');
-			const figures = htmlDoc.querySelectorAll('figure');
-
-			figures.forEach((figure) => {
-				const img = figure.querySelector('img');
-				if (img) {
-					const src = img.getAttribute('src');
-					const figureClass = figure.getAttribute('class');
-					const aTag = figure.querySelector('a');
-
-					let id;
-					const regexClass = /wp-image-(\d+)/;
-					const matchClass = figureClass.match(regexClass);
-					if (matchClass) {
-						id = matchClass[1];
-					} else {
-						const rel = aTag ? aTag.getAttribute('rel') : null;
-						const regexRel = /wp-att-(\d+)/;
-						const matchRel = rel ? rel.match(regexRel) : null;
-						if (matchRel) {
-							id = matchRel[1];
-						}
-					}
-
-					if (id) {
-						imagesArray.push({ src, id });
-					}
-				}
-			});
-
-			console.log('images inside content...', imagesArray);
-			if (0 < imagesArray.length) {
-				loadListOfImageUrlsIntoMediaLibrary(imagesArray, postId)
-					.then((success) => console.log('success', success))
-					.catch((error) => console.error('error', error));
+			console.log(data);
+			if (data.success) {
+				window.location.reload();
 			}
 		})
-		.catch((error) => console.error(error));
-};
-
-const loadListOfImageUrlsIntoMediaLibrary = (
-	imagesArray,
-	postId,
-	whenDone = () => {}
-) => {
-	console.log(
-		'imagesArray...',
-		imagesArray.map((image) => image.src)
-	);
-	return new Promise((resolve, reject) => {
-		apiFetch({
-			path: '/prc-api/v3/migration-tools/migrate-attachments',
-			method: 'POST',
-			data: {
-				urls: imagesArray.map((image) => image.src),
-				postId,
-			},
-		})
-			.then((data) => {
-				resolve(data);
-			})
-			.catch((error) => {
-				reject(error);
-			});
-	});
-};
+		.catch((error) => {
+			console.error(error);
+		});
+}
 
 function Images() {
 	const { attachments, loading, debouncedSearchTerm } = useAttachments();
@@ -250,14 +183,20 @@ function AttachmentsList() {
 				className="prc-attachments-list__danger-zone"
 				initialOpen={false}
 			>
-				<Button
-					isDestructive
-					onClick={() => {
-						fetchImagesFromLegacyContent(postId);
-					}}
+				<BaseControl
+					label="Reset Attachments"
+					help="If there are attachments present on this post we will only add new attachments. Otherwise, all attachments from the legacy post will be copied to this post."
+					id="prc-reset-attachments"
 				>
-					Copy Attachments From Legacy
-				</Button>
+					<Button
+						isDestructive
+						onClick={() => {
+							resetAttachmentsMigration(postId);
+						}}
+					>
+						Copy Attachments From Legacy
+					</Button>
+				</BaseControl>
 			</PanelBody>
 		</Fragment>
 	);
