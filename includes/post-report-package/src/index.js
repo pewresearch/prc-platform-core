@@ -53,18 +53,6 @@ function ReportPackagePanel() {
 				>
 					<ReportMaterials />
 					<BackChapters />
-					<PanelBody title={__('Danger Zone')} initialOpen={false}>
-						<Button
-							isDestructive
-							onClick={() => {
-								console.log(
-									'...copying attachments from legacy'
-								);
-							}}
-						>
-							Check for missing report materials from Legacy
-						</Button>
-					</PanelBody>
 				</ProvidePostReportPackage>
 			</PluginSidebar>
 			{!isChildPost && (
