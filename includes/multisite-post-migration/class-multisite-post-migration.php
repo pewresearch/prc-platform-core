@@ -3,7 +3,7 @@ namespace PRC\Platform;
 use WP_Error;
 
 /**
- * Tools to aid in post multisite collapse content migration.
+ * Tools to aid in post-migration cleanup from the old site to the new site.
  */
 class Multisite_Post_Migration {
 	/**
@@ -25,13 +25,15 @@ class Multisite_Post_Migration {
 	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
+		require_once( __DIR__ . '/class-multisite-migration.php' );
 		$this->version = $version;
 		$this->init($loader);
 	}
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			// $loader->add_action('enqueue_block_editor_assets', $this, 'enqueue_assets');
+			$this->register_action_scheduler_hooks($loader);
+			$loader->add_action('enqueue_block_editor_assets', $this, 'enqueue_assets');
 			$loader->add_action('init', $this, 'register_fallback_meta');
 			$loader->add_action('rest_api_init', $this, 'register_endpoint');
 		}
@@ -42,7 +44,6 @@ class Multisite_Post_Migration {
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -99,6 +100,73 @@ class Multisite_Post_Migration {
 					return current_user_can( 'edit_posts' );
 				},
 			)
+		);
+	}
+
+	public function register_action_scheduler_hooks($loader) {
+		if ( null === $loader ) {
+			return;
+		}
+		$multisite_migration = new Multisite_Migration();
+		$loader->add_action(
+			'prc_distributor_queue_attachment_migration',
+			$multisite_migration,
+			'scheduled_distributor_attachments_push',
+			10, 2
+		);
+		$loader->add_action(
+			'prc_distributor_queue_attachment_meta_migration',
+			$multisite_migration,
+			'scheduled_distributor_attachments_meta_mapping',
+			10, 3
+		);
+		$loader->add_action(
+			'prc_distributor_queue_multisection_migration',
+			$multisite_migration,
+			'scheduled_distributor_multisection_report_meta_mapping',
+			10, 2
+		);
+		$loader->add_action(
+			'prc_distributor_queue_related_posts_migration',
+			$multisite_migration,
+			'scheduled_distributor_related_posts_meta_mapping',
+			10, 2
+		);
+		$loader->add_action(
+			'prc_distributor_queue_bylines_migration',
+			$multisite_migration,
+			'scheduled_distributor_bylines_mapping',
+			10, 2
+		);
+		$loader->add_action(
+			'prc_distributor_queue_block_entity_patching',
+			$multisite_migration,
+			'scheduled_distributor_block_entity_mapping',
+			10, 1
+		);
+		$loader->add_action(
+			'prc_distributor_queue_classic_editor_patching',
+			$multisite_migration,
+			'scheduled_distributor_classic_editor_mapping',
+			10, 1
+		);
+		$loader->add_action(
+			'prc_distributor_queue_block_media_patching',
+			$multisite_migration,
+			'scheduled_distributor_block_media_mapping',
+			10, 2
+		);
+		$loader->add_action(
+			'prc_distributor_queue_page_migration',
+			$multisite_migration,
+			'scheduled_distributor_page_mapping',
+			10, 1
+		);
+		$loader->add_action(
+			'prc_distributor_queue_primary_category_migration',
+			$multisite_migration,
+			'scheduled_distributor_primary_category_mapping',
+			10, 2
 		);
 	}
 
@@ -180,6 +248,7 @@ class Multisite_Post_Migration {
 	}
 
 	public function get_remote_attachment_info_by_url($image_url) {
+		// @TODO: Change to legacy.pewresearch.org once PCT IT gets with it
 		$response = wp_remote_get('https://pewresearch-org-legacy.go-vip.net/wp-json/prc-api/v2/attachment-url-to-id/?url=' . $image_url);
 		if (is_wp_error($response)) {
 			return \PRC\Platform\log_error($response);
@@ -225,5 +294,61 @@ class Multisite_Post_Migration {
 		} else {
 			return new WP_Error('attachment_upload_failed', 'One or more attachments failed to upload', array('status' => 500));
 		}
+	}
+
+	public function register_rest_endpoints() {
+		// migration/info to get the original post and original site id
+		// migration/verify/{tool} to run a tool to verify for example: migration/verify/topics
+		register_rest_route(
+			'prc-api/v3',
+			'/migration/info',
+			array(
+				'methods'  => 'GET',
+				'callback' => array( $this, 'get_migration_info' ),
+				'args'     => array(
+					'postId' => array(
+						'required' => true,
+						'validate_callback' => function( $param, $request, $key ) {
+							return is_string( $param );
+						},
+					),
+				),
+				'permission_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				}
+			),
+		);
+
+		register_rest_route(
+			'prc-api/v3',
+			'/migration/verify/(?P<tool>[a-zA-Z0-9-]+)',
+			array(
+				'methods'  => 'GET',
+				'callback' => array( $this, 'verify_tool' ),
+				'args'     => array(
+					'postId' => array(
+						'required' => true,
+						'validate_callback' => function( $param, $request, $key ) {
+							return is_string( $param );
+						},
+					),
+					'allowOverwrite' => array(
+						'required' => false,
+						'validate_callback' => function( $param, $request, $key ) {
+							return rest_is_boolean( $param );
+						},
+					),
+					'dryRun' => array(
+						'required' => false,
+						'validate_callback' => function( $param, $request, $key ) {
+							return rest_is_boolean( $param );
+						},
+					),
+				),
+				'permission_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
 	}
 }

@@ -28,6 +28,7 @@ class Facets_API {
 		return md5(wp_json_encode([
 			'query' => $query,
 			'selected' => $this->selected_choices,
+			'invalidate' => 'abc',
 		]));
 	}
 
