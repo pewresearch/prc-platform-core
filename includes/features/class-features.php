@@ -500,6 +500,7 @@ class Features {
 		$args = wp_parse_args(
 			$args,
 			array(
+				'slug' => '',
 				'id' => '',
 				'path' => '',
 				'libraries' => false,
@@ -507,6 +508,14 @@ class Features {
 			)
 		);
 		$args = \array_change_key_case($args, CASE_LOWER);
+		if (empty($args['id'])) {
+			if ( !empty($args['slug']) ) {
+				$args['id'] = $args['slug'];
+			} else {
+				$args['id'] = wp_unique_id('legacy-s3-feature-');
+			}
+		}
+
 		$enqueued = array(
 			'script' => '',
 			'style' => []
@@ -538,8 +547,10 @@ class Features {
 			$styles = explode( ',', $args['styles'] );
 		}
 
-		$js_src = '//assets.pewresearch.org/prc-features/' . $args['path'] . '.js';
+		$js_src = '//assets.pewresearch.org/interactives/' . $args['path'] . '.js';
 		$script_ver = '1.0';
+
+		do_action('qm/debug', 'Loading legacy S3 interactive: ' . print_r($js_src, true) );
 
 		$script_registered = wp_register_script( $args['id'] . '-js', $js_src, $deps, $script_ver, true );
 		if ( false === $script_registered ) {
