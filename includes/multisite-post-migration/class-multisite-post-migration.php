@@ -233,6 +233,67 @@ class Multisite_Post_Migration {
 				return current_user_can( 'edit_posts' );
 			},
 		));
+
+		// migration/info to get the original post and original site id
+		// migration/verify/{tool} to run a tool to verify for example: migration/verify/topics
+		register_rest_route(
+			'prc-api/v3',
+			'/migration-tools/info',
+			array(
+				'methods'  => 'GET',
+				'callback' => array( $this, 'restfully_get_migration_info' ),
+				'args'     => array(
+					'postId' => array(
+						'required' => true,
+						'validate_callback' => function( $param, $request, $key ) {
+							return is_string( $param );
+						},
+					),
+				),
+				'permission_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				}
+			),
+		);
+	}
+
+	public function restfully_get_migration_info(\WP_REST_Request $request) {
+		$post_id = $request->get_param('postId');
+		$original_site_id = $this->get_original_blog_id($post_id);
+		$original_post_id = $this->get_original_post_id($post_id);
+		$original_post_link = null;
+		$original_post_edit_link = null;
+		$original_parent_id = null;
+		$original_post_attachments = [];
+		switch_to_blog( $original_site_id );
+		$original_post = get_post($original_post_id);
+		if ( $original_post ) {
+			$original_post_link = get_permalink($original_post);
+			// extract the domain from original_post_link $domain
+			$domain = parse_url($original_post_link, PHP_URL_HOST);
+			$original_post_link = str_replace($domain, 'pewresearch-org-legacy.go-vip.net', $original_post_link);
+			$original_parent_id = $original_post->post_parent;
+
+			$attachments = get_attached_media('', $original_post_id);
+			if ( $attachments ) {
+				foreach ( $attachments as $attachment ) {
+					$original_post_attachments[] = [
+						'id' => $attachment->ID,
+						'url' => wp_get_attachment_url($attachment->ID),
+						'type' => $attachment->post_mime_type,
+					];
+				}
+			}
+		}
+		restore_current_blog();
+		$response = [
+			'originalSiteId' => $original_site_id,
+			'originalPostId' => $original_post_id,
+			'originalPostLink' => $original_post_link,
+			'originalParentId' => $original_parent_id,
+			'originalPostAttachments' => $original_post_attachments,
+		];
+		return rest_ensure_response($response);
 	}
 
 	/**
@@ -301,61 +362,5 @@ class Multisite_Post_Migration {
 			'group' => $group,
 			'failed_actions' => $failed_actions,
 		));
-	}
-
-	public function register_rest_endpoints() {
-		// migration/info to get the original post and original site id
-		// migration/verify/{tool} to run a tool to verify for example: migration/verify/topics
-		register_rest_route(
-			'prc-api/v3',
-			'/migration/info',
-			array(
-				'methods'  => 'GET',
-				'callback' => array( $this, 'get_migration_info' ),
-				'args'     => array(
-					'postId' => array(
-						'required' => true,
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-				),
-				'permission_callback' => function() {
-					return current_user_can( 'edit_posts' );
-				}
-			),
-		);
-
-		register_rest_route(
-			'prc-api/v3',
-			'/migration/verify/(?P<tool>[a-zA-Z0-9-]+)',
-			array(
-				'methods'  => 'GET',
-				'callback' => array( $this, 'verify_tool' ),
-				'args'     => array(
-					'postId' => array(
-						'required' => true,
-						'validate_callback' => function( $param, $request, $key ) {
-							return is_string( $param );
-						},
-					),
-					'allowOverwrite' => array(
-						'required' => false,
-						'validate_callback' => function( $param, $request, $key ) {
-							return rest_is_boolean( $param );
-						},
-					),
-					'dryRun' => array(
-						'required' => false,
-						'validate_callback' => function( $param, $request, $key ) {
-							return rest_is_boolean( $param );
-						},
-					),
-				),
-				'permission_callback' => function() {
-					return current_user_can( 'edit_posts' );
-				},
-			)
-		);
 	}
 }

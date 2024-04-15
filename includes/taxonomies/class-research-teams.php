@@ -146,6 +146,9 @@ class Research_Teams extends Taxonomies {
 	 * @return mixed
 	 */
 	public function modify_post_permalinks($permalink, $post) {
+		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+			return $permalink;
+		}
 		// Check if the post belongs to the "research-teams" taxonomy
 		if (in_array('research-teams', get_object_taxonomies($post)) && 'publish' === $post->post_status && in_array($post->post_type, self::$post_types)) {
 			// Get the terms associated with the post

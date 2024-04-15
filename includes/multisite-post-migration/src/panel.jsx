@@ -34,100 +34,6 @@ const PanelContent = styled.div`
 	display: block;
 `;
 
-const MigrationTool = ({
-	title,
-	label,
-	tool,
-	postId,
-	warning,
-	displayDryRun = true,
-}) => {
-	const [displayAllowOverwrite, setDisplayAllowOverwrite] = useState(false);
-	const [allowDryRun, setAllowDryRun] = useState(true);
-	const [allowOverwrite, setAllowOverwrite] = useState(false);
-	const { createSuccessNotice, createErrorNotice } = useDispatch(noticeStore);
-	const { editPost } = useDispatch('core/editor');
-	const { currentPost } = useSelect((select) => {
-		return {
-			currentPost: select('core/editor').getCurrentPost(),
-		};
-	});
-
-	const runTool = () => {
-		apiFetch({
-			path: addQueryArgs(`/prc-api/v3/migration/verify/${tool}/`, {
-				postId,
-				allowOverwrite,
-				dryRun: allowDryRun,
-			}),
-		})
-			.then((response) => {
-				console.log('RESPONSE:', response);
-				if (false !== response) {
-					setDisplayAllowOverwrite(true);
-					if (allowOverwrite) {
-						let msg = `Verification Successful`;
-						// use entity prop to set the new categories from the response ids...
-						if (
-							'topic-categories' === tool &&
-							response?.newTerms?.length
-						) {
-							editPost({ categories: response.newTerms });
-							msg = `Verification Successful. Categories updated, check inspector for changes and click update to save.`;
-						}
-
-						createSuccessNotice(msg, {
-							type: 'snackbar',
-						});
-					} else {
-						createSuccessNotice(
-							`Verification Successful. Allow Overwrite to run the tool.`,
-							{
-								type: 'snackbar',
-							}
-						);
-					}
-				}
-			})
-			.catch((error) => {
-				createErrorNotice(`Verification Failed`, {
-					type: 'snackbar',
-				});
-				console.error(error);
-				createErrorNotice(error.message);
-				if ('existing-data' === error.code) {
-					setDisplayAllowOverwrite(true);
-				}
-			});
-	};
-
-	return (
-		<PanelBody title={title}>
-			<PanelContent>
-				<BaseControl help={warning || null}>
-					{displayDryRun && (
-						<ToggleControl
-							label="Dry Run"
-							checked={allowDryRun}
-							onChange={setAllowDryRun}
-						/>
-					)}
-					{displayAllowOverwrite && (
-						<ToggleControl
-							label="Allow Overwrite"
-							checked={allowOverwrite}
-							onChange={setAllowOverwrite}
-						/>
-					)}
-					<Button variant="secondary" onClick={() => runTool()}>
-						{label}
-					</Button>
-				</BaseControl>
-			</PanelContent>
-		</PanelBody>
-	);
-};
-
 const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 	const { postId, postType } = useSelect(
 		(select) => ({
@@ -140,19 +46,27 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 	const [originalSiteId, setOriginalSiteId] = useState(null);
 	const [originalPostId, setOriginalPostId] = useState(null);
 	const [originalParentId, setOriginalParentId] = useState(null);
-	const [hasSupports, setHasSupports] = useState(null);
+	const [originalPostLink, setOriginalPostLink] = useState(null);
 
 	useEffect(() => {
 		if (postId) {
 			apiFetch({
-				path: `/prc-api/v3/migration/info/?postId=${postId}`,
+				path: `/prc-api/v3/migration-tools/info/?postId=${postId}`,
 			})
 				.then((response) => {
-					const { postId, siteId, parentId, has } = response;
-					setOriginalSiteId(siteId);
-					setOriginalPostId(postId);
-					setOriginalParentId(parentId);
-					setHasSupports(has);
+					const {
+						originalSiteId,
+						originalPostId,
+						originalPostLink,
+						originalParentId,
+						originalPostAttachments,
+					} = response;
+					setOriginalSiteId(originalSiteId);
+					setOriginalPostId(originalPostId);
+					setOriginalPostLink(originalPostLink);
+					setOriginalPostEditLink(originalPostEditLink);
+					setOriginalParentId(originalParentId);
+					console.log('MIGRATION INFO:::', response);
 				})
 				.catch((error) => {
 					console.log('MIGRATION ERROR::', error);
@@ -168,7 +82,7 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 		<PluginSidebar
 			name="prc-platform-migration-panel"
 			title="PRC Platform Migration"
-			// icon={() => `✨`}
+			icon={() => `🚀`}
 		>
 			<PanelBody
 				title={__('Migration Info')}
@@ -181,54 +95,35 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 						{postId}
 					</p>
 					<p>
-						<strong>Origin Site ID: </strong>
+						<strong>Legacy Site ID: </strong>
 						{originalSiteId}
 					</p>
 					<p>
-						<strong>Origin Post ID: </strong>
+						<strong>Legacy Post ID: </strong>
 						{originalPostId}
 					</p>
-					{originalParentId && (
-						<p>
-							<strong>Origin Parent ID: </strong>
-							{originalParentId}
-						</p>
-					)}
-					<ExternalLink
-						href={`${window.siteDomain}/wp-admin/post.php?post=${originalPostId}&action=edit`}
-						target="_blank"
-					>
-						{__('Inspect Origin Post')}
-					</ExternalLink>
-					{originalParentId && (
-						<Fragment>
-							<br />
-							<ExternalLink
-								href={`${window.siteDomain}/wp-admin/post.php?post=${originalParentId}&action=edit`}
-								target="_blank"
-							>
-								{__('Inspect Origin Parent Post')}
-							</ExternalLink>
-						</Fragment>
-					)}
+					<p>
+						<ExternalLink
+							href={`${originalPostLink}`}
+							target="_blank"
+						>
+							{__('Inspect Legacy Post')}
+						</ExternalLink>
+					</p>
 				</PanelContent>
 			</PanelBody>
-			{hasSupports && hasSupports.topicCategories && (
-				<MigrationTool
-					title="Topic Categories Verification"
-					label="Run Topic Category Verification"
-					tool="topic-categories"
-					postId={postId}
-					warning="Running this action will set the correct categories in the editor, check the inspector for new data."
-					displayDryRun={false}
-				/>
-			)}
-			{/* {hasSupports && hasSupports.reportPackageConnection && (
-				<MigrationTool title="Report Package Verification" label="Run Report Package Verification" tool="report-package-connection" postId={postId} warning="Running this action with dry run off will update the report package connection immediately." />
-			)}
-			{hasSupports && hasSupports.attachments && (
-				<MigrationTool title="Attachments Verification" label="Run Art Direction Verification" tool="attachments" postId={postId} warning="Running this action with dry run off will do the following immediately: a.) re-copy over any attachments for this post from its origin. b.) update the art direction with the correct art direction items pointing to the new attachments." />
-			)} */}
+			<PanelBody title={__('Topic Category Tool')} initialOpen>
+				<p>Topic Category Tool Will Go Here</p>
+				<p>
+					We will fetch the topics from the stub of the legacy post,
+					this is the most truthful set of data.
+				</p>
+				<p>
+					Get the topic taxonomy term slugs from the stubs, find the
+					term ids for those slugs here, display modal to review,
+					click to apply
+				</p>
+			</PanelBody>
 		</PluginSidebar>
 	);
 };
