@@ -11,12 +11,10 @@ class Multisite_Migration {
 
 	public function __construct() {
 		$this->primary_site_id = PRC_PRIMARY_SITE_ID;
-
 		require_once( __DIR__ . '/types/class-attachment.php' );
 		require_once( __DIR__ . '/types/class-multisection-report.php' );
 		require_once( __DIR__ . '/types/class-staff-bylines.php' );
 		require_once( __DIR__ . '/types/class-block-patcher.php' );
-		require_once( __DIR__ . '/types/class-classic-to-blocks.php');
 		require_once( __DIR__ . '/types/class-related-posts.php' );
 	}
 
@@ -200,30 +198,6 @@ class Multisite_Migration {
 		);
 
 		return $block_patcher->process_entities();
-	}
-
-	/**
-	 * Handle re-connecting block entitites to their new entities after migration.
-	 *
-	 * @hook prc_distributor_queue_classic_editor_patching
-	 * @param mixed $post_id
-	 * @return int|WP_Error|true
-	 */
-	public function scheduled_distributor_classic_editor_mapping($post_id) {
-		$original_site_id = $this->get_original_blog_id($post_id);
-		$original_post_id = $this->get_original_post_id($post_id);
-
-		$converter = new Classic_To_Blocks(array(
-			'post_id' => $original_post_id,
-			'site_id' => $original_site_id
-		), array(
-			'post_id' => $post_id,
-			'site_id' => $this->primary_site_id
-		), function($msg) {
-			self::log($msg);
-		});
-
-		return $converter->process();
 	}
 
 	/**
