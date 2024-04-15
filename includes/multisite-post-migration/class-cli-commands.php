@@ -294,6 +294,18 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 		}
 
+		/**
+		 * Clears Yoast Redirects
+		 *
+		 * @subcommand clear_yoast_redirects
+		 */
+		public function clear_yoast_redirects() {
+			// clear the values from wp_20_options wpseo-premium-redirects-export-regex, wpseo-premium-redirects-export-regex-plain, and wpseo-premium-redirects-base
+			update_option( 'wpseo-premium-redirects-export-regex', '' );
+			update_option( 'wpseo-premium-redirects-export-regex-plain', '' );
+			update_option( 'wpseo-premium-redirects-base', '' );
+		}
+
 	}
 
 	WP_CLI::add_command( 'prc post-migration', '\PRC\Platform\Post_Migration_CLI_Commands' );
