@@ -6,7 +6,7 @@ use WP_Error;
  * @package PRC\Platform
  */
 class Action_Scheduler {
-	public static $time_to_keep_records = 1 * HOUR_IN_SECONDS;
+	public static $time_to_keep_records = 14 * DAY_IN_SECONDS;
 
 	/**
 	 * The version of this plugin.
