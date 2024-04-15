@@ -510,7 +510,7 @@ class Features {
 		$args = \array_change_key_case($args, CASE_LOWER);
 		if (empty($args['id'])) {
 			if ( !empty($args['slug']) ) {
-				$args['id'] = $args['slug'];
+				$args['id'] = 'legacy-s3-feature-'.$args['slug'];
 			} else {
 				$args['id'] = wp_unique_id('legacy-s3-feature-');
 			}
