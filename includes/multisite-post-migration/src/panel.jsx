@@ -74,10 +74,6 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 		}
 	}, [postId, postType]);
 
-	useEffect(() => {
-		console.log('noticeList...', noticeList, hasSupports);
-	}, [noticeList, hasSupports]);
-
 	return (
 		<PluginSidebar
 			name="prc-platform-migration-panel"
