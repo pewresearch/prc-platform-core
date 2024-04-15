@@ -548,9 +548,8 @@ class Features {
 		}
 
 		$js_src = '//assets.pewresearch.org/interactives/' . $args['path'] . '.js';
+		$css_src = '//assets.pewresearch.org/interactives/' . $args['path'] . '.css';
 		$script_ver = '1.0';
-
-		do_action('qm/debug', 'Loading legacy S3 interactive: ' . print_r($js_src, true) );
 
 		$script_registered = wp_register_script( $args['id'] . '-js', $js_src, $deps, $script_ver, true );
 		if ( false === $script_registered ) {
@@ -560,6 +559,11 @@ class Features {
 		if ( $script_handle ) {
 			$enqueued['script'] = $script_handle;
 			wp_enqueue_script( $script_handle );
+		}
+		$style_handle = $args['id'] . '-css';
+		$style_registered = wp_register_style( $style_handle, $css_src );
+		if ( $style_registered ) {
+			$styles[] = $style_handle;
 		}
 		if ( $styles ) {
 			foreach ( $styles as $style ) {
