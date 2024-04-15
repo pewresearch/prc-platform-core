@@ -64,7 +64,6 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 					setOriginalSiteId(originalSiteId);
 					setOriginalPostId(originalPostId);
 					setOriginalPostLink(originalPostLink);
-					setOriginalPostEditLink(originalPostEditLink);
 					setOriginalParentId(originalParentId);
 					console.log('MIGRATION INFO:::', response);
 				})
