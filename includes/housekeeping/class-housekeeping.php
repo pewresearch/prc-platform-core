@@ -38,9 +38,9 @@ class Housekeeping {
 		if ( null !== $loader ) {
 			// Clean up old drafts on a rolling 30 day basis, weekly. Move them to the trash.
 			// Let WordPress handle the trash.
-			$loader->add_action( 'prc_run_weekly', $this, 'weekly_drafts_cleanup' );
+			// $loader->add_action( 'prc_run_weekly', $this, 'weekly_drafts_cleanup' );
 			// Clean up quiz archetypes with less than 100 hits.
-			$loader->add_action( 'prc_run_monthly', $this, 'monthly_quiz_cleanup' );
+			// $loader->add_action( 'prc_run_monthly', $this, 'monthly_quiz_cleanup' );
 		}
 	}
 
