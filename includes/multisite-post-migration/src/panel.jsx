@@ -77,7 +77,6 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 		<PluginSidebar
 			name="prc-platform-migration-panel"
 			title="PRC Platform Migration"
-			icon={() => `🚀`}
 		>
 			<PanelBody
 				title={__('Migration Info')}
