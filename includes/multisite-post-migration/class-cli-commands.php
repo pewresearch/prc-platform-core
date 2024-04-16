@@ -297,13 +297,64 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		/**
 		 * Clears Yoast Redirects
 		 *
-		 * @subcommand clear_yoast_redirects
+		 * @subcommand clear-yoast-redirects
 		 */
 		public function clear_yoast_redirects() {
 			// clear the values from wp_20_options wpseo-premium-redirects-export-regex, wpseo-premium-redirects-export-regex-plain, and wpseo-premium-redirects-base
 			update_option( 'wpseo-premium-redirects-export-regex', '' );
 			update_option( 'wpseo-premium-redirects-export-regex-plain', '' );
 			update_option( 'wpseo-premium-redirects-base', '' );
+		}
+
+		protected function delete_action_from_ac_log($action_id) {
+			global $wpdb;
+			$wpdb->delete( $wpdb->prefix . 'actionscheduler_logs', array( 'action_id' => $action_id ) );
+			$wpdb->delete( $wpdb->prefix . 'actionscheduler_actions', array( 'action_id' => $action_id ) );
+		}
+
+		/**
+		 * Re-runs failed prc_distributor_queue_attachment_migration action
+		 *
+		 * @subcommand re-run-failed-attachments-migration
+		 */
+		public function re_run_failed_attachments_migration() {
+			// Disable term counting, Elasticsearch indexing, and PushPress.
+			$this->start_bulk_operation();
+
+			$this->vip_inmemory_cleanup();
+
+			$paged = 1;
+
+			$failed_actions = as_get_scheduled_actions(array(
+				'hook' => 'prc_distributor_queue_attachment_migration',
+				'status' => 'failed',
+				'per_page' => 200,
+				'page' => $paged,
+			));
+
+			// Free up memory.
+			$this->vip_inmemory_cleanup();
+
+			foreach ( $failed_actions as $action_id => $action ) {
+				$group = $action->get_group();
+				$site_id = explode('_', $group)[0];
+				$original_post_id = explode('_', $group)[1];
+				$post_id = explode('_', $group)[2];
+				$hook = $action->get_hook();
+				$args = $action->get_args();
+				WP_CLI::line( '🔧 Re-running failed attachments action: ' . $group . '::' .print_r($args, true) );
+				// 30 seconds into the future...
+				$timestamp = time() + 30;
+				$this->delete_action_from_ac_log($action_id);
+				$scheduled = as_schedule_single_action($timestamp, $hook, $args, $group, false);
+				if ( 0 !== $scheduled ) {
+					WP_CLI::success( '👍 Re-scheduled failed attachments action: ' . $group . '::' .print_r($args, true) );
+				}
+			}
+
+
+			// Trigger a term count as well as trigger bulk indexing of Elasticsearch site.
+			$this->end_bulk_operation();
 		}
 
 	}

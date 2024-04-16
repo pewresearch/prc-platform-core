@@ -191,26 +191,6 @@ function AttachmentsList() {
 			>
 				<Files />
 			</PanelBody>
-			<PanelBody
-				title={__('Danger Zone')}
-				className="prc-attachments-list__danger-zone"
-				initialOpen={false}
-			>
-				<BaseControl
-					label="Reset Attachments"
-					help="If there are attachments present on this post we will only add new attachments. Otherwise, all attachments from the legacy post will be copied to this post."
-					id="prc-reset-attachments"
-				>
-					<Button
-						isDestructive
-						onClick={() => {
-							resetAttachmentsMigration(postId);
-						}}
-					>
-						Copy Attachments From Legacy
-					</Button>
-				</BaseControl>
-			</PanelBody>
 		</Fragment>
 	);
 }
