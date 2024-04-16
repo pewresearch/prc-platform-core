@@ -38,7 +38,6 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 	'data-wp-context' => wp_json_encode(array(
 		'datasetId' => $dataset_id,
 		'isATP' => $is_atp,
-		'NONCE' => '',
 	)),
 	'data-wp-bind--data-dataset-id' => 'context.datasetId',
 ));

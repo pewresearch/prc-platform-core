@@ -35,9 +35,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @hook render_block_context, 1
 	 */
 	public function construct_block_context( $context, $parsed_block, $parent_block_obj ) {
-		if ( is_front_page() ) {
-			return $context;
-		}
 		if ( 'prc-platform/block-area-context-provider' !== $parsed_block['blockName'] ) {
 			return $context;
 		}
@@ -57,9 +54,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @param mixed $query
 	 */
 	public function execute_on_main_query($query) {
-		if ( $query->is_front_page() ) {
-			return $query;
-		}
 		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
 			return $query;
 		}
@@ -81,9 +75,6 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 	 * @return mixed
 	 */
 	public function execute_block_context( $context, $parsed_block, $parent_block_obj ) {
-		if ( is_front_page() ) {
-			return $context;
-		}
 		return $context;
 		if ( 'core/post-template' === $parsed_block['blockName'] ) {
 			$story_item_ids = $this->collected_story_item_ids;

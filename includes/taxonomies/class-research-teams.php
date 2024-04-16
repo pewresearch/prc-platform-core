@@ -149,10 +149,6 @@ class Research_Teams extends Taxonomies {
 		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
 			return $permalink;
 		}
-		// Check if post has the "disable_research_team_permalink" meta key
-		if (get_post_meta($post->ID, 'disable_research_team_permalink', true)) {
-			return $permalink;
-		}
 		// Check if the post belongs to the "research-teams" taxonomy
 		if (in_array('research-teams', get_object_taxonomies($post)) && 'publish' === $post->post_status && in_array($post->post_type, self::$post_types)) {
 			// Get the terms associated with the post

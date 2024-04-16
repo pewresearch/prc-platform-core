@@ -211,9 +211,13 @@ class Mailchimp {
 				),
 			),
 			'permission_callback' => function () {
+				return true;
+
+				// check for a nonce value
 				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
 					return false;
 				}
+				// verify the nonce value
 				$nonce = $_REQUEST['_wpnonce'];
 				return $this->verify_subscribe_nonce( $nonce );
 			},
@@ -241,11 +245,13 @@ class Mailchimp {
 				),
 			),
 			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
 					return false;
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_unsubscribe_nonce( $nonce );
 			},
 		);
 
@@ -276,11 +282,13 @@ class Mailchimp {
 				),
 			),
 			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
 					return false;
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_update_interests_nonce( $nonce );
 			},
 		);
 
@@ -301,11 +309,13 @@ class Mailchimp {
 				),
 			),
 			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
+				// check for a nonce value
+				if ( ! isset( $_REQUEST['nonce'] ) ) {
 					return false;
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
+				// verify the nonce value
+				$nonce = $_REQUEST['nonce'];
+				return $this->verify_get_member_nonce( $nonce );
 			},
 		);
 
@@ -321,11 +331,7 @@ class Mailchimp {
 				),
 			),
 			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
-				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
+				return true;
 			},
 		);
 
