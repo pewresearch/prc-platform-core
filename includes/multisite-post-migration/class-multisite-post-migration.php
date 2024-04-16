@@ -329,6 +329,11 @@ class Multisite_Post_Migration {
 		return $new_term;
 	}
 
+	public function restfully_copy_taxonomy_terms(\WP_REST_Request $request) {
+		// get the old terms...
+		// $this->restfully_query_for_new_term();
+	}
+
 	public function restfully_migrate_attachments(\WP_REST_Request $request) {
 		$body = json_decode($request->get_body(), true);
 		$post_id = $body['postId'];

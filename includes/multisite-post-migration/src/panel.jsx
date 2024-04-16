@@ -107,16 +107,10 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 				</PanelContent>
 			</PanelBody>
 			<PanelBody title={__('Topic Category Tool')} initialOpen>
-				<p>Topic Category Tool Will Go Here</p>
-				<p>
-					We will fetch the topics from the stub of the legacy post,
-					this is the most truthful set of data.
-				</p>
-				<p>
-					Get the topic taxonomy term slugs from the stubs, find the
-					term ids for those slugs here, display modal to review,
-					click to apply
-				</p>
+				<Button>
+					Click To Copy Topic Terms and Primary Topic Term
+				</Button>
+				<Button>Click To Copy Bylines</Button>
 			</PanelBody>
 		</PluginSidebar>
 	);
