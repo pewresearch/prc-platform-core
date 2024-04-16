@@ -26,6 +26,7 @@ class Multisite_Post_Migration {
 	 */
 	public function __construct( $version, $loader ) {
 		require_once( __DIR__ . '/class-multisite-migration.php' );
+		require_once( __DIR__ . '/class-cli-commands.php' );
 		$this->version = $version;
 		$this->init($loader);
 	}
@@ -271,7 +272,7 @@ class Multisite_Post_Migration {
 			$original_post_link = get_permalink($original_post);
 			// extract the domain from original_post_link $domain
 			$domain = parse_url($original_post_link, PHP_URL_HOST);
-			$original_post_link = str_replace($domain, 'pewresearch-org-legacy.go-vip.net', $original_post_link);
+			$original_post_link = str_replace($domain, 'legacy.pewresearch.org', $original_post_link);
 			$original_parent_id = $original_post->post_parent;
 
 			$attachments = get_attached_media('', $original_post_id);

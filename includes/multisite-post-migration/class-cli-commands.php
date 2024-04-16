@@ -9,11 +9,54 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	/**
 	 * Manage the migration of posts from one site to the new pewresearch-org.
 	 */
-	class Migration_CLI_Command extends WPCOM_VIP_CLI_Command {
-		public $target_site_id = null;
-
+	class Post_Migration_CLI_Commands extends WPCOM_VIP_CLI_Command {
 		public function __construct() {
-			$this->target_site_id = PRC_PRIMARY_SITE_ID;
+		}
+
+		protected function process_cleanup_action_on_obj($args, $data, $group, $cli_step_log) {
+			$args = wp_parse_args($args, [
+				'post_id' => null,
+				'post_type' => null,
+			]);
+			$post_id = $args['post_id'];
+			$post_type = $args['post_type'];
+			// Set up action:
+			// Timestamp 1 min into future
+			$timestamp = time() + 60;
+			// This action hook
+			$action = 'prc_post_migration_action__attachments_link_cleanup';
+			// The arguments we're passing through to the action
+			$action_args = array(
+				'post_id' => $post_id,
+				'data' => $data,
+			);
+
+			// We should check to see if this action has already been scheduled, if so, we should not schedule it again.
+			if ( as_next_scheduled_action( $action, $action_args, $group ) ) {
+				WP_CLI::warning( sprintf(
+					'⌛ %s - %s has already been scheduled for clean up. %s',
+					WP_CLI::colorize( '%B'.$post_type.'%n' ),
+					WP_CLI::colorize( '%G'.$post_id.'%n' ),
+					$cli_step_log,
+				) );
+				return;
+			}
+
+			// Lets actually schedule the action.
+			$position = as_schedule_single_action(
+				$timestamp,
+				$action,
+				$action_args,
+				$group,
+			);
+
+			WP_CLI::success( sprintf(
+				'👍 🧼 %s - %s scheduled for post-migration clean up. Position in action queue: %s - %s',
+				WP_CLI::colorize( '%B'.$post_type.'%n' ),
+				WP_CLI::colorize( '%G'.$post_id.'%n' ),
+				WP_CLI::colorize( '%G'.$position.'%n' ),
+				$cli_step_log,
+			) );
 		}
 
 		/**
@@ -50,7 +93,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			if ( $dry_run ) {
 				WP_CLI::line( '🛟 Running in dry-run mode, callback is disarmed.' );
 			} else {
-				WP_CLI::line( '☠️ Live fire! Armed and ready to process changes.' );
+				WP_CLI::line( '☠️ Live fire! Armed and ready to clean objects... with extreme prejudice 🧼 😎 💥.' );
 			}
 
 			// Disable term counting, Elasticsearch indexing, and PushPress.
@@ -70,18 +113,16 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 					'meta_query' => array(
 						'relation' => 'AND',
 						array(
-							'key' => '_prc_migrated_post',
-							'compare' => 'NOT EXISTS',
+							'key' => 'dt_original_blog_id', // Only ensure we're getting migrated posts
+							'compare' => 'EXISTS',
 						),
 						array(
-							'key' => '_prc_do_not_migrate',
-							'compare' => 'NOT EXISTS',
+							'key' => 'dt_original_post_id', // Only ensure we're getting migrated posts
+							'compare' => 'EXISTS',
 						)
 					),
 				);
-				// if ( 'wp_block' === $post_type ) {
-				// 	$query_args['post_status'] = 'any';
-				// }
+
 				$posts = get_posts($query_args);
 
 				foreach ( $posts as $post ) {
@@ -95,60 +136,25 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 					);
 					$cli_step_log = "{$cli_info['count']} :: {$cli_info['paged']} ::: {$cli_info['query_count']}";
 
+					$original_site_id = get_post_meta( $post->ID, 'dt_original_blog_id', true );
+					$original_post_id = get_post_meta( $post->ID, 'dt_original_post_id', true );
+
+					// The group this action belongs to
+					$action_group = $original_site_id . '_' . $original_post_id . '_' . $post->ID;
+
 					if ( ! $dry_run ) {
-						// Set up action variables.
-						$timestamp = time() + 60;
-						$action = 'prc_distributor_queue_push';
-						$action_args = array(
-							'post_id' => $post->ID,
-							'push_target' => $this->target_site_id,
-						);
-						$action_group = $this->target_site_id . '_' . $post->ID;
-
-						// Check if this has a _redirect post meta, and if it does then check if it's to something in this domain, if so skip this post.
-						$redirect = get_post_meta( $post->ID, '_redirect', true );
-						if ( strpos( $redirect, get_bloginfo( 'url' ) ) !== false ) {
-							WP_CLI::warning( sprintf(
-								'⚠️ %s - %s has a redirect to %s; skipping. %s',
-								WP_CLI::colorize( '%B'.$post_type.'%n' ),
-								WP_CLI::colorize( '%G'.$post->ID.'%n' ),
-								WP_CLI::colorize( '%G'.$redirect.'%n' ),
-								$cli_step_log,
-							) );
-							update_post_meta( $post->ID, '_prc_do_not_migrate', true );
-							continue;
-						}
-
-						// We should check to see if this action has already been scheduled, if so, we should not schedule it again.
-						if ( as_next_scheduled_action( $action, $action_args, $action_group ) ) {
-							WP_CLI::warning( sprintf(
-								'⌛ %s - %s has already been scheduled for migration. %s',
-								WP_CLI::colorize( '%B'.$post_type.'%n' ),
-								WP_CLI::colorize( '%G'.$post->ID.'%n' ),
-								$cli_step_log,
-							) );
-							continue;
-						}
-
-						// Schedule action.
-						// @hook $action name
-						$position = as_schedule_single_action(
-							$timestamp,
-							$action,
-							$action_args,
+						$this->process_cleanup_action_on_obj(
+							[
+								'post_id' => $post->ID,
+								'post_type' => $post_type,
+							],
+							[], // data we want to pass in if needed...
 							$action_group,
+							$cli_step_log
 						);
-
-						WP_CLI::success( sprintf(
-							'👍 %s - %s scheduled for migration. Position in action queue: %s - %s',
-							WP_CLI::colorize( '%B'.$post_type.'%n' ),
-							WP_CLI::colorize( '%G'.$post->ID.'%n' ),
-							WP_CLI::colorize( '%G'.$position.'%n' ),
-							$cli_step_log,
-						) );
 					} else {
 						WP_CLI::success( sprintf(
-							'👍 %s - %s will be scheduled for migration when run with dry-run trigger safety off. %s',
+							'👍 🧼 %s - %s will be scheduled for post-migration clean up when run with dry-run trigger safety off. %s',
 							WP_CLI::colorize( '%B'.$post_type.'%n' ),
 							WP_CLI::colorize( '%G'.$post->ID.'%n' ),
 							$cli_step_log,
@@ -168,13 +174,13 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
 			if ( false === $dry_run ) {
 				WP_CLI::success( sprintf(
-					'🚀 %s - %s objects are currently transiting.',
+					'🧼 %s - %s objects are currently being cleaned.',
 					WP_CLI::colorize( '%G'.$count.'%n' ),
 					WP_CLI::colorize( '%B'.$post_type.'%n' ),
 				) );
 			} else {
 				WP_CLI::success( sprintf(
-					'🚀 Dry run complete. %s - %s objects were not migrated at this time as the safety is still engaged, run with %s to turn off trigger safety.',
+					'🧼 Dry run complete. %s - %s objects were not cleaned at this time as the safety is still engaged, run with %s to turn off trigger safety.',
 					WP_CLI::colorize( '%G'.$count.'%n' ),
 					WP_CLI::colorize( '%B'.$post_type.'%n' ),
 					WP_CLI::colorize( '%R--dry-run=false%n' ),
@@ -223,34 +229,32 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 				WP_CLI::line( 'Live fire!' );
 			}
 
-			$post_to_migrate = get_post( $post_id );
+			$post_to_process = get_post( $post_id );
 
-			if ( ! $post_to_migrate ) {
+			if ( ! $post_to_process ) {
 				WP_CLI::error( sprintf( '🔍 Post %d does not exist.', $post_id ) );
 			}
 
+			$original_site_id = get_post_meta( $post_to_process->ID, 'dt_original_blog_id', true );
+			$original_post_id = get_post_meta( $post_to_process->ID, 'dt_original_post_id', true );
+
+			// The group this action belongs to
+			$action_group = $original_site_id . '_' . $original_post_id . '_' . $post_id;
+
 			if ( ! $dry_run ) {
-				// // DO action
-				// // $timstamp should be 1 min into the future
-				// $timestamp = time() + 60;
-				// $position = as_schedule_single_action(
-				// 	$timestamp,
-				// 	'prc_distributor_queue_push',
-				// 	array(
-				// 		'post_id' => $post_to_migrate->ID,
-				// 		'push_target' => $this->target_site_id,
-				// 	),
-				// 	$this->target_site_id . '_' . $post_to_migrate->ID
-				// );
-				// WP_CLI::success( sprintf(
-				// 	'⏳ %s scheduled for migration. Position in action queue: %s',
-				// 	WP_CLI::colorize( '%G'.$post_to_migrate->ID.'%n' ),
-				// 	WP_CLI::colorize( '%G'.$position.'%n' ),
-				// ) );
+				$this->process_cleanup_action_on_obj(
+					[
+						'post_id' => $post_id,
+						'post_type' => $post_to_process->post_type,
+					],
+					[], // data we want to pass in if needed...
+					$action_group,
+					'👍 🧼'
+				);
 			} else {
 				WP_CLI::success( sprintf(
-					'⏳ %s will be scheduled when the trigger safety is disengaged, run with %s to turn off trigger safety.',
-					WP_CLI::colorize( '%G'.$post_to_migrate->ID.'%n' ),
+					'⏳ 🧼 %s will be scheduled for cleanup when the trigger safety is disengaged, run with %s to turn off trigger safety.',
+					WP_CLI::colorize( '%G'.$post_to_process->ID.'%n' ),
 				) );
 			}
 
@@ -290,7 +294,70 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 		}
 
+		/**
+		 * Clears Yoast Redirects
+		 *
+		 * @subcommand clear-yoast-redirects
+		 */
+		public function clear_yoast_redirects() {
+			// clear the values from wp_20_options wpseo-premium-redirects-export-regex, wpseo-premium-redirects-export-regex-plain, and wpseo-premium-redirects-base
+			update_option( 'wpseo-premium-redirects-export-regex', '' );
+			update_option( 'wpseo-premium-redirects-export-regex-plain', '' );
+			update_option( 'wpseo-premium-redirects-base', '' );
+		}
+
+		protected function delete_action_from_ac_log($action_id) {
+			global $wpdb;
+			$wpdb->delete( $wpdb->prefix . 'actionscheduler_logs', array( 'action_id' => $action_id ) );
+			$wpdb->delete( $wpdb->prefix . 'actionscheduler_actions', array( 'action_id' => $action_id ) );
+		}
+
+		/**
+		 * Re-runs failed prc_distributor_queue_attachment_migration action
+		 *
+		 * @subcommand re-run-failed-attachments-migration
+		 */
+		public function re_run_failed_attachments_migration() {
+			// Disable term counting, Elasticsearch indexing, and PushPress.
+			$this->start_bulk_operation();
+
+			$this->vip_inmemory_cleanup();
+
+			$paged = 1;
+
+			$failed_actions = as_get_scheduled_actions(array(
+				'hook' => 'prc_distributor_queue_attachment_migration',
+				'status' => 'failed',
+				'per_page' => 200,
+				'page' => $paged,
+			));
+
+			// Free up memory.
+			$this->vip_inmemory_cleanup();
+
+			foreach ( $failed_actions as $action_id => $action ) {
+				$group = $action->get_group();
+				$site_id = explode('_', $group)[0];
+				$original_post_id = explode('_', $group)[1];
+				$post_id = explode('_', $group)[2];
+				$hook = $action->get_hook();
+				$args = $action->get_args();
+				WP_CLI::line( '🔧 Re-running failed attachments action: ' . $group . '::' .print_r($args, true) );
+				// 30 seconds into the future...
+				$timestamp = time() + 30;
+				$this->delete_action_from_ac_log($action_id);
+				$scheduled = as_schedule_single_action($timestamp, $hook, $args, $group, false);
+				if ( 0 !== $scheduled ) {
+					WP_CLI::success( '👍 Re-scheduled failed attachments action: ' . $group . '::' .print_r($args, true) );
+				}
+			}
+
+
+			// Trigger a term count as well as trigger bulk indexing of Elasticsearch site.
+			$this->end_bulk_operation();
+		}
+
 	}
 
-	WP_CLI::add_command( 'prc migration', '\PRC\Platform\Migration_CLI_Command' );
+	WP_CLI::add_command( 'prc post-migration', '\PRC\Platform\Post_Migration_CLI_Commands' );
 }
