@@ -445,7 +445,7 @@ class Features {
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-legacy-wpackio-loader.php' );
 
-		$deps = array('jquery', 'wp-element');
+		$deps = array('jquery', 'wp-element', 'firebase');
 		if ( false !== $args['deps'] && ! empty( $args['deps'] )) {
 			// check if $deps is a string or an array
 			if ( is_string( $args['deps'] ) ) {
@@ -532,7 +532,7 @@ class Features {
 			throw new \LogicException( 'No path to legacy s3 files found. Please check the feature block. Post ID: ' . $post_id);
 		}
 
-		$deps = array('jquery', 'wp-element');
+		$deps = array('jquery', 'wp-element', 'firebase');
 		if ( false !== $args['libraries'] && ! empty( $args['libraries'] )) {
 			// check if $deps is a string or an array
 			if ( is_string( $args['libraries'] ) ) {
