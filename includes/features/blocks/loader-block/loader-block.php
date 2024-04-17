@@ -78,7 +78,6 @@ class Loader_Block extends Features {
 		$enqueued_handles = array();
 
 		if ( $is_legacy_wpackio ) {
-			wp_enqueue_script('firebase');
 			// try to load the legacy wpackio, and if it fails, then log the error and return.
 			try {
 				$enqueued_handles = $this->load_legacy_wpackIO($attributes['legacyWpackIo']);
@@ -94,12 +93,13 @@ class Loader_Block extends Features {
 				return;
 			}
 		} elseif( $is_legacy_s3 ) {
-			wp_enqueue_script('firebase');
 			$attributes['legacyS3']['slug'] = $attributes['slug'];
 			$enqueued_handles = $this->load_legacy_S3($attributes['legacyS3']);
 		} else {
 			$enqueued_handles = $this->load($attributes['slug']);
 		}
+
+
 
 		do_action('prc_platform_feature_loader_enqueue', $enqueued_handles, array(
 			'is_legacy' => $is_legacy_wpackio || $is_legacy_s3,

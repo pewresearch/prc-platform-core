@@ -29,6 +29,7 @@ class Legacy_Interactive_Containment_System {
 		wp_enqueue_script('legacy-semantic-ui');
 		wp_add_inline_script('legacy-semantic-ui', 'window.siteURL = "' . get_site_url() . '";');
 		wp_enqueue_style('legacy-semantic-ui');
+		wp_enqueue_script('firebase');
 	}
 
 	/**
