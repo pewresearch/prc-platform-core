@@ -37,6 +37,7 @@ class Multisite_Post_Migration {
 			$loader->add_action('enqueue_block_editor_assets', $this, 'enqueue_assets');
 			$loader->add_action('init', $this, 'register_fallback_meta');
 			$loader->add_action('rest_api_init', $this, 'register_endpoint');
+			$loader->add_action('init', $this, 'register_primary_term_metas');
 		}
 	}
 
@@ -106,6 +107,31 @@ class Multisite_Post_Migration {
 	}
 
 	public function register_fallback_meta() {
+		$post_types = array(
+			'post',
+			'events',
+			'interactives',
+			'fact-sheets',
+			'quiz',
+			'short-read',
+			'mini-course',
+			'press-release',
+		);
+		foreach ($post_types as $post_type) {
+			register_post_meta(
+				$post_type,
+				'_stub_post',
+				array(
+					'description'   => 'ID of stub post.',
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => 'integer',
+					'auth_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 		// Register fallback Distributor meta
 		register_post_meta(
 			'',
@@ -258,43 +284,115 @@ class Multisite_Post_Migration {
 		);
 	}
 
+	public function register_primary_term_metas() {
+		register_post_meta(
+			'',
+			'_yoast_wpseo_primary_category',
+			array(
+				'single'        => true,
+				'type'          => 'integer',
+				'show_in_rest'  => true,
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_post_meta(
+			'',
+			'_yoast_wpseo_primary_collection',
+			array(
+				'single'        => true,
+				'type'          => 'integer',
+				'show_in_rest'  => true,
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_post_meta(
+			'',
+			'_yoast_wpseo_primary_regions-countries',
+			array(
+				'single'        => true,
+				'type'          => 'integer',
+				'show_in_rest'  => true,
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_post_meta(
+			'',
+			'_yoast_wpseo_primary_research-teams',
+			array(
+				'single'        => true,
+				'type'          => 'integer',
+				'show_in_rest'  => true,
+				'auth_callback' => function() {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+	}
+
 	public function restfully_get_migration_info(\WP_REST_Request $request) {
 		$post_id = $request->get_param('postId');
 		$original_site_id = $this->get_original_blog_id($post_id);
 		$original_post_id = $this->get_original_post_id($post_id);
 		$original_post_link = null;
-		$original_post_edit_link = null;
-		$original_parent_id = null;
-		$original_post_attachments = [];
-		switch_to_blog( $original_site_id );
-		$original_post = get_post($original_post_id);
-		if ( $original_post ) {
-			$original_post_link = get_permalink($original_post);
-			// extract the domain from original_post_link $domain
-			$domain = parse_url($original_post_link, PHP_URL_HOST);
-			$original_post_link = str_replace($domain, 'legacy.pewresearch.org', $original_post_link);
-			$original_parent_id = $original_post->post_parent;
-
-			$attachments = get_attached_media('', $original_post_id);
-			if ( $attachments ) {
-				foreach ( $attachments as $attachment ) {
-					$original_post_attachments[] = [
-						'id' => $attachment->ID,
-						'url' => wp_get_attachment_url($attachment->ID),
-						'type' => $attachment->post_mime_type,
-					];
-				}
-			}
+		$original_stub_id = get_post_meta($post_id, '_stub_post', true);
+		if (!$original_site_id || !$original_post_id || !$original_stub_id) {
+			// This post does not have migration info because it did not come from the old site.
+			return rest_ensure_response([
+				'status' => 'success',
+				'message' => 'This post does not have migration info because it did not come from the old site.',
+			]);
 		}
-		restore_current_blog();
-		$response = [
-			'originalSiteId' => $original_site_id,
+
+		$rest_endpoint = 'https://legacy.pewresearch.org/wp-json/wp/v2/stub/' . $original_stub_id;
+		$rest_endpoint = add_query_arg(array(
+			'_fields' => array(
+				'id',
+				'title',
+				'_legacy_info'
+			)
+		), $rest_endpoint);
+		// now we need to do a remote rest get to the $rest_endpoint and use the username and application password to get the post.
+		$response = \vip_safe_wp_remote_get($rest_endpoint);
+		if (is_wp_error($response)) {
+			return rest_ensure_response([
+				'status' => 'error',
+				'message' => 'Failed to get the original post from the old site.',
+			]);
+		}
+		$body = wp_remote_retrieve_body($response);
+		$migration_info = json_decode($body, true);
+		$taxonomies = $migration_info['_legacy_info']['taxonomies'];
+
+		$parsed_taxonomies = [];
+		foreach ($taxonomies as $taxonomy => $tax_info) {
+			$terms = array_map(function($term) use ($taxonomy) {
+				$taxonomy = 'topic' === $taxonomy ? 'category' : $taxonomy; // 'topic' is 'category' on the new site
+				return get_term_by('slug', $term['slug'], $taxonomy);
+			}, $tax_info['terms']);
+			$primary_term_name = null;
+			$primary_term = get_term_by('slug', $tax_info['primary_term'], 'topic' === $taxonomy ? 'category' : $taxonomy);
+			if ( $primary_term ) {
+				$primary_term_name = $primary_term->name;
+			}
+			$parsed_taxonomies[$taxonomy] = [
+				'terms' => $terms,
+				'primary_term_name' => $primary_term_name,
+			];
+		}
+
+		$to_return = [
+			'originalPostLink' => $migration_info['_legacy_info']['permalink'],
 			'originalPostId' => $original_post_id,
-			'originalPostLink' => $original_post_link,
-			'originalParentId' => $original_parent_id,
-			'originalPostAttachments' => $original_post_attachments,
+			'originalSiteId' => $original_site_id,
+			'taxonomies' => $parsed_taxonomies,
 		];
-		return rest_ensure_response($response);
+		return rest_ensure_response($to_return);
 	}
 
 	/**
@@ -304,7 +402,7 @@ class Multisite_Post_Migration {
 		// do a wp_term_query for the old term id
 		$new_term = null;
 		$new_term_id = false;
-		switch_to_blog( $old_site_id );
+
 		$term = get_term_by( 'term_id', $old_term_id, $taxonomy );
 		$new_term_id = get_term_meta( $term->term_id, '_prc_migrated_term', true );
 		restore_current_blog();

@@ -154,7 +154,7 @@ function AttachmentsList() {
 				<BaseControl
 					id="prc-media-zone"
 					label={__(
-						'Drag and drop images to attach them to the post. Click on an image to select the image size to insert into the editor, or "shift + click" an image to insert at 640-wide.',
+						'Drag and drop images to attach them to the post. Click on an image to select the desired size to insert into the editor. Alternatively, press "Shift + Click" an image to insert it at 640 pixels wide. To replace your selected image block, press "Opt + Click" on the desired image.',
 						'prc-block-plugins'
 					)}
 				>

@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-no-useless-fragment */
+/* eslint-disable max-lines-per-function */
 /**
  * External Dependencies
  */
@@ -35,18 +37,22 @@ const PanelContent = styled.div`
 `;
 
 const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
-	const { postId, postType } = useSelect(
+	const { postId, postType, postMeta } = useSelect(
 		(select) => ({
 			postId: select('core/editor').getCurrentPostId(),
 			postType: select('core/editor').getCurrentPostType(),
+			postMeta: select('core/editor').getEditedPostAttribute('meta'),
 		}),
 		[]
 	);
 
+	const { editPost } = useDispatch('core/editor');
+
 	const [originalSiteId, setOriginalSiteId] = useState(null);
 	const [originalPostId, setOriginalPostId] = useState(null);
-	const [originalParentId, setOriginalParentId] = useState(null);
 	const [originalPostLink, setOriginalPostLink] = useState(null);
+	const [stubPostId, setStubPostId] = useState(null);
+	const [taxonomies, setTaxonomies] = useState(null);
 
 	useEffect(() => {
 		if (postId) {
@@ -59,12 +65,13 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 						originalPostId,
 						originalPostLink,
 						originalParentId,
-						originalPostAttachments,
+						stubPostId,
 					} = response;
 					setOriginalSiteId(originalSiteId);
 					setOriginalPostId(originalPostId);
 					setOriginalPostLink(originalPostLink);
-					setOriginalParentId(originalParentId);
+					setStubPostId(stubPostId);
+					setTaxonomies(response.taxonomies);
 					console.log('MIGRATION INFO:::', response);
 				})
 				.catch((error) => {
@@ -97,6 +104,10 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 						{originalPostId}
 					</p>
 					<p>
+						<strong>Legacy Stub ID: </strong>
+						{stubPostId}
+					</p>
+					<p>
 						<ExternalLink
 							href={`${originalPostLink}`}
 							target="_blank"
@@ -106,12 +117,44 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 					</p>
 				</PanelContent>
 			</PanelBody>
-			<PanelBody title={__('Topic Category Tool')} initialOpen>
-				<Button>
-					Click To Copy Topic Terms and Primary Topic Term
-				</Button>
-				<Button>Click To Copy Bylines</Button>
-			</PanelBody>
+			{taxonomies && (
+				<PanelBody
+					title={__('Taxonomy Restoration')}
+					initialOpen={false}
+				>
+					<Fragment>
+						{taxonomies?.topic && (
+							<Button
+								variant="secondary"
+								onClick={() => {
+									const primaryTermName =
+										taxonomies.topic.primary_term_name;
+									console.log(
+										'PRIMARY TERM:::',
+										primaryTermName
+									);
+									const termIds = [
+										...taxonomies.topic.terms,
+									].map((b) => b.term_id);
+
+									console.log(
+										'RESTORE CATEGORIES:::',
+										termIds
+									);
+									editPost({
+										categories: termIds,
+									});
+									alert(
+										`The primary term for this post is: ${primaryTermName}`
+									);
+								}}
+							>
+								Restore Topic Categories
+							</Button>
+						)}
+					</Fragment>
+				</PanelBody>
+			)}
 		</PluginSidebar>
 	);
 };
