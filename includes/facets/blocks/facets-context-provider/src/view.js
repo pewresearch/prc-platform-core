@@ -176,18 +176,18 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		},
 	},
 	callbacks: {
-		*onSelection() {
+		onSelection() {
 			const selected = state.getSelected;
 			const keysLength = Object.keys(selected).length;
 			console.log(
-				'facets-context-provider::onSelection',
+				'facets-context-provider::onSelection()',
 				selected,
 				Object.keys(selected),
 				keysLength
 			);
 			// No selections? Disable the update button.
 			if (keysLength <= 0) {
-				console.log('disabling...', Object.keys(selected).length);
+				console.log('disabling...', state, Object.keys(selected).length);
 				state.isDisabled = true;
 			} else {
 				// Once we have some selections, lets run a refresh.
