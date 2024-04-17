@@ -57,7 +57,8 @@ class Regions_Countries extends Taxonomies {
 			'short-read',
 			'quiz',
 			'stub',
-			'decoded'
+			'decoded',
+			'block_module'
 		) );
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );

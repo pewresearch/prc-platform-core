@@ -7,7 +7,7 @@ return array (
     'title' => '',
     'type' => 'block_module',
     'id' => '650b70949a3e3',
-    'updated' => 1712782144,
+    'updated' => 1713372334,
     'columns' => 
     array (
       'title' => 
@@ -71,6 +71,22 @@ return array (
         'filter' => 'on',
         'filter_label' => '',
         'name' => 'taxonomy-block_area',
+      ),
+      '5750459e97ced8' => 
+      array (
+        'type' => 'taxonomy-regions-countries',
+        'label' => 'Regions & Countries',
+        'width' => '',
+        'width_unit' => '%',
+        'edit' => 'on',
+        'enable_term_creation' => 'off',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '5750459e97ced8',
       ),
       'date' => 
       array (
