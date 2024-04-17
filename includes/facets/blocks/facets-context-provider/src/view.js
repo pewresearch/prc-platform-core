@@ -119,15 +119,18 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const currentSelected = state.getSelected;
 			const newSelected = currentSelected;
 			if (!currentSelected[facetSlug]) {
+				console.log('added...', facetSlug, value);
 				newSelected[facetSlug] = [value];
-			}
-			if (currentSelected[facetSlug].includes(value)) {
+			} else if (currentSelected[facetSlug].includes(value)) {
+				console.log('removing...', facetSlug, value);
 				newSelected[facetSlug] = newSelected[facetSlug].filter(
 					(item) => item !== value
 				);
 			} else {
+				console.log('adding...', facetSlug, value);
 				newSelected[facetSlug] = [value];
 			}
+			console.log('onSelectChange', currentSelected, newSelected, facetSlug, value);
 			state.selected = newSelected;
 		},
 		*prefetch() {
@@ -176,18 +179,18 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		},
 	},
 	callbacks: {
-		*onSelection() {
+		onSelection() {
 			const selected = state.getSelected;
 			const keysLength = Object.keys(selected).length;
 			console.log(
-				'facets-context-provider::onSelection',
+				'facets-context-provider::onSelection()',
 				selected,
 				Object.keys(selected),
 				keysLength
 			);
 			// No selections? Disable the update button.
 			if (keysLength <= 0) {
-				console.log('disabling...', Object.keys(selected).length);
+				console.log('disabling...', state, Object.keys(selected).length);
 				state.isDisabled = true;
 			} else {
 				// Once we have some selections, lets run a refresh.

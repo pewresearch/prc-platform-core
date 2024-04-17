@@ -66,7 +66,7 @@ class Facets_Context_Provider {
 			'selected' => (object) $this->selected,
 			'data' => $this->data,
 			'isProcessing' => false,
-			'isDisabled' => true, // We start off by setting disabled to true, this is set to false once there are selections. This ensures the update-button block can't be used.
+			'isDisabled' => false,
 			'prefetched' => [],
 		];
 
