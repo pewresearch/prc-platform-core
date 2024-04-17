@@ -142,7 +142,7 @@ class Loader_Block extends Features {
 		$content = wp_sprintf(
 			'<div %1$s>%2$s</div>',
 			$block_wrapper_attrs,
-			is_user_logged_in() ? wp_json_encode($attributes) : '',
+			wp_json_encode($attributes),
 		);
 
 		// Allow for filtering of the feature content by other plugins.
@@ -216,7 +216,6 @@ class Loader_Block extends Features {
 			}
 			$permalink = get_permalink( $post_id );
 			$post_name = get_post_field( 'post_name', $post_id );
-			//@TODO: check for legacy post meta on main post, if not present drop the new id's in an array and surface in migration panel.
 			ob_start();
 			?>
 			<figure class="shortcode shortcode--interactive <?php echo esc_attr( $attr['align'] ); ?>" data-slug="<?php echo esc_attr( $post_name ); ?>">
