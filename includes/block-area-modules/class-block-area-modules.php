@@ -164,7 +164,7 @@ class Block_Area_Modules {
 				'custom-fields',
 				'revisions'
 			),
-			'taxonomies'          => array( 'category', 'block_area' ),
+			'taxonomies'          => array( 'category', 'regions-countries', 'block_area' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
