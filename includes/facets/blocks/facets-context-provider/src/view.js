@@ -119,15 +119,18 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const currentSelected = state.getSelected;
 			const newSelected = currentSelected;
 			if (!currentSelected[facetSlug]) {
+				console.log('added...', facetSlug, value);
 				newSelected[facetSlug] = [value];
-			}
-			if (currentSelected[facetSlug].includes(value)) {
+			} else if (currentSelected[facetSlug].includes(value)) {
+				console.log('removing...', facetSlug, value);
 				newSelected[facetSlug] = newSelected[facetSlug].filter(
 					(item) => item !== value
 				);
 			} else {
+				console.log('adding...', facetSlug, value);
 				newSelected[facetSlug] = [value];
 			}
+			console.log('onSelectChange', currentSelected, newSelected, facetSlug, value);
 			state.selected = newSelected;
 		},
 		*prefetch() {
