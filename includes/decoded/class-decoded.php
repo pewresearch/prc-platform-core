@@ -36,9 +36,9 @@ class Decoded {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_filter('prc_platform_rewrite_rules', $this, 'add_decoded_singular_date_rules', 10, 1);
 			$loader->add_filter( 'post_type_link', $this, 'get_decoded_permalink', 10, 3);
 			$loader->add_action('prc_platform_on_incremental_save', $this, 'enforce_decoded_format', 10, 1);
-			$loader->add_filter('prc_platform_rewrite_rules', $this, 'add_decoded_archive_rewrite_rules', 10, 1);
 		}
 	}
 
@@ -72,7 +72,7 @@ class Decoded {
 		);
 
 		$rewrite = array(
-			'slug'       => 'decoded/%year%/%monthnum%',
+			'slug'       => 'decoded',
 			'with_front' => true,
 			'pages'      => true,
 			'feeds'      => true,
@@ -111,9 +111,9 @@ class Decoded {
 	/**
 	 * @hook prc_platform_rewrite_rules
 	 */
-	public function add_decoded_archive_rewrite_rules($rules) {
+	public function add_decoded_singular_date_rules($rules) {
 		$new_rules = array(
-			'decoded/?$' => 'index.php?post_type=decoded',
+			'^decoded/([0-9]{4})/([0-9]{2})/(.+)/?$' => 'index.php?post_type=decoded&year=$matches[1]&monthnum=$matches[2]&name=$matches[3]',
 		);
 		return $new_rules + $rules;
 	}
@@ -121,8 +121,9 @@ class Decoded {
 	// Convert the %year% and %monthnum% placeholders in the post type's rewrite slug to the actual year and month.
 	public function get_decoded_permalink($url, $post) {
 		if ( self::$post_type == get_post_type($post) ) {
-			$url = str_replace( "%year%", get_the_date('Y', $post->ID), $url );
-			$url = str_replace( "%monthnum%", get_the_date('m', $post->ID), $url );
+			$post_name = $post->post_name;
+			$date_path = get_the_date('Y/m', $post->ID);
+			$url = str_replace($post_name, $date_path . '/' . $post_name, $url);
 		}
 		return $url;
 	}
