@@ -122,37 +122,43 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 					title={__('Taxonomy Restoration')}
 					initialOpen={false}
 				>
-					<Fragment>
-						{taxonomies?.topic && (
+					<BaseControl
+						id="taxonomy-restoration"
+						help={__(
+							'This functionality will pull the taxonomy terms for this post from legacy.pewresearch.org and apply them to this post. This will overwrite any existing terms on the post when you save.'
+						)}
+					>
+						{Object.entries(taxonomies).map(([taxonomy, data]) => (
 							<Button
+								key={taxonomy}
 								variant="secondary"
 								onClick={() => {
 									const primaryTermName =
-										taxonomies.topic.primary_term_name;
+										data.primary_term_name;
 									console.log(
 										'PRIMARY TERM:::',
 										primaryTermName
 									);
-									const termIds = [
-										...taxonomies.topic.terms,
-									].map((b) => b.term_id);
+									const termIds = data.terms.map(
+										(b) => b.term_id
+									);
 
 									console.log(
-										'RESTORE CATEGORIES:::',
+										`RESTORE ${taxonomy.toUpperCase()}:::`,
 										termIds
 									);
 									editPost({
-										categories: termIds,
+										[taxonomy]: termIds,
 									});
 									alert(
 										`The primary term for this post is: ${primaryTermName}`
 									);
 								}}
 							>
-								Restore Topic Categories
+								Restore {taxonomy.toUpperCase()} Terms
 							</Button>
-						)}
-					</Fragment>
+						))}
+					</BaseControl>
 				</PanelBody>
 			)}
 		</PluginSidebar>
