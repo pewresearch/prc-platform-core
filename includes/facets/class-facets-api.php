@@ -85,6 +85,9 @@ class Facets_API {
 
 	public function query() {
 		return;
+		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
+			return;
+		}
 		do_action('qm/debug', 'Facets Query:'.print_r($this->cache_key, true));
 		$cache = new Facets_Cache();
 		$cached_data = $cache->get($this->cache_key, 'facets_group');
