@@ -84,7 +84,13 @@ class Facets_API {
 	}
 
 	public function query() {
-		return;
+		return [
+			'facets'     => [],
+			'query_args' => [],
+			'settings'   => array(
+				'first_load' => true,
+			),
+		];
 		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			return;
 		}
