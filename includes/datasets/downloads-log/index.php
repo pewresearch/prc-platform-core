@@ -10,6 +10,9 @@ class Datasets_Download_Logger extends Datasets {
 
 	public function __construct() {
 		// Setup the database tables.
+		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
+			return;
+		}
 		require_once plugin_dir_path( __FILE__ ) . '/database/index.php';
 	}
 
