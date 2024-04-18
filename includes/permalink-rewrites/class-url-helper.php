@@ -43,7 +43,7 @@ class URL_Helper {
 	/**
 	 * Get the post id from a url.
 	 */
-	private function get_post_id() {
+	public function get_post_id() {
 		if ( null === $this->url ) {
 			return new \WP_Error( '404', 'No url in data' );
 		}
