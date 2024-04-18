@@ -98,8 +98,8 @@ class Research_Teams extends Taxonomies {
 			return $term->slug;
 		}, $terms);
 		foreach($term_names as $term_name) {
-			// Skip Decoded
-			if ( 'decoded' === $term_name ) {
+			// Skip Decoded and Pew Research Center
+			if ( 'decoded' === $term_name || 'pew-research-center' === $term_name ) {
 				continue;
 			}
 			foreach(self::$post_types as $post_type) {
@@ -157,6 +157,13 @@ class Research_Teams extends Taxonomies {
 		if (in_array('research-teams', get_object_taxonomies($post)) && 'publish' === $post->post_status && in_array($post->post_type, self::$post_types)) {
 			// Get the terms associated with the post
 			$terms = get_the_terms($post, self::$taxonomy);
+			// if 'pew-research-center' is in here we should just return the normal permalink
+			$term_slugs = array_map(function ($term) {
+				return $term->slug;
+			}, $terms);
+			if (in_array('pew-research-center', $term_slugs)) {
+				return $permalink;
+			}
 			if ($terms && !is_wp_error($terms)) {
 				// Get the primary term
 				$primary_term_id = get_post_meta($post->ID, '_yoast_wpseo_primary_' . self::$taxonomy, true);
