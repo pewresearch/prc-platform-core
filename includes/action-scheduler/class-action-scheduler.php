@@ -72,7 +72,7 @@ class Action_Scheduler {
 	public function init($loader = null) {
 		if ( null !== $loader ) {
 			// Register our default schedules.
-			$loader->add_action('init', $this, 'register_schedules');
+			// $loader->add_action('init', $this, 'register_schedules');
 			// Registers WP CLI commands for Action Scheduler.
 			$loader->add_action('action_scheduler_pre_init', $this, 'pre_init');
 			// Change the retention period for Action Scheduler to X days. After that time completed and cancelled actions will be deleted.
