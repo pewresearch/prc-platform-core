@@ -157,13 +157,6 @@ class Research_Teams extends Taxonomies {
 		if (in_array('research-teams', get_object_taxonomies($post)) && 'publish' === $post->post_status && in_array($post->post_type, self::$post_types)) {
 			// Get the terms associated with the post
 			$terms = get_the_terms($post, self::$taxonomy);
-			// if 'pew-research-center' is in here we should just return the normal permalink
-			$term_slugs = array_map(function ($term) {
-				return $term->slug;
-			}, $terms);
-			if (in_array('pew-research-center', $term_slugs)) {
-				return $permalink;
-			}
 			if ($terms && !is_wp_error($terms)) {
 				// Get the primary term
 				$primary_term_id = get_post_meta($post->ID, '_yoast_wpseo_primary_' . self::$taxonomy, true);
@@ -174,6 +167,10 @@ class Research_Teams extends Taxonomies {
 
 				$primary_term = !empty($primary_term) ? array_pop($primary_term) : array_pop($terms);
 				$team_slug = $primary_term->slug;
+
+				if ('pew-research-center' === $team_slug) {
+					return $permalink;
+				}
 
 				$site_base_url = get_site_url();
 				$permalink = str_replace($site_base_url, $site_base_url . '/' . $team_slug, $permalink);
