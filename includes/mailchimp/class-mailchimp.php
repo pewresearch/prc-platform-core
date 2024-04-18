@@ -210,13 +210,14 @@ class Mailchimp {
 					},
 				),
 			),
-			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
+			'permission_callback' => function ($request) {
+				$nonce = $request->get_header('X-WP-Nonce');
+				if (empty($nonce)) {
+					return false; // Nonce missing, permission denied
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
-			},
+				return true;
+			}
+
 		);
 
 		$unsubscribe = array(
@@ -377,6 +378,10 @@ class Mailchimp {
 	}
 
 	public function subscribe_to_list_restfully( \WP_REST_Request $request ) {
+		$nonce = $request->get_header('X-WP-Nonce');
+		if ( ! $this->verify_subscribe_nonce( $nonce ) ) {
+			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
+		}
 		$email = $request->get_param( 'email' );
 		$fname = $request->get_param( 'fname' );
 		$lname = $request->get_param( 'lname' );
@@ -414,6 +419,10 @@ class Mailchimp {
 	}
 
 	public function remove_member_from_list_restfully( \WP_REST_Request $request ) {
+		$nonce = $request->get_header('X-WP-Nonce');
+		if ( ! $this->verify_unsubscribe_nonce( $nonce ) ) {
+			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
+		}
 		$email = $request->get_param( 'email' );
 		$api_key = $request->get_param('api_key');
 		$mailchimp_api = new Mailchimp_API($email, array(
@@ -424,6 +433,10 @@ class Mailchimp {
 	}
 
 	public function get_member_restfully( \WP_REST_Request $request ) {
+		$nonce = $request->get_header('X-WP-Nonce');
+		if ( ! $this->verify_get_member_nonce( $nonce ) ) {
+			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
+		}
 		$email = $request->get_param( 'email' );
 		$api_key = $request->get_param('api_key');
 		$mailchimp_api = new Mailchimp_API($email, array(
