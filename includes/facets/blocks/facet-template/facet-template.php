@@ -207,6 +207,7 @@ class Facet_Template {
 	}
 
 	public function render_block_callback($attributes, $content, $block) {
+		return $content;
 		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
 		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
 		// $facet_slug = '_' . $facet_name;
