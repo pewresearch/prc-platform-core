@@ -84,6 +84,7 @@ class Facets_API {
 	}
 
 	public function query() {
+		return;
 		do_action('qm/debug', 'Facets Query:'.print_r($this->cache_key, true));
 		$cache = new Facets_Cache();
 		$cached_data = $cache->get($this->cache_key, 'facets_group');
