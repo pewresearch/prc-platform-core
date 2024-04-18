@@ -7,7 +7,7 @@ return array (
     'title' => 'Default View',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1713397918,
+    'updated' => 1713480930,
     'columns' => 
     array (
       'title' => 
@@ -155,6 +155,25 @@ return array (
         'width_unit' => '%',
         'export' => 'on',
         'name' => '64c9bb6a50a3d8',
+      ),
+      '482b94d6cc0830' => 
+      array (
+        'type' => 'column-meta',
+        'label' => 'Display Bylines?',
+        'width' => '',
+        'width_unit' => '%',
+        'field' => 'displayBylines',
+        'field_type' => 'checkmark',
+        'before' => '',
+        'after' => '',
+        'edit' => 'on',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'on',
+        'filter_label' => '',
+        'name' => '482b94d6cc0830',
       ),
     ),
     'settings' => 
