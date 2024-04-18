@@ -148,7 +148,8 @@ class Related_Posts_API extends Related_Posts {
 		$custom_posts  = $this->get_custom_related_posts();
 
 		if ( 5 > count( $custom_posts ) && ( empty( $related_posts ) || false === $related_posts ) ) {
-			$related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
+			// $related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
+			$related_posts = array();
 			// If not enough related posts are found keying off primary topic widen the search and get all posts that at least have this post's primary topic as a topic.
 			if ( 5 > count( $related_posts ) ) {
 				$related_posts = $this->get_posts_with_matching_primary_terms( $per_page, true );
