@@ -1,11 +1,6 @@
 <?php
-use BerlinDB\Database\Query as BerlinDB_Query;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-class Dataset_Downloads_Log_Query extends BerlinDB_Query {
+class Dataset_Downloads_Log_Query extends BerlinDB\Database\Query {
 
 	/**
 	 * Name of the database table to query.

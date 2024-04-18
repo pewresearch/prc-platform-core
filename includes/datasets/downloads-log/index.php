@@ -9,11 +9,27 @@ class Datasets_Download_Logger extends Datasets {
 	public static $handle = 'prc-platform-dataset-downloads-logger';
 
 	public function __construct() {
+		require_once plugin_dir_path( __FILE__ ) . '/class-query.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-schema.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-shape.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-table.php';
+
+		$this->init_db();
+
+	}
+
+	public function init_db() {
+		return;
 		// Setup the database tables.
 		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			return;
 		}
-		require_once plugin_dir_path( __FILE__ ) . '/database/index.php';
+		// Instantiate the standard Dataset Downloads Log table.
+		$dataset_downloads = new \Dataset_Downloads_Log_Query();
+		// If the table does not exist, then create the table.
+		// if ( ! $dataset_downloads->exists() ) {
+		// 	$dataset_downloads->install();
+		// }
 	}
 
 	/**
