@@ -128,7 +128,7 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/feature/[^/]+/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 					// $new_rules[$term_name . '/feature/([^/]+)/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'dataset' === $post_type ) {
-					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?post_type=dataset&name=$matches[1]';
+					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?datasets=$matches[1]';
 					// Add attachment rule:
 					$new_rules[$term_name . '/dataset/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				}
