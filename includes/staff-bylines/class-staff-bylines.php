@@ -207,8 +207,6 @@ class Staff_Bylines {
 			$loader->add_action( 'enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets' );
 
 			$loader->add_filter('pre_get_posts', $this, 'filter_pre_get_posts', 10, 1);
-
-			$loader->add_action( 'init', $this, 'register_block_binding' );
 		}
 	}
 
@@ -622,93 +620,5 @@ class Staff_Bylines {
 				'terms'    => $current_term_slug,
 			);
 		}
-	}
-
-	/**
-	 * @hook init
-	 */
-	public function register_block_binding() {
-		register_block_bindings_source(
-			'prc-platform/staff-info',
-			[
-				'label'              => __( 'Staff Photo', 'prc-platform/staff-info' ),
-				'get_value_callback' => [$this,'get_staff_info_for_block_binding']
-			]
-		);
-	}
-
-	public function get_staff_info_for_block_binding($source_args, $block, $attribute_name) {
-		$staff_post_id = array_key_exists('id', $source_args) ? $source_args['id'] : false;
-		if ( false === $staff_post_id ) {
-			return null;
-		}
-		// first instance lets set the $this->block_bound_staff to the staff object so its available for later blocks:
-		if ( false === $this->block_bound_staff || $this->block_bound_staff['ID'] !== $staff_post_id ) {
-			$staff = new Staff($staff_post_id);
-			$this->block_bound_staff = get_object_vars($staff);
-		}
-
-		$block_name = $block->name;
-		$value_to_replace = null;
-		if ( in_array($block_name, ['core/image', 'core/paragraph', 'core/heading']) ) {
-			$value_to_fetch = array_key_exists('valueToFetch', $source_args) ? $source_args['valueToFetch'] : null;
-			if ( null === $value_to_fetch ) {
-				return null;
-			}
-			$output_link = array_key_exists('outputLink', $source_args);
-
-			if ( 'photo' === $value_to_fetch && isset($this->block_bound_staff['photo']['thumbnail'][0])) {
-				if ( 'url' === $attribute_name ) {
-					$value_to_replace = $this->block_bound_staff['photo']['thumbnail'][0];
-				}
-				if ( 'title' === $attribute_name ) {
-					$value_to_replace = wp_sprintf(
-						'Photo of %1$s',
-						$this->block_bound_staff['name']
-					);
-				}
-				if ( 'alt' === $attribute_name ) {
-					$value_to_replace = wp_sprintf(
-						'%1$s\'s photo',
-						$this->block_bound_staff['name']
-					);
-				}
-			}
-			if ( 'bio' === $value_to_fetch && isset($this->block_bound_staff['bio']) ) {
-				$value_to_replace = $this->block_bound_staff['bio'];
-			}
-			if ( 'name' === $value_to_fetch && isset($this->block_bound_staff['name']) ) {
-				$value_to_replace = $this->block_bound_staff['name'];
-			}
-			if ( 'job_title' === $value_to_fetch && isset($this->block_bound_staff['job_title']) ) {
-				$value_to_replace = $this->block_bound_staff['job_title'];
-			}
-			if ( 'job_title_extended' === $value_to_fetch && isset($this->block_bound_staff['job_title_extended']) ) {
-				$value_to_replace = $this->block_bound_staff['job_title'];
-			}
-			if (true === $output_link && isset($this->block_bound_staff['link'])) {
-				$value_to_replace = wp_sprintf(
-					'<a href="%1$s">%2$s</a>',
-					$this->block_bound_staff['link'],
-					$value_to_replace
-				);
-			}
-			if ( 'expertise' === $value_to_fetch && isset($this->block_bound_staff['expertise']) ) {
-				$expertise = $this->block_bound_staff['expertise'];
-				$tmp = '';
-				foreach ($expertise as $term) {
-					$tmp .= wp_sprintf(
-						'<a href="%1$s">%2$s</a>',
-						$term['url'],
-						$term['label']
-					);
-				}
-				$value_to_replace = wp_sprintf(
-					'<p>%1$s</p>',
-					$tmp
-				);
-			}
-		}
-		return $value_to_replace;
 	}
 }

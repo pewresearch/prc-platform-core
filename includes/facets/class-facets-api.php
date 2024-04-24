@@ -101,7 +101,7 @@ class Facets_API {
 		// We do not allow other sites to query facets.
 		// If we can't validate a cache group, and this is an outside user, then we'll failover as well.
 		$failover = false === $this->cache_group && !is_user_logged_in();
-		if ( is_paged() && 100 > get_query_var('paged') ) {
+		if ( is_paged() && 100 < get_query_var('paged') ) {
 			$failover = true;
 		}
 		if ( is_search() || PRC_PRIMARY_SITE_ID !== get_current_blog_id() || $failover) {

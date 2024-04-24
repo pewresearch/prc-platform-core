@@ -739,7 +739,6 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
-		$cache_key = md5(wp_json_encode(['key' => $cache_key, '04232024a']));
 		return wp_cache_set( $cache_key, $toc, $cache_group, 7 * DAY_IN_SECONDS );
 	}
 

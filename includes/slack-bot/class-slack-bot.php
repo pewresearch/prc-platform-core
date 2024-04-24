@@ -109,7 +109,7 @@ class Slack_Bot {
 	 */
 	public function post_publish_notification( $new_status, $old_status, $post ) {
 		if ( 'production' !== wp_get_environment_type() ) {
-			// return;
+			return;
 		}
 		if ( $new_status === 'publish' && $old_status !== 'publish' ) {
 			// If this post type is not set to public then bail
@@ -157,7 +157,7 @@ class Slack_Bot {
 	 */
 	public function category_created_notification( $term_id, $taxonomy_id ) {
 		if ( 'production' !== wp_get_environment_type() ) {
-			// return;
+			return;
 		}
 		global $post;
 

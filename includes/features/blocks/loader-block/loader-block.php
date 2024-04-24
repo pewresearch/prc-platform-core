@@ -68,6 +68,9 @@ class Loader_Block extends Features {
 	 *
 	 */
 	public function feature_loader_pre_render_enqueue_assets($pre_render, $parsed_block, $parent_block_obj) {
+		if ( is_admin() || !isset($parsed_block) ) {
+			return $pre_render;
+		}
 		if ( 'prc-platform/feature-loader' !== $parsed_block['blockName'] ) {
 			return $pre_render;
 		}

@@ -14,6 +14,7 @@ class Staff {
 	public $link;
 	public $user_id;
 	public $bio;
+	public $mini_bio;
 	public $job_title;
 	public $job_title_extended;
 	public $photo;
@@ -29,7 +30,7 @@ class Staff {
 			$post_id = $this->get_staff_post_id_from_term_id( $term_id );
 		}
 
-		do_action('qm/debug', 'Staff post id: ' . print_r($post_id, true));
+		do_action('qm/debug', 'new Staff() -> id:' . print_r($post_id, true));
 		if ( is_wp_error( $post_id ) ) {
 			return new WP_Error( '404', 'Staff post not found, ID value not found.' );
 		}
@@ -111,6 +112,12 @@ class Staff {
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
 		$this->job_title = $this->get_job_title($staff_post_id);
 		$this->job_title_extended = $this->get_job_title_extended($staff_post_id);
+		$this->mini_bio = wp_sprintf(
+			'<a href="%1$s">%2$s</a> <span>is %3$s</span>',
+			$this->link,
+			$this->name,
+			$this->job_title_extended
+		);
 		$this->photo = $this->get_staff_photo($staff_post_id);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);

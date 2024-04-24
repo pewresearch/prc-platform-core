@@ -32,6 +32,9 @@ V.	Termination. This license will terminate (1) automatically without notice fro
 VI.	Governing law. This Agreement shall be governed by, construed and interpreted in accordance with the laws of the District of Columbia. You further agree to submit to the jurisdiction and venue of the courts of the District of Columbia for any dispute relating to this Agreement.
 `;
 
+/**
+ * This block is an addon to the dataset download block, as such it adds functionality on to the prc-platform/dataset-download store.
+ */
 const { actions } = store('prc-platform/dataset-download', {
 	state: {
 		atpLegalText: ATP_TEXT,
@@ -44,31 +47,28 @@ const { actions } = store('prc-platform/dataset-download', {
 		},
 		*accept() {
 			const context = getContext();
-			const { datasetId } = context;
+			const { datasetId, NONCE } = context;
 
-			const contentGateContext = getContext(
-				'prc-user-accounts/content-gate'
-			);
-			const { userToken, userId } = contentGateContext;
+			const contentGateStore = store('prc-user-accounts/content-gate');
+			const contentGateState = contentGateStore.state;
+
+			const { token, uid } = contentGateState;
 			yield apiFetch({
 				path: `/prc-api/v3/datasets/accept-atp`,
 				method: 'POST',
-				headers: {
-					// 'X-WP-Nonce': window.wpApiSettings.nonce,
-					'Content-Type': 'application/json',
+				data: {
+					uid,
+					userToken: token,
+					NONCE,
 				},
-				body: JSON.stringify({
-					uid: userId,
-					userToken,
-				}),
 			})
 				.then((response) => {
-					actions.downloadDataset(datasetId, userId, userToken);
-					console.log('ATP ACCEPT', response, actions);
+					actions.downloadDataset(datasetId, uid, token, NONCE);
+
 					actions.closeModal();
 				})
 				.catch((error) => {
-					console.error('Error fetching ATP check', error);
+
 					actions.closeModal();
 				});
 		},

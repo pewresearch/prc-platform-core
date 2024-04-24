@@ -6,22 +6,18 @@ import { store, getContext, getElement } from '@wordpress/interactivity';
 
 const { actions } = store('prc-platform/dataset-download', {
 	actions: {
-		downloadDataset: (datasetId, uid, token) => {
+		downloadDataset: (datasetId, uid, token, NONCE) => {
 			window?.wp
 				?.apiFetch({
 					path: `/prc-api/v3/datasets/get-download/?datasetId=${datasetId}`,
 					method: 'POST',
-					headers: {
-						// 'X-WP-Nonce': window.wpApiSettings.nonce,
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
+					data: {
 						uid,
 						userToken: token,
-					}),
+						NONCE,
+					},
 				})
 				.then((response) => {
-					console.log('Download response', response);
 					// If there's a file_url in the response, download it...
 					// ooooo that felt... bad to type
 					// should run a file check here? only pdfs and zips? not sure theres an attack vector here
@@ -29,51 +25,23 @@ const { actions } = store('prc-platform/dataset-download', {
 						window.open(response.file_url, '_blank');
 					}
 				})
-				.catch((error) => {
-					console.error('Error fetching dataset download', error);
-				});
+				.catch((error) => {});
 		},
-		onButtonClick: (event) => {
-			event.preventDefault();
-			const context = getContext();
-			const { datasetId, isATP } = context;
-
-			const { state } = store('prc-user-accounts/content-gate');
-			const { token, uid } = state;
-
-			console.log(
-				'onButtonClick: "Hit the api with this information..." ->',
-				state,
-				token,
-				uid,
-				datasetId
-			);
-
-			if (isATP) {
-				console.log('isATP');
-				actions.checkATP(uid, token, datasetId);
-			} else {
-				actions.downloadDataset(datasetId, uid, token);
-			}
-		},
-		async checkATP(userId, userToken, datasetId) {
+		async checkATP(uid, token, datasetId, NONCE) {
 			const { ref } = getElement();
 
 			const response = await window?.wp?.apiFetch({
 				path: `/prc-api/v3/datasets/check-atp/`,
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
+				data: {
+					uid,
+					userToken: token,
+					NONCE,
 				},
-				body: JSON.stringify({
-					uid: userId,
-					userToken,
-				}),
 			});
 
-			console.log('CHECK ATP', response);
 			if (true === response) {
-				actions.downloadDataset(datasetId, userId, userToken);
+				actions.downloadDataset(datasetId, uid, token, NONCE);
 			}
 			if (false === response) {
 				const popupID =
@@ -83,8 +51,21 @@ const { actions } = store('prc-platform/dataset-download', {
 				const { actions: popupActions, state: popupState } = store(
 					'prc-block/popup-controller'
 				);
-				console.log('POP', popupState, popupID);
 				popupActions.open(null, popupID);
+			}
+		},
+		onButtonClick: (event) => {
+			event.preventDefault();
+			const context = getContext();
+			const { datasetId, isATP, NONCE } = context;
+
+			const { state } = store('prc-user-accounts/content-gate');
+			const { token, uid } = state;
+
+			if (isATP) {
+				actions.checkATP(uid, token, datasetId, NONCE);
+			} else {
+				actions.downloadDataset(datasetId, uid, token, NONCE);
 			}
 		},
 	},

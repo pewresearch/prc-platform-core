@@ -11,7 +11,6 @@ class Research_Teams extends Taxonomies {
 		'post',
 		'fact-sheet',
 		'dataset',
-		'interactive',
 		'feature',
 		'quiz',
 	);

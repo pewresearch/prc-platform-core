@@ -8,6 +8,10 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 	'data-wp-interactive' => wp_json_encode(array(
 		'namespace' => 'prc-platform/dataset-download'
 	)),
+	'data-wp-context' => wp_json_encode(array(
+		'datasetId' => array_key_exists('datasetId', $attributes) ? $attributes['datasetId'] : null,
+		'NONCE' => array_key_exists('nonce', $attributes) ? $attributes['nonce'] : null,
+	)),
 ));
 
 echo wp_sprintf(

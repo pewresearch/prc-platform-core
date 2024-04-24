@@ -666,6 +666,7 @@ class Embeds {
 		}
 
 		ob_start();
+		// @TODO: clean this up with sprintf
 		?>
 		<?php if ( false === $output_as_iframe ): ?>
 		<textarea onClick="this.focus();this.select();">

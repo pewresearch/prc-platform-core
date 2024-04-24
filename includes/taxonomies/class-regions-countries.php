@@ -49,11 +49,8 @@ class Regions_Countries extends Taxonomies {
 
 		$post_types = apply_filters( "prc_taxonomy_{$taxonomy_name}_post_types", array(
 			'post',
-			'interactives',
-			'interactive',
 			'feature',
 			'fact-sheet',
-			'fact-sheets',
 			'short-read',
 			'quiz',
 			'stub',

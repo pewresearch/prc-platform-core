@@ -9,20 +9,13 @@ class Datasets_Download_Logger extends Datasets {
 	public static $handle = 'prc-platform-dataset-downloads-logger';
 
 	public function __construct() {
-		require_once plugin_dir_path( __FILE__ ) . '/class-query.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-schema.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-shape.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-table.php';
+
 	}
 
 	public function init_db() {
 		// Setup the database tables.
 		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			return;
-		}
-		$dataset_downloads = new \Dataset_Downloads_Log();
-		if ( ! $dataset_downloads->exists() ) {
-			$dataset_downloads->install();
 		}
 	}
 
@@ -91,13 +84,6 @@ class Datasets_Download_Logger extends Datasets {
 		);
 	}
 
-	private function verify_nonce($nonce = '') {
-		if ( ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) ) {
-			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
-		}
-		return true;
-	}
-
 	/**
 	 * Get the download log for a dataset object.
 	 * @param mixed $object
@@ -106,31 +92,9 @@ class Datasets_Download_Logger extends Datasets {
 	public function restfully_get_download_log( $object ) {
 		$post_id = (int) $object['id'];
 
-		$allow_uid_access = current_user_can( 'edit_posts' );
-		// $uids = null;
-		// if ( $allow_uid_access ) {
-		// 	$query = new Dataset_Downloads_Log_Query(array(
-		// 		'id'    => $post_id,
-		// 		'orderby' => 'id',
-		// 		'order'   => 'asc',
-		// 		'number'  => 1, // Only retrieve a single record.
-		// 		'fields'  => array( 'id', 'uids' ),
-		// 	));
-		// 	if ( $query->items ) {
-		// 		// get the first item in $query->items and get the uids property from it...
-		// 		if (!empty($query->items) && isset($query->items[0]->uids)) {
-		// 			$uids = $query->items[0]->uids;
-		// 		} else {
-		// 			$uids = false;
-		// 		}
-		// 	}
-		// }
-
 		$to_return = array(
 			'total' => (int) get_post_meta( $post_id, '_total_downloads', true ),
 			'log' => array(),
-			// 'uids' => $uids,
-			'authenticated' => $allow_uid_access,
 		);
 
 		$start_year = 2020;
@@ -151,7 +115,6 @@ class Datasets_Download_Logger extends Datasets {
 	 * @return array|WP_Error
 	 */
 	public function restfully_log_download( WP_REST_Request $request ) {
-		//verify nonce
 		if ( wp_verify_nonce( $request->get_header('X-WP-Nonce'), 'WP_REST' ) === false ) {
 			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
 		}
@@ -167,6 +130,7 @@ class Datasets_Download_Logger extends Datasets {
 		}
 
 		$return            = array();
+		// We run through these without checking the prior return because we want to log as much as possible in the event of a failure. This way the total is incremented first, the truest number, then the monthyl count, then lastly the users personal log.
 		$return['total']   = $this->increment_download_total( $id );
 		$return['monthly'] = $this->log_monthly_download_count( $id );
 		$return['uid']     = $this->log_dataset_to_user( $uid, $id );
@@ -224,76 +188,40 @@ class Datasets_Download_Logger extends Datasets {
 	}
 
 	public function log_dataset_to_user( $uid, $dataset_id ) {
-		$query_args = array(
-			'user_id'    => $uid,
-			'orderby'    => 'id',
-			'order'      => 'asc',
-			'number'     => 1, // Only retrieve a single record.
-			'fields'     => array( 'id', 'dataset_ids' ),
-		);
-		$query = new Dataset_Downloads_Log_Query($query_args);
+		$user = new \PRC\Platform\User_Accounts\User_Data($uid, null);
 
-		$response = false;
+		$existing_data = $user->get_data();
+		if ( is_wp_error( $existing_data ) ) {
+			\PRC\Platform\log_error('Couldnt log dataset to user'. print_r(['uid' => $uid, 'id' => $dataset_id], true));
+			return rest_ensure_response( $existing_data );
+		}
+		\PRC\Platform\log_error('DATASETS FOR user'. print_r($existing_data['datasets'], true));
+		$datasets = array_key_exists('datasets', $existing_data) ? $existing_data['datasets'] : array();
+		// Check for legacy data and upgrade:
+		$upgrade_check = !array_key_exists('v2', $datasets) && !empty($datasets);
+		if ( $upgrade_check ) {
+			$datasets = [
+				'v1' => $datasets,
+				'v2' => [],
+			];
+		} elseif ( !array_key_exists('v2', $datasets) ) {
+			$datasets['v2'] = [];
+		}
 
-		if ( $query->items ) {
-			// If exists, update
-			foreach ( $query->items as $record ) {
-				$dataset_ids = maybe_unserialize( $record->dataset_ids );
-				// If the dataset idis already in the array, don't add it again.
-				if ( in_array( $dataset_id, $dataset_ids ) ) {
-					return;
-				}
-				$dataset_ids = array_merge( $dataset_ids, array( $dataset_id ) );
-				$dataset_ids = maybe_serialize( $dataset_ids );
-				$response = $query->update_item(
-					$record->id,
-					array(
-						'dataset_ids' => $dataset_ids
-					)
-				);
-			}
+		// Check for existing log, if it doesnt exist, add it, if it does, update the date.
+		if ( ! in_array( $dataset_id, $datasets['v2'] ) ) {
+			$datasets['v2'][$dataset_id] = [
+				'date' => current_time( 'mysql' ),
+				'url' => get_permalink( $dataset_id ),
+				'title' => get_the_title( $dataset_id ),
+			];
 		} else {
-			// First time, create
-			$response = $query->add_item(
-				array(
-					'user_id' => $uid,
-					'dataset_ids' => maybe_serialize( array( $dataset_id ) ),
-				)
-			);
+			$datasets['v2'][$dataset_id]['date'] = current_time( 'mysql' );
 		}
 
-		return $response;
-	}
+		$new_datasets = $datasets;
 
-	public function get_datasets_for_user($uid) {
-		$query_args = array(
-			'user_id' => $uid,
-			'fields' => array( 'id', 'dataset_ids' ),
-		);
-		$query = new Dataset_Downloads_Log_Query($query_args);
-		$datasets = array();
-		if ( $query->items ) {
-			foreach ( $query->items as $record ) {
-				$dataset_ids = maybe_unserialize( $record->dataset_ids );
-				$datasets = array_merge( $datasets, $dataset_ids );
-			}
-		}
-		return $datasets;
+		// Patch directly onto the user root, we replace datasets every time. In the future we could add a transformer to the get function that will get the titles and such so replacing is best.
+		return $user->patch_data( $new_datasets, 'datasets' );
 	}
-}
-
-function query_datasets_log_for_user($user_id) {
-	$query_args = array(
-		'user_id' => $user_id,
-		'fields' => array( 'id', 'dataset_ids' ),
-	);
-	$query = new Dataset_Downloads_Log_Query($query_args);
-	$datasets = array();
-	if ( $query->items ) {
-		foreach ( $query->items as $record ) {
-			$dataset_ids = maybe_unserialize( $record->dataset_ids );
-			$datasets = array_merge( $datasets, $dataset_ids );
-		}
-	}
-	return $datasets;
 }

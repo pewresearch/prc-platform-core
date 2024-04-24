@@ -271,8 +271,6 @@ class Datasets {
 			),
 			'callback'            => array( $this, 'restfully_download_dataset' ),
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$nonce = $request->get_header( 'x-wp-nonce' );
-				// return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
 				return true;
 			},
 		);
@@ -282,8 +280,6 @@ class Datasets {
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'restfully_check_atp_acceptance' ),
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$nonce = $request->get_header( 'x-wp-nonce' );
-				// return ! wp_verify_nonce( $nonce, 'prc-dataset-atp-nonce' ) || current_user_can( 'edit_posts' );
 				return true;
 			},
 		);
@@ -293,8 +289,6 @@ class Datasets {
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'restfully_accept_atp' ),
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$nonce = $request->get_header( 'x-wp-nonce' );
-				// return ! wp_verify_nonce( $nonce, 'prc-dataset-atp-nonce' ) || current_user_can( 'edit_posts' );
 				return true;
 			},
 		);
@@ -312,6 +306,10 @@ class Datasets {
 	 */
 	public function restfully_download_dataset( WP_REST_Request $request ) {
 		$data = json_decode( $request->get_body(), true );
+		$nonce = array_key_exists( 'NONCE', $data ) ? $data['NONCE'] : null;
+		if ( ! wp_verify_nonce( $nonce, 'prc_platform_dataset_download' ) ) {
+			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 400, 'data' => $data ) );
+		}
 		if ( ! array_key_exists( 'uid', $data ) ) {
 			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
 		}
@@ -341,20 +339,36 @@ class Datasets {
 
 	public function restfully_check_atp_acceptance( WP_REST_Request $request ) {
 		$data = json_decode( $request->get_body(), true );
+		$nonce = array_key_exists( 'NONCE', $data ) ? $data['NONCE'] : null;
+		if ( ! wp_verify_nonce( $nonce, 'prc_platform_dataset_download' ) ) {
+			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 400 ) );
+		}
 		if ( ! array_key_exists( 'uid', $data ) ) {
 			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
 		}
 		$uid = $data['uid'];
-		return apply_filters('prc-user-accounts/user-data/check-atp', $uid );
+		if ( ! class_exists( 'PRC\Platform\User_Accounts\User_Data' ) ) {
+			return new WP_Error( 'no_user_accounts', 'User Accounts class not found.', array( 'status' => 400 ) );
+		}
+		$user = new \PRC\Platform\User_Accounts\User_Data($uid, null);
+		return rest_ensure_response($user->check_atp());
 	}
 
 	public function restfully_accept_atp( WP_REST_Request $request ) {
 		$data = json_decode( $request->get_body(), true );
+		$nonce = array_key_exists( 'NONCE', $data ) ? $data['NONCE'] : null;
+		if ( ! wp_verify_nonce( $nonce, 'prc_platform_dataset_download' ) ) {
+			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 400 ) );
+		}
 		if ( ! array_key_exists( 'uid', $data ) ) {
 			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );
 		}
 		$uid = $data['uid'];
-		return apply_filters('prc-user-accounts/user-data/accept-atp', $uid );
+		if ( ! class_exists( 'PRC\Platform\User_Accounts\User_Data' ) ) {
+			return new WP_Error( 'no_user_accounts', 'User Accounts class not found.', array( 'status' => 400 ) );
+		}
+		$user = new \PRC\Platform\User_Accounts\User_Data($uid, null);
+		return rest_ensure_response($user->accept_atp());
 	}
 
 	public function register_dataset_fields() {
