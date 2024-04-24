@@ -20,8 +20,3 @@
 		border: 1px solid var(--wp--preset--color--ui-gray-light);
 	}
 }
-
-// Little hack to make wp site blocks fill the screen for datasets with like only 1 or 2 posts. Otherwise theres some weird box shadow or border overlaying on top. I dunno, a problem for another day. This works.
-.wp-site-blocks {
-	height: 100vh;
-}
