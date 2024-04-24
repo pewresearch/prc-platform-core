@@ -155,12 +155,12 @@ class Bitly {
 
 		$nonce = wp_create_nonce( 'prc-bitly-nonce' );
 
-		// @TODO: Make this use admin ajax
 		$admin_bar->add_menu(
 			array(
 				'id'    => 'reset-bitly-link',
 				'title' => __( 'Reset Bit.ly Link' ),
 				'href'  => add_query_arg( array( 'flush_bitly' => true, '_bitly_nonce' => $nonce ), get_the_permalink() ),
+				'parent' => 'tools',
 			)
 		);
 	}

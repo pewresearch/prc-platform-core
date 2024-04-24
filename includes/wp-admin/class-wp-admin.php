@@ -55,6 +55,8 @@ class WP_Admin {
 			$loader->add_filter( 'ppp_nonce_life', $this, 'define_public_post_preview_lifetime' ) ;
 			$loader->add_filter( 'the_excerpt', $this, 'remove_overview_from_excerpts' );
 			$loader->add_filter( 'update_footer', $this, 'output_platform_version_in_wp_admin', 100 );
+			$loader->add_filter( 'dashboard_recent_posts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
+			$loader->add_filter( 'dashboard_recent_drafts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 
 			new Admin_Columns_Pro($loader);
 		}
@@ -68,6 +70,19 @@ class WP_Admin {
 	public function default_admin_color_scheme( $result ) {
 		$result = 'modern';
 		return $result;
+	}
+
+	/**
+	 * @hook dashboard_recent_posts_query_args
+	 */
+	public function show_all_post_types_in_dashboard(array $query_args) {
+		$post_types = ['post', 'short-read', 'fact-sheet', 'feature', 'quiz'];
+
+		if (is_array($post_types)) {
+			$query_args['post_type'] = $post_types;
+		}
+
+		return $query_args;
 	}
 
 	/**
