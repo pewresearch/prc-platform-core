@@ -1,3 +1,5 @@
+// @TODO Make this into a core block binding
+
 /**
  * Registers a new block provided a unique name and an object defining its behavior.
  *
