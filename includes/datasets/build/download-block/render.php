@@ -3,6 +3,7 @@ namespace PRC\Platform\Datasets;
 
 wp_enqueue_script('wp-url');
 wp_enqueue_script('wp-api-fetch');
+wp_enqueue_script('firebase');
 
 // Assume this is a singular dataset post
 $dataset_id = get_the_ID();
