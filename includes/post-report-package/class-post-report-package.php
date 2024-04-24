@@ -89,7 +89,7 @@ class Post_Report_Package {
 			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'set_child_posts', 10, 1 );
-			$loader->add_action( 'prc_platform_on_update', $this, 'update_child_state', 10, 1 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'update_children', 10, 1 );
 			$loader->add_filter( 'rest_post_query', $this, 'hide_back_chapter_posts_restfully', 10, 2 );
 			$loader->add_filter( 'the_title', $this, 'indicate_back_chapter_post', 10, 2 );
 			// $this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
@@ -271,9 +271,6 @@ class Post_Report_Package {
 		// Add a dash before the title...
 		if ( 0 !== wp_get_post_parent_id( $post_id ) && true === $this->is_report_package( $post_id ) ) {
 			$title = '&mdash; ' . $title;
-			// @TODO: i dunno about this, I like it, but it does get to be a bit much for longer titles.
-			// add a [Back Chapter] tag to the title...
-			// $title .= ' [Back Chapter]';
 		}
 
 		return $title;
@@ -284,7 +281,11 @@ class Post_Report_Package {
 	 * @hook prc_platform_on_update
 	 * @return void
 	 */
-	public function update_child_state( $post ) {
+	public function update_children( $post ) {
+		if ( WP_DEBUG ) {
+			error_log('update_children');
+			error_log(print_r($post, true));
+		}
 		if ( 'post' !== $post->post_type ) {
 			return;
 		}
@@ -292,36 +293,68 @@ class Post_Report_Package {
 		if ( 0 !== $parent_post_id ) {
 			return;
 		}
-		$parent_post = get_post( $parent_post_id );
-		// Do a quick sanity check to make sure we're dealing with the correct parent post.
-		if ( $parent_post_id !== $parent_post->ID ) {
-			return new WP_Error( '412', 'Parent post ID does not match parent post object ID.' );
+		$post_id = $post->ID;
+		$children = $this->get_child_ids( $post_id );
+		if ( empty( $children ) ) {
+			return;
 		}
+
 		$available_taxonomies = get_object_taxonomies( $post->post_type );
-		$parent_post_taxonomy_terms = wp_get_post_terms( $parent_post->ID, $available_taxonomies );
-		$parent_post_status = $parent_post->post_status;
-		$parent_post_date = $parent_post->post_date;
+		$parent_post_taxonomy_terms = [];
+		foreach ($available_taxonomies as $taxonomy) {
+			$parent_post_taxonomy_terms[$taxonomy] = wp_get_post_terms( $post_id, $taxonomy, array( 'fields' => 'ids' ) );
+		}
+		$parent_post_status = get_post_status( $post_id );
+		$parent_post_date = get_post_field( 'post_date', $post_id );
 
-		$new_updates = array(
-			'ID' => $post->ID,
-			'post_status' => $parent_post_status,
-			'post_date' => $parent_post_date,
-		);
-
-		// Update the child post to match the parent post.
-		$child_updated = wp_update_post( $new_updates, true );
-
-		if ( is_wp_error( $child_updated ) ) {
-			return new WP_Error( '412', 'Failed to update child post state.', $child_updated );
+		if ( WP_DEBUG ) {
+			error_log('parent post info' . print_r([
+				'taxonomies' => $parent_post_taxonomy_terms,
+				'post_status' => $parent_post_status,
+				'post_date' => $parent_post_date,
+			], true));
 		}
 
-		$terms_updated = wp_set_post_terms( $child_updated, $parent_post_taxonomy_terms, $available_taxonomies );
+		$errors = [];
+		$success = [];
 
-		return array(
-			'child_updated' => $new_updates,
-			'terms_updated' => $terms_updated,
+		foreach ($children as $child_id) {
+			$new_updates = array(
+				'ID' => $child_id,
+				'post_status' => $parent_post_status,
+				'post_date' => $parent_post_date,
+			);
+
+			// Update the child post to match the parent post.
+			$child_updated = wp_update_post( $new_updates, true );
+
+			$terms_updated = false;
+			if ( !is_wp_error( $child_updated ) ) {
+				foreach ( $parent_post_taxonomy_terms  as $taxonomy => $terms ) {
+					$terms_updated = wp_set_post_terms( $child_updated, $terms, $taxonomy );
+				}
+			}
+
+			if ( is_wp_error( $child_updated ) ) {
+				$errors[] = new WP_Error( '409', 'Failed to update child post state.', $child_updated );
+			} else {
+				$success[] = $child_updated;
+			}
+			if ( is_wp_error( $terms_updated ) ) {
+				$errors[] = new WP_Error( '409', 'Failed to update child post terms.', $terms_updated );
+			}
+		}
+
+		$to_return = array(
+			'success' => $success,
+			'errors' => $errors,
 		);
 
+		if ( WP_DEBUG ) {
+			error_log('update_children RESULT::'.print_r($to_return, true));
+		}
+
+		return $to_return;
 	}
 
 	public function assign_child_to_parent($child_post_id, $parent_post_id) {
@@ -329,9 +362,13 @@ class Post_Report_Package {
 			'ID' => $child_post_id,
 			'post_parent' => $parent_post_id,
 		), true );
+		if ( WP_DEBUG ) {
+			error_log('assign_child_to_parent'.print_r($updated, true));
+		}
 		if ( is_wp_error( $updated ) ) {
 			return new WP_Error( '412', 'Failed to assign child post to parent.', $updated );
 		}
+		return $updated;
 	}
 
 	/**
@@ -346,11 +383,14 @@ class Post_Report_Package {
 		}
 		$errors = array();
 		$success = array();
-		$current_chapters = get_post_meta( $post->ID, self::$back_chapters_meta_key, true );
-		if ( empty( $current_chapters ) ) {
+		$current_back_chapters = get_post_meta( $post->ID, self::$back_chapters_meta_key, true );
+		if ( WP_DEBUG ) {
+			error_log('set_child_posts'.print_r($current_back_chapters, true));
+		}
+		if ( empty( $current_back_chapters ) ) {
 			return;
 		}
-		foreach( $current_chapters as $chapter ) {
+		foreach( $current_back_chapters as $chapter ) {
 			$assigned = $this->assign_child_to_parent( $chapter['postId'], $post->ID );
 			if ( is_wp_error( $assigned ) ) {
 				$errors[] = $assigned;
@@ -358,10 +398,21 @@ class Post_Report_Package {
 				$success[] = $assigned;
 			}
 		}
+		// we should run through successes and do the updates then...
 		return array(
 			'success' => $success,
 			'errors' => $errors,
 		);
+	}
+
+	public function get_child_ids( $post_id ) {
+		$child_posts = get_post_meta( $post_id, self::$back_chapters_meta_key, true );
+		if ( empty( $child_posts ) ) {
+			return array();
+		}
+		return array_map( function( $child ) {
+			return $child['postId'];
+		}, $child_posts );
 	}
 
 	public function register_rest_fields() {
@@ -727,7 +778,8 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
-		$cache_key = md5(wp_json_encode(['key' => $cache_key, '04232024a']));
+		$cache_invalidate = get_option('prc_report_package_invalidate_cache', false);
+		$cache_key = md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
 		return wp_cache_get( $cache_key, $cache_group );
 	}
 

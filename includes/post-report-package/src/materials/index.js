@@ -22,7 +22,8 @@ function ReportMaterials() {
 	const [popoverVisible, toggleVisibility] = useState(false);
 
 	const ITEMS_TYPE = 'materials';
-	const { materials, reorder, append, remove, updateItem, isResolving } = usePostReportPackage();
+	const { materials, reorder, append, remove, updateItem, isResolving } =
+		usePostReportPackage();
 
 	return (
 		<PanelBody title="Materials">
@@ -40,10 +41,10 @@ function ReportMaterials() {
 						<Item
 							key={value.key}
 							type={value.type}
-							url={value.url}
-							label={value.label}
-							icon={value.icon}
-							attachmentId={value.attachmentId}
+							url={value?.url}
+							label={value?.label}
+							icon={value?.icon}
+							attachmentId={value?.attachmentId}
 							index={index}
 						/>
 					</div>
@@ -60,17 +61,27 @@ function ReportMaterials() {
 			{popoverVisible && (
 				<TypeSelect
 					onChange={(t) => {
-						append(
-							randomId(),
-							{
-								type: t,
-								url: '',
-								attachmentId: null,
-								label: getLabel(t),
-								icon: '',
-							},
-							ITEMS_TYPE
-						);
+						const args = {
+							type: t,
+							url: '',
+							label: getLabel(t),
+							icon: '',
+						};
+						if (
+							[
+								'report',
+								'questionnaire',
+								'detailedTable',
+								'powerpoint',
+								'presentation',
+								'pressRelease',
+								'topline',
+								'pormo',
+							].includes(t)
+						) {
+							args.attachmentId = null;
+						}
+						append(randomId(), args, ITEMS_TYPE);
 						toggleVisibility(false);
 					}}
 					toggleVisibility={toggleVisibility}
@@ -78,6 +89,6 @@ function ReportMaterials() {
 			)}
 		</PanelBody>
 	);
-};
+}
 
 export default ReportMaterials;

@@ -95,26 +95,30 @@ const MigrationPanel = ({ noticeOperations, noticeUI, noticeList }) => {
 						<strong>Post ID: </strong>
 						{postId}
 					</p>
-					<p>
-						<strong>Legacy Site ID: </strong>
-						{originalSiteId}
-					</p>
-					<p>
-						<strong>Legacy Post ID: </strong>
-						{originalPostId}
-					</p>
-					<p>
-						<strong>Legacy Stub ID: </strong>
-						{stubPostId}
-					</p>
-					<p>
-						<ExternalLink
-							href={`${originalPostLink}`}
-							target="_blank"
-						>
-							{__('Inspect Legacy Post')}
-						</ExternalLink>
-					</p>
+					{originalSiteId && (
+						<Fragment>
+							<p>
+								<strong>Legacy Site ID: </strong>
+								{originalSiteId}
+							</p>
+							<p>
+								<strong>Legacy Post ID: </strong>
+								{originalPostId}
+							</p>
+							<p>
+								<strong>Legacy Stub ID: </strong>
+								{stubPostId}
+							</p>
+							<p>
+								<ExternalLink
+									href={`${originalPostLink}`}
+									target="_blank"
+								>
+									{__('Inspect Legacy Post')}
+								</ExternalLink>
+							</p>
+						</Fragment>
+					)}
 				</PanelContent>
 			</PanelBody>
 			{taxonomies && (

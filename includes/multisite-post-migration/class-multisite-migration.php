@@ -96,13 +96,6 @@ class Multisite_Migration {
 	}
 
 	/**
-	 * @hook prc_distributor_queue_interactives_rewrites_migration
-	 */
-	public function scheduled_distributor_interactives_rewrites_mapping($post_id, $meta) {
-
-	}
-
-	/**
 	 * Handle re-connecting post -> child post relationships and multisection report meta after migration.
 	 *
 	 * @hook prc_distributor_queue_multisection_migration

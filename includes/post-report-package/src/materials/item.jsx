@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /**
  * External Dependencies
  */
@@ -55,7 +56,7 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 			<MediaUploadCheck>
 				<MediaUpload
 					title={__(
-						null === value ? `Upload ${title}` : `Change ${title}`
+						'' === value ? `Upload ${title}` : `Change ${title}`
 					)}
 					allowedTypes={ALLOWED_MEDIA_TYPES}
 					value={value}
@@ -207,13 +208,25 @@ const Item = ({ type, url, attachmentId, label, icon, index }) => {
 							onChange={(newType) => {
 								// Set up the new type
 								updateItem(index, 'type', newType, ITEMS_TYPE);
-								// Reset everything else
-								updateItem(
-									index,
-									'attachmentId',
-									null,
-									ITEMS_TYPE
-								);
+								if (
+									[
+										'report',
+										'questionnaire',
+										'detailedTable',
+										'powerpoint',
+										'presentation',
+										'pressRelease',
+										'topline',
+										'pormo',
+									].includes(newType)
+								) {
+									updateItem(
+										index,
+										'attachmentId',
+										null,
+										ITEMS_TYPE
+									);
+								}
 								updateItem(index, 'url', '', ITEMS_TYPE);
 								updateItem(index, 'label', '', ITEMS_TYPE);
 								updateItem(index, 'icon', '', ITEMS_TYPE);

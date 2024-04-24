@@ -1,7 +1,6 @@
 <?php
 namespace PRC\Platform;
-use PRC_PLATFORM_BITLY_KEY;
-
+use WP_Error;
 class Bitly {
 	/**
 	 * The version of this plugin.
@@ -30,13 +29,24 @@ class Bitly {
 			$loader->add_action( 'prc_platform_on_publish', $this, 'update_post_with_shortlink', 10, 1 );
 			$loader->add_action( 'admin_bar_menu', $this, 'add_quick_edit', 100 );
 			$loader->add_filter( 'get_shortlink', $this, 'filter_get_shortlink', 100, 2 );
+			$loader->add_action( 'init', $this, 'register_meta' );
 		}
 	}
 
+	public function register_meta() {
+		register_post_meta( '', 'bitly', array(
+			'type'         => 'string',
+			'description'  => 'The shortened bitly url for the post.',
+			'single'       => true,
+			'show_in_rest' => true,
+		) );
+
+	}
+
 	private function get_bitly_shortlink( $post_id, $url = null ) {
-		if ( 'production' !== wp_get_environment_type() ) {
-			return $url;
-		}
+		// if ( 'production' !== wp_get_environment_type() ) {
+		// 	return $url;
+		// }
 		$rest_url = 'https://api-ssl.bitly.com/v4/shorten';
 
 		$headers = array(
@@ -62,13 +72,26 @@ class Bitly {
 
 		$response = wp_remote_post( $rest_url, $req_args );
 
+		if ( WP_DEBUG ) {
+			error_log( 'BITLY:: '. print_r( $response, true ) );
+		}
+
 		if ( ! is_wp_error( $response ) ) {
 			$json = json_decode( wp_remote_retrieve_body( $response ) );
 			if ( isset( $json->link ) ) {
 				return $json->link;
 			}
 		} else {
-			return prc_log_error( 'PRC/Platform/Bitly', '400', sprintf( 'Retrieving Bitly url for %s resulted in an error.', esc_url( $url ) ), true, $post_id, array( $response, $req_args ) );
+			$error = \WP_Error(
+				'bitly_error',
+				sprintf( 'Retrieving Bitly url for %s resulted in an error.', esc_url( $url ) ),
+				array(
+					'response' => $response,
+					'req_args' => $req_args,
+					'post_id' => $post_id,
+				)
+			);
+			return log_error( $error );
 		}
 	}
 
@@ -86,7 +109,13 @@ class Bitly {
 		} elseif ( is_object( $post ) && property_exists( $post, 'ID' ) ) {
 			$post_id = $post->ID;
 		} else {
-			return prc_log_error( 'PRC/Platform/Bitly', '400', 'Updating Bitly url failed, no post object.', true, false, array( $post ) );
+			log_error(new WP_Error(
+				'bitly_error',
+				sprintf( 'Updating Bitly url failed, no post object.' ),
+				array(
+					'post' => $post,
+				)
+			));
 		}
 
 		if ( wp_is_post_revision( $post_id ) ) {
@@ -104,9 +133,9 @@ class Bitly {
 
 		$permalink = get_permalink( $post_id );
 
-		if ( 'production' !== wp_get_environment_type() ) {
-			return $permalink;
-		}
+		// if ( 'production' !== wp_get_environment_type() ) {
+		// 	return $permalink;
+		// }
 
 		$bitly_url = $this->get_bitly_shortlink( $post_id, $permalink );
 		if ( false !== $bitly_url ) {

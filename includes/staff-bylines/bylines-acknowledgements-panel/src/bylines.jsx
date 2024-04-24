@@ -47,7 +47,7 @@ function Bylines() {
 			<PanelRow>
 				<SearchContainer>
 					<WPEntitySearch
-						placeholder={__('Add new byline...', 'prc-platform-core')}
+						placeholder={__('Add new byline…', 'prc-platform-core')}
 						entityType="taxonomy"
 						entitySubType="bylines"
 						onSelect={(item) => {
@@ -59,7 +59,9 @@ function Bylines() {
 							<List
 								lockVertically
 								values={bylineItems}
-								onChange={({ oldIndex, newIndex }) => reorder(oldIndex, newIndex)}
+								onChange={({ oldIndex, newIndex }) =>
+									reorder(oldIndex, newIndex)
+								}
 								renderList={({ children, props }) => (
 									<div {...props}>{children}</div>
 								)}
@@ -71,7 +73,9 @@ function Bylines() {
 											onRemove={() => {
 												remove(index, true);
 											}}
-											lastItem={index === bylineItems.length - 1}
+											lastItem={
+												index === bylineItems.length - 1
+											}
 										/>
 									</div>
 								)}
