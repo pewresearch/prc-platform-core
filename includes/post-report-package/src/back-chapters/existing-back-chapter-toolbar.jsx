@@ -12,8 +12,8 @@ export default function ExistingBackChapterToolbar({ postId, currentPostId }) {
 	if (postId === currentPostId) {
 		return null;
 	}
-	const editLink = `/pewresearch-org/wp-admin/post.php?post=${postId}&action=edit`;
-	const previewLink = `/pewresearch-org/?p=${postId}&preview=true`;
+	const editLink = `/wp-admin/post.php?post=${postId}&action=edit`;
+	const previewLink = `/?p=${postId}&preview=true`;
 	return (
 		<ButtonGroup>
 			<Button
