@@ -108,8 +108,8 @@ function BylineItem({ value, onRemove, lastItem = false }) {
 						</div>
 					) : (
 						<span>
-							<strong>{__(`${bylineName}`)}</strong>
-							{0 < bylineJobTitle.length && (
+							<strong>{`${bylineName}`}</strong>
+							{!!bylineJobTitle && 0 < bylineJobTitle.length && (
 								<span
 									style={{
 										display: 'block',
@@ -117,7 +117,7 @@ function BylineItem({ value, onRemove, lastItem = false }) {
 										color: '#666',
 									}}
 								>
-									{__(`${bylineJobTitle}`)}
+									{`${bylineJobTitle}`}
 								</span>
 							)}
 						</span>
