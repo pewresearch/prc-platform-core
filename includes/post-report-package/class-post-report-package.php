@@ -641,14 +641,6 @@ class Post_Report_Package {
 			return $results;
 		}
 
-		$cache_id = md5(wp_json_encode([$array, $post_id, '01']));
-
-		$cached_back_chapters = $this->get_toc_cache( $cache_id, 'chapters' );
-		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cached_back_chapters ) {
-			return $cached_back_chapters;
-		}
-
 		$permalink = get_permalink( $post_id );
 
 		$needs_migration = false;
@@ -709,23 +701,10 @@ class Post_Report_Package {
 			}
 		}
 
-		if ( $needs_migration && false !== $post_id ) {
-			update_post_meta($post_id, '_migration_legacy_prc_block_chapter_detected', true);
-		}
-
-		$this->update_toc_cache( $post_id, $results, 'chapters' );
-
 		return $results;
 	}
 
 	public function get_internal_chapters($post_id) {
-		$this->bypass_caching = $this->bypass_caching || is_preview();
-		$cached_toc = $this->get_toc_cache( $post_id, 'internal_chapters' );
-		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cached_toc ) {
-			return $cached_toc;
-		}
-
 		$the_content = get_post_field( 'post_content', $post_id, 'raw' );
 		$legacy = $this->prepare_legacy_headings($the_content, $post_id);
 		if ( false !== $legacy ) {
@@ -733,8 +712,8 @@ class Post_Report_Package {
 		} else {
 			$blocks = parse_blocks( $the_content );
 		}
+
 		$chapters = $this->prepare_chapter_blocks( $blocks, $post_id );
-		$this->update_toc_cache( $post_id, $chapters, 'internal_chapters' );
 		return $chapters;
 	}
 
@@ -766,11 +745,10 @@ class Post_Report_Package {
 				'internal_chapters' => $chapters,
 			);
 		}
-
 		return $formatted;
 	}
 
-	private function get_toc_cache($cache_key, $sub_cache) {
+	private function get_toc_cache($cache_key, $sub_cache = false) {
 		if (false !== $this->bypass_caching ) {
 			return false;
 		}
@@ -778,12 +756,12 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
-		$cache_invalidate = get_option('prc_report_package_invalidate_cache', false);
+		$cache_invalidate = '01234';
 		$cache_key = md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
 		return wp_cache_get( $cache_key, $cache_group );
 	}
 
-	private function update_toc_cache($cache_key, $toc, $sub_cache) {
+	private function update_toc_cache($cache_key, $toc, $sub_cache = false) {
 		if (false !== $this->bypass_caching ) {
 			return null;
 		}
@@ -802,8 +780,21 @@ class Post_Report_Package {
 	public function get_constructed_toc( $post_id ) {
 		$parent_id = $this->get_report_parent_id( $post_id );
 
+		// Check for cache...
+		$cached_toc = $this->get_toc_cache( $parent_id );
+		if ( false !== $cached_toc ) {
+			return $cached_toc;
+		}
+
+		// Check for post meta stored construced toc...
+		$stored_toc = get_post_meta( $parent_id, '_constructed_toc', true );
+		if ( !empty( $stored_toc ) ) {
+			return $stored_toc;
+		}
+
 		$internal_chapters = $this->get_internal_chapters( $parent_id );
 		$back_chapters = $this->get_back_chapters( $parent_id );
+
 		if ( empty( $internal_chapters ) && empty( $back_chapters ) ) {
 			return false;
 		}
@@ -817,6 +808,10 @@ class Post_Report_Package {
 				'internal_chapters' => $internal_chapters
 			),
 		), $back_chapters );
+
+		$this->update_toc_cache( $parent_id, $constructed_toc );
+
+		update_post_meta( $parent_id, '_constructed_toc', $constructed_toc );
 
 		return $constructed_toc;
 	}
