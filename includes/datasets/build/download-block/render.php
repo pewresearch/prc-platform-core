@@ -15,20 +15,21 @@ if ( is_tax('datasets') ) {
 $is_atp = get_post_meta( $dataset_id, 'is_atp', true );
 // If this dataset is in the ATP then it needs a modal to accept the ATP legal terms. Here we're manually adding the content from the download block... usually a core/button into the trigger of the poopup. Now, the button is still wired to the download block but the download block can handle opening the modal by accessing the modals' action store when running core/button::onButtonClick.
 if ( $is_atp ) {
+	ob_start();
 	?>
 <!-- wp:prc-block/popup-controller {"className":"is-style-standard"} -->
 <!-- wp:prc-block/popup-content {"disengageClickHandler": true} -->
 <?php echo $content;?>
 <!-- /wp:prc-block/popup-content -->
 
-<!-- wp:prc-block/popup-modal {"title":"Accept ATP","backgroundColor":"white"} -->
+<!-- wp:prc-block/popup-modal {"title":"Accept ATP","backgroundColor":"ui-white"} -->
 <!-- wp:prc-platform/dataset-atp-legal-acceptance -->
 <!-- /wp:prc-block/popup-modal -->
 <!-- /wp:prc-block/popup-controller -->
 	<?php
 	$atp_modal = ob_get_clean();
 	// Run the content through the_content filter to apply any other block filters that might be in use and pre-pre-render the content.
-	$content = apply_filters('the_content', $atp_modal);
+	$content = $atp_modal;
 }
 
 $block_wrapper_attrs = get_block_wrapper_attributes(array(
@@ -38,6 +39,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 	'data-wp-context' => wp_json_encode(array(
 		'datasetId' => $dataset_id,
 		'isATP' => $is_atp,
+		'NONCE' => wp_create_nonce('wp_rest'),
 	)),
 	'data-wp-bind--data-dataset-id' => 'context.datasetId',
 ));

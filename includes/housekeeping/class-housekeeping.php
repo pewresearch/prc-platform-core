@@ -38,17 +38,17 @@ class Housekeeping {
 		if ( null !== $loader ) {
 			// Clean up old drafts on a rolling 30 day basis, weekly. Move them to the trash.
 			// Let WordPress handle the trash.
-			// $loader->add_action( 'prc_run_weekly', $this, 'weekly_drafts_cleanup' );
+			$loader->add_action( 'prc_run_monthly', $this, 'monthly_drafts_cleanup' );
 			// Clean up quiz archetypes with less than 100 hits.
-			// $loader->add_action( 'prc_run_monthly', $this, 'monthly_quiz_cleanup' );
+			$loader->add_action( 'prc_run_monthly', $this, 'monthly_quiz_cleanup' );
 		}
 	}
 
 	/**
-	 * Every week we'll clean up any drafts that have not been modified in 30 days.
-	 * @hook prc_run_weekly
+	 * Every month we'll clean up any drafts that have not been modified in 30 days.
+	 * @hook prc_run_monthly
 	 */
-	public function weekly_drafts_cleanup() {
+	public function monthly_drafts_cleanup() {
 		$posts_cleaned = array();
 		$posts_not_cleaned = array();
 		$sitename = get_bloginfo('name');
@@ -72,7 +72,7 @@ class Housekeeping {
 			));
 			foreach( $posts as $post_id ) {
 				// Trash, do not delete, the post.
-				$trashed_post = wp_delete_post( $post_id, false );
+				$trashed_post = wp_trash_post( $post_id );
 				if ( $trashed_post ) {
 					$posts_cleaned[] = $trashed_post->ID;
 				} else {
@@ -132,13 +132,12 @@ class Housekeeping {
 
 		global $wpdb;
 		$quiz_db_prefix = $wpdb->prefix . 'prc_quiz_';
-		$table_name = $quiz_db_prefix . 'archetype'; // @TODO, with the multisite collapse we should splice in the quizzes post id to the table name so we can centralize them.
-		$query = $wpdb->prepare(
-			"DELETE FROM $table_name WHERE hits < %d",
+		$table_name = $quiz_db_prefix . 'archetype';
+		$query = $wpdb->query( $wpdb->prepare(
+			"DELETE FROM %s WHERE hits < %d",
+			$table_name,
 			(int) $hits_threshold
-		);
-
-		$query = $wpdb->query( $query );
+		) );
 
 		$query_message = is_bool($query) && $query ? 'Quiz cleanup successful.' : 'Quiz cleanup failed.';
 
@@ -147,7 +146,5 @@ class Housekeeping {
 			'🧹 (🎓 Quizzes) PRC Platform System Notice: Monthly Quiz Cleanup '. is_bool($query) && $query ? 'Success' : 'Failure',
 			$query_message
 		);
-
-		return $wpdb->query($query);
 	}
 }

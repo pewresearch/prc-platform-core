@@ -44,6 +44,7 @@ class Mailchimp {
 			$loader->add_filter( 'wp_mail_from_name', $this, 'change_default_from_name' );
 			$loader->add_filter( 'wp_mail_from', $this, 'change_default_mail_from_address' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
+			$loader->add_filter( 'mandrill_payload', $this, 'mandrill_format_message' );
 		}
 	}
 
@@ -102,56 +103,12 @@ class Mailchimp {
 		return defined('DEFAULT_EMAIL_ADDRESS') ? DEFAULT_EMAIL_ADDRESS : 'no-reply@local.local';
 	}
 
-	protected function generate_subscribe_nonce() {
-		return wp_create_nonce( 'prc-mailchimp-subscribe' );
+	protected function verify_nonce( $nonce ) {
+		return wp_verify_nonce( $nonce, 'wp_rest' );
 	}
 
-	protected function generate_unsubscribe_nonce() {
-		return wp_create_nonce( 'prc-mailchimp-unsubscribe' );
-	}
-
-	protected function generate_update_interests_nonce() {
-		return wp_create_nonce( 'prc-mailchimp-update-interests' );
-	}
-
-	protected function generate_get_member_nonce() {
-		return wp_create_nonce( 'prc-mailchimp-get-member' );
-	}
-
-	protected function verify_subscribe_nonce( $nonce ) {
-		return wp_verify_nonce( $nonce, 'prc-mailchimp-subscribe' );
-	}
-
-	protected function verify_unsubscribe_nonce( $nonce ) {
-		return wp_verify_nonce( $nonce, 'prc-mailchimp-unsubscribe' );
-	}
-
-	protected function verify_update_interests_nonce( $nonce ) {
-		return wp_verify_nonce( $nonce, 'prc-mailchimp-update-interests' );
-	}
-
-	protected function verify_get_member_nonce( $nonce ) {
-		return wp_verify_nonce( $nonce, 'prc-mailchimp-get-member' );
-	}
-
-	public function get_nonce($nonce_type) {
-		switch ($nonce_type) {
-			case 'subscribe':
-				return $this->generate_subscribe_nonce();
-				break;
-			case 'unsubscribe':
-				return $this->generate_unsubscribe_nonce();
-				break;
-			case 'update-interests':
-				return $this->generate_update_interests_nonce();
-				break;
-			case 'get-member':
-				return $this->generate_get_member_nonce();
-				break;
-			default:
-				return false;
-				break;
-		}
+	public function get_nonce() {
+		return wp_create_nonce( 'wp_rest' );
 	}
 
 	/**
@@ -241,13 +198,13 @@ class Mailchimp {
 					},
 				),
 			),
-			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
+			'permission_callback' => function ($request) {
+				$nonce = $request->get_header('X-WP-Nonce');
+				if (empty($nonce)) {
+					return false; // Nonce missing, permission denied
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
-			},
+				return true;
+			}
 		);
 
 		$update = array(
@@ -276,13 +233,13 @@ class Mailchimp {
 					},
 				),
 			),
-			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
+			'permission_callback' => function ($request) {
+				$nonce = $request->get_header('X-WP-Nonce');
+				if (empty($nonce)) {
+					return false; // Nonce missing, permission denied
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
-			},
+				return true;
+			}
 		);
 
 		$get_member = array(
@@ -301,13 +258,13 @@ class Mailchimp {
 					},
 				),
 			),
-			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
+			'permission_callback' => function ($request) {
+				$nonce = $request->get_header('X-WP-Nonce');
+				if (empty($nonce)) {
+					return false; // Nonce missing, permission denied
 				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
-			},
+				return true;
+			}
 		);
 
 		$get_segments = array(
@@ -321,13 +278,9 @@ class Mailchimp {
 					},
 				),
 			),
-			'permission_callback' => function () {
-				if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-					return false;
-				}
-				$nonce = $_REQUEST['_wpnonce'];
-				return $this->verify_subscribe_nonce( $nonce );
-			},
+			'permission_callback' => function ($request) {
+				return current_user_can( 'edit_posts' );
+			}
 		);
 
 		array_push($endpoints, $subscribe, $unsubscribe, $update, $get_member, $get_segments);
@@ -379,7 +332,7 @@ class Mailchimp {
 
 	public function subscribe_to_list_restfully( \WP_REST_Request $request ) {
 		$nonce = $request->get_header('X-WP-Nonce');
-		if ( ! $this->verify_subscribe_nonce( $nonce ) ) {
+		if ( ! $this->verify_nonce( $nonce ) ) {
 			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
 		}
 		$email = $request->get_param( 'email' );
@@ -420,7 +373,7 @@ class Mailchimp {
 
 	public function remove_member_from_list_restfully( \WP_REST_Request $request ) {
 		$nonce = $request->get_header('X-WP-Nonce');
-		if ( ! $this->verify_unsubscribe_nonce( $nonce ) ) {
+		if ( ! $this->verify_nonce( $nonce ) ) {
 			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
 		}
 		$email = $request->get_param( 'email' );
@@ -434,7 +387,7 @@ class Mailchimp {
 
 	public function get_member_restfully( \WP_REST_Request $request ) {
 		$nonce = $request->get_header('X-WP-Nonce');
-		if ( ! $this->verify_get_member_nonce( $nonce ) ) {
+		if ( ! $this->verify_nonce( $nonce ) ) {
 			return new WP_Error(401, 'Nonce could not be verified', array( 'nonce' => $nonce ) );
 		}
 		$email = $request->get_param( 'email' );
@@ -476,7 +429,7 @@ class Mailchimp {
 	 */
 	public function mandrill_format_message($message) {
 		$titles = array(
-			'wp_PRC_User_Accounts->mail_new_user'           => 'Account created',
+			'wp_PRC\Platform\User_Accounts\User_Registration->mail_new_user'           => 'Account created',
 			'wp_wpmu_signup_user_notification'              => 'Activate your account',
 			'wp_retrieve_password'                          => 'Reset your password',
 			'wp_wp_update_user'                             => 'Password updated',

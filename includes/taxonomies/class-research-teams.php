@@ -159,7 +159,7 @@ class Research_Teams extends Taxonomies {
 			$terms = get_the_terms($post, self::$taxonomy);
 			if ($terms && !is_wp_error($terms)) {
 				// Get the primary term
-				$primary_term_id = get_post_meta($post->ID, '_yoast_wpseo_primary_' . self::$taxonomy, true);
+				$primary_term_id = \yoast_get_primary_term_id(self::$taxonomy, $post->ID);
 				// search through $terms from a term object with term_id of $primary_term_id
 				$primary_term = array_filter($terms, function ($term) use ($primary_term_id) {
 					return $term->term_id == $primary_term_id;

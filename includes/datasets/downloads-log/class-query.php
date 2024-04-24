@@ -1,6 +1,6 @@
 <?php
 
-class Dataset_Downloads_Log_Query extends BerlinDB\Database\Query {
+class Dataset_Downloads_Log_Query extends \BerlinDB\Database\Query {
 
 	/**
 	 * Name of the database table to query.

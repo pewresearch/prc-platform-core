@@ -41,7 +41,7 @@ class Related_Posts_API extends Related_Posts {
 		$related_posts = array();
 
 		// Get the primary topic for this post.
-		$primary_taxonomy_term_id = get_post_meta( $this->ID, $meta_key, true );
+		$primary_taxonomy_term_id = \yoast_get_primary_term_id($taxonomy, $this->ID);
 		$primary_taxonomy_term = get_term_by( 'term_taxonomy_id', (int) $primary_taxonomy_term_id, $taxonomy );
 
 		if ( ! $primary_taxonomy_term ) {
@@ -56,12 +56,13 @@ class Related_Posts_API extends Related_Posts {
 		}
 
 		$query_args = array(
-			'post_type' => 'any', // Get all post types that are public
+			'post_type' => ['post','short-read','feature','fact-sheet'], // Get all post types that are public
 			'post_parent' => 0,
 			'posts_per_page' => $posts_per_page,
 			'meta_key' => $meta_key,
 			'meta_value' => $primary_taxonomy_term->term_id,
 			'post__not_in' => array( $this->ID ), // Exclude this post.
+			'facetwp' => false,
 		);
 
 		// If posts with matching primary term are not found, then fallback to searching for posts assigned to this posts priamry term.
@@ -143,21 +144,21 @@ class Related_Posts_API extends Related_Posts {
 
 		$related_posts = array();
 
-		// Check for cached data
-		$related_posts = wp_cache_get( $post_id, self::$cache_key );
-		$custom_posts  = $this->get_custom_related_posts();
+		// If the user is not logged in, or if this is not a preview, then check the cache for this data. Otherwise proceed to query for it.
+		$related_posts = !is_preview() && !is_user_logged_in() ? wp_cache_get( $post_id, self::$cache_key ) : false;
+		if ( false !== $related_posts ) {
+			return $related_posts;
+		}
+
+		// @TODO !! During the migration some posts did not run the related posts post id match correctly. Probably because of a race condition. In the interim I am going to disable this feature entirely, regardless if the post has good data or not, instead we'll fall back to the primary term match.
+		// $custom_posts  = $this->get_custom_related_posts();
+		$custom_posts = array();
 
 		if ( 5 > count( $custom_posts ) && ( empty( $related_posts ) || false === $related_posts ) ) {
-			// $related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
-			$related_posts = array();
+			$related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
 			// If not enough related posts are found keying off primary topic widen the search and get all posts that at least have this post's primary topic as a topic.
 			if ( 5 > count( $related_posts ) ) {
 				$related_posts = $this->get_posts_with_matching_primary_terms( $per_page, true );
-
-				if ( !is_preview() ) {
-					// For queried related posts store in memcached.
-					wp_cache_set( $post_id, $related_posts, self::$cache_key, self::$cache_time );
-				}
 			}
 		}
 
@@ -177,6 +178,11 @@ class Related_Posts_API extends Related_Posts {
 
 		// Restrict to only 5 items.
 		$related_posts = array_slice( $related_posts, 0, $per_page );
+
+		if ( !is_preview() && !is_user_logged_in() ) {
+			// Store the related posts for 1 hour.
+			wp_cache_set( $post_id, $related_posts, self::$cache_key, self::$cache_time );
+		}
 
 		return $related_posts;
 	}

@@ -29,11 +29,11 @@ class Sitemaps {
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$loader->add_filter('wp_sitemaps_enabled', $this, 'enable_sitemap');
-			$loader->add_filter('wp_sitemaps_taxonomies', $this, 'set_available_taxonomies');
-			$loader->add_filter('wp_sitemaps_add_provider', $this, 'disable_other_sitemaps', 10, 2);
-			$loader->add_action('init', $this, 'register_sitemaps');
-			$loader->add_action('wp_sitemap_init', $this, 'render_sitemaps');
+			// $loader->add_filter('wp_sitemaps_enabled', $this, 'enable_sitemap');
+			// $loader->add_filter('wp_sitemaps_taxonomies', $this, 'set_available_taxonomies');
+			// $loader->add_filter('wp_sitemaps_add_provider', $this, 'disable_other_sitemaps', 10, 2);
+			// $loader->add_action('init', $this, 'register_sitemaps');
+			// $loader->add_action('wp_sitemap_init', $this, 'render_sitemaps');
 		}
 	}
 

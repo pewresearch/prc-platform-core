@@ -29,11 +29,20 @@ class Permalink_Rewrites {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
+			$loader->add_filter( 'robots_txt', $this, 'manage_robots_txt', 10, 2 );
 			$loader->add_action( 'init', $this, 'register_rewrites' );
 			$loader->add_action( 'init', $this, 'register_tags' );
 			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 		}
+	}
+
+	function manage_robots_txt( $output, $public ) {
+		// Blocking search pages from googlebot
+		$output .= 'Disallow: /search/' . PHP_EOL;
+		$output .= 'Disallow: /search' . PHP_EOL;
+		$output .= 'Disallow: /?s=' . PHP_EOL;
+		return $output;
 	}
 
 	/**

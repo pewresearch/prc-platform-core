@@ -23,6 +23,7 @@ class Search {
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once( plugin_dir_path( __FILE__ ) . 'factoids/class-factoids.php' );
+		require_once( plugin_dir_path( __FILE__ ) . 'class-aggregations.php' );
 		$this->init($loader);
 	}
 
@@ -33,6 +34,7 @@ class Search {
 			$loader->add_filter( 'ep_set_sort', $this, 'ep_sort_by_date', 10, 2 );
 			$loader->add_filter( 'ep_highlight_should_add_clause', $this, 'ep_enable_highlighting', 10, 4);
 			new Search_Factoids($loader);
+			new Search_Aggregations($loader);
 		}
 	}
 

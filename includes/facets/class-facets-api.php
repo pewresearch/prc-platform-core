@@ -14,6 +14,7 @@ class Facets_API {
 	public $query_args;
 	public $query_id;
 	public $cache_key;
+	public $cache_group;
 	public $registered_facets = array();
 	public $selected_choices = array();
 
@@ -22,14 +23,28 @@ class Facets_API {
 		$this->registered_facets = $this->get_registered_facets();
 		$this->selected_choices = $this->get_selected_choices();
 		$this->cache_key = $this->construct_cache_key($query);
+		$this->cache_group = $this->construct_cache_group();
 	}
 
 	public function construct_cache_key($query = array()) {
+		$invalidate = get_option('prc_facet_cache_invalidate', '4/19/24');
+		$query = array_merge($query, array(
+			'paged' => 1
+		));
 		return md5(wp_json_encode([
 			'query' => $query,
 			'selected' => $this->selected_choices,
-			'invalidate' => 'abc',
+			'invalidate' => $invalidate,
 		]));
+	}
+
+	public function construct_cache_group() {
+		global $wp;
+		$url_params = wp_parse_url( '/' . add_query_arg( array( $_GET ), $wp->request . '/' ) );
+		if ( !is_array($url_params) || !array_key_exists('path', $url_params) ) {
+			return false;
+		}
+		return preg_replace('/\/page\/[0-9]+/', '', $url_params['path']);
 	}
 
 	public function construct_query_args($query_args = array()) {
@@ -37,6 +52,7 @@ class Facets_API {
 		$query_args = array_merge($query_args, array(
 			'paged' => 1
 		));
+		// Even though we're not running on search pages we should offload to es if search is ever attempted.
 		if ( !empty($query_args['s']) ) {
 			$query_args['es'] = true;
 		}
@@ -48,8 +64,6 @@ class Facets_API {
 		$current_query = wp_parse_url($current_url, PHP_URL_QUERY);
 		$current_selection = null;
 		$facet_slug = '_' . $facet_slug;
-		// see if $facetwp_facet_slug is in the query string
-		// if it is, then we're going to store it in $new_content
 		if ( $current_query ) {
 			$query_vars = wp_parse_args($current_query);
 			if ( array_key_exists($facet_slug, $query_vars) ) {
@@ -67,7 +81,6 @@ class Facets_API {
 		$registered_facets = array();
 		$facets = json_decode($settings, true)['facets'];
 		foreach ($facets as $facet) {
-			$facet_slug = '_' . $facet['name'];
 			$registered_facets[$facet['name']] = $this->get_current_selection($facet['name']);
 		}
 		return $registered_facets;
@@ -84,19 +97,28 @@ class Facets_API {
 	}
 
 	public function query() {
-		return [
-			'facets'     => [],
-			'query_args' => [],
-			'settings'   => array(
-				'first_load' => true,
-			),
-		];
-		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
-			return;
+		// If we are not on the primary site, return an empty array.
+		// We do not allow other sites to query facets.
+		// If we can't validate a cache group, and this is an outside user, then we'll failover as well.
+		$failover = false === $this->cache_group && !is_user_logged_in();
+		if ( is_paged() && 100 > get_query_var('paged') ) {
+			$failover = true;
 		}
-		do_action('qm/debug', 'Facets Query:'.print_r($this->cache_key, true));
+		if ( is_search() || PRC_PRIMARY_SITE_ID !== get_current_blog_id() || $failover) {
+			// @TODO: Experiment with creating a ElasticPress Facets data provider that matches this format... just needs to transform arguments...
+			return [
+				'facets'     => [],
+				'query_args' => [],
+				'settings'   => array(
+					'first_load' => true,
+				),
+			];
+		}
+		// @TODO: We should check for things like is_404, is_search, etc. and we should check if there are even results in the query...
+		do_action('qm/debug', 'Facets Cache Key:'.print_r($this->cache_key, true));
+
 		$cache = new Facets_Cache();
-		$cached_data = $cache->get($this->cache_key, 'facets_group');
+		$cached_data = $cache->get($this->cache_key, $this->cache_group);
 		if ( $cached_data ) {
 			return $cached_data;
 		}
@@ -120,7 +142,7 @@ class Facets_API {
 
 		$data = apply_filters('prc_platform_facets_api_response', $data);
 
-		$cache->store($this->cache_key, 'facets_group', $data);
+		$cache->store($this->cache_key, $this->cache_group, $data);
 
 		return $data;
 	}

@@ -650,7 +650,6 @@ class Features {
 			return false;
 		}
 
-
 		$patterns = $rewrites;
 
 		// Double sanity check that we have an array of patterns.

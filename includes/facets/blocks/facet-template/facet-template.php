@@ -46,7 +46,6 @@ class Facet_Template {
 			$block_gap = '';
 		}
 
-		// if $block_gap is like var:preset|spacing|60 then it should be var(--wp--preset--spacing--60) otherwise just return the value like 1rem or whatever.
 		return preg_match('/^var:preset\|spacing\|\d+$/', $block_gap) ? 'var(--wp--preset--spacing--' . substr($block_gap, strrpos($block_gap, '|') + 1) . ')' : $block_gap;
 	}
 
@@ -207,12 +206,14 @@ class Facet_Template {
 	}
 
 	public function render_block_callback($attributes, $content, $block) {
-		return $content;
+		$facets = $block->context['facetsContextProvider']['data']['facets'];
+		if ( empty($facets) ) {
+			return '<!-- No facets data -->';
+		}
 		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
 		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
-		// $facet_slug = '_' . $facet_name;
 		$facet_slug = $facet_name;
-		$facet = $block->context['facetsContextProvider']['data']['facets'][$facet_name];
+		$facet = $facets[$facet_name];
 
 		$new_content = '';
 		$expanded_content = '';

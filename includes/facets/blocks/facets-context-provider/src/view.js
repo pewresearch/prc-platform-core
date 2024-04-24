@@ -13,7 +13,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			return state.selected;
 		},
 		get getUpdatedUrl() {
-			console.log('facets-context-provider::getUpdatedUrl...', state);
 			const tmp = {};
 			if (undefined === state.selected) {
 				return;
@@ -28,7 +27,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			});
 			// Double check tmp, if it has a key with empty value, remove it.
 			Object.keys(tmp).forEach((key) => {
-				console.log(tmp[key]);
 				// Check if tmp[key] is an empty string or an empty array.
 				if (tmp[key] === '') {
 					delete tmp[key];
@@ -119,18 +117,15 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const currentSelected = state.getSelected;
 			const newSelected = currentSelected;
 			if (!currentSelected[facetSlug]) {
-				console.log('added...', facetSlug, value);
 				newSelected[facetSlug] = [value];
 			} else if (currentSelected[facetSlug].includes(value)) {
-				console.log('removing...', facetSlug, value);
 				newSelected[facetSlug] = newSelected[facetSlug].filter(
 					(item) => item !== value
 				);
 			} else {
-				console.log('adding...', facetSlug, value);
 				newSelected[facetSlug] = [value];
 			}
-			console.log('onSelectChange', currentSelected, newSelected, facetSlug, value);
+
 			state.selected = newSelected;
 		},
 		*prefetch() {
@@ -152,11 +147,9 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			yield router.actions.prefetch(newUrl);
 		},
 		*onCheckboxMouseEnter() {
-			console.log('facets-context-provider::onCheckboxMouseEnter');
 			yield actions.prefetch();
 		},
 		onClear: (facetSlug) => {
-			console.log('facets-context-provider::onClear', facetSlug, state);
 			const tmp = state.selected;
 			// if there is no facetSlug then clear all...
 			if (!facetSlug) {
@@ -190,7 +183,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 			// No selections? Disable the update button.
 			if (keysLength <= 0) {
-				console.log('disabling...', state, Object.keys(selected).length);
 				state.isDisabled = true;
 			} else {
 				// Once we have some selections, lets run a refresh.

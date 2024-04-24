@@ -13,23 +13,17 @@ class Datasets_Download_Logger extends Datasets {
 		require_once plugin_dir_path( __FILE__ ) . '/class-schema.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-shape.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-table.php';
-
-		$this->init_db();
-
 	}
 
 	public function init_db() {
-		return;
 		// Setup the database tables.
 		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			return;
 		}
-		// Instantiate the standard Dataset Downloads Log table.
-		$dataset_downloads = new \Dataset_Downloads_Log_Query();
-		// If the table does not exist, then create the table.
-		// if ( ! $dataset_downloads->exists() ) {
-		// 	$dataset_downloads->install();
-		// }
+		$dataset_downloads = new \Dataset_Downloads_Log();
+		if ( ! $dataset_downloads->exists() ) {
+			$dataset_downloads->install();
+		}
 	}
 
 	/**
@@ -70,8 +64,10 @@ class Datasets_Download_Logger extends Datasets {
 				),
 			),
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$nonce = $request->get_header( 'x-wp-nonce' );
-				// return ! wp_verify_nonce( $nonce, 'prc-dataset-download-nonce' ) || current_user_can( 'edit_posts' );
+				$nonce = $request->get_header('X-WP-Nonce');
+				if (empty($nonce)) {
+					return false; // Nonce missing, permission denied
+				}
 				return true;
 			},
 		);
@@ -155,6 +151,10 @@ class Datasets_Download_Logger extends Datasets {
 	 * @return array|WP_Error
 	 */
 	public function restfully_log_download( WP_REST_Request $request ) {
+		//verify nonce
+		if ( wp_verify_nonce( $request->get_header('X-WP-Nonce'), 'WP_REST' ) === false ) {
+			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
+		}
 		$data = json_decode( $request->get_body(), true );
 		if ( ! array_key_exists( 'uid', $data ) ) {
 			return new WP_Error( 'no_uid', 'No UID provided.', array( 'status' => 400 ) );

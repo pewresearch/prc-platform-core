@@ -19,32 +19,6 @@ class Valu_FacetWP_ElasticPress_Integration {
 	/** Refers to a single instance of this class. */
 	private static $instance = null;
 
-	/*--------------------------------------------*
-	 * Constructor
-	 *--------------------------------------------*/
-
-	/**
-	 * Creates or returns an instance of this class.
-	 *
-	 * @return  Valu_FacetWP_ElasticPress_Integration A single instance of this class.
-	 */
-	public static function instance() {
-
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-		// Check that dependencies are installed and activated
-		if ( is_plugin_active( 'ElasticPress/elasticpress.php' ) AND is_plugin_active( 'facetwp/index.php' ) ) {
-
-			if ( null == self::$instance ) {
-				self::$instance = new self;
-			}
-
-			return self::$instance;
-
-		}
-
-	} // end instance;
-
 	/**
 	 * Valu_FacetWP_ElasticPress_Integration constructor.
 	 */
@@ -55,7 +29,6 @@ class Valu_FacetWP_ElasticPress_Integration {
 
 		// Register default search engine
 		$this->register_engine( 'ElasticPress Default' );
-
 	}
 
 	/**

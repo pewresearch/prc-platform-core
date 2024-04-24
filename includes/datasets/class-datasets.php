@@ -142,6 +142,7 @@ class Datasets {
 			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
 
 			$download_logger = new Datasets_Download_Logger();
+			$loader->add_action( 'init', $download_logger, 'init_db' );
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
 			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_logger_endpoint' );

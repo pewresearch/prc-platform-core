@@ -1,9 +1,9 @@
 <?php
 /**
  * @wordpress-plugin
- * Plugin Name:       PRC Platform Core
+ * Plugin Name:       PRC Platform: Core
  * Plugin URI:        https://github.com/pewresearch/prc-platform-core
- * Description:       This plugin is the foundation for all other PRC Platform plugins. It contains the core functionality and hooks for the platform.
+ * Description:       This is the foundation for all other PRC Platform plugins. It contains the core functionality and hooks for the platform.
  * Version:           1.0.0
  * Author:            Seth Rubenstein
  * Author URI:        https://pewresearch.org

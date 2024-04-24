@@ -61,7 +61,7 @@ class Facets {
 			"show_expanded" => "no",
 			"ghosts" => "yes",
 			"preserve_ghosts" => "no",
-			"operator" => "and",
+			"operator" => "or",
 			"orderby" => "count",
 			"count" => "-1",
 			"soft_limit" => "5"
@@ -85,10 +85,7 @@ class Facets {
 			"type" => "time_since",
 			"source" => "post_date",
 			"label_any" => "By Date Range",
-			"choices" => "Past Month | -30 days
-			Past 6 Months | -180 days
-			Past 12 Months | -365 days
-			Past 2 Years | -730 days"
+			"choices" => "Past Month | -30 days\nPast 6 Months | -180 days\nPast 12 Months | -365 days\nPast 2 Years | -730 days"
 		),
 		array(
 			"name" => "date_range",
@@ -162,6 +159,7 @@ class Facets {
 			$loader->add_filter( 'facetwp_indexer_query_args', $this, 'filter_facetwp_indexer_args', 10, 1 );
 			$loader->add_filter( 'facetwp_index_row', $this, 'restrict_facet_row_depth', 10, 1 );
 			$loader->add_filter( 'facetwp_facets', $this, 'facetwp_register_facets', 10, 1 );
+			$loader->add_filter( 'facetwp_is_main_query', $this, 'facetwp_is_main_query', 10, 2 );
 
 			// Blocks:
 			new Facets_Context_Provider($loader);
@@ -178,6 +176,14 @@ class Facets {
 	 */
 	public function allow_facetwp_api_access() {
 		return true;
+	}
+
+	public function facetwp_is_main_query( $is_main_query, $query ) {
+		// Short circuit if we're on a search results page for now.
+		if ( $query->is_search() ) {
+			$is_main_query = false;
+		}
+		return $is_main_query;
 	}
 
 	/**
@@ -209,8 +215,11 @@ class Facets {
 	}
 
 	public function restfully_query_facets( WP_REST_Request $request ) {
-		// @TODO check for a nonce...
 		// @TODO pass existing wp_query args into facets api where null is currently.
+		$nonce_is_valid = wp_verify_nonce( $request->get_header('X-WP-Nonce'), 'wp_rest' );
+		if ( !$nonce_is_valid ) {
+			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
+		}
 		$query_args = null;
 		$facets_api = new Facets_API($query_args);
 		return $facets_api->query();
@@ -235,6 +244,7 @@ class Facets {
 	 */
 	public function filter_facetwp_indexer_args( $args ) {
 		$query_defaults = apply_filters('prc_platform_pub_listing_default_args', $args);
+		$query_defaults['post_type'] = array_merge( $query_defaults['post_type'], array( 'dataset' ) );
 		return array_merge($args, $query_defaults);
 	}
 

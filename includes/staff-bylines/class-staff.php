@@ -67,7 +67,7 @@ class Staff {
 	}
 
 	public function get_cache($post_id) {
-		$cache = wp_cache_get( 'staff-cache-' . $post_id );
+		$cache = wp_cache_get( $post_id, 'staff_data' );
 		if ( false !== $cache && ! is_user_logged_in() ) {
 			foreach ( $cache as $key => $value ) {
 				$this->$key = $value;
@@ -80,9 +80,9 @@ class Staff {
 	public function set_cache() {
 		if ( !is_preview() ) {
 			wp_cache_set(
-				'staff-cache-' . $this->ID,
+				$this->ID,
 				get_object_vars( $this ),
-				'',
+				'staff_data',
 				self::$cache_ttl,
 			);
 		}
@@ -96,7 +96,6 @@ class Staff {
 			return;
 		}
 		$staff_post = get_post( $post_id );
-		// do a double check on post type...
 		if ( 'staff' !== $staff_post->post_type ) {
 			return new WP_Error( '404', 'This is not a staff post' );
 		}
@@ -108,14 +107,13 @@ class Staff {
 		$this->slug = $staff_post->post_name;
 		$this->link = $this->get_staff_link($staff_post_id);
 		$this->user_id = get_post_meta( $staff_post_id, 'user_id', true );
+		$this->is_currently_employed = $this->check_employment_status($staff_post_id);
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
-		$this->job_title = get_post_meta( $staff_post_id, 'jobTitle', true );
-		$this->job_title_extended = get_post_meta( $staff_post_id, 'jobTitleExtended', true );
+		$this->job_title = $this->get_job_title($staff_post_id);
+		$this->job_title_extended = $this->get_job_title_extended($staff_post_id);
 		$this->photo = $this->get_staff_photo($staff_post_id);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);
-		$this->is_currently_employed = $this->check_employment_status($staff_post_id);
-
 		$this->set_cache();
 	}
 
@@ -131,6 +129,40 @@ class Staff {
 		} else {
 			return true;
 		}
+	}
+
+	/**
+	 * Returns the job title for the staff member.
+	 */
+	public function get_job_title($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		$job_title = get_post_meta( $staff_post_id, 'jobTitle', true );
+		if ( false === $this->is_currently_employed ) {
+			$job_title = 'Former ' . $job_title;
+		}
+		return $job_title;
+	}
+
+	/**
+	 * Returns the extended job title for the staff member.
+	 */
+	public function get_job_title_extended($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		$job_title_extended = get_post_meta( $staff_post_id, 'jobTitleExtended', true );
+		if ( false === $this->is_currently_employed ) {
+			$job_title_extended = preg_replace( '/(a|an) /', 'a former ', $job_title_extended );
+		}
+		return $job_title_extended;
 	}
 
 	/**

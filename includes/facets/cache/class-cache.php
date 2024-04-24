@@ -3,8 +3,13 @@ namespace PRC\Platform;
 
 use FacetCache_Table, FacetCache_Query;
 
+/**
+ * A cache system for Facet WP
+ * Consists of a persistent cache and an ephemeral cache.
+ * The persistent cache is stored in the database up to
+ */
 class Facets_Cache {
-	public static $memached_enabled = false;
+	public static $memached_enabled = true;
 	public static $memcached_ttl = 30 * MINUTE_IN_SECONDS;
 	public static $cron_name = 'prc_facet_cache_cron';
 
@@ -13,30 +18,28 @@ class Facets_Cache {
 		require_once plugin_dir_path( __FILE__ ) . '/class-schema.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-shape.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-table.php';
+
 		$this->init($loader);
 	}
 
 	public function init($loader) {
 		if ( null !== $loader ) {
-			// Caching System:
-			// Initialize the Facet Cache Table class.
-			$cache_table = new FacetCache_Table();
-
-			// Uninstall the database. Uncomment this code to force the database to rebuild.
-			// if($$cache_table->exists()){
-			// $$cache_table->uninstall();
-			// }
-
-			// If the table does not exist, then create the table.
-			if ( ! $cache_table->exists() ) {
-				$cache_table->install();
-			}
-
-			$loader->add_action( 'init', $this, 'schedule_cron_job' );
+			$loader->add_action( 'init', $this, 'register_table' );
 			$loader->add_action( 'wpcom_vip_cache_pre_execute_purges', $this, 'purge_with_vip_cache_flush', 10, 1 );
 		}
 	}
 
+	public function register_table() {
+		// Register the persistent cache table, where we'll store results for up to a week.
+		$cache_table = new FacetCache_Table();
+		if ( ! $cache_table->exists() ) {
+			$cache_table->install();
+		}
+	}
+
+	/**
+	 * Queries the persistent cache for a record.
+	 */
 	public function query($key, $group) {
 		return new FacetCache_Query(
 			array(
@@ -52,7 +55,7 @@ class Facets_Cache {
 
 	public function get($key, $group) {
 		if ( self::$memached_enabled ) {
-			$memcached = wp_cache_get( $key, $group );
+			$memcached = wp_cache_get( $key, 'facets/'. $group );
 			if ( false !== $memcached ) {
 				return $memcached;
 			}
@@ -68,7 +71,7 @@ class Facets_Cache {
 	public function store($key, $group, $data) {
 		$query = $this->query($key, $group);
 		$success = false;
-		// Store the result if nothing found. Otherwise update it.
+		// Store in persistent cache
 		if ( ! $query->items ) {
 			$success = $query->add_item(
 				array(
@@ -89,28 +92,20 @@ class Facets_Cache {
 				);
 			}
 		}
+		// Store in ephemeral cache
 		if ( $success && self::$memached_enabled ) {
-			wp_cache_set( $key, $data, $group, self::$memcached_ttl );
+			wp_cache_set( $key, $data, 'facets/'. $group, self::$memcached_ttl );
 		}
 		return array('success' => $success, 'data' => $data);
 	}
 
-	public function schedule_cron_job() {
-		$args = array(
-			'recurrence' => 'twicedaily',
-			'schedule' => 'schedule',
-			'name' => self::$cron_name,
-			'cb' => array($this, 'clear_cache'),
-			'multisite'=> false,
-			'plugin_root_file'=> '',
-			'run_on_creation'=> true,
-			'args' => array()
-		);
+	public function schedule_saturday_midnight_cache_purge() {
+
 	}
 
 	public function clear_cache() {
 		$table = new FacetCache_Table();
-		//wp_cache_flush_group will soon be available https://github.com/WordPress/wordpress-develop/pull/2368
+		\wp_cache_flush_group('facets/publications/');
 		return $table->truncate();
 	}
 

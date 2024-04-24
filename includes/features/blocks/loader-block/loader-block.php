@@ -20,6 +20,7 @@ class Loader_Block extends Features {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'block_init' );
 			$loader->add_filter( 'pre_render_block', $this, 'feature_loader_pre_render_enqueue_assets', 10, 3 );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 		}
 	}
 
@@ -153,6 +154,52 @@ class Loader_Block extends Features {
 		);
 	}
 
+	public function register_feature_embed_connection_meta() {
+		register_post_meta(
+			'feature',
+			'_feature_embed_referenced_in',
+			array(
+				'type'         => 'integer',
+				'description'  => 'The post ID of the post that references this feature embed.',
+				'single'       => true,
+				'show_in_rest' => true,
+			)
+		);
+	}
+
+	/**
+	 * Register endpoint for getting the referenced feature embeds in a post.
+	 * @hook prc_api_endpoints
+	 * @param mixed $endpoints
+	 * @return void
+	 */
+	public function register_endpoint($endpoints) {
+		array_push($endpoints, array(
+			'route' => 'features/get-referenced-embeds',
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'restfully_get_referenced_embeds' ),
+			'args'                => array(
+				'postId' => array(
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					},
+				),
+			),
+			'permission_callback' => function () {
+				return true;
+			},
+		));
+		return $endpoints;
+	}
+
+	protected function update_legacy_embed_connection($new_id, $calling_post_id) {
+		$key = '_feature_embed_referenced_in';
+		$referenced_embed = get_post_meta($calling_post_id, $key, true);
+		if ( ! $referenced_embed ) {
+			update_post_meta($new_id, $key, $calling_post_id);
+		}
+	}
+
 	/**
 	 * @TODO: Work In Progress: Until we have time to create the embed block.
 	 * [interactives_shortcode description]
@@ -161,6 +208,8 @@ class Loader_Block extends Features {
 	 * @return [type]       [description]
 	 */
 	public function feature_embed_shortcode_fallback($attr = array()) {
+		global $post;
+		$calling_post_id = $post->ID;
 		// Don't render features on archive pages or on admin.
 		if ( is_admin() || is_archive() ) {
 			return;
@@ -176,33 +225,62 @@ class Loader_Block extends Features {
 			)
 		);
 
-		if ( ! $attr['id'] && ! $attr['slug'] ) {
-			return '<!-- No ID, Slug set for the [interactive] shortcode -->';
+		if ( ! $attr['id'] ) {
+			return '<!-- No ID set for the [interactive] shortcode -->';
+		}
+
+		if ( ! $attr['siteid'] ) {
+			$attr['siteid'] = 1;
 		}
 
 		$output = '';
 
+		$query_args = array(
+			'post_type'      => 'feature',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'meta_query' => [
+				'relation' => 'AND',
+				[
+					'key' => 'dt_original_post_id',
+					'value' => $attr['id'],
+					'compare' => '='
+				],
+				[
+					'key' => 'dt_original_blog_id',
+					'value' => $attr['siteid'],
+					'compare' => '='
+				]
+			]
+		);
+
+		if ( 20 === (int) $attr['siteid'] ) {
+			unset($query_args['meta_query']);
+			$query_args['post__in'] = [$attr['id']];
+		}
+
 		// Because this is in legacy usage we're going to need to do a lookup regardless using the distributor original post and original blog id
 		$feature_query = new \WP_Query(
-			array(
-				'post_type'      => 'feature',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'meta_query' => [
-					'relation' => 'AND',
-					[
-						'key' => 'dt_original_post_id',
-						'value' => $attr['id'],
-						'compare' => '='
-					],
-					[
-						'key' => 'dt_original_blog_id',
-						'value' => $attr['siteid'],
-						'compare' => '='
-					]
-				]
-			)
+			$query_args
 		);
+
+		// if we dont have any features, we should do the query again but without the site id check...
+		if ( ! $feature_query->have_posts() ) {
+			$feature_query = new \WP_Query(
+				array(
+					'post_type'      => 'feature',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					'meta_query' => [
+						[
+							'key' => 'dt_original_post_id',
+							'value' => $attr['id'],
+							'compare' => '='
+						]
+					]
+				)
+			);
+		}
 
 		if ( $feature_query->have_posts() ) {
 			$feature_query->the_post();
@@ -216,7 +294,7 @@ class Loader_Block extends Features {
 			}
 			$permalink = get_permalink( $post_id );
 			$post_name = get_post_field( 'post_name', $post_id );
-			//@TODO: check for legacy post meta on main post, if not present drop the new id's in an array and surface in migration panel.
+			$this->update_legacy_embed_connection($post_id, $calling_post_id);
 			ob_start();
 			?>
 			<figure class="shortcode shortcode--interactive <?php echo esc_attr( $attr['align'] ); ?>" data-slug="<?php echo esc_attr( $post_name ); ?>">
@@ -247,6 +325,40 @@ class Loader_Block extends Features {
 		}
 
 		return $output;
+	}
+
+	public function get_referenced_feature_embeds_legacy_pairs($post_id) {
+		// query all 'feature' posts that have _feature_embed_referenced_in set to the post id
+		$feature_query = new \WP_Query(
+			array(
+				'post_type'      => 'feature',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'meta_query' => [
+					[
+						'key' => '_feature_embed_referenced_in',
+						'value' => $post_id,
+						'compare' => '='
+					]
+				]
+			)
+		);
+		$to_return = [];
+		if ( $feature_query->have_posts() ) {
+			while ( $feature_query->have_posts() ) {
+				$feature_query->the_post();
+				$new_id = get_the_ID();
+				$legacy_id = get_post_meta($new_id, 'dt_original_post_id', true);
+				$to_return[$new_id] = $legacy_id;
+			}
+		}
+		return $to_return;
+	}
+
+	public function restfully_get_referenced_embeds(\WP_REST_Request $request) {
+		$post_id = $request->get_param('postId');
+		$referenced_embeds = $this->get_referenced_feature_embeds_legacy_pairs($post_id);
+		return rest_ensure_response($referenced_embeds);
 	}
 
 	public function block_init() {

@@ -62,7 +62,7 @@ class Short_Reads {
 			'show_in_rest'       => true,
 			'query_var'          => true,
 			'rewrite'            => array(
-				'slug' => 'short-read/%year%/%monthnum%/%day%',
+				'slug' => 'short-reads/%year%/%monthnum%/%day%',
 				'with_front' => true,
 				'pages'      => true,
 				'feeds'      => true,

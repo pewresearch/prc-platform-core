@@ -474,7 +474,7 @@ class Post_Report_Package {
 	 * REPORT MATERIALS
 	 */
 	public function get_report_materials( $post_id ) {
-		$this->bypass_caching = $this->bypass_caching || is_preview() || is_user_logged_in();
+		$this->bypass_caching = $this->bypass_caching || is_preview();
 
 		$parent_id = wp_get_post_parent_id( $post_id );
 		if ( false !== $parent_id && 0 !== $parent_id) {
@@ -584,8 +584,21 @@ class Post_Report_Package {
 	 * @return array
 	 */
 	public function prepare_chapter_blocks( $array, $post_id = false ) {
-		$permalink = get_permalink( $post_id );
 		$results = array();
+
+		if ( 'short-read' === get_post_type( $post_id ) ) {
+			return $results;
+		}
+
+		$cache_id = md5(wp_json_encode([$array, $post_id, '01']));
+
+		$cached_back_chapters = $this->get_toc_cache( $cache_id, 'chapters' );
+		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
+		if ( false !== $cached_back_chapters ) {
+			return $cached_back_chapters;
+		}
+
+		$permalink = get_permalink( $post_id );
 
 		$needs_migration = false;
 
@@ -596,7 +609,7 @@ class Post_Report_Package {
 				if ( array_key_exists('isChapter', $array['attrs']) && true === $array['attrs']['isChapter'] ) {
 					$level = array_key_exists('level', $array['attrs']) ? $array['attrs']['level'] : 2;
 
-					$tags = new WP_HTML_Heading_Processor($array['innerHTML']);
+					$tags = new WP_HTML_Tag_Processor($array['innerHTML']);
 					$tags->next_tag('H'.$level);
 					$id = $tags->get_attribute('id');
 
@@ -624,7 +637,6 @@ class Post_Report_Package {
 						'link' => $permalink . '#' . $id,
 					);
 				} elseif ( 'prc-block/chapter' === $array['blockName'] ) {
-					/// @TODO: In the future I want to log usages of this, there should be no prc-block/chapter blocks after the migration.
 					$needs_migration = true;
 					$id = $array['attrs']['id'];
 					// Ensure the ID is clean and none of the core/heading block id stuff gets added.
@@ -650,10 +662,19 @@ class Post_Report_Package {
 			update_post_meta($post_id, '_migration_legacy_prc_block_chapter_detected', true);
 		}
 
+		$this->update_toc_cache( $post_id, $results, 'chapters' );
+
 		return $results;
 	}
 
 	public function get_internal_chapters($post_id) {
+		$this->bypass_caching = $this->bypass_caching || is_preview();
+		$cached_toc = $this->get_toc_cache( $post_id, 'internal_chapters' );
+		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
+		if ( false !== $cached_toc ) {
+			return $cached_toc;
+		}
+
 		$the_content = get_post_field( 'post_content', $post_id, 'raw' );
 		$legacy = $this->prepare_legacy_headings($the_content, $post_id);
 		if ( false !== $legacy ) {
@@ -661,7 +682,9 @@ class Post_Report_Package {
 		} else {
 			$blocks = parse_blocks( $the_content );
 		}
-		return $this->prepare_chapter_blocks( $blocks, $post_id );
+		$chapters = $this->prepare_chapter_blocks( $blocks, $post_id );
+		$this->update_toc_cache( $post_id, $chapters, 'internal_chapters' );
+		return $chapters;
 	}
 
 	/**
@@ -696,20 +719,28 @@ class Post_Report_Package {
 		return $formatted;
 	}
 
-	private function get_toc_cache($post_id) {
+	private function get_toc_cache($cache_key, $sub_cache) {
 		if (false !== $this->bypass_caching ) {
 			return false;
 		}
-		$cache_key = self::$report_package_key . '_toc';
-		return wp_cache_get( $post_id, $cache_key );
+		$cache_group = self::$report_package_key . '_toc';
+		if ( $sub_cache ) {
+			$cache_group .= '_' . $sub_cache;
+		}
+		$cache_key = md5(wp_json_encode(['key' => $cache_key, '04232024a']));
+		return wp_cache_get( $cache_key, $cache_group );
 	}
 
-	private function update_toc_cache($post_id, $toc) {
+	private function update_toc_cache($cache_key, $toc, $sub_cache) {
 		if (false !== $this->bypass_caching ) {
 			return null;
 		}
-		$cache_key = self::$report_package_key . '_toc';
-		return wp_cache_set( $post_id, $toc, $cache_key, 30 * MINUTE_IN_SECONDS );
+		$cache_group = self::$report_package_key . '_toc';
+		if ( $sub_cache ) {
+			$cache_group .= '_' . $sub_cache;
+		}
+		$cache_key = md5(wp_json_encode(['key' => $cache_key, '04232024a']));
+		return wp_cache_set( $cache_key, $toc, $cache_group, 7 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -719,13 +750,6 @@ class Post_Report_Package {
 	 */
 	public function get_constructed_toc( $post_id ) {
 		$parent_id = $this->get_report_parent_id( $post_id );
-
-		$this->bypass_caching = $this->bypass_caching || is_preview() || is_user_logged_in();
-		$cached_toc = $this->get_toc_cache( $post_id );
-		// If we have a cache and we're not in preview mode or the user is not logged in then return the cache.
-		if ( false !== $cached_toc ) {
-			return $cached_toc;
-		}
 
 		$internal_chapters = $this->get_internal_chapters( $parent_id );
 		$back_chapters = $this->get_back_chapters( $parent_id );
@@ -743,20 +767,7 @@ class Post_Report_Package {
 			),
 		), $back_chapters );
 
-		$this->update_toc_cache( $post_id, $constructed_toc );
-
 		return $constructed_toc;
-	}
-
-	/**
-	 * @hook prc_platform_on_update
-	 * @return void
-	 */
-	public function clear_toc_cache_on_update( $post ) {
-		$cached_toc = $this->get_toc_cache( $post->ID );
-		if ( false !== $cached_toc ) {
-			wp_cache_delete( $post->ID, self::$report_package_key . '_toc');
-		}
 	}
 
 	public function get_pagination($post_id) {

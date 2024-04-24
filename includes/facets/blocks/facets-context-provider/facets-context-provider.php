@@ -39,10 +39,10 @@ class Facets_Context_Provider {
 	 */
 	public function hoist_facet_data_to_pre_render_stage($pre_render, $parsed_block, $parent_block_instance) {
 		if ( 'prc-platform/facets-context-provider' === $parsed_block['blockName'] ) {
-			// global $wp_query;
-			// $facets_api = new Facets_API($wp_query->query);
-			// $this->data = $facets_api->query();
-			// $this->selected = $facets_api->selected_choices;
+			global $wp_query;
+			$facets_api = new Facets_API($wp_query->query);
+			$this->data = $facets_api->query();
+			$this->selected = $facets_api->selected_choices;
 		}
 		return null;
 	}
