@@ -769,7 +769,17 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
+		$cache_invalidate = '01234';
+		$cache_key = md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
 		return wp_cache_set( $cache_key, $toc, $cache_group, 7 * DAY_IN_SECONDS );
+	}
+
+	private function clear_toc_cache_on_update($post_id) {
+		$parent_id = $this->get_report_parent_id( $post_id );
+		delete_post_meta( $parent_id, '_constructed_toc' );
+		$cache_invalidate = '01234';
+		$cache_key = md5(wp_json_encode(['key' => $parent_id, 'invalidate' => $cache_invalidate]));
+		wp_cache_delete( $cache_key, self::$report_package_key . '_toc' );
 	}
 
 	/**
