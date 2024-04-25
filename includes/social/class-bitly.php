@@ -34,12 +34,6 @@ class Bitly {
 	}
 
 	public function register_meta() {
-		register_post_meta( '', 'bitly', array(
-			'type'         => 'string',
-			'description'  => 'The shortened bitly url for the post.',
-			'single'       => true,
-			'show_in_rest' => true,
-		) );
 
 	}
 
