@@ -13,7 +13,7 @@ class Datasets_Download_Logger extends Datasets {
 	}
 
 	public function init_db() {
-		// Setup the database tables.
+		// Dont run anywhere but the primary site.
 		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			return;
 		}
