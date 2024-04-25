@@ -759,14 +759,8 @@ class Features {
 				}
 				// get the primary research-team taxonomy term slug for this based on the $post_slug
 				$post = get_page_by_path( $post_slug, OBJECT, self::$post_type );
-				$primary_research_term = wp_get_post_terms( $post->ID, 'research-teams', array( 'fields' => 'names' ) );
-				// check if we have a primary research term
-				if ( ! empty( $primary_research_term ) ) {
-					$primary_research_term = $primary_research_term[0];
-					$primary_research_term = sanitize_key( $primary_research_term ); // extra sanitization, makes lowercase.
-				} else {
-					$primary_research_term = '';
-				}
+				$primary_research_term = yoast_get_primary_term( 'research-teams', $post->ID );
+				$primary_research_term = sanitize_title( $primary_research_term );
 				$url_prefix = $primary_research_term ? $primary_research_term . '/' : '';
 				add_rewrite_rule(
 					"{$url_prefix}feature/{$post_slug}/{$rewrite_string}?$",
