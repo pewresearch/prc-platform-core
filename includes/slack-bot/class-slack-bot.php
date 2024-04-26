@@ -61,7 +61,7 @@ class Slack_Bot {
 				1
 			);
 
-			$loader->add_action( 'prc_platform_on_update', $this, 'schedule_post_published_notification', 100 );
+			$loader->add_action( 'prc_platform_on_publish', $this, 'schedule_post_published_notification', 100 );
 		}
 	}
 
