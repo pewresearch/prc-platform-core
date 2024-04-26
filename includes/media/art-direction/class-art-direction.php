@@ -97,11 +97,9 @@ class Art_Direction {
 	public $enabled_post_types = array(
 		'short-read',
 		'post',
-		'interactives',
-		'interactive',
 		'feature',
 		'chart',
-		'fact-sheets',
+		'decoded',
 		'fact-sheet',
 		'quiz',
 		'mini-course'
