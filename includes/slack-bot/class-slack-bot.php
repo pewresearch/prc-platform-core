@@ -3,6 +3,7 @@ namespace PRC\Platform;
 use WP_Error;
 use lygav\slackbot\SlackBot;
 use PRC_PLATFORM_SLACK_TOKEN;
+use PRC_PLATFORM_SLACK_WEBHOOK;
 /**
  * Slack Bot
  * Example PHP usage:
@@ -26,12 +27,7 @@ class Slack_Bot {
 
 	private static $username = 'prc_platform';
 
-	private static $channel_endpoints = [
-		'#publish' => 'https://hooks.slack.com/services/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',
-		'#decoded' => 'https://hooks.slack.com/services/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',
-		'#prc-platform-activity' => 'https://hooks.slack.com/services/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',
-	];
-
+	protected $webhook;
 	protected $token;
 
 	public static $handle = 'prc-platform-slack-bot';
@@ -45,6 +41,7 @@ class Slack_Bot {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->webhook = PRC_PLATFORM_SLACK_WEBHOOK;
 		$this->token = PRC_PLATFORM_SLACK_TOKEN;
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-slack-notification.php' );
@@ -54,22 +51,30 @@ class Slack_Bot {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
+			// $loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 
+			$loader->add_action(
+				'prc_slack_bot_send_notification',
+				$this,
+				'handle_scheduled_notification',
+				10,
+				1
+			);
 
-			// Do this very last so that all hooks are in place.
-			$loader->add_action( 'prc_platform_on_publish', $this, 'post_publish_notification', 100 );
-			$loader->add_action( 'prc_platform_on_update', $this, 'post_updated_after_publish', 100 );
-			$loader->add_action( 'created_category', $this, 'category_created_notification', 10, 2 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'schedule_post_published_notification', 100 );
 		}
 	}
 
-	public function handoff_to_action_scheduler() {
-
+	public function handoff_to_action_scheduler($args, $post_id) {
+		$args = [
+			'data' => wp_json_encode($args),
+		];
+		as_enqueue_async_action('prc_slack_bot_send_notification', $args, $post_id, true, 5);
 	}
 
-	public function handle_scheduled_action() {
-
+	public function handle_scheduled_notification($args) {
+		$args = json_decode($args, true);
+		return $this->send_notification( $args );
 	}
 
 	/**
@@ -104,26 +109,10 @@ class Slack_Bot {
 		];
 	}
 
-	public function get_hook_for_channel($channel) {
-		if ( array_key_exists( $channel, self::$channel_endpoints ) ) {
-			return self::$channel_endpoints[$channel];
-		}
-		return false;
-	}
-
-	public function get_notification_image($post_id) {
-		$art = prc_get_art( $post_id, 'twitter' );
-		error_log("get_notification_image: " . print_r($art, true));
-		if ($art) {
-			return $art['url'];
-		}
-		return null;
-	}
-
 	public function send_notification( $args = array() ) {
-		// if ( 'production' !== wp_get_environment_type() ) {
-		// 	return;
-		// }]
+		if ( 'production' !== wp_get_environment_type() ) {
+			return;
+		}
 
 		$args = wp_parse_args( $args, array(
 			'channel' => '#publish',
@@ -132,20 +121,18 @@ class Slack_Bot {
 			'image' => null,
 		) );
 
-		$url = $this->get_hook_for_channel($args['channel']);
-
 		if ( empty( $this->token ) ) {
 			return new WP_Error( '401', 'No Slack token!' );
 		}
-
-		$bot = new SlackBot($url, [
-			'token' => $this->token,
-		]);
 
 		$notification_text = $args['text'];
 		if ( ! $notification_text ) {
 			return new WP_Error( '400', 'No text provided!' );
 		}
+
+		$bot = new SlackBot($this->webhook, [
+			'token' => $this->token,
+		]);
 
 		$notification = $bot->text($notification_text);
 
@@ -156,11 +143,14 @@ class Slack_Bot {
 			}
 		}
 
-		return $notification->send([
+		$notfication = $notification->send([
+			'channel' => $args['channel'],
 			'icon_emoji' => ':speaker:', // A default if the icon url for our app is not available...
 			'unfurl_links' => true,
 			'unfurl_media' => true,
 		]);
+
+		return $notfication;
 	}
 
 	private function construct_notification_args_for_post($post_id) {
@@ -208,7 +198,11 @@ class Slack_Bot {
 		// 	$extras_attachment[] = '*Regions/Countries:* ' . implode( ', ', wp_list_pluck( $regions_countries, 'name' ) );
 		// }
 
-		$notification_text = '*Title:* <' . $permalink . ' | ' . $title . ' > is now live.';
+		$notification_text = wp_sprintf(
+			"*Title:* <%s | %s> is now live.",
+			$permalink,
+			$title
+		);
 		$notification_attachments = [];
 		if ( !empty($overview_attachment) ) {
 			$notification_attachments[] = implode("\n", $overview_attachment);
@@ -231,73 +225,9 @@ class Slack_Bot {
 	 * @param mixed $post
 	 * @return void
 	 */
-	public function post_publish_notification( $post ) {
+	public function schedule_post_published_notification( $post ) {
 		$args = $this->construct_notification_args_for_post($post->ID);
-		$notified = $this->send_notification( $args );
-		error_log("NOTIFIED".print_r($notified, true));
-	}
-
-	/**
-	 * @hook prc_platform_on_update
-	 * @param mixed $post
-	 * @return void
-	 */
-	public function post_updated_after_publish( $post ) {
-		$args = $this->construct_notification_args_for_post($post->ID);
-		$notified = $this->send_notification( $args );
-		error_log("NOTIFIED".print_r($notified, true));
-	}
-
-	/**
-	 * @hook created_category
-	 * @param mixed $term_id
-	 * @param mixed $taxonomy_id
-	 * @return void
-	 */
-	public function category_created_notification( $term_id, $taxonomy_id ) {
-		global $post;
-
-		$term = get_term( $term_id, 'category' );
-
-		if ( ! $term ) {
-			return;
-		}
-
-		$post_type = 'post';
-		if ( $post && property_exists( $post, 'post_type' ) ) {
-			$post_type = $post->post_type;
-		}
-
-		$edit_url = admin_url(
-			add_query_arg(
-				array(
-					'taxonomy'  => 'category',
-					'post_type' => $post_type,
-					's'         => urlencode( $term->name ),
-				),
-				'edit-tags.php'
-			)
-		);
-
-		$attachment_text = array(
-			'*EDIT:* <' . $edit_url . '>',
-		);
-
-		$args = array(
-			'text'        => "'" . $term->name . "' topic category created.",
-			'icon_emoji'  => ':thought_balloon:',
-			'attachments' => json_encode(
-				array(
-					array(
-						'color'     => '#000',
-						'text'      => implode( "\n", $attachment_text ),
-						'mrkdwn_in' => array( 'text' ),
-					),
-				)
-			),
-		);
-
-		$this->send_notification( $args );
+		$this->handoff_to_action_scheduler($args, $post->ID);
 	}
 }
 
