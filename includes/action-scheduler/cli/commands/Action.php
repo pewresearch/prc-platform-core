@@ -125,6 +125,27 @@ class Action {
 	}
 
 	/**
+	 * Purge existing Action Scheduler data.
+	 *
+	 * ## OPTIONS
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Purge
+	 *     $ wp ascli action purge
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @uses \AS_CLI\Commands\Action\Purge::execute()
+	 * @return void
+	 */
+	function purge( array $args, array $assoc_args ) : void {
+		require_once 'Action_Purge.php';
+		$command = new Purge( $args, $assoc_args );
+		$command->execute();
+	}
+
+	/**
 	 * Generates some scheduled actions.
 	 *
 	 * ## OPTIONS
