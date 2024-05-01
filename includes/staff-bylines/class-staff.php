@@ -112,7 +112,7 @@ class Staff {
 		$this->job_title = $this->get_job_title($staff_post_id);
 		$this->job_title_extended = $this->get_job_title_extended($staff_post_id);
 		$this->mini_bio = wp_sprintf(
-			'<a href="%1$s">%2$s</a> <span>is %3$s</span>',
+			'<a href="%1$s">%2$s</a> <span>is %3$s</span>.',
 			$this->link,
 			$this->name,
 			$this->job_title_extended

@@ -34,7 +34,17 @@ const IMAGE_SIZES = [
 	{ label: '1400 Wide', value: '1400-wide' },
 ];
 
-function Image({ id, url, title, type, filename, editLink, attachmentLink }) {
+function Image({
+	id,
+	url,
+	title,
+	type,
+	filename,
+	alt,
+	caption,
+	editLink,
+	attachmentLink,
+}) {
 	const { insertedImageIds, handleImageInsertion, handleImageReplacement } =
 		useAttachments();
 	const { selectBlock } = useDispatch(blockEditorStore);
@@ -76,7 +86,7 @@ function Image({ id, url, title, type, filename, editLink, attachmentLink }) {
 					if (isActive) {
 						selectBlock(insertedImageIds[id].clientId);
 					} else if (leftShiftKeyPressed) {
-						handleImageInsertion(id, url, '640-wide');
+						handleImageInsertion(id, url, '640-wide', alt, caption);
 					} else if (leftOptKeyPressed) {
 						handleImageReplacement(id, url, attachmentLink);
 					} else if (leftCommandKeyPressed) {
@@ -99,7 +109,7 @@ function Image({ id, url, title, type, filename, editLink, attachmentLink }) {
 						value={null}
 						options={IMAGE_SIZES}
 						onChange={(newSize) =>
-							handleImageInsertion(id, url, newSize)
+							handleImageInsertion(id, url, newSize, alt, caption)
 						}
 					/>
 				</Modal>

@@ -2,7 +2,9 @@ import { __ } from '@wordpress/i18n';
 import { uploadMedia } from '@wordpress/media-utils';
 import { PanelBody, PanelRow, Button } from '@wordpress/components';
 
-const SECURITY_TOKEN = ''; // @TODO need to add this to env vars @benwormald
+const { PRC_PLATFORM_FLASH_BRIEFING_TOKEN } = window;
+
+const SECURITY_TOKEN = PRC_PLATFORM_FLASH_BRIEFING_TOKEN;
 
 const addMedia = (content, postId) => {
 	const mediaCollection = new wp.api.collections.Media();

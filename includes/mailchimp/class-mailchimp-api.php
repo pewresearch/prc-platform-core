@@ -39,7 +39,7 @@ class Mailchimp_API {
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$cache_key = 'prc-mailchimp-segments-' . $api_key;
+		$cache_key = 'prc-mailchimp-segments';
 		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
@@ -54,6 +54,8 @@ class Mailchimp_API {
 			"lists/$list_id/segments",
 			array('count' => 30)
 		);
+
+		$tmp = print_r($response, true);
 
 		if ($mailchimp->success()) {
 			$segments = $response['segments'];
@@ -81,7 +83,7 @@ class Mailchimp_API {
 
 			return rest_ensure_response($segments);
 		} else {
-			$error = new WP_Error( 'get-segments-error', __( $list_id . ' - segments - ' . $response['detail'], 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
+			$error = new WP_Error( 'get-segments-error', __( $list_id . ' - segments - ' . $api_key, 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
 			return rest_ensure_response($error);
 		}
 	}

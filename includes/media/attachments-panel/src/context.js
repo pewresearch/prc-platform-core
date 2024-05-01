@@ -117,17 +117,19 @@ function useProvideAttachments() {
 		});
 	};
 
-	const handleImageInsertion = (id, url, size) => {
+	const handleImageInsertion = (id, url, size, alt, caption) => {
 		const insertionIndex = getBlockInsertionPoint().index;
 		const newImageBlock = createBlock('core/image', {
 			id,
 			url,
 			sizeSlug: size,
+			alt,
+			caption,
 		});
 		insertBlock(newImageBlock, insertionIndex);
 	};
 
-	const handleImageReplacement = (id, url, attachmentLink) => {
+	const handleImageReplacement = (id, url, attachmentLink, alt, caption) => {
 		// Check that what we're replacing is actually an image.
 		if (selectedBlockIsImageBlock) {
 			// get the attachment page
@@ -137,6 +139,8 @@ function useProvideAttachments() {
 			attrs.id = id;
 			attrs.url = url;
 			attrs.sizeSlug = sizeSlug;
+			attrs.alt = alt;
+			attrs.caption = caption;
 			if (attachmentLink) {
 				attrs.href = attachmentLink;
 			}

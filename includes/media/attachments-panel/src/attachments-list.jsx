@@ -85,6 +85,7 @@ function Images() {
 				.toLowerCase()
 				.includes(debouncedSearchTerm.toLowerCase())
 	);
+	console.log({ filteredAttachments });
 
 	return (
 		<div>

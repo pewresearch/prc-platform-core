@@ -226,9 +226,60 @@ function classNames(...$args): string {
 	return implode(' ', $classes);
 }
 
+function get_legacy_color_by_slug($slug) {
+	$colors = array(
+		"white" => "#fff",
+		"black" => "#000",
+		"link-color" => "#346EAD",
+		"text-color" => "#2a2a2a",
+		"slate" => "#282828",
+		"gray-darkest" => "#444444",
+		"gray-dark" => "#818181",
+		"gray-medium" => "#b7b8b9",
+		"gray-light" => "#dadbdb",
+		"gray" => "#efefef",
+		"gray-alt" => "#6b6b6b",
+		"gray-cool" => "#F8F8F8",
+		"beige-dark" => "#b7b8af",
+		"beige-medium" => "#f0f0e6",
+		"beige" => "#f7f7f1",
+		"oatmeal-text" => "#58585a",
+		"oatmeal-dark" => "#b2b3a5",
+		"oatmeal-light" => "#f8f9f5",
+		"oatmeal" => "#ecece3",
+		"democrat-blue" => "#436983",
+		"republican-red" => "#bf3927",
+		"eggplant" => "#756a7e",
+		"science-orange" => "#ea9e2c",
+		"global-green" => "#949d48",
+		"race-ethnicity-brown" => "#a55a26",
+		"politics-brown" => "#d1a730",
+		"religion-blue" => "#0090bf",
+		"social-trends-teal" => "#377668",
+		"journalism-plum" => "#733d47",
+		"internet-blue" => "#006699",
+		"mustard" => "#d7b236",
+		"sandwisp" => "#e4cb84",
+		"cape-palliser" => "#a5673f"
+	);
+	if (array_key_exists($slug, $colors)) {
+		return array(
+			'hex' => $colors[$slug],
+			'slug' => $slug,
+			'name' => $colors[$slug],
+		);
+	}
+	return false;
+}
+
 
 function get_color_by_slug($slug) {
 	$colors = \wp_get_global_settings(array('color', 'palette', 'theme'));
+	// check to see if slug is in the legacy color array first
+	$legacy_color = get_legacy_color_by_slug($slug);
+	if ($legacy_color) {
+		return $legacy_color;
+	}
 	$picked_color = array_filter($colors, function($color) use ($slug) {
 		return $color['slug'] === $slug;
 	});
