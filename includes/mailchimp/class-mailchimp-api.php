@@ -44,7 +44,7 @@ class Mailchimp_API {
 
 		$list_id = $this->list_id;
 
-		$cached = get_transient( $cache_key );
+		$cached = wp_cache_get( $cache_key );
 
 		if ( $cached ) {
 			return $cached;
@@ -52,7 +52,7 @@ class Mailchimp_API {
 
 		$response = $mailchimp->get(
 			"lists/$list_id/segments",
-			array('count' => 100)
+			array('count' => 30)
 		);
 
 		if ($mailchimp->success()) {
@@ -77,11 +77,7 @@ class Mailchimp_API {
 			// clean segments of any null values
 			$segments = array_filter($segments);
 
-			set_transient(
-				$cache_key,
-				$segments,
-				1 * DAY_IN_SECONDS
-			);
+			wp_cache_set( $cache_key, $segments, '', 1 * DAY_IN_SECONDS);
 
 			return rest_ensure_response($segments);
 		} else {
