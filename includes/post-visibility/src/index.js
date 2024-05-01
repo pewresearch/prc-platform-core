@@ -24,14 +24,6 @@ function PRCPostVisibility() {
 			editPost({
 				meta: { _postVisibility: 'public' },
 			});
-		} else if (postVisibility === 'hidden_from_index') {
-			editPost({
-				post_status: 'hidden_from_index',
-			});
-		} else if (postVisibility === 'hidden_from_search') {
-			editPost({
-				post_status: 'hidden_from_search',
-			});
 		}
 	}, [postVisibility]);
 

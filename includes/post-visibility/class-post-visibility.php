@@ -41,7 +41,7 @@ class Post_Visibility {
 			$loader->add_filter( 'rest_post_query', $this, 'filter_rest_query', 100, 2 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1 );
 			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 20, 1 );
-			$loader->add_filter( 'get_post_status', $this, 'filter_post_status_in_wp_query', 1, 2 );
+			// $loader->add_filter( 'get_post_status', $this, 'filter_post_status_in_wp_query', 1, 2 );
 		}
 	}
 
