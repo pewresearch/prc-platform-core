@@ -19,6 +19,7 @@ class Post_Report_Package {
 	public static $report_package_key = 'report_package';
 	public static $report_materials_meta_key = 'reportMaterials'; // @TODO: change these to snake case
 	public static $back_chapters_meta_key = 'multiSectionReport'; // @TODO: change these to snake case
+	public static $constructed_toc_key = '_constructed_toc';
 	protected $bypass_caching = false;
 
 	public static $report_materials_schema_properties = array(
@@ -90,6 +91,7 @@ class Post_Report_Package {
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'set_child_posts', 10, 1 );
 			$loader->add_action( 'prc_platform_on_update', $this, 'update_children', 10, 1 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'clear_toc_cache_on_update', 100, 1 );
 			$loader->add_filter( 'rest_post_query', $this, 'hide_back_chapter_posts_restfully', 10, 2 );
 			$loader->add_filter( 'the_title', $this, 'indicate_back_chapter_post', 10, 2 );
 			// $this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
@@ -100,6 +102,7 @@ class Post_Report_Package {
 			'filter_prev_post', 10, 5 );
 			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 10, 1 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'hide_back_chapter_on_non_inherited_query_loops', 9, 1 );
+			$loader->add_action( 'prc_report_package_construct_toc', $this, 'handle_scheduled_construction_of_toc', 10, 1 );
 		}
 	}
 
@@ -745,7 +748,13 @@ class Post_Report_Package {
 				'internal_chapters' => $chapters,
 			);
 		}
+
 		return $formatted;
+	}
+
+	private function get_toc_cache_key($cache_key) {
+		$cache_invalidate = '05012024';
+		return md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
 	}
 
 	private function get_toc_cache($cache_key, $sub_cache = false) {
@@ -756,8 +765,7 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
-		$cache_invalidate = '01234';
-		$cache_key = md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
+		$cache_key = $this->get_toc_cache_key( $cache_key );
 		return wp_cache_get( $cache_key, $cache_group );
 	}
 
@@ -769,17 +777,35 @@ class Post_Report_Package {
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
 		}
-		$cache_invalidate = '01234';
-		$cache_key = md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
+		$cache_key = $this->get_toc_cache_key( $cache_key );
 		return wp_cache_set( $cache_key, $toc, $cache_group, 7 * DAY_IN_SECONDS );
 	}
 
-	private function clear_toc_cache_on_update($post_id) {
+	public function handle_scheduled_construction_of_toc($parent_id) {
+		error_log('handle_scheduled_construction_of_toc' .print_r($parent_id, true));
+		// Process the TOC
+		$this->get_constructed_toc( $parent_id );
+	}
+
+
+	/**
+	 * @hook prc_platform_on_update
+	 */
+	public function clear_toc_cache_on_update($post) {
+		if ( 'post' !== $post->post_type ) {
+			return;
+		}
+		$post_id = $post->ID;
 		$parent_id = $this->get_report_parent_id( $post_id );
-		delete_post_meta( $parent_id, '_constructed_toc' );
-		$cache_invalidate = '01234';
-		$cache_key = md5(wp_json_encode(['key' => $parent_id, 'invalidate' => $cache_invalidate]));
+		if ( 0 !== $post->post_parent ) {
+			// If this is not the parent then lets clear the cache for the parent and schedule a new construction of the toc.
+			return $this->clear_toc_cache_on_update( $parent_id );
+		}
+		delete_post_meta( $parent_id, self::$constructed_toc_key );
+		$cache_key = $this->get_toc_cache_key( $parent_id );
 		wp_cache_delete( $cache_key, self::$report_package_key . '_toc' );
+		// Schedule a new construction of the toc...
+		return as_enqueue_async_action( 'prc_report_package_construct_toc', array( $parent_id ), $parent_id );
 	}
 
 	/**
@@ -790,14 +816,13 @@ class Post_Report_Package {
 	public function get_constructed_toc( $post_id ) {
 		$parent_id = $this->get_report_parent_id( $post_id );
 
-		// Check for cache...
 		$cached_toc = $this->get_toc_cache( $parent_id );
 		if ( false !== $cached_toc ) {
 			return $cached_toc;
 		}
 
 		// Check for post meta stored construced toc...
-		$stored_toc = get_post_meta( $parent_id, '_constructed_toc', true );
+		$stored_toc = get_post_meta( $parent_id, self::$constructed_toc_key, true );
 		if ( !empty( $stored_toc ) ) {
 			return $stored_toc;
 		}
@@ -821,7 +846,7 @@ class Post_Report_Package {
 
 		$this->update_toc_cache( $parent_id, $constructed_toc );
 
-		update_post_meta( $parent_id, '_constructed_toc', $constructed_toc );
+		update_post_meta( $parent_id, self::$constructed_toc_key, $constructed_toc );
 
 		return $constructed_toc;
 	}
