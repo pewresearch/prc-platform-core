@@ -5,12 +5,9 @@ use WP_Error;
 class Post_Visibility {
 	public static $enabled_post_types = array(
 		'post',
-		'page',
 		'short-read',
-		'fact-sheets',
 		'fact-sheet',
-		'interactive',
-		'interactives',
+		'feature',
 		'quiz'
 	);
 
@@ -39,11 +36,12 @@ class Post_Visibility {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_action( 'init', $this, 'register_custom_visibility_statuses', 9 );
+			$loader->add_action( 'init', $this, 'register_custom_visibility_statuses', 10 );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
-			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts' );
 			$loader->add_filter( 'rest_post_query', $this, 'filter_rest_query', 100, 2 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1 );
+			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 20, 1 );
+			$loader->add_filter( 'get_post_status', $this, 'filter_post_status_in_wp_query', 1, 2 );
 		}
 	}
 
@@ -90,6 +88,11 @@ class Post_Visibility {
 				'exclude_from_search' => true,
 				'public'              => true,
 				'publicly_queryable'  => true,
+				/* WP Statuses specific arguments. */
+				'post_type'                   => self::$enabled_post_types, // Only for posts!
+				'show_in_metabox_dropdown'    => true,
+				'show_in_inline_dropdown'     => true,
+				'show_in_press_this_dropdown' => true,
 			)
 		);
 
@@ -100,7 +103,12 @@ class Post_Visibility {
 				'label_count'         => _n_noop( 'Hidden from Index (but not search) <span class="count">(%s)</span>', 'Hidden from Index <span class="count">(%s)</span>', 'wp-statuses' ),
 				'exclude_from_search' => false,
 				'public'              => true,
-				'publicly_queryable'  => false,
+				'publicly_queryable'  => true,
+				/* WP Statuses specific arguments. */
+				'post_type'                   => self::$enabled_post_types, // Only for posts!
+				'show_in_metabox_dropdown'    => true,
+				'show_in_inline_dropdown'     => true,
+				'show_in_press_this_dropdown' => true,
 			)
 		);
 	}
@@ -131,6 +139,20 @@ class Post_Visibility {
 				)
 			);
 		}
+	}
+
+	/**
+	 * @hook get_post_status
+	 */
+	public function filter_post_status_in_wp_query($post_status, $post) {
+		// get the _postVisibility meta value and apply to post_status
+		$post_visibility = get_post_meta( $post->ID, '_postVisibility', true );
+		if ( !empty($post_visibility) ) {
+			$post_visibility = 'public' === $post_visibility ? 'publish' : $post_visibility;
+			$post_status = $post_visibility;
+		}
+		do_action('qm/debug', 'filter_post_status_in_wp_query() post_visibility:: ' .print_r($post_visibility, true) . ' post_status:: ' . print_r($post_status, true));
+		return $post_status;
 	}
 
 	public function register_assets() {

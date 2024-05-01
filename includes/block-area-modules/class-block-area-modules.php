@@ -284,8 +284,6 @@ class Block_Area_Modules {
 			unset($block_module_query_args['tax_query']);
 		}
 
-		do_action('qm/debug', 'Block Area Query Args' . print_r($block_module_query_args, true));
-
 		return $block_module_query_args;
 	}
 

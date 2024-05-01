@@ -18,15 +18,15 @@
 
 <div id="main">
 
-	
+
     <h1 class="page-title">Source: block-area-modules/class-block-area-modules.php</h1>
-	
-
-    
 
 
 
-    
+
+
+
+
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>&lt;?php
@@ -279,8 +279,6 @@ class Block_Area_Modules {
 			$block_module_query_args['post__in'] = array($reference_id);
 			unset($block_module_query_args['tax_query']);
 		}
-
-		do_action('qm/debug', 'Block Area Query Args' . print_r($block_module_query_args, true));
 
 		return $block_module_query_args;
 	}

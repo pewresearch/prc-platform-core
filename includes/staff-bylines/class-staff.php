@@ -30,7 +30,6 @@ class Staff {
 			$post_id = $this->get_staff_post_id_from_term_id( $term_id );
 		}
 
-		do_action('qm/debug', 'new Staff() -> id:' . print_r($post_id, true));
 		if ( is_wp_error( $post_id ) ) {
 			return new WP_Error( '404', 'Staff post not found, ID value not found.' );
 		}
