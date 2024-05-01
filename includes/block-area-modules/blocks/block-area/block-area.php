@@ -22,6 +22,9 @@ class Block_Area extends Block_Area_Modules {
 	}
 
 	public function render_block_area($attributes, $content, $block) {
+		if ( is_paged() ) {
+			return;
+		}
 		$reference_id = array_key_exists('ref', $attributes) ? $attributes['ref'] : false;
 		$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
 		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
