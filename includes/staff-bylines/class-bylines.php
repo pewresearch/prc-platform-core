@@ -61,7 +61,7 @@ class Bylines {
 				if ( false === $return_html ) {
 					$output .= ' ' . $and . ' ';
 				} else {
-					$output .= ' <span class="prc-platform-staff-bylines__separator">' . $and . '</span> ';
+					$output .= ' <span class="prc-platform-staff-bylines__and-separator">' . $and . '</span> ';
 				}
 			} elseif ( 1 < $total && 1 !== $i ) {
 				if ( false === $return_html ) {
