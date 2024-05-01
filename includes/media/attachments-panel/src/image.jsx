@@ -108,9 +108,16 @@ function Image({
 						label="Select Image Size"
 						value={null}
 						options={IMAGE_SIZES}
-						onChange={(newSize) =>
-							handleImageInsertion(id, url, newSize, alt, caption)
-						}
+						onChange={(newSize) => {
+							handleImageInsertion(
+								id,
+								url,
+								newSize,
+								alt,
+								caption
+							);
+							toggleModal(false);
+						}}
 					/>
 				</Modal>
 			)}
