@@ -11,8 +11,8 @@ class URL_Helper {
 		'platform.pewresearch.org',
 		'pewresearch.org',
 		'www.pewresearch.org',
-		'prc-platform-alpha.go-vip.net',
-		'prc-platform-beta.go-vip.net',
+		'alpha.pewresearch.org',
+		'beta.pewresearch.org',
 		'prc-platform.vipdev.lndo.site',
 		// To Deprecate:
 		'pewresearch-org-beta.go-vip.co',
