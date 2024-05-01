@@ -32,10 +32,8 @@ class Staff_Bylines {
 	protected static $enabled_post_types = array(
 		'post',
 		'short-read',
-		'interactives',
-		'interactive',
+		'feature',
 		'fact-sheet',
-		'fact-sheets',
 		'mini-course',
 		'course',
 		'quiz',

@@ -137,6 +137,7 @@ class Datasets {
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_dataset_endpoints' );
 			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'archive_rewrites' );
+			$loader->add_action( 'wp_head', $this, 'schema_ld_json' );
 
 			$loader->add_filter( 'post_type_link', $this, 'modify_dataset_permalink', 20, 2 );
 			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
@@ -435,6 +436,91 @@ class Datasets {
 			$asset_file['version'],
 			true
 		);
+	}
+
+	/**
+	 * @hook wp_head
+	 */
+	public function schema_ld_json() {
+		$schema_json = null;
+		$schema_class = null;
+		if ( is_tax( self::$taxonomy_object_name ) ) {
+			$dataset_id = get_the_ID();
+			// But, usually, we're going to be viewing these from the perspective of the datasets taxonomy archive, so use that to get the dataset id.
+			if ( is_tax('datasets') ) {
+				$dataset_term_id = get_queried_object_id();
+				$dataset = \TDS\get_related_post($dataset_term_id, 'datasets');
+				$dataset_id = $dataset->ID;
+			}
+
+			$schema_json = get_post_meta( $dataset_id, self::$schema_key, true );
+			$schema_class = 'dataset-schema-single';
+		} elseif ( is_post_type_archive( self::$post_object_name ) ) {
+			ob_start();
+			?>
+				{
+					"@context" : "https://schema.org",
+					"@id" : "https://www.pewresearch.org/datasets/",
+					"@type" : "DataCatalog",
+					"name" : "Pew Research Center - Datasets",
+					"creator" : {
+						"@type" : "Organization",
+						"@id" : "https://www.pewresearch.org",
+						"name" : "Pew Research Center"
+					},
+					"description" : "Pew Research Center makes the case-level microdata for much of its research available to the public for secondary analysis after a period of time.",
+					"funder" : [
+						{
+						"@type" : "Organization",
+						"@id" : "https://pewtrusts.org/",
+						"name" : "Pew Charitable Trusts"
+						},
+						{
+						"@type" : "Organization",
+						"@id" : "https://www.templeton.org/",
+						"name" : "John Templeton Foundation"
+						}
+					],
+					"about" :[
+						{
+						"@id": "http://id.loc.gov/authorities/subjects/sh85112549"
+						},
+						{
+						"name" : "religion data"
+						},
+						{
+						"@id" : "http://id.loc.gov/authorities/subjects/sh85127580"
+						},
+						{
+						"name" : "religion surveys"
+						},
+						{
+						"@id" : "http://id.loc.gov/authorities/subjects/sh85124003",
+						"name" : "social science surveys"
+						},
+						{
+						"@id" : "http://id.loc.gov/authorities/subjects/sh85104459",
+						"name": "political surveys"
+						}
+					],
+					"genre" : [
+						{"@id" : "http://id.loc.gov/authorities/genreForms/gf2014026059",
+						"name" : "Census data"
+						}
+					]
+				}
+			<?php
+			$schema_json = ob_get_clean();
+			$schema_class = 'dataset-schema-archive';
+		}
+
+		if ( $schema_json ) {
+			echo wp_sprintf(
+				'<script type="application/ld+json" class="%s">%s</script>',
+				$schema_class,
+				wp_kses_data( $schema_json ),
+			);
+		}
 	}
 
 	public function block_init() {
