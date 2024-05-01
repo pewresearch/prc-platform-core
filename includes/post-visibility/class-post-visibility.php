@@ -41,7 +41,8 @@ class Post_Visibility {
 			$loader->add_filter( 'rest_post_query', $this, 'filter_rest_query', 100, 2 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1 );
 			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 20, 1 );
-			$loader->add_filter( 'get_post_status', $this, 'filter_post_status_in_wp_query', 1, 2 );
+			// $loader->add_filter( 'get_post_status', $this, 'filter_post_status', 100, 2 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'update_post_status_from_post_visibility', 10, 1 );
 		}
 	}
 
@@ -89,10 +90,10 @@ class Post_Visibility {
 				'public'              => true,
 				'publicly_queryable'  => true,
 				/* WP Statuses specific arguments. */
-				'post_type'                   => self::$enabled_post_types, // Only for posts!
-				'show_in_metabox_dropdown'    => true,
-				'show_in_inline_dropdown'     => true,
-				'show_in_press_this_dropdown' => true,
+				// 'post_type'                   => self::$enabled_post_types, // Only for posts!
+				// 'show_in_metabox_dropdown'    => true,
+				// 'show_in_inline_dropdown'     => true,
+				// 'show_in_press_this_dropdown' => true,
 			)
 		);
 
@@ -105,10 +106,10 @@ class Post_Visibility {
 				'public'              => true,
 				'publicly_queryable'  => true,
 				/* WP Statuses specific arguments. */
-				'post_type'                   => self::$enabled_post_types, // Only for posts!
-				'show_in_metabox_dropdown'    => true,
-				'show_in_inline_dropdown'     => true,
-				'show_in_press_this_dropdown' => true,
+				// 'post_type'                   => self::$enabled_post_types, // Only for posts!
+				// 'show_in_metabox_dropdown'    => true,
+				// 'show_in_inline_dropdown'     => true,
+				// 'show_in_press_this_dropdown' => true,
 			)
 		);
 	}
@@ -144,15 +145,38 @@ class Post_Visibility {
 	/**
 	 * @hook get_post_status
 	 */
-	public function filter_post_status_in_wp_query($post_status, $post) {
+	public function filter_post_status($post_status, $post) {
 		// get the _postVisibility meta value and apply to post_status
 		$post_visibility = get_post_meta( $post->ID, '_postVisibility', true );
 		if ( !empty($post_visibility) ) {
 			$post_visibility = 'public' === $post_visibility ? 'publish' : $post_visibility;
 			$post_status = $post_visibility;
 		}
-		do_action('qm/debug', 'filter_post_status_in_wp_query() post_visibility:: ' .print_r($post_visibility, true) . ' post_status:: ' . print_r($post_status, true));
 		return $post_status;
+	}
+
+	/**
+	 * @hook prc_platform_on_update
+	 */
+	public function update_post_status_from_post_visibility($post) {
+		$post_id = $post->ID;
+		if ( !in_array($post->post_type, self::$enabled_post_types, true) ) {
+			return;
+		}
+		$post_visibility = get_post_meta( $post_id, '_postVisibility', true );
+		if ( !empty($post_visibility) ) {
+			$post_visibility = 'public' === $post_visibility ? 'publish' : $post_visibility;
+		} else {
+			$post_visibility = 'publish';
+		}
+		if ( $post_visibility !== $post->post_status ) {
+			wp_update_post(
+				array(
+					'ID' => $post_id,
+					'post_status' => $post_visibility
+				)
+			);
+		}
 	}
 
 	public function register_assets() {
