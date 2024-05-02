@@ -71,7 +71,7 @@ class Staff_Bylines {
 		'hierarchical'       => false,
 		'menu_position'      => 30,
 		'taxonomies'         => array( 'areas-of-expertise', 'bylines', 'staff-type', 'research-teams' ),
-		'supports'           => array( 'title', 'editor', 'thumbnail', 'revisions', 'author', 'custom-fields' ),
+		'supports'           => array( 'title', 'editor', 'thumbnail', 'revisions', 'author', 'custom-fields', 'excerpt' ),
 	);
 
 	public static $staff_type_taxonomy_args = array(

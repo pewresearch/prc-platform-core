@@ -202,20 +202,20 @@ class Staff {
 	}
 
 	public function get_staff_photo($staff_post_id = false) {
-		$staff_photo = false;
+		$staff_photo_data = false;
 		$staff_photo_id = get_post_thumbnail_id($staff_post_id);
-		$staff_photo = wp_get_attachment_image_src($staff_photo_id, 'full');
-		$staff_portrait = wp_get_attachment_image_src($staff_photo_id, '160-portrait');
+		$staff_photo = wp_get_attachment_image_src($staff_photo_id, 'large');
+		$staff_portrait = wp_get_attachment_image_src($staff_photo_id, '320-portrait');
 		if ( false !== $staff_photo || false !== $staff_portrait ) {
-			$staff_photo = [];
+			$staff_photo_data = [];
 		}
 		if ( false !== $staff_photo ) {
-			$staff_photo['full'] = $staff_photo;
+			$staff_photo_data['full'] = $staff_photo;
 		}
 		if ( false !== $staff_portrait ) {
-			$staff_photo['thumbnail'] = $staff_portrait;
+			$staff_photo_data['thumbnail'] = $staff_portrait;
 		}
-		return $staff_photo;
+		return $staff_photo_data;
 	}
 
 	public function get_social_profiles($staff_post_id = false) {
