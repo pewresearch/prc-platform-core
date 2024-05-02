@@ -2,9 +2,9 @@ import { __ } from '@wordpress/i18n';
 import { uploadMedia } from '@wordpress/media-utils';
 import { PanelBody, PanelRow, Button } from '@wordpress/components';
 
-const { PRC_PLATFORM_FLASH_BRIEFING_TOKEN } = window;
+const { prcFlashBriefingConfig } = window;
 
-const SECURITY_TOKEN = PRC_PLATFORM_FLASH_BRIEFING_TOKEN;
+const SECURITY_TOKEN = prcFlashBriefingConfig.apiToken;
 
 const addMedia = (content, postId) => {
 	const mediaCollection = new wp.api.collections.Media();
@@ -23,17 +23,19 @@ const addMedia = (content, postId) => {
 			}
 			uploadMedia({
 				filesList: [
-					new File([content], `$brief-${postId}-${Date.now()}.mp3`, {
+					new File([content], `brief-${postId}-${Date.now()}.mp3`, {
 						type: 'audio/mpeg',
 					}),
 				],
 				additionalData: {
 					post: postId,
-					foo: 'bar',
 				},
 				onFileChange: ([fileObj]) => {
-					document.getElementById('audio-source').src = fileObj.url;
-					document.getElementById('audio-el').load();
+					if (fileObj && fileObj?.url) {
+						document.getElementById('audio-source').src =
+							fileObj.url;
+						document.getElementById('audio-el').load();
+					}
 				},
 				onError: console.error,
 			});
@@ -49,6 +51,7 @@ async function postData(url, data) {
 		},
 		body: JSON.stringify(data),
 	});
+	console.log({ res });
 	const content = await res.blob();
 	return content;
 }
