@@ -121,6 +121,11 @@ class Staff_Bylines {
 		'show_in_rest'      => true,
 		'show_admin_column' => true,
 		'show_in_rest'      => true,
+		'rewrite'           => array(
+			'slug'         => 'expertise',
+			'with_front'   => true,
+			'hierarchical' => true,
+		),
 	);
 
 	public static $byline_taxonomy_args = array(

@@ -90,6 +90,7 @@ class Facets_Context_Provider {
 				)),
 				'data-wp-init' => 'callbacks.onInit',
 				'data-wp-watch--on-selection' => 'callbacks.onSelection',
+				'data-wp-class--is-processing' => 'state.isProcessing',
 			)),
 			$content,
 		);
