@@ -114,6 +114,7 @@ class Platform_Bootstrap {
 		$this->include('block-editor/class-block-editor.php');
 		$this->include('block-utils/index.php');
 		$this->include('convert-to-block/class-convert-to-block.php');
+		$this->include('copilot/class-copilot.php');
 		$this->include('courses/class-courses.php');
 		$this->include('datasets/class-datasets.php');
 		$this->include('embeds/class-embeds.php');
