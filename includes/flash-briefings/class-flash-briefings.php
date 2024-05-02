@@ -71,13 +71,16 @@ class Flash_Briefings {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			$screen = get_current_screen();
+			$api_token = \PRC_PLATFORM_FLASH_BRIEFING_TOKEN;
 			if ( in_array( $screen->post_type, array(self::$post_type) ) ) {
 				wp_enqueue_script( self::$handle );
 				wp_enqueue_style( self::$handle );
 				wp_localize_script(
-					'prc-platform-flash-briefing',
-					'PRC_PLATFORM_FLASH_BRIEFING_TOKEN',
-					PRC_PLATFORM_FLASH_BRIEFING_TOKEN
+					self::$handle,
+					'prcFlashBriefingConfig',
+					array(
+						'apiToken' => $api_token,
+					)
 				);
 			}
 		}
