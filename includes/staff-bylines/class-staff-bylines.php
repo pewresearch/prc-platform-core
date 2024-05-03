@@ -101,7 +101,7 @@ class Staff_Bylines {
 	public static $expertise_taxonomy_args = array(
 		'hierarchical'      => true,
 		'labels'            => array(
-			'name'                       => 'Expertise',
+			'name'                       => 'Areas of Expertise',
 			'singular_name'              => 'Expertise',
 			'search_items'               => 'Search Expertise',
 			'popular_items'              => 'Popular Expertise',
@@ -121,11 +121,11 @@ class Staff_Bylines {
 		'show_in_rest'      => true,
 		'show_admin_column' => true,
 		'show_in_rest'      => true,
-		'rewrite'           => array(
+		'rewrite'           => [
 			'slug'         => 'expertise',
-			'with_front'   => true,
+			'with_front'   => false,
 			'hierarchical' => true,
-		),
+		],
 	);
 
 	public static $byline_taxonomy_args = array(
@@ -247,10 +247,10 @@ class Staff_Bylines {
 		if ( 'last_name' === $q->get( 'orderby' ) && $order ) {
 			if( in_array( strtoupper( $order ), ['ASC', 'DESC'] ) )
 			{
-				// order by last name
-				$orderby = "RIGHT($wpdb->posts.post_title, LOCATE(' ', REVERSE($wpdb->posts.post_title)) - 1) " . $order;
+				// Order by last name.
+				$orderby = "RIGHT($wpdb->posts.post_title, LOCATE(' ', REVERSE($wpdb->posts.post_title)) - 1) " . 'ASC';
 			}
-			// if post_title is "Michael Dimock", rank first.
+			// If Michael Dimock is present, make sure he is always first.
 			$orderby = "CASE WHEN $wpdb->posts.post_title = 'Michael Dimock' THEN 1 ELSE 2 END, $orderby";
 		}
 		return $orderby;
@@ -272,16 +272,16 @@ class Staff_Bylines {
 	 */
 	public function hide_former_staff( $query ) {
 		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {
-			// $query->set(
-			// 	'tax_query',
-			// 	array(
-			// 		array(
-			// 			'taxonomy' => 'staff-type',
-			// 			'field'    => 'slug',
-			// 			'terms'    => array( 'staff', 'executive-team', 'managing-directors' ),
-			// 		),
-			// 	)
-			// );
+			$query->set(
+				'tax_query',
+				array(
+					array(
+						'taxonomy' => 'staff-type',
+						'field'    => 'slug',
+						'terms'    => array( 'staff', 'executive-team', 'managing-directors' ),
+					),
+				)
+			);
 		}
 	}
 
