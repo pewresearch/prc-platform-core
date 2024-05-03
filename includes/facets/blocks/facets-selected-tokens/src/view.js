@@ -45,7 +45,8 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 			}
 
 			const facetSlug = ref.getAttribute('data-facet-slug');
-			targetStore.actions.onClear(facetSlug);
+			const facetValue = ref.getAttribute('data-facet-value');
+			targetStore.actions.onClear(facetSlug, facetValue);
 		},
 		onReset: () => {
 			const targetStore = store(targetNamespace);
@@ -63,6 +64,7 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 			return false;
 		},
 		updateTokens: () => {
+			console.log('updateTokens');
 			const targetStore = store(targetNamespace);
 			if (!targetStore.state) {
 				return;
@@ -72,12 +74,13 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 
 			const selected = targetStore.state.getSelected;
 			// map selected onto tokens...
-			const tokens = Object.keys(selected).map((slug) => {
+			const tokens = Object.keys(selected).flatMap((slug) => {
 				const values = selected[slug];
-				return {
+				return values.map((value) => ({
 					slug,
-					label: values.join(', '),
-				};
+					value,
+					label: value,
+				}));
 			});
 			state.tokens = tokens;
 		},

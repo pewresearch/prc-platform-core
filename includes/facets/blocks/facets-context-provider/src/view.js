@@ -5,6 +5,40 @@ import { store, getElement, getContext } from '@wordpress/interactivity';
 
 const { addQueryArgs } = window.wp.url;
 
+function constructNewUrl(selected = false) {
+	const tmp = {};
+	if (false === selected) {
+		return;
+	}
+	// Construct a comma separated string for each selected facet.
+	Object.keys(selected).forEach((key) => {
+		if (Array.isArray(selected[key])) {
+			tmp[`_${key}`] = selected[key].join(',');
+		} else {
+			tmp[`_${key}`] = selected[key];
+		}
+	});
+	// Double check tmp, if it has a key with empty value, remove it.
+	Object.keys(tmp).forEach((key) => {
+		// Check if tmp[key] is an empty string or an empty array.
+		if (tmp[key] === '') {
+			delete tmp[key];
+		}
+	});
+	// Remove any query args on the current url.
+	const stableUrl = window.location.href.split('?')[0];
+	// If our url has /page/x/ in it, we need to remove that, we're sending the user back to the first page.
+	const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
+	const newUrl = addQueryArgs(stableUrlClean, tmp);
+	console.log(
+		'facets-context-provider::constructNewUrl = :::::',
+		stableUrlClean,
+		tmp,
+		newUrl
+	);
+	return newUrl;
+}
+
 const { state, actions } = store('prc-platform/facets-context-provider', {
 	state: {
 		mouseEnterPreFetchTimer: 500,
@@ -13,37 +47,10 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			return state.selected;
 		},
 		get getUpdatedUrl() {
-			const tmp = {};
 			if (undefined === state.selected) {
 				return;
 			}
-			// Construct a comma separated string for each selected facet.
-			Object.keys(state.selected).forEach((key) => {
-				if (Array.isArray(state.selected[key])) {
-					tmp[`_${key}`] = state.selected[key].join(',');
-				} else {
-					tmp[`_${key}`] = state.selected[key];
-				}
-			});
-			// Double check tmp, if it has a key with empty value, remove it.
-			Object.keys(tmp).forEach((key) => {
-				// Check if tmp[key] is an empty string or an empty array.
-				if (tmp[key] === '') {
-					delete tmp[key];
-				}
-			});
-			// const stableUrl should be window.location.href without any query args.
-			const stableUrl = window.location.href.split('?')[0];
-			// if stableUrl has /page/x/ in it, we need to remove that.
-			const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
-			const newUrl = addQueryArgs(stableUrlClean, tmp);
-			console.log(
-				'facets-context-provider::getUpdatedUrl = :::::',
-				stableUrlClean,
-				tmp,
-				newUrl
-			);
-			return newUrl;
+			return constructNewUrl(state.selected);
 		},
 	},
 	actions: {
@@ -70,8 +77,8 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 
 			const router = yield import('@wordpress/interactivity-router');
-
 			yield router.actions.navigate(newUrl);
+
 			state.isProcessing = false;
 		},
 		onCheckboxClick: (event) => {
@@ -128,11 +135,12 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 
 			state.selected = newSelected;
 		},
-		*prefetch() {
+		*prefetch(newUrl) {
 			const router = yield import('@wordpress/interactivity-router');
-			const newUrl = state.getUpdatedUrl;
 
-			// check if newUrl is in state.prefetched and if not then 1. add it to the state.prefetched and 2. prefetch it. otherwise return.
+			// check if newUrl is in state.prefetched and if not then
+			// 1. add it to the state.prefetched
+			// 2. prefetch it. otherwise return.
 			if (state.prefetched.includes(newUrl)) {
 				return;
 			}
@@ -146,10 +154,24 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			);
 			yield router.actions.prefetch(newUrl);
 		},
-		*onCheckboxMouseEnter() {
-			yield actions.prefetch();
+		*onCheckboxMouseEnter(event) {
+			if (event.target.tagName === 'LABEL') {
+				event.preventDefault();
+			}
+			const context = getContext();
+			const { ref } = getElement();
+			const input = ref.querySelector('input');
+			const { id } = input;
+			const { value } = state[id];
+			// The wpKey of the parent parent element, the facet-template block, contains the facet slug.
+			const facetSlug = ref.parentElement.parentElement.dataset.wpKey;
+
+			const currentlySelected = state.selected;
+			const nextSelected = { ...currentlySelected, [facetSlug]: value };
+			const nextUrl = constructNewUrl(nextSelected);
+			yield actions.prefetch(nextUrl);
 		},
-		onClear: (facetSlug) => {
+		onClear: (facetSlug, facetValue = null) => {
 			const tmp = state.selected;
 			// if there is no facetSlug then clear all...
 			if (!facetSlug) {
@@ -158,6 +180,15 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 				actions.updateResults();
 				return;
 			}
+			// If there is a facet value then lets remove it for the facetSlug but keep the rest.
+			if (facetValue) {
+				tmp[facetSlug] = tmp[facetSlug].filter(
+					(item) => item !== facetValue
+				);
+				state.selected = { ...tmp };
+				return;
+			}
+
 			// Clear all inputs that have the value of the facetSlug.
 			Object.keys(state).find((key) => {
 				if (

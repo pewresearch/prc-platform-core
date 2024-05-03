@@ -63,9 +63,10 @@ class Facet_Template {
 			// Check if the label is a datetime string...
 			$label_is_datetime = strtotime($choice['label']) !== false;
 			$label = $label_is_datetime ? gmdate('Y', strtotime($choice['label'])) : $choice['label'];
+			$count = $choice['count'] > 250 ? '250+' : $choice['count'];
 			$opts = array(
 				'value' => $choice['value'],
-				'label' => $label . ' (' . $choice['count'] . ')',
+				'label' => $label . ' (' . $count . ')',
 				'isSelected' => false,
 			);
 			if ( in_array($choice['value'], $selected_choices) ) {
@@ -103,7 +104,8 @@ class Facet_Template {
 		$i = 1;
 		foreach ($facet_choices as $choice) {
 			$field = $field_template;
-			$field['attrs']['label'] = $choice['label'] . ' (' . $choice['count'] . ')';
+			$count = $choice['count'] > 250 ? '250+' : $choice['count'];
+			$field['attrs']['label'] = $choice['label'] . ' (' . $count . ')';
 			$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
 			$field['attrs']['value'] = $choice['value'];
 			$field['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);

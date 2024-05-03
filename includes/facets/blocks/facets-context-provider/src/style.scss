@@ -1,6 +1,7 @@
 .wp-block-prc-platform-facets-context-provider {
 	&.is-processing {
-		.wp-block-prc-block-story-item {
+		.wp-block-prc-block-story-item,
+		.wp-block-prc-platform-facets-selected-tokens {
 			opacity: 0.5;
 			pointer-events: none;
 		}

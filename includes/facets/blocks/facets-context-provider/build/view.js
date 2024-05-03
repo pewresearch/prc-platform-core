@@ -1,2 +1,274 @@
-import*as e from"@wordpress/interactivity";var t={438:e=>{e.exports=import("@wordpress/interactivity-router")}},o={};function r(e){var c=o[e];if(void 0!==c)return c.exports;var s=o[e]={exports:{}};return t[e](s,s.exports,r),s.exports}r.d=(e,t)=>{for(var o in t)r.o(t,o)&&!r.o(e,o)&&Object.defineProperty(e,o,{enumerable:!0,get:t[o]})},r.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),(()=>{const t=(n={getContext:()=>e.getContext,getElement:()=>e.getElement,store:()=>e.store},l={},r.d(l,n),l),{addQueryArgs:o}=window.wp.url,{state:c,actions:s}=(0,t.store)("prc-platform/facets-context-provider",{state:{mouseEnterPreFetchTimer:500,navigateTimer:1e3,get getSelected(){return c.selected},get getUpdatedUrl(){const e={};if(void 0===c.selected)return;Object.keys(c.selected).forEach((t=>{Array.isArray(c.selected[t])?e[`_${t}`]=c.selected[t].join(","):e[`_${t}`]=c.selected[t]})),Object.keys(e).forEach((t=>{""===e[t]&&delete e[t]}));const t=window.location.href.split("?")[0].replace(/\/page\/\d+\//,"/"),r=o(t,e);return console.log("facets-context-provider::getUpdatedUrl = :::::",t,e,r),r}},actions:{*updateResults(){const e=c.getSelected,t=window.location.href,o=c.getUpdatedUrl;if(o===t)return void console.log("facets-context-provider::updateResults (NO CHANGE)","No change...");c.isProcessing=!0,console.log("facets-context-provider::updateResults (CHANGE DETECTED)",Object.keys(e),o,t);const s=yield Promise.resolve().then(r.bind(r,438));yield s.actions.navigate(o),c.isProcessing=!1},onCheckboxClick:e=>{"LABEL"===e.target.tagName&&e.preventDefault();const o=(0,t.getContext)(),{ref:r}=(0,t.getElement)(),s=r.querySelector("input"),{id:n}=s,{checked:l,value:d,type:i}=c[n];c[n].checked=!l;const a=r.parentElement.parentElement.dataset.wpKey;c.selected[a]||(c.selected[a]=[]),c.selected[a].includes(d)?c.selected[a]=c.selected[a].filter((e=>e!==d)):c.selected[a]="radio"===i?[d]:[...c.selected[a],d],console.log("facets-context-provider::onCheckboxClick",r,c,n,o)},onSelectChange:(e,t)=>{const o=t.parentElement.parentElement.parentElement.dataset.wpKey,r=c.getSelected,s=r;r[o]&&r[o].includes(e)?s[o]=s[o].filter((t=>t!==e)):s[o]=[e],c.selected=s},*prefetch(){const e=yield Promise.resolve().then(r.bind(r,438)),t=c.getUpdatedUrl;c.prefetched.includes(t)||(c.prefetched.push(t),console.log("facets-context-provider::prefetch",t,c.prefetched),yield e.actions.prefetch(t))},*onCheckboxMouseEnter(){yield s.prefetch()},onClear:e=>{const t=c.selected;if(!e)return c.selected={},void s.updateResults();Object.keys(c).find((o=>{"object"==typeof c[o]&&t[e].includes(c[o]?.value)&&(c[o].checked=!1)})),delete t[e],c.selected={...t}}},callbacks:{onSelection(){const e=c.getSelected,t=Object.keys(e).length;console.log("facets-context-provider::onSelection()",e,Object.keys(e),t),t<=0?c.isDisabled=!0:(s.updateResults(),c.isDisabled=!1)}}});var n,l})();
+import * as __WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__ from "@wordpress/interactivity";
+/******/ var __webpack_modules__ = ({
+
+/***/ "@wordpress/interactivity-router":
+/*!**************************************************!*\
+  !*** external "@wordpress/interactivity-router" ***!
+  \**************************************************/
+/***/ ((module) => {
+
+module.exports = import("@wordpress/interactivity-router");;
+
+/***/ }),
+
+/***/ "@wordpress/interactivity":
+/*!*******************************************!*\
+  !*** external "@wordpress/interactivity" ***!
+  \*******************************************/
+/***/ ((module) => {
+
+var x = (y) => {
+	var x = {}; __webpack_require__.d(x, y); return x
+} 
+var y = (x) => (() => (x))
+module.exports = __WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__;
+
+/***/ })
+
+/******/ });
+/************************************************************************/
+/******/ // The module cache
+/******/ var __webpack_module_cache__ = {};
+/******/ 
+/******/ // The require function
+/******/ function __webpack_require__(moduleId) {
+/******/ 	// Check if module is in cache
+/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 	if (cachedModule !== undefined) {
+/******/ 		return cachedModule.exports;
+/******/ 	}
+/******/ 	// Create a new module (and put it into the cache)
+/******/ 	var module = __webpack_module_cache__[moduleId] = {
+/******/ 		// no module.id needed
+/******/ 		// no module.loaded needed
+/******/ 		exports: {}
+/******/ 	};
+/******/ 
+/******/ 	// Execute the module function
+/******/ 	__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 
+/******/ 	// Return the exports of the module
+/******/ 	return module.exports;
+/******/ }
+/******/ 
+/************************************************************************/
+/******/ /* webpack/runtime/make namespace object */
+/******/ (() => {
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = (exports) => {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/ })();
+/******/ 
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+/*!*********************!*\
+  !*** ./src/view.js ***!
+  \*********************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/interactivity */ "@wordpress/interactivity");
+/**
+ * WordPress Dependencies
+ */
+
+const {
+  addQueryArgs
+} = window.wp.url;
+function constructNewUrl(selected = false) {
+  const tmp = {};
+  if (false === selected) {
+    return;
+  }
+  // Construct a comma separated string for each selected facet.
+  Object.keys(selected).forEach(key => {
+    if (Array.isArray(selected[key])) {
+      tmp[`_${key}`] = selected[key].join(',');
+    } else {
+      tmp[`_${key}`] = selected[key];
+    }
+  });
+  // Double check tmp, if it has a key with empty value, remove it.
+  Object.keys(tmp).forEach(key => {
+    // Check if tmp[key] is an empty string or an empty array.
+    if (tmp[key] === '') {
+      delete tmp[key];
+    }
+  });
+  // Remove any query args on the current url.
+  const stableUrl = window.location.href.split('?')[0];
+  // If our url has /page/x/ in it, we need to remove that, we're sending the user back to the first page.
+  const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
+  const newUrl = addQueryArgs(stableUrlClean, tmp);
+  console.log('facets-context-provider::constructNewUrl = :::::', stableUrlClean, tmp, newUrl);
+  return newUrl;
+}
+const {
+  state,
+  actions
+} = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.store)('prc-platform/facets-context-provider', {
+  state: {
+    mouseEnterPreFetchTimer: 500,
+    navigateTimer: 1000,
+    get getSelected() {
+      return state.selected;
+    },
+    get getUpdatedUrl() {
+      if (undefined === state.selected) {
+        return;
+      }
+      return constructNewUrl(state.selected);
+    }
+  },
+  actions: {
+    *updateResults() {
+      const selected = state.getSelected;
+      const currentUrl = window.location.href;
+      const newUrl = state.getUpdatedUrl;
+      if (newUrl === currentUrl) {
+        console.log('facets-context-provider::updateResults (NO CHANGE)', 'No change...');
+        return;
+      }
+      state.isProcessing = true;
+      console.log('facets-context-provider::updateResults (CHANGE DETECTED)', Object.keys(selected), newUrl, currentUrl);
+      const router = yield Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! @wordpress/interactivity-router */ "@wordpress/interactivity-router"));
+      yield router.actions.navigate(newUrl);
+      state.isProcessing = false;
+    },
+    onCheckboxClick: event => {
+      if (event.target.tagName === 'LABEL') {
+        event.preventDefault();
+      }
+      const context = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
+      const input = ref.querySelector('input');
+      const {
+        id
+      } = input;
+      const {
+        checked,
+        value,
+        type
+      } = state[id];
+      state[id].checked = !checked;
+      // The wpKey of the parent parent element, the facet-template block, contains the facet slug.
+      const facetSlug = ref.parentElement.parentElement.dataset.wpKey;
+      if (!state.selected[facetSlug]) {
+        state.selected[facetSlug] = [];
+      }
+      if (state.selected[facetSlug].includes(value)) {
+        state.selected[facetSlug] = state.selected[facetSlug].filter(item => item !== value);
+      } else if ('radio' === type) {
+        state.selected[facetSlug] = [value];
+      } else {
+        state.selected[facetSlug] = [...state.selected[facetSlug], value];
+      }
+      console.log('facets-context-provider::onCheckboxClick', ref, state, id, context);
+    },
+    onSelectChange: (value, ref) => {
+      const facetSlug = ref.parentElement.parentElement.parentElement.dataset.wpKey;
+      const currentSelected = state.getSelected;
+      const newSelected = currentSelected;
+      if (!currentSelected[facetSlug]) {
+        newSelected[facetSlug] = [value];
+      } else if (currentSelected[facetSlug].includes(value)) {
+        newSelected[facetSlug] = newSelected[facetSlug].filter(item => item !== value);
+      } else {
+        newSelected[facetSlug] = [value];
+      }
+      state.selected = newSelected;
+    },
+    *prefetch(newUrl) {
+      const router = yield Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! @wordpress/interactivity-router */ "@wordpress/interactivity-router"));
+
+      // check if newUrl is in state.prefetched and if not then
+      // 1. add it to the state.prefetched
+      // 2. prefetch it. otherwise return.
+      if (state.prefetched.includes(newUrl)) {
+        return;
+      }
+      state.prefetched.push(newUrl);
+      console.log('facets-context-provider::prefetch', newUrl, state.prefetched);
+      yield router.actions.prefetch(newUrl);
+    },
+    *onCheckboxMouseEnter(event) {
+      if (event.target.tagName === 'LABEL') {
+        event.preventDefault();
+      }
+      const context = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
+      const input = ref.querySelector('input');
+      const {
+        id
+      } = input;
+      const {
+        value
+      } = state[id];
+      // The wpKey of the parent parent element, the facet-template block, contains the facet slug.
+      const facetSlug = ref.parentElement.parentElement.dataset.wpKey;
+      const currentlySelected = state.selected;
+      const nextSelected = {
+        ...currentlySelected,
+        [facetSlug]: value
+      };
+      const nextUrl = constructNewUrl(nextSelected);
+      yield actions.prefetch(nextUrl);
+    },
+    onClear: (facetSlug, facetValue = null) => {
+      const tmp = state.selected;
+      // if there is no facetSlug then clear all...
+      if (!facetSlug) {
+        state.selected = {};
+        // lets also re-run the updateResults.
+        actions.updateResults();
+        return;
+      }
+      // If there is a facet value then lets remove it for the facetSlug but keep the rest.
+      if (facetValue) {
+        tmp[facetSlug] = tmp[facetSlug].filter(item => item !== facetValue);
+        state.selected = {
+          ...tmp
+        };
+        return;
+      }
+
+      // Clear all inputs that have the value of the facetSlug.
+      Object.keys(state).find(key => {
+        if (typeof state[key] === 'object' && tmp[facetSlug].includes(state[key]?.value)) {
+          state[key].checked = false;
+        }
+      });
+      delete tmp[facetSlug];
+      state.selected = {
+        ...tmp
+      };
+    }
+  },
+  callbacks: {
+    onSelection() {
+      const selected = state.getSelected;
+      const keysLength = Object.keys(selected).length;
+      console.log('facets-context-provider::onSelection()', selected, Object.keys(selected), keysLength);
+      // No selections? Disable the update button.
+      if (keysLength <= 0) {
+        state.isDisabled = true;
+      } else {
+        // Once we have some selections, lets run a refresh.
+        actions.updateResults();
+        state.isDisabled = false;
+      }
+    }
+  }
+});
+})();
+
+
 //# sourceMappingURL=view.js.map

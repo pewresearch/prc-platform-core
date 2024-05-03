@@ -1,6 +1,8 @@
 <?php
 namespace PRC\Platform\Facets;
 
+$selected = $block->context['facetsContextProvider']['selected'];
+
 $selected_tokens_id = wp_unique_id('prc-platform-facets-selected-tokens-');
 $token_border_color     = array_key_exists('tokenBorderColor', $attributes) ? $attributes['tokenBorderColor'] : false;
 $token_background_color = array_key_exists('tokenBackgroundColor', $attributes) ? $attributes['tokenBackgroundColor'] : false;
@@ -12,7 +14,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes([
 	]),
 	'id' => $selected_tokens_id,
 	'data-wp-router-region' => $selected_tokens_id,
-	'data-wp-init--update-tokens' => 'callbacks.updateTokens',
+	'data-wp-watch--update-tokens' => 'callbacks.updateTokens',
 	'data-wp-class--has-tokens' => 'callbacks.hasTokens',
 ]);
 
@@ -21,6 +23,7 @@ $token_template = wp_sprintf(
 	\PRC\Platform\Block_Utils\get_block_html_attributes( array(
 		'class'	=> sprintf( 'wp-block-prc-platform-facets-selected-tokens__token has-border-%1$s-color has-%2$s-background-color', $token_border_color, $token_background_color ),
 		'data-wp-bind--data-facet-slug' => 'context.token.slug',
+		'data-wp-bind--data-facet-value' => 'context.token.value',
 		'data-wp-on--click' => 'actions.onTokenClick',
 	) ),
 	$clear_icon
