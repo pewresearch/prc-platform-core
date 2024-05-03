@@ -156,6 +156,7 @@ const {
         value,
         type
       } = state[id];
+      console.log('facets-context-provider::onCheckboxClick', context, state[id]);
       state[id].checked = !checked;
       // The wpKey of the parent parent element, the facet-template block, contains the facet slug.
       const facetSlug = ref.parentElement.parentElement.dataset.wpKey;

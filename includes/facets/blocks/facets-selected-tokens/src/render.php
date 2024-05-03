@@ -13,8 +13,7 @@ $block_wrapper_attrs = get_block_wrapper_attributes([
 		'namespace' => 'prc-platform/facets-selected-tokens'
 	]),
 	'id' => $selected_tokens_id,
-	'data-wp-router-region' => $selected_tokens_id,
-	'data-wp-watch--update-tokens' => 'callbacks.updateTokens',
+	'data-wp-watch--update-pager' => 'callbacks.updatePager',
 	'data-wp-class--has-tokens' => 'callbacks.hasTokens',
 ]);
 
@@ -28,8 +27,9 @@ $token_template = wp_sprintf(
 	) ),
 	$clear_icon
 );
+
 $token_list = wp_sprintf(
-	'<template data-wp-each--token="state.tokens" data-wp-each-key="context.token.slug">%1$s</template>',
+	'<template data-wp-each--token="state.tokens" data-wp-each-key="context.token.value">%1$s</template>',
 	$token_template,
 );
 

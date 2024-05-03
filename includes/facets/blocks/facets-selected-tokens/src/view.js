@@ -33,17 +33,52 @@ const createPagerText = (pager) => {
 
 const { state } = store('prc-platform/facets-selected-tokens', {
 	state: {
-		tokens: [],
+		get targetStore() {
+			const targetStore = store(targetNamespace);
+			if (!targetStore.state) {
+				return false;
+			}
+			return targetStore;
+		},
+		get pagerText() {
+			const { targetStore } = state;
+			const { pager } = targetStore.state.data;
+			return createPagerText(pager);
+		},
+		get tokens() {
+			const targetStore = store(targetNamespace);
+			if (!targetStore.state) {
+				return;
+			}
+			const selected = targetStore.state.getSelected;
+			if (!selected) {
+				return [];
+			}
+			const tokens = Object.keys(selected).flatMap((slug) => {
+				const values = selected[slug];
+				return values.map((value) => ({
+					slug,
+					value,
+					label: value
+						.replace(/-/g, ' ')
+						.replace(/\b\w/g, (char) => char.toUpperCase()),
+				}));
+			});
+			console.log('get tokens:::', tokens);
+			return tokens;
+		},
 	},
 	actions: {
+		getSelectedTokens: () => {
+			return state.getSelectedFacets;
+		},
 		onTokenClick: () => {
 			const { ref, props } = getElement();
-			console.log('onTokenClick', ref, props);
 			const targetStore = store(targetNamespace);
 			if (!targetStore.actions || !targetStore.actions.onClear) {
 				return;
 			}
-
+			console.log('onTokenClick', ref, props, targetStore);
 			const facetSlug = ref.getAttribute('data-facet-slug');
 			const facetValue = ref.getAttribute('data-facet-value');
 			targetStore.actions.onClear(facetSlug, facetValue);
@@ -53,7 +88,11 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 			if (!targetStore.actions || !targetStore.actions.onClear) {
 				return;
 			}
-			targetStore.actions.onClear();
+			console.log('onReset', targetStore);
+			// redirect back to this page but with no query args and if /page/x/ is in the url, remove it.
+			window.location = window.location.href
+				.split('?')[0]
+				.replace(/\/page\/\d+\//, '/');
 		},
 	},
 	callbacks: {
@@ -62,27 +101,6 @@ const { state } = store('prc-platform/facets-selected-tokens', {
 				return true;
 			}
 			return false;
-		},
-		updateTokens: () => {
-			console.log('updateTokens');
-			const targetStore = store(targetNamespace);
-			if (!targetStore.state) {
-				return;
-			}
-			const { pager } = targetStore.state.data;
-			state.pagerText = createPagerText(pager);
-
-			const selected = targetStore.state.getSelected;
-			// map selected onto tokens...
-			const tokens = Object.keys(selected).flatMap((slug) => {
-				const values = selected[slug];
-				return values.map((value) => ({
-					slug,
-					value,
-					label: value,
-				}));
-			});
-			state.tokens = tokens;
 		},
 	},
 });

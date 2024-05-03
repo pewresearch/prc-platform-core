@@ -90,6 +90,11 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const input = ref.querySelector('input');
 			const { id } = input;
 			const { checked, value, type } = state[id];
+			console.log(
+				'facets-context-provider::onCheckboxClick',
+				context,
+				state[id]
+			);
 
 			state[id].checked = !checked;
 			// The wpKey of the parent parent element, the facet-template block, contains the facet slug.
