@@ -52,6 +52,7 @@ async function postData(url, data) {
 		body: JSON.stringify(data),
 	});
 	console.log({ res });
+
 	const content = await res.blob();
 	return content;
 }

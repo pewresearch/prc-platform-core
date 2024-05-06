@@ -3,12 +3,12 @@
 	"description": "Block Area and Block Module functionality for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/icons": "^9.37.0",
-		"@wordpress/scripts": "^26.17.0"
+		"@wordpress/icons": "^9.48.0",
+		"@wordpress/scripts": "^27.8.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build",
-		"start": "wp-scripts start",
+		"build": "wp-scripts build --experimental-modules",
+		"start": "wp-scripts start --experimental-modules",
 		"test": "wp-scripts test-unit"
 	},
 	"dependencies": {

@@ -28,7 +28,8 @@
   },
   "supports": {
     "anchor": true,
-    "html": false
+    "html": false,
+    "interactivity": true
   },
   "usesContext": [
     "queryId",
@@ -39,5 +40,6 @@
   ],
   "textdomain": "prc-block-area",
   "editorScript": "file:./index.js",
-  "editorStyle": "file:./index.css"
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
 }

@@ -21,12 +21,20 @@ class Block_Area extends Block_Area_Modules {
 		) );
 	}
 
+	public function hide_on_paged_for_all_non_menu_block_areas($block_area_name) {
+		if ( ! preg_match('/menu/i', $block_area_name) && is_paged() ) {
+			return true;
+		}
+		return false;
+	}
+
 	public function render_block_area($attributes, $content, $block) {
-		if ( is_paged() ) {
-			return;
+		if ( is_admin() ) {
+			return $content;
 		}
 		$reference_id = array_key_exists('ref', $attributes) ? $attributes['ref'] : false;
 		$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
+		$is_menu_block_area = preg_match('/menu/i', $block_area_slug);
 		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
 		$inherit_category = array_key_exists('inheritCategory', $attributes) ? $attributes['inheritCategory'] : false;
 
@@ -44,6 +52,28 @@ class Block_Area extends Block_Area_Modules {
 
 		wp_reset_postdata();
 
-		return $content;
+		$id = wp_unique_id('prc-platform-block-area-');
+
+		$block_wrapper_attrs = get_block_wrapper_attributes([
+			'data-wp-interactive' => wp_json_encode([
+				'namespace' => 'prc-platform/block-area',
+			]),
+			'data-wp-context' => wp_json_encode([
+				'blockAreaSlug' => $block_area_slug,
+				'categorySlug' => $category_slug,
+				'inheritCategory' => $inherit_category,
+				'referenceId' => $reference_id,
+				'isPaged' => is_paged(),
+			]),
+			'id' => $id,
+			'data-wp-router-region' => $id,
+			'data-is-paged' => is_paged() && !$is_menu_block_area ? 'true' : 'false',
+		]);
+
+		return wp_sprintf(
+			'<div %1$s>%2$s</div>',
+			$block_wrapper_attrs,
+			$content,
+		);
 	}
 }

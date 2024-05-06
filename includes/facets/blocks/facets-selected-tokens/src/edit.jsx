@@ -82,25 +82,31 @@ function Edit({
 					},
 				}}
 			/>
-			<ul {...blockProps}>
-				<li>Filtering by:</li>
-				<li className={tokenClasses}>
-					<span>Topics: X, Y, Z</span>
-					{MemoizedCloseIcon}
-				</li>
-				<li className={tokenClasses}>
-					<span>Formats: X, Y, Z</span>
-					{MemoizedCloseIcon}
-				</li>
-				<li className={tokenClasses}>
-					<span>Year: 2021</span>
-					{MemoizedCloseIcon}
-				</li>
-				<li>
-					<span>Reset</span>
-					{MemoizedCloseIcon}
-				</li>
-			</ul>
+			<div {...blockProps}>
+				<div className="wp-block-prc-platform-facets-selected-tokens__label">
+					<span>Filtering by:</span>
+				</div>
+				<div className="wp-block-prc-platform-facets-selected-tokens__reset">
+					<div className="wp-block-prc-platform-facets-selected-tokens__token">
+						<span>Reset</span>
+						{MemoizedCloseIcon}
+					</div>
+				</div>
+				<div className="wp-block-prc-platform-facets-selected-tokens__tokens-list">
+					<div className={tokenClasses}>
+						<span>Topics: X, Y, Z</span>
+						{MemoizedCloseIcon}
+					</div>
+					<div className={tokenClasses}>
+						<span>Formats: X, Y, Z</span>
+						{MemoizedCloseIcon}
+					</div>
+					<div className={tokenClasses}>
+						<span>Year: 2021</span>
+						{MemoizedCloseIcon}
+					</div>
+				</div>
+			</div>
 		</Fragment>
 	);
 }

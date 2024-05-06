@@ -30,12 +30,12 @@ function constructNewUrl(selected = false) {
 	// If our url has /page/x/ in it, we need to remove that, we're sending the user back to the first page.
 	const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
 	const newUrl = addQueryArgs(stableUrlClean, tmp);
-	console.log(
-		'facets-context-provider::constructNewUrl = :::::',
-		stableUrlClean,
-		tmp,
-		newUrl
-	);
+	// console.log(
+	// 	'facets-context-provider::constructNewUrl = :::::',
+	// 	stableUrlClean,
+	// 	tmp,
+	// 	newUrl
+	// );
 	return newUrl;
 }
 
@@ -90,11 +90,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			const input = ref.querySelector('input');
 			const { id } = input;
 			const { checked, value, type } = state[id];
-			console.log(
-				'facets-context-provider::onCheckboxClick',
-				context,
-				state[id]
-			);
 
 			state[id].checked = !checked;
 			// The wpKey of the parent parent element, the facet-template block, contains the facet slug.
