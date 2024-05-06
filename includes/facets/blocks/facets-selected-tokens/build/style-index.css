@@ -12,12 +12,11 @@
   background: inherit;
   padding: 0;
   margin: 0;
-  list-style: none;
+  gap: 10px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
 }
 @keyframes fadeIn {
   0% {
@@ -27,32 +26,42 @@
     opacity: 1;
   }
 }
-.wp-block-prc-platform-facets-selected-tokens > li {
+.wp-block-prc-platform-facets-selected-tokens:not(.has-tokens):not(.wp-block) {
+  display: none;
+}
+.wp-block-prc-platform-facets-selected-tokens.has-tokens {
+  animation: fadeIn 0.3s ease 0s;
+}
+.wp-block-prc-platform-facets-selected-tokens__label {
+  margin: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
-  min-width: -moz-fit-content;
-  min-width: fit-content;
+  order: 1;
 }
-.wp-block-prc-platform-facets-selected-tokens > li:last-of-type {
-  flex-grow: 1;
-  text-align: right;
-}
-.wp-block-prc-platform-facets-selected-tokens:not(.wp-block) > li:not(:first-of-type) {
-  display: none;
-}
-.wp-block-prc-platform-facets-selected-tokens.has-tokens > li:not(:first-of-type) {
+.wp-block-prc-platform-facets-selected-tokens__tokens-list {
   display: flex;
-  animation: fadeIn 0.3s ease-in-out;
+  align-items: center;
+  flex-direction: row;
+  flex-grow: 1;
+  overflow-x: auto;
+  order: 2;
+  gap: inherit;
 }
-.wp-block-prc-platform-facets-selected-tokens__pager {
-  width: 100%;
+.wp-block-prc-platform-facets-selected-tokens__reset {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: flex-end;
+  order: 3;
+}
+.wp-block-prc-platform-facets-selected-tokens__reset > div {
+  max-width: -moz-fit-content;
+  max-width: fit-content;
 }
 .wp-block-prc-platform-facets-selected-tokens__token {
   border: none;
   cursor: pointer;
-  background-color: var(--wp--preset--color--ui-gray-very-light);
   color: inherit;
   background: inherit;
   border: 1px solid currentColor;
@@ -63,6 +72,12 @@
   padding: 0.5833em 0.833em;
   text-transform: none;
   transition: background 0.1s ease 0s;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  min-width: -moz-fit-content;
+  min-width: fit-content;
 }
 
 /*# sourceMappingURL=style-index.css.map*/

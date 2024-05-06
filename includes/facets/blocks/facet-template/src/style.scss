@@ -11,9 +11,11 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--block-gap);
-	&.is-processing {
-		opacity: 0.5;
-	}
+	// Moved the styling for the global is-processing into facets-context-provider for now...
+	// When block states comes online this should be made more abstracted.
+	// &.is-processing {
+	// 	opacity: 0.5;
+	// }
 	&:not(.is-expanded) {
 		.wp-block-prc-platform-facet-template__list-expanded {
 			display: none;

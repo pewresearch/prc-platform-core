@@ -201,9 +201,7 @@ function Edit({
     }
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", {
     ...blockProps
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
-    className: "wp-block-prc-platform-facets-selected-tokens__pager"
-  }, "Displaying 1-10 of 20 results"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", null, "Filtering by:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", null, "Filtering by:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
     className: tokenClasses
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, "Topics: X, Y, Z"), MemoizedCloseIcon), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
     className: tokenClasses

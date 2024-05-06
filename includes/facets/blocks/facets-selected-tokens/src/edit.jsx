@@ -83,9 +83,6 @@ function Edit({
 				}}
 			/>
 			<ul {...blockProps}>
-				<li className="wp-block-prc-platform-facets-selected-tokens__pager">
-					Displaying 1-10 of 20 results
-				</li>
 				<li>Filtering by:</li>
 				<li className={tokenClasses}>
 					<span>Topics: X, Y, Z</span>

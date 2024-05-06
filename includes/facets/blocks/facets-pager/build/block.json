@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "prc-platform/facets-pager",
+  "version": "0.1.0",
+  "title": "Facets Pager",
+  "category": "theme",
+  "description": "Display a pager info for facets.",
+  "attributes": {},
+  "supports": {
+    "anchor": true,
+    "html": false,
+    "multiple": false,
+    "reusable": false,
+    "color": {
+      "text": true,
+      "link": true
+    },
+    "spacing": {
+      "blockGap": true,
+      "margin": [
+        "top",
+        "bottom"
+      ],
+      "padding": true,
+      "__experimentalDefaultControls": {
+        "padding": true
+      }
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true,
+      "__experimentalFontFamily": true,
+      "__experimentalLetterSpacing": true,
+      "__experimentalDefaultControls": {
+        "fontSize": true,
+        "__experimentalFontFamily": true
+      }
+    },
+    "interactivity": {
+      "clientNavigation": true
+    }
+  },
+  "usesContext": [
+    "postType",
+    "templateSlug",
+    "previewPostType",
+    "facetsContextProvider"
+  ],
+  "textdomain": "facets-pager",
+  "editorScript": "file:./index.js",
+  "style": "file:./style-index.css",
+  "render": "file:./render.php",
+  "viewScriptModule": "file:./view.js"
+}
