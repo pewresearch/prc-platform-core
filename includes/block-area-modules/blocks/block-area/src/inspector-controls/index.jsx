@@ -9,32 +9,41 @@ import { Fragment, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls } from '@wordpress/block-editor';
 import { useEntityProp } from '@wordpress/core-data';
-import { Button, TextControl, PanelBody, ExternalLink, Flex, FlexBlock, FlexItem, CardDivider } from '@wordpress/components';
+import {
+	Button,
+	TextControl,
+	PanelBody,
+	ExternalLink,
+	Flex,
+	FlexBlock,
+	FlexItem,
+	CardDivider,
+} from '@wordpress/components';
 
 /**
  * Internal Dependencies
  */
 import BlockAreaControl from './block-area';
 import BlockModuleControl from './block-module';
-import CategoryControl from './category';
+import TaxonomyControl from './taxonomy';
 
 export default function Controls({
 	attributes,
 	setAttributes,
 	clientId,
 	blockArea,
-	category,
+	taxonomy,
 	blockModule,
 	postStatus,
 	setPostStatus,
 }) {
-	const {ref} = attributes;
+	const { ref } = attributes;
 	return (
 		<InspectorControls>
 			{!ref && (
 				<Fragment>
 					<PanelBody title={__('Block Area')} initialOpen={true}>
-						<Flex direction="column" gap={'10px'}>
+						<Flex direction="column" gap="10px">
 							<BlockAreaControl
 								{...{
 									attributes,
@@ -47,13 +56,13 @@ export default function Controls({
 							/>
 						</Flex>
 					</PanelBody>
-					<PanelBody title={__('Category')} initialOpen={true}>
-						<Flex direction="column" gap={'10px'}>
-							<CategoryControl
+					<PanelBody title={__('Taxonomy')} initialOpen={true}>
+						<Flex direction="column" gap="10px">
+							<TaxonomyControl
 								{...{
 									attributes,
 									setAttributes,
-									category,
+									taxonomy,
 								}}
 							/>
 						</Flex>
@@ -61,12 +70,13 @@ export default function Controls({
 				</Fragment>
 			)}
 			<PanelBody title={__('Block Module')} initialOpen={true}>
-				<Flex direction="column" gap={'10px'}>
+				<Flex direction="column" gap="10px">
 					<BlockModuleControl
 						{...{
+							attributes,
 							setAttributes,
 							blockArea,
-							category,
+							taxonomy,
 							blockModule,
 						}}
 					/>

@@ -5,10 +5,8 @@
 /**
  * WordPress dependencies
  */
-import { useDispatch, useSelect } from '@wordpress/data';
 import { useEntityRecords } from '@wordpress/core-data';
 import { useMemo } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -17,19 +15,27 @@ import { POST_TYPE_REST_BASE, TAXONOMY } from '../constants';
 
 /**
  * Retrieves all available block modules. Optionally excludes a single block module by id.
- *
- * @param {string} excludedId Block Module ID to exclude.
- *
- * @return {{ blockModules: Array, isResolving: boolean, hasResolved: boolean }} array of block modules.
+ * @param {Object}  options                Options object.
+ * @param {number}  options.blockAreaId    The block area id.
+ * @param {number}  options.taxonomyTermId The term id.
+ * @param {string}  options.taxonomy       The taxonomy name.
+ * @param {number}  options.ref            The block module id to include.
+ * @param {number}  options.excludeId      The block module id to exclude.
+ * @param {boolean} options.enabled        Whether the hook is enabled.
+ * @param {Object}  options.args           Additional query arguments.
+ * @param           options.categoryId
+ * @param           options.taxonomyName
+ * @return {Object} The block modules and related data.
  */
-export default function useBlockModules( {
+export default function useBlockModules({
 	blockAreaId = null,
-	categoryId = null,
+	taxonomyTermId = null,
+	taxonomyName = null,
 	ref = null,
 	excludeId = null,
 	enabled = false,
 	args = {},
-} ) {
+}) {
 	const queryArgs = {
 		context: 'view',
 		orderby: 'date',
@@ -39,19 +45,23 @@ export default function useBlockModules( {
 	if (null !== blockAreaId) {
 		queryArgs[TAXONOMY] = [blockAreaId];
 	}
-	if (null !== categoryId) {
-		queryArgs['categories'] = [categoryId];
+	if (null !== taxonomyTermId) {
+		let taxName = taxonomyName;
+		if (taxonomyName === 'category') {
+			taxName = 'categories';
+		}
+		queryArgs[taxName] = [taxonomyTermId];
 	}
-	if (blockAreaId && categoryId) {
-		queryArgs['tax_relation'] = 'AND';
+	if (blockAreaId && taxonomyTermId) {
+		queryArgs.tax_relation = 'AND';
 	}
 	if (null !== ref) {
-		queryArgs['include'] = [ref];
+		queryArgs.include = [ref];
 	}
 
-	console.log('postStatus', queryArgs);
+	console.log('postStatus', queryArgs, {taxonomyName, taxonomyTermId, blockAreaId});
 
-	const {hasResolved, isResolving, records, status} = useEntityRecords(
+	const { hasResolved, isResolving, records, status } = useEntityRecords(
 		'postType',
 		POST_TYPE_REST_BASE,
 		{ ...queryArgs, ...args },
@@ -59,16 +69,14 @@ export default function useBlockModules( {
 	);
 
 	// Filter out any block modules that have the same id as the excluded block module.
-	const filteredBlockModules = useMemo( () => {
-		if ( ! records ) {
+	const filteredBlockModules = useMemo(() => {
+		if (!records) {
 			return [];
 		}
 		return (
-			records.filter(
-				( blockModule ) => blockModule.id !== excludeId
-			) || []
+			records.filter((blockModule) => blockModule.id !== excludeId) || []
 		);
-	}, [ records, excludeId ] );
+	}, [records, excludeId]);
 
 	return {
 		blockModules: filteredBlockModules,

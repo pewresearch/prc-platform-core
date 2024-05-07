@@ -5,10 +5,10 @@
 /**
  * WordPress Dependencies
  */
-import { Fragment, useEffect } from 'react';
+import { Fragment } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useEntityProp } from '@wordpress/core-data';
-import { Button, TextControl, PanelBody, ExternalLink, Flex, FlexBlock, FlexItem, CardDivider } from '@wordpress/components';
+import { TextControl, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -17,18 +17,25 @@ import { POST_TYPE, POST_TYPE_LABEL } from '../constants';
 import BlockModuleCreate from '../block-module-create';
 
 export default function BlockModuleControl({
+	attributes,
 	setAttributes,
 	blockArea,
-	category,
-	blockModule
+	taxonomy,
+	blockModule,
 }) {
-	const {id, name, slug} = blockModule;
+	const { taxonomyName } = attributes;
+	const { id, name, slug } = blockModule;
 
 	const blockAreaId = blockArea?.id;
-	const categoryId = category?.id;
+	const taxonomyId = taxonomy?.id;
 
 	// Block Module:
-	const [blockModuleTitle, setBlockModuleTitle] = useEntityProp('postType', POST_TYPE, 'title', id);
+	const [blockModuleTitle, setBlockModuleTitle] = useEntityProp(
+		'postType',
+		POST_TYPE,
+		'title',
+		id
+	);
 	const [blockModuleLink] = useEntityProp('postType', POST_TYPE, 'link', id);
 
 	if (!id) {
@@ -40,7 +47,7 @@ export default function BlockModuleControl({
 			<FlexBlock>
 				<TextControl
 					__nextHasNoMarginBottom
-					label={__(`${POST_TYPE_LABEL} Title`)}
+					label={`${POST_TYPE_LABEL} Title`}
 					value={blockModuleTitle}
 					onChange={setBlockModuleTitle}
 				/>
@@ -49,7 +56,8 @@ export default function BlockModuleControl({
 				<BlockModuleCreate
 					{...{
 						blockAreaId,
-						categoryId,
+						taxonomyName,
+						taxonomyTermId: taxonomyId,
 						setAttributes,
 					}}
 				/>

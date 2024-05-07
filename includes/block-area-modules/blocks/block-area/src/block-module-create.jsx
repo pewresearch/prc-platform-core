@@ -6,8 +6,8 @@ import { EntityCreateNewModal } from '@prc/components';
 /**
  * WordPress Dependencies
  */
-import { useState, Fragment } from 'react';
-import { Button, ButtonGroup } from '@wordpress/components';
+import { useState, Fragment } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -16,12 +16,13 @@ import { createBlockModule } from './functions';
 
 export default function BlockModuleCreate({
 	blockAreaId,
-	categoryId,
+	taxonomyName,
+	taxonomyTermId,
 	setAttributes,
-}){
+}) {
 	const [displayModal, setDisplayModal] = useState(false);
 
-	return(
+	return (
 		<Fragment>
 			<Button
 				variant="secondary"
@@ -32,18 +33,26 @@ export default function BlockModuleCreate({
 				Create New Block Module
 			</Button>
 			{displayModal && (
-				<EntityCreateNewModal {...{
-					defaultTitle: 'Block Module',
-					onClose: () => {
-						setDisplayModal(false);
-					},
-					onSubmit: (newTitle) => {
-						createBlockModule(newTitle, blockAreaId, categoryId, 'publish').then((response) => {
-							console.log("then...", response);
-							setAttributes({ref: response.id});
-						});
-					},
-				}}/>
+				<EntityCreateNewModal
+					{...{
+						defaultTitle: 'Block Module',
+						onClose: () => {
+							setDisplayModal(false);
+						},
+						onSubmit: (newTitle) => {
+							createBlockModule(
+								newTitle,
+								blockAreaId,
+								taxonomyName,
+								taxonomyTermId,
+								'publish'
+							).then((response) => {
+								console.log('then...', response);
+								setAttributes({ ref: response.id });
+							});
+						},
+					}}
+				/>
 			)}
 		</Fragment>
 	);

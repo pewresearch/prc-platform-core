@@ -17,7 +17,6 @@ import { removeFilter } from '@wordpress/hooks';
 /**
  * Removes the external media button that Jetpack so rudely adds everywhere.
  */
-removeFilter('editor.MediaUpload', 'external-media/replace-media-upload');
 
 const removeMetaPanels = (postType) => {
 	// We do not use Tags or Comments at Pew Research Center.
@@ -63,6 +62,8 @@ domReady(() => {
 	if (null === select('core/editor')) {
 		return;
 	}
+
+	removeFilter('editor.MediaUpload', 'external-media/replace-media-upload');
 
 	setTimeout(() => {
 		const postType = select('core/editor').getCurrentPostType();

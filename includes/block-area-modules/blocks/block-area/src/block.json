@@ -19,10 +19,13 @@
 		"blockAreaSlug": {
 			"type": "string"
 		},
-		"categorySlug": {
+		"taxonomyName": {
 			"type": "string"
 		},
-		"inheritCategory": {
+		"taxonomyTermSlug": {
+			"type": "string"
+		},
+		"inheritTermFromTemplate": {
 			"type": "boolean"
 		}
 	},

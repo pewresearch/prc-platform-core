@@ -1,7 +1,4 @@
-import createBlockArea from "./create-block-area";
-import createBlockModule from "./create-block-module";
+import createBlockArea from './create-block-area';
+import createBlockModule from './create-block-module';
 
-export {
-	createBlockArea,
-	createBlockModule
-};
+export { createBlockArea, createBlockModule };

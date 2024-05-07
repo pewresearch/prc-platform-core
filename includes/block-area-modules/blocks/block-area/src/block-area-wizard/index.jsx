@@ -1,13 +1,10 @@
+/* eslint-disable max-lines-per-function */
 /**
  * WordPress Dependencies
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import {
-	ButtonGroup,
-	Button,
-	Placeholder
-} from '@wordpress/components';
+import { Button, Placeholder } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -35,18 +32,25 @@ export default function BlockAreaWizard({
 	clientId,
 }) {
 	const { templateSlug } = context;
-	const [blockAreaSlug, setBlockAreaSlug] = useState(attributes?.blockAreaSlug);
-	const [categorySlug, setCategorySlug] = useState(attributes?.categorySlug);
-	const [inheritCategory, setInheritCategory] = useState(attributes?.inheritCategory);
-	const [allowCategorySelection, setAllowCategorySelection] = useState(false);
-	const toggleAllowCategorySelection = () => {
-		setAllowCategorySelection(!allowCategorySelection);
-	}
+	const [blockAreaSlug, setBlockAreaSlug] = useState(
+		attributes?.blockAreaSlug
+	);
+	const [taxonomyName, setTaxonomyName] = useState(attributes?.taxonomyName);
+	const [taxonomyTermSlug, setTaxonomyTermSlug] = useState(
+		attributes?.taxonomyTermSlug
+	);
+	const [inheritTermFromTemplate, setInheritTermFromTemplate] = useState(
+		attributes?.inheritTermFromTemplate
+	);
+	const [allowTaxonomySelection, setAllowTaxonomySelection] = useState(false);
+	const toggleAllowTaxonomySelection = () => {
+		setAllowTaxonomySelection(!allowTaxonomySelection);
+	};
 
 	const [activeStep, setActiveStep] = useState('intro');
 	const setNextStep = (nextStep) => {
 		setActiveStep(nextStep);
-	}
+	};
 	const [buttonState, setButtonState] = useState({
 		variant: 'secondary',
 		isLoading: false,
@@ -82,84 +86,93 @@ export default function BlockAreaWizard({
 		<Placeholder
 			label={__('Block Area', 'prc-platform-core')}
 			isColumnLayout={true}
-			icon={() => <Icon color={null}/>}
+			icon={() => <Icon color={null} />}
 		>
 			<div className="block-area-edit__placeholder-inner">
-				{['intro','create-a'].includes(activeStep) && (
+				{['intro', 'create-a'].includes(activeStep) && (
 					<Intro
-					{...{
-						isResolving,
-						blockModules,
-						buttonState,
-						setButtonState,
-						setNextStep,
-						isResolving,
-					}}
+						{...{
+							isResolving,
+							blockModules,
+							buttonState,
+							setButtonState,
+							setNextStep,
+							isResolving,
+						}}
 					/>
 				)}
 				{activeStep === 'query-a' && (
 					<QueryA
-					{...{
-						blockAreaSlug,
-						setBlockAreaSlug,
-						newBlockAreaName,
-						setNewBlockAreaName,
-						setNextStep,
-						buttonState,
-						setButtonState
-					}}
+						{...{
+							blockAreaSlug,
+							setBlockAreaSlug,
+							newBlockAreaName,
+							setNewBlockAreaName,
+							setNextStep,
+							buttonState,
+							setButtonState,
+						}}
 					/>
 				)}
 				{activeStep === 'query-b' && (
 					<QueryB
-					{...{
-						categorySlug,
-						setCategorySlug,
-						templateSlug,
-						allowCategorySelection,
-						inheritCategory,
-						toggleAllowCategorySelection,
-						setInheritCategory,
-						buttonState,
-						setButtonState,
-						setNextStep,
-					}}
+						{...{
+							taxonomyName,
+							setTaxonomyName,
+							taxonomyTermSlug,
+							setTaxonomyTermSlug,
+							templateSlug,
+							allowTaxonomySelection,
+							inheritTermFromTemplate,
+							toggleAllowTaxonomySelection,
+							setInheritTermFromTemplate,
+							buttonState,
+							setButtonState,
+							setNextStep,
+						}}
 					/>
 				)}
 				{activeStep === 'query-c' && (
-					<QueryC {...{
-						blockAreaSlug,
-						categorySlug,
-						inheritCategory,
-						newBlockAreaName,
-						setAttributes,
-						setNextStep,
-						buttonState,
-						setButtonState
-					}}/>
+					<QueryC
+						{...{
+							blockAreaSlug,
+							taxonomyName,
+							taxonomyTermSlug,
+							inheritTermFromTemplate,
+							newBlockAreaName,
+							setAttributes,
+							setNextStep,
+							buttonState,
+							setButtonState,
+						}}
+					/>
 				)}
 				{activeStep === 'select-a' && (
-					<SelectA {...{
-						clientId,
-						onSelect: ({id}) => {
-							setAttributes({
-								ref: id,
-							});
-						},
-						onClose: () => {
-							setNextStep('intro');
-						},
-					}}/>
+					<SelectA
+						{...{
+							clientId,
+							onSelect: ({ id }) => {
+								setAttributes({
+									ref: id,
+								});
+							},
+							onClose: () => {
+								setNextStep('intro');
+							},
+						}}
+					/>
 				)}
 				{activeStep === 'create-a' && (
-					<CreateA {...{
-						onCreate: (id) => {
-							setAttributes({
-								ref: id,
-							});
-						},
-						setNextStep,
-					}}/>
+					<CreateA
+						{...{
+							onCreate: (id) => {
+								setAttributes({
+									ref: id,
+								});
+							},
+							setNextStep,
+						}}
+					/>
 				)}
 				{!['intro', 'create-a'].includes(activeStep) && (
 					<div className="block-area-edit__toolbar">

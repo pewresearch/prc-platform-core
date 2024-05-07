@@ -164,7 +164,7 @@ class Block_Area_Modules {
 				'custom-fields',
 				'revisions'
 			),
-			'taxonomies'          => array( 'category', 'regions-countries', 'block_area' ),
+			'taxonomies'          => array( 'category', 'regions-countries', 'block_area', 'collection' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -237,20 +237,32 @@ class Block_Area_Modules {
 	}
 
 	public function get_query_args(
-		$category_slug = null,
+		$taxonomy_name = null,
+		$taxonomy_term_slug = null,
 		$block_area_slug = null,
-		$inherit_category = false,
+		$inherit_term_from_template = false,
 		$reference_id = false
 	) {
+
 		if ( null === $block_area_slug && false === $reference_id ) {
 			return false;
 		}
 
-		if ( true === $inherit_category ) {
+		if ( true === $inherit_term_from_template ) {
 			global $wp_query;
-			if ( $wp_query->is_main_query() && $wp_query->is_category() ) {
+			do_action('qm/debug', print_r($wp_query, true));
+			if ( null !== $taxonomy_name ) {
+				if ( 'category' === $taxonomy_name ) {
+					$category_name = $taxonomy_term_slug ?? '';
+					$tax_check = $wp_query->is_category($category_name);
+				} else {
+					$tax_check = $wp_query->is_tax($taxonomy_name);
+				}
+			}
+			do_action('qm/debug', print_r($tax_check, true));
+			if ( $wp_query->is_main_query() && true === $tax_check) {
 				$queried_object = $wp_query->get_queried_object();
-				$category_slug = $queried_object->slug;
+				$taxonomy_term_slug = $queried_object->slug;
 			}
 		}
 
@@ -263,11 +275,11 @@ class Block_Area_Modules {
 			)
 		);
 
-		if ( null !== $category_slug ) {
+		if ( null !== $taxonomy_term_slug ) {
 			array_push($tax_query, array(
-				'taxonomy' => 'category',
+				'taxonomy' => $taxonomy_name,
 				'field' => 'slug',
-				'terms' => array($category_slug),
+				'terms' => array($taxonomy_term_slug),
 				'include_children' => false, //
 			));
 		}
@@ -278,6 +290,8 @@ class Block_Area_Modules {
 			'fields' => 'ids',
 			'tax_query' => $tax_query,
 		);
+
+
 
 		if ( false !== $reference_id ) {
 			$block_module_query_args['post__in'] = array($reference_id);

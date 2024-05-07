@@ -5,11 +5,4 @@ import QueryC from './query-c';
 import CreateA from './create-a';
 import SelectA from './select-a';
 
-export {
-	Intro,
-	QueryA,
-	QueryB,
-	QueryC,
-	CreateA,
-	SelectA
-}
+export { Intro, QueryA, QueryB, QueryC, CreateA, SelectA };

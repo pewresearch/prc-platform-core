@@ -14,8 +14,10 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import './editor.scss';
 import './style.scss';
+import deprecated from './deprecated';
 import icon from './icon';
 import edit from './edit';
+import variations from './variations';
 import metadata from './block.json';
 
 const { name } = metadata;
@@ -23,6 +25,8 @@ const { name } = metadata;
 const settings = {
 	icon,
 	edit,
+	variations,
+	deprecated,
 };
 
 /**

@@ -35,10 +35,20 @@ class Block_Area extends Block_Area_Modules {
 		$reference_id = array_key_exists('ref', $attributes) ? $attributes['ref'] : false;
 		$block_area_slug = array_key_exists('blockAreaSlug', $attributes) ? $attributes['blockAreaSlug'] : null;
 		$is_menu_block_area = preg_match('/menu/i', $block_area_slug);
-		$category_slug = array_key_exists('categorySlug', $attributes) ? $attributes['categorySlug'] : null;
-		$inherit_category = array_key_exists('inheritCategory', $attributes) ? $attributes['inheritCategory'] : false;
 
-		$query_args = $this->get_query_args($category_slug, $block_area_slug, $inherit_category, $reference_id);
+		$taxonomy_name = array_key_exists('taxonomyName', $attributes) ? $attributes['taxonomyName'] : null;
+		$taxonomy_term_slug = array_key_exists('taxonomyTermSlug', $attributes) ? $attributes['taxonomyTermSlug'] : null;
+		$inherit_term_from_template = array_key_exists('inheritTermFromTemplate', $attributes) ? $attributes['inheritTermFromTemplate'] : false;
+
+		do_action('qm/debug', print_r($attributes, true));
+
+		$query_args = $this->get_query_args(
+			$taxonomy_name,
+			$taxonomy_term_slug,
+			$block_area_slug,
+			$inherit_term_from_template,
+			$reference_id
+		);
 
 		$block_modules = new WP_Query($query_args);
 		if ( $block_modules->have_posts() ) {
@@ -60,8 +70,9 @@ class Block_Area extends Block_Area_Modules {
 			]),
 			'data-wp-context' => wp_json_encode([
 				'blockAreaSlug' => $block_area_slug,
-				'categorySlug' => $category_slug,
-				'inheritCategory' => $inherit_category,
+				'taxonomyName' => $taxonomy_name,
+				'taxonomyTermSlug' => $taxonomy_term_slug,
+				'inheritTermFromTemplate' => $inherit_term_from_template,
 				'referenceId' => $reference_id,
 				'isPaged' => is_paged(),
 			]),

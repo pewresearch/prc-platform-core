@@ -271,6 +271,9 @@ class Staff_Bylines {
 	 * @param mixed $query
 	 */
 	public function hide_former_staff( $query ) {
+		if ( true === $query->get('isPubListingQuery') ) {
+			return $query;
+		}
 		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {
 			$query->set(
 				'tax_query',

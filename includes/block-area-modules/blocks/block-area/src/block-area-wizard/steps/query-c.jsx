@@ -1,26 +1,37 @@
 /**
  * WordPress Dependencies
  */
-
-import { __ } from '@wordpress/i18n';
-import { Fragment, useState, useEffect } from 'react';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal Dependencies
  */
 import Step from './_step';
-import { createBlockArea, createBlockModule } from '../../functions';
+import { createBlockArea } from '../../functions';
 
+/**
+ * Confirm Block Area and other taxonomy options are correct
+ * @param {Object}   props
+ * @param {string}   props.blockAreaSlug    The block area slug
+ * @param {string}   props.categorySlug     The category slug
+ * @param {boolean}  props.inheritCategory  Inherit category from context
+ * @param {string}   props.newBlockAreaName The new block area name
+ * @param {Function} props.setAttributes    Set the attributes
+ * @param {Function} props.setNextStep      Set the next step
+ * @param {Object}   props.buttonState      The button state
+ * @param {Function} props.setButtonState   Set the button state
+ */
 export default function QueryC({
 	blockAreaSlug,
-	categorySlug,
-	inheritCategory,
+	taxonomyName,
+	taxonomyTermSlug,
+	inheritTermFromTemplate,
 	newBlockAreaName,
 	setAttributes,
 	setNextStep,
 	buttonState,
 	setButtonState,
-}){
+}) {
 	const [preConfirm, setPreConfirm] = useState(false);
 	const [confirm, setConfirm] = useState(false);
 
@@ -30,7 +41,7 @@ export default function QueryC({
 			text: 'Confirm Settings',
 			disabled: false,
 			onClick: () => setPreConfirm(true),
-		}
+		};
 		setButtonState(newButtonargs);
 	}, []);
 
@@ -42,7 +53,7 @@ export default function QueryC({
 				disabled: false,
 				variant: 'primary',
 				onClick: () => setConfirm(true),
-			}
+			};
 			setButtonState(newButtonargs);
 		}
 	}, [preConfirm]);
@@ -50,20 +61,22 @@ export default function QueryC({
 	useEffect(() => {
 		if (confirm) {
 			const newAttrs = {
-				inheritCategory,
+				inheritTermFromTemplate,
 			};
-			if (categorySlug) {
-				newAttrs.categorySlug = categorySlug;
+			if (taxonomyTermSlug) {
+				newAttrs.taxonomyTermSlug = taxonomyTermSlug;
 			}
 			if (newBlockAreaName) {
 				createBlockArea(newBlockAreaName).then((newBlockAreaSlug) => {
 					newAttrs.blockAreaSlug = newBlockAreaSlug;
+					console.log('New Block Area Slug:', newBlockAreaSlug, newAttrs);
 					setAttributes(newAttrs);
 				});
 			} else {
 				if (blockAreaSlug) {
 					newAttrs.blockAreaSlug = blockAreaSlug;
 				}
+				console.log('New Attributes:', newAttrs);
 				setAttributes(newAttrs);
 			}
 		}
@@ -75,11 +88,46 @@ export default function QueryC({
 
 	// Once we confirm the values we're going to create the block area if needs be.
 
-	return(
+	return (
 		<Step>
-			<h5 className="block-area-edit__review-settings-heading">Review Block Area Settings:</h5>
-			{!newBlockAreaName && <p>This area will render the latest public <pre>block_module</pre> that is in the <pre>{blockAreaSlug}</pre> block area{categorySlug && <span> and <pre>{categorySlug}</pre> category</span>}{true === inheritCategory && <span> and will <pre>inherit the category</pre> from available context</span>}.</p>}
-			{newBlockAreaName && <p>This area will render the latest public <pre>block_module</pre> that is in the new <pre>{newBlockAreaName}</pre> block area{categorySlug && <span> and <pre>{categorySlug}</pre> category</span>}.</p>}
+			<h5 className="block-area-edit__review-settings-heading">
+				Review Block Area Settings:
+			</h5>
+			{!newBlockAreaName && (
+				<p>
+					This area will render the latest public{' '}
+					<pre>block_module</pre> that is in the{' '}
+					<pre>{blockAreaSlug}</pre> block area
+					{taxonomyTermSlug && (
+						<span>
+							{' '}
+							and <pre>{taxonomyTermSlug}</pre> {taxonomyName}
+						</span>
+					)}
+					{true === inheritTermFromTemplate && (
+						<span>
+							{' '}
+							and will <pre>inherit the {taxonomyName}</pre> from
+							available context
+						</span>
+					)}
+					.
+				</p>
+			)}
+			{newBlockAreaName && (
+				<p>
+					This area will render the latest public{' '}
+					<pre>block_module</pre> that is in the new{' '}
+					<pre>{newBlockAreaName}</pre> block area
+					{taxonomyTermSlug && (
+						<span>
+							{' '}
+							and <pre>{taxonomyTermSlug}</pre> {taxonomyName}
+						</span>
+					)}
+					.
+				</p>
+			)}
 		</Step>
 	);
 }

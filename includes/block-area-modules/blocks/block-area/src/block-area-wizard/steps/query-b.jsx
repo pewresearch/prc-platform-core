@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /**
  * External Dependencies
  */
@@ -7,7 +8,7 @@ import { useTaxonomy } from '@prc/hooks';
 /**
  * WordPress Dependencies
  */
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { BaseControl, ToggleControl } from '@wordpress/components';
 
@@ -16,97 +17,154 @@ import { BaseControl, ToggleControl } from '@wordpress/components';
  */
 import { TAXONOMY_LABEL } from '../../constants';
 
+/**
+ * Search for and select a taxonomy, or inherit from the template.
+ *
+ * @param {Object}   props                              Component props.
+ * @param {string}   props.categorySlug                 The category slug.
+ * @param {string}   props.templateSlug                 The template slug.
+ * @param {boolean}  props.allowCategorySelection       Allow category selection.
+ * @param {boolean}  props.inheritCategory              Inherit category from template.
+ * @param {Function} props.toggleAllowCategorySelection Toggle category selection.
+ * @param {Function} props.setInheritCategory           Set inherit category.
+ * @param {Function} props.setCategorySlug              Set category slug.
+ * @param {Object}   props.buttonState                  The button state.
+ * @param {Function} props.setButtonState               Set button state.
+ * @param {Function} props.setNextStep                  Set the next step.
+ * @param            props.taxonomyName
+ * @param            props.setTaxonomyName
+ * @param            props.taxonomyTermSlug
+ * @param            props.setTaxonomyTermSlug
+ * @param            props.allowTaxonomySelection
+ * @param            props.inheritTermFromTemplate
+ * @param            props.toggleAllowTaxonomySelection
+ * @param            props.setInheritTermFromTemplate
+ * @return {*} The component.
+ */
 export default function QueryB({
-	categorySlug,
+	taxonomyName,
+	setTaxonomyName,
+	taxonomyTermSlug,
+	setTaxonomyTermSlug,
 	templateSlug,
-	allowCategorySelection,
-	inheritCategory,
-	toggleAllowCategorySelection = () => {},
-	setInheritCategory = () => {},
-	setCategorySlug = () => {},
+	allowTaxonomySelection,
+	inheritTermFromTemplate,
+	toggleAllowTaxonomySelection,
+	setInheritTermFromTemplate,
 	buttonState,
 	setButtonState,
 	setNextStep,
 }) {
-	const isCategoryTemplate = undefined !== templateSlug && templateSlug?.includes('category');
-	const templateSlugCleaned = templateSlug?.replace( 'category-', '' );
+	console.log('taxonomyName', taxonomyName, templateSlug);
+	const isTaxonomyTemplate =
+		undefined !== templateSlug && templateSlug?.includes(`${taxonomyName}`);
+	const templateSlugCleaned = templateSlug?.replace(`${taxonomyName}-`, '');
 
-	const [templateCatId, templateCatName] = useTaxonomy('category', templateSlugCleaned);
-	const [catId, catName] = useTaxonomy('category', categorySlug);
+	const [templateTermId, templateTermName] = useTaxonomy(
+		taxonomyName,
+		templateSlugCleaned
+	);
+	const [termId, termName] = useTaxonomy(taxonomyName, taxonomyTermSlug);
 
-	useEffect(()=> {
+	useEffect(() => {
 		const newButtonargs = {
 			...buttonState,
 			text: 'Next',
 			disabled: true,
 			onClick: () => setNextStep('query-c'),
-		}
-		if (!allowCategorySelection) {
+		};
+		if (!allowTaxonomySelection) {
 			newButtonargs.disabled = false;
 		} else {
-			if ( !inheritCategory && !categorySlug ) {
+			if (!inheritTermFromTemplate && !taxonomyTermSlug) {
 				newButtonargs.disabled = true;
 			} else {
 				newButtonargs.disabled = false;
 			}
-			if ( isCategoryTemplate && !inheritCategory && !categorySlug ) {
+			if (
+				isTaxonomyTemplate &&
+				!inheritTermFromTemplate &&
+				!taxonomyTermSlug
+			) {
 				newButtonargs.disabled = true;
 			} else {
 				newButtonargs.disabled = false;
 			}
-			if ( !isCategoryTemplate && !categorySlug ) {
+			if (!isTaxonomyTemplate && !taxonomyTermSlug) {
 				newButtonargs.disabled = true;
 			} else {
 				newButtonargs.disabled = false;
 			}
-			console.log("templateSlug", templateSlug);
+			console.log('templateSlug', templateSlug);
 		}
 		setButtonState(newButtonargs);
-	}, [allowCategorySelection, inheritCategory, categorySlug, templateSlug]);
+	}, [
+		allowTaxonomySelection,
+		inheritTermFromTemplate,
+		taxonomyTermSlug,
+		templateSlug,
+	]);
 
 	return (
 		<div>
-		<BaseControl label={__('Query by Category?', 'prc-platform-core')}>
-			<ToggleControl
-				label={ __('Query by Category') }
-				checked={ allowCategorySelection }
-				onChange={ () => toggleAllowCategorySelection() }
-			/>
-		</BaseControl>
-		{ allowCategorySelection && (
-			<Fragment>
-				{ isCategoryTemplate && (
-					<BaseControl label={__('Inherit Category from Template?', 'prc-platform-core')}>
-						<ToggleControl
-							label={ inheritCategory ? __('Yes', 'prc-platform-core') : __('No', 'prc-platform-core') }
-							checked={ inheritCategory }
-							onChange={ () => setInheritCategory(!inheritCategory) }
+			<BaseControl
+				label={__('Query by Taxonomy?', 'prc-platform-core')}
+				id="query-by-taxonomy-boolean"
+			>
+				<ToggleControl
+					label={__('Query by Taxonomy')}
+					checked={allowTaxonomySelection}
+					onChange={() => toggleAllowTaxonomySelection()}
+				/>
+			</BaseControl>
+			{allowTaxonomySelection && (
+				<Fragment>
+					{isTaxonomyTemplate && (
+						<BaseControl
+							label={__(
+								'Inherit Taxonomy Term from Template?',
+								'prc-platform-core'
+							)}
+							id="inherit-taxonomy-term-boolean"
+						>
+							<ToggleControl
+								label={
+									inheritTermFromTemplate
+										? __('Yes', 'prc-platform-core')
+										: __('No', 'prc-platform-core')
+								}
+								checked={inheritTermFromTemplate}
+								onChange={() =>
+									setInheritTermFromTemplate(
+										!inheritTermFromTemplate
+									)
+								}
+							/>
+						</BaseControl>
+					)}
+					{true !== inheritTermFromTemplate && (
+						<WPEntitySearch
+							placeholder={`Search for a taxonomy term to filter ${TAXONOMY_LABEL} by`}
+							searchLabel={`Search for a taxonomy term to filter ${TAXONOMY_LABEL} by`}
+							entityType="taxonomy"
+							entitySubType={taxonomyName}
+							entityId={templateTermId || termId || false}
+							searchValue={templateTermName || termName || ''}
+							onSelect={(entity) => {
+								console.log('Taxonomy Entity: ', entity);
+								setTaxonomyTermSlug(entity.slug);
+							}}
+							onKeyEnter={() => {
+								console.log('Enter Key Pressed');
+							}}
+							onKeyESC={() => {
+								console.log('ESC Key Pressed');
+							}}
+							perPage={10}
 						/>
-					</BaseControl>
-				) }
-				{ (true !== inheritCategory) && (
-					<WPEntitySearch
-						placeholder={__(`Search for a category to filter ${TAXONOMY_LABEL} by`)}
-						searchLabel={__(`Search for a category to filter ${TAXONOMY_LABEL} by`)}
-						entityType="taxonomy"
-						entitySubType="category"
-						entityId={templateCatId || catId || false}
-						searchValue={templateCatName || catName || ''}
-						onSelect={(entity) => {
-							console.log('Category Entity: ', entity);
-							setCategorySlug(entity.slug);
-						}}
-						onKeyEnter={() => {
-							console.log("Enter Key Pressed");
-						}}
-						onKeyESC={() => {
-							console.log("ESC Key Pressed");
-						}}
-						perPage={10}
-					/>
-				) }
-			</Fragment>
-		)}
+					)}
+				</Fragment>
+			)}
 		</div>
 	);
 }

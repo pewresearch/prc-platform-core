@@ -151,8 +151,13 @@ class Related_Posts_API extends Related_Posts {
 		}
 
 		// @TODO !! During the migration some posts did not run the related posts post id match correctly. Probably because of a race condition. In the interim I am going to disable this feature entirely, regardless if the post has good data or not, instead we'll fall back to the primary term match.
-		// $custom_posts  = $this->get_custom_related_posts();
-		$custom_posts = array();
+		// Check if the post_id post date is after april 18th 2024 and if not disable the related posts feature.
+		$post_date = get_the_date( 'Y-m-d', $post_id );
+		if ( strtotime( $post_date ) < strtotime( '2024-04-18' ) ) {
+			$custom_posts = array();
+		} else {
+			$custom_posts  = $this->get_custom_related_posts();
+		}
 
 		if ( 5 > count( $custom_posts ) && ( empty( $related_posts ) || false === $related_posts ) ) {
 			$related_posts = $this->get_posts_with_matching_primary_terms( $per_page );
