@@ -12,7 +12,7 @@ const AVAILABLE_LIBRARIES = [
 	'thin',
 ];
 
-const Icon = ({ library = 'solid', icon }) => {
+const Icon = ({ library = 'solid', icon, size = 1 }) => {
 	if (!icon && typeof icon !== 'string') {
 		return;
 	}
@@ -21,7 +21,12 @@ const Icon = ({ library = 'solid', icon }) => {
 	}
 	return (
 		<i className="icon">
-			<svg>
+			<svg
+				style={{
+					width: `${size}em`,
+					height: `${size}em`,
+				}}
+			>
 				{/*  TODO: pre-launch, update the href to the correct path by removing pewresearch-org */}
 				<use
 					href={`${window.location.origin}/pewresearch-org/wp-content/plugins/prc-icon-library/build/icons/sprites/${library}.svg#${icon}`}
