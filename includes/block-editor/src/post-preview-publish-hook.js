@@ -33,6 +33,9 @@ const actions = {
 };
 
 function startPreview(postId, postType) {
+	if (!actions[postType]) {
+		return;
+	}
 	if (
 		actions[postType].preview.start &&
 		actions[postType].preview.start.length
@@ -44,6 +47,9 @@ function startPreview(postId, postType) {
 }
 
 function endPreview(postId, postType) {
+	if (!actions[postType]) {
+		return;
+	}
 	if (actions[postType].preview.end && actions[postType].preview.end.length) {
 		actions[postType].preview.end.forEach((action) => {
 			action(postId);
@@ -52,6 +58,9 @@ function endPreview(postId, postType) {
 }
 
 function startPublish(postId, postType) {
+	if (!actions[postType]) {
+		return;
+	}
 	if (
 		actions[postType].publish.start &&
 		actions[postType].publish.start.length
@@ -63,6 +72,9 @@ function startPublish(postId, postType) {
 }
 
 function endPublish(postId, postType) {
+	if (!actions[postType]) {
+		return;
+	}
 	if (actions[postType].publish.end && actions[postType].publish.end.length) {
 		actions[postType].publish.end.forEach((action) => {
 			action(postId);
@@ -71,7 +83,7 @@ function endPublish(postId, postType) {
 }
 
 function watcher() {
-	console.log("prc-platform/post-preview-publish-hook: watcher activating");
+	console.log('prc-platform/post-preview-publish-hook: watcher activating');
 	// Setup simple functions to get the current status of the post:
 	const getPostPreviewStatus = () => select('core/editor').isPreviewingPost();
 	const getPostPublishStatus = () => select('core/editor').isPublishingPost();
