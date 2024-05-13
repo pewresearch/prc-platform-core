@@ -70,6 +70,10 @@ class Attachments_Panel {
 	}
 
 	public function enqueue_block_plugin_assets() {
+		global $current_screen;
+		if ( $current_screen->base === 'site-editor' ) {
+			return;
+		}
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );

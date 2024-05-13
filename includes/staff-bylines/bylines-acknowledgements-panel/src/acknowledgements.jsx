@@ -5,7 +5,6 @@ import { WPEntitySearch } from '@prc/components';
 import { List } from 'react-movable';
 import styled from '@emotion/styled';
 
-
 /**
  * WordPress Dependencies
  */
@@ -41,7 +40,7 @@ function Acknowledgements() {
 				<p>
 					{__(
 						`Acknowledgements will not appear on the post. People associated here will have this post listed on their staff bio page.`,
-						'prc-platform-core',
+						'prc-platform-core'
 					)}
 				</p>
 				<SearchContainer>
@@ -49,8 +48,8 @@ function Acknowledgements() {
 						placeholder="Add new acknowledgement..."
 						entityType="taxonomy"
 						entitySubType="bylines"
-						onSelect={(item) => {
-							append(randomId(), item.id, false);
+						onSelect={(entity) => {
+							append(randomId(), entity.entityId, true);
 						}}
 						clearOnSelect={true}
 					>
@@ -72,7 +71,10 @@ function Acknowledgements() {
 											onRemove={() => {
 												remove(index, false);
 											}}
-											lastItem={index === acknowledgementItems.length - 1}
+											lastItem={
+												index ===
+												acknowledgementItems.length - 1
+											}
 										/>
 									</div>
 								)}

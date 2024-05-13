@@ -76,7 +76,6 @@ class Post_Report_Package {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		// Always bypass caching if we're previewing a url.
 		if ( !class_exists('WP_HTML_Heading_Processor') ) {
 			require_once( plugin_dir_path( __FILE__ ) . 'class-wp-html-heading-processor.php' );
 		}
@@ -88,6 +87,7 @@ class Post_Report_Package {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_meta_fields' );
 			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_rest_endpoint' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'set_child_posts', 10, 1 );
 			$loader->add_action( 'prc_platform_on_update', $this, 'update_children', 10, 1 );
@@ -285,10 +285,6 @@ class Post_Report_Package {
 	 * @return void
 	 */
 	public function update_children( $post ) {
-		if ( WP_DEBUG ) {
-			error_log('update_children');
-			error_log(print_r($post, true));
-		}
 		if ( 'post' !== $post->post_type ) {
 			return;
 		}
@@ -309,14 +305,6 @@ class Post_Report_Package {
 		}
 		$parent_post_status = get_post_status( $post_id );
 		$parent_post_date = get_post_field( 'post_date', $post_id );
-
-		if ( WP_DEBUG ) {
-			error_log('parent post info' . print_r([
-				'taxonomies' => $parent_post_taxonomy_terms,
-				'post_status' => $parent_post_status,
-				'post_date' => $parent_post_date,
-			], true));
-		}
 
 		$errors = [];
 		$success = [];
@@ -353,10 +341,6 @@ class Post_Report_Package {
 			'errors' => $errors,
 		);
 
-		if ( WP_DEBUG ) {
-			error_log('update_children RESULT::'.print_r($to_return, true));
-		}
-
 		return $to_return;
 	}
 
@@ -365,9 +349,6 @@ class Post_Report_Package {
 			'ID' => $child_post_id,
 			'post_parent' => $parent_post_id,
 		), true );
-		if ( WP_DEBUG ) {
-			error_log('assign_child_to_parent'.print_r($updated, true));
-		}
 		if ( is_wp_error( $updated ) ) {
 			return new WP_Error( '412', 'Failed to assign child post to parent.', $updated );
 		}
@@ -387,9 +368,7 @@ class Post_Report_Package {
 		$errors = array();
 		$success = array();
 		$current_back_chapters = get_post_meta( $post->ID, self::$back_chapters_meta_key, true );
-		if ( WP_DEBUG ) {
-			error_log('set_child_posts'.print_r($current_back_chapters, true));
-		}
+
 		if ( empty( $current_back_chapters ) ) {
 			return;
 		}
@@ -528,10 +507,8 @@ class Post_Report_Package {
 	 * REPORT MATERIALS
 	 */
 	public function get_report_materials( $post_id ) {
-		$this->bypass_caching = $this->bypass_caching || is_preview();
-
 		$parent_id = wp_get_post_parent_id( $post_id );
-		if ( false !== $parent_id && 0 !== $parent_id) {
+		if ( 0 != $parent_id) {
 			$post_id = $parent_id;
 		}
 
@@ -547,8 +524,7 @@ class Post_Report_Package {
 	}
 
 	public function get_constructed_report_materials( $post_id ) {
-		$materials = $this->get_report_materials( $post_id );
-		return $materials;
+		return $this->get_report_materials( $post_id );
 	}
 
 	/**
@@ -633,74 +609,89 @@ class Post_Report_Package {
 	}
 
 	/**
+	 * Core Heading Chapter
+	 */
+	protected function process_core_heading($array, $permalink) {
+		$level = array_key_exists('level', $array['attrs']) ? $array['attrs']['level'] : 2;
+		$tags = new WP_HTML_Tag_Processor($array['innerHTML']);
+		$tags->next_tag('H'.$level);
+		$id = $tags->get_attribute('id');
+
+		if ( empty( $id ) ) {
+			$id = sanitize_title( $array['innerHTML'] );
+		}
+
+		// Check if the heading has a number in it and if so then we'll convert it to words, also we're removing the default h- from heading blocks, looks awful for SEO.
+		if ( preg_match( '/^h-(\d+)-/', $id, $matches ) ) {
+			$number = $matches[1];
+			$number = intval( $number );
+			$number = $this->convert_number_to_words( $level );
+			if ( is_wp_error( $number ) ) {
+				$id = preg_replace( '/^h-(\d+)-/', '', $id );
+			} else {
+				$id = preg_replace( '/^h-(\d+)-/', $number . '-', $id );
+			}
+		} else {
+			$id = preg_replace( '/^h-/', '', $id );
+		}
+
+		return array(
+			'id' => $id,
+			'title' => wp_strip_all_tags( !empty($array['attrs']['altTocText']) ? $array['attrs']['altTocText'] : $array['innerHTML'] ),
+			'link' => $permalink . '#' . $id,
+		);
+	}
+
+	protected function process_legacy_chapter_block($array, $permalink) {
+		$needs_migration = true;
+		$id = $array['attrs']['id'];
+		// Ensure the ID is clean and none of the core/heading block id stuff gets added.
+		if ( preg_match( '/^h-\d+/', $id ) ) {
+			$id = preg_replace( '/^h-\d+-/', '', $id );
+		} elseif ( preg_match( '/^h-/', $id ) ) {
+			$id = preg_replace( '/^h-/', '', $id );
+		}
+		return array(
+			'id' => $id,
+			'title' => wp_strip_all_tags( $array['attrs']['value'] ),
+			'link' => $permalink . '#' . $id,
+		);
+	}
+
+	/**
 	 * Will recrusively build the table of contents through navigating all blocks and grabbing core/heading and prc-block/chapter
 	 * @param mixed $array
 	 * @return array
 	 */
-	public function prepare_chapter_blocks( $array, $post_id = false ) {
+	public function prepare_chapter_blocks( $array, $post_id = false, $depth = 0 ) {
 		$results = array();
 
-		if ( 'short-read' === get_post_type( $post_id ) ) {
+		if ( !in_array(get_post_type( $post_id ), [
+			'post',
+			'fact-sheet',
+		]) ) {
 			return $results;
 		}
 
 		$permalink = get_permalink( $post_id );
 
-		$needs_migration = false;
-
 		if ( is_array( $array ) ) {
+			// We get the first level of the array first...
 			$block_name = array_key_exists('blockName', $array) ? $array['blockName'] : false;
-			// We get the first level of the array first, then sub levels...
 			if ( in_array($block_name, array('core/heading', 'prc-block/chapter')) ) {
+				// Check if this is a core/heading block...
 				if ( array_key_exists('isChapter', $array['attrs']) && true === $array['attrs']['isChapter'] ) {
-					$level = array_key_exists('level', $array['attrs']) ? $array['attrs']['level'] : 2;
-
-					$tags = new WP_HTML_Tag_Processor($array['innerHTML']);
-					$tags->next_tag('H'.$level);
-					$id = $tags->get_attribute('id');
-
-					if ( empty( $id ) ) {
-						$id = sanitize_title( $array['innerHTML'] );
-					}
-
-					// Check if the heading has a number in it and if so then we'll convert it to words, also we're removing the default h- from heading blocks, looks awful for SEO.
-					if ( preg_match( '/^h-(\d+)-/', $id, $matches ) ) {
-						$number = $matches[1];
-						$number = intval( $number );
-						$number = $this->convert_number_to_words( $level );
-						if ( is_wp_error( $number ) ) {
-							$id = preg_replace( '/^h-(\d+)-/', '', $id );
-						} else {
-							$id = preg_replace( '/^h-(\d+)-/', $number . '-', $id );
-						}
-					} else {
-						$id = preg_replace( '/^h-/', '', $id );
-					}
-
-					$results[] = array(
-						'id' => $id,
-						'title' => wp_strip_all_tags( !empty($array['attrs']['altTocText']) ? $array['attrs']['altTocText'] : $array['innerHTML'] ),
-						'link' => $permalink . '#' . $id,
-					);
+					$results[] = $this->process_core_heading($array, $permalink);
+				// Or if it's a legacy prc-block/chapter block...
 				} elseif ( 'prc-block/chapter' === $array['blockName'] ) {
-					$needs_migration = true;
-					$id = $array['attrs']['id'];
-					// Ensure the ID is clean and none of the core/heading block id stuff gets added.
-					if ( preg_match( '/^h-\d+/', $id ) ) {
-						$id = preg_replace( '/^h-\d+-/', '', $id );
-					} elseif ( preg_match( '/^h-/', $id ) ) {
-						$id = preg_replace( '/^h-/', '', $id );
-					}
-					$results[] = array(
-						'id' => $id,
-						'title' => wp_strip_all_tags( $array['attrs']['value'] ),
-						'link' => $permalink . '#' . $id,
-					);
+					$results[] = $this->process_legacy_chapter_block($array, $permalink);
 				}
 			}
-
-			foreach ( $array as $subarray ) {
-				$results = array_merge( $results, $this->prepare_chapter_blocks( $subarray, $post_id ) );
+			// Then we get the rest of the array...
+			if ($depth < 3) {
+				foreach ( $array as $subarray ) {
+					$results = array_merge( $results, $this->prepare_chapter_blocks( $subarray, $post_id, $depth + 1 ) );
+				}
 			}
 		}
 
@@ -715,7 +706,6 @@ class Post_Report_Package {
 		} else {
 			$blocks = parse_blocks( $the_content );
 		}
-
 		$chapters = $this->prepare_chapter_blocks( $blocks, $post_id );
 		return $chapters;
 	}
@@ -735,11 +725,9 @@ class Post_Report_Package {
 		}
 
 		$formatted = array();
-
 		foreach( $back_chapters as $chapter ) {
 			$chapter_id = $chapter['postId'];
 			$chapters = $this->get_internal_chapters( $chapter_id );
-
 			$formatted[] = array(
 				'id' => $chapter_id,
 				'title' => get_the_title( $chapter_id ),
@@ -753,14 +741,11 @@ class Post_Report_Package {
 	}
 
 	private function get_toc_cache_key($cache_key) {
-		$cache_invalidate = '05012024';
+		$cache_invalidate = '050924';
 		return md5(wp_json_encode(['key' => $cache_key, 'invalidate' => $cache_invalidate]));
 	}
 
 	private function get_toc_cache($cache_key, $sub_cache = false) {
-		if (false !== $this->bypass_caching ) {
-			return false;
-		}
 		$cache_group = self::$report_package_key . '_toc';
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
@@ -770,9 +755,6 @@ class Post_Report_Package {
 	}
 
 	private function update_toc_cache($cache_key, $toc, $sub_cache = false) {
-		if (false !== $this->bypass_caching ) {
-			return null;
-		}
 		$cache_group = self::$report_package_key . '_toc';
 		if ( $sub_cache ) {
 			$cache_group .= '_' . $sub_cache;
@@ -782,16 +764,14 @@ class Post_Report_Package {
 	}
 
 	public function handle_scheduled_construction_of_toc($parent_id) {
-		error_log('handle_scheduled_construction_of_toc' .print_r($parent_id, true));
-		// Process the TOC
-		$this->get_constructed_toc( $parent_id );
+		$this->construct_toc( $parent_id );
 	}
 
 
 	/**
 	 * @hook prc_platform_on_update
 	 */
-	public function clear_toc_cache_on_update($post) {
+	public function clear_toc_cache_on_update($post, $is_preview = false) {
 		if ( 'post' !== $post->post_type ) {
 			return;
 		}
@@ -799,34 +779,19 @@ class Post_Report_Package {
 		$parent_id = $this->get_report_parent_id( $post_id );
 		if ( 0 !== $post->post_parent ) {
 			// If this is not the parent then lets clear the cache for the parent and schedule a new construction of the toc.
-			return $this->clear_toc_cache_on_update( $parent_id );
+			$post = get_post($parent_id);
+			return $this->clear_toc_cache_on_update( $post, $is_preview );
 		}
-		delete_post_meta( $parent_id, self::$constructed_toc_key );
-		$cache_key = $this->get_toc_cache_key( $parent_id );
-		wp_cache_delete( $cache_key, self::$report_package_key . '_toc' );
 		// Schedule a new construction of the toc...
-		return as_enqueue_async_action( 'prc_report_package_construct_toc', array( $parent_id ), $parent_id );
+		$group = $parent_id;
+		if ( $is_preview ) {
+			$group = 'preview_' . $group;
+		}
+		return as_enqueue_async_action( 'prc_report_package_construct_toc', array( $parent_id ), $group );
 	}
 
-	/**
-	 * This function will work with any post type, if the post is not a report package and does not have backchapter posts then it will just collapse the internal chapters into the main list.
-	 * @param mixed $post_id
-	 * @return mixed
-	 */
-	public function get_constructed_toc( $post_id ) {
+	protected function __construct_toc( $post_id ) {
 		$parent_id = $this->get_report_parent_id( $post_id );
-
-		$cached_toc = $this->get_toc_cache( $parent_id );
-		if ( false !== $cached_toc ) {
-			return $cached_toc;
-		}
-
-		// Check for post meta stored construced toc...
-		$stored_toc = get_post_meta( $parent_id, self::$constructed_toc_key, true );
-		if ( !empty( $stored_toc ) ) {
-			return $stored_toc;
-		}
-
 		$internal_chapters = $this->get_internal_chapters( $parent_id );
 		$back_chapters = $this->get_back_chapters( $parent_id );
 
@@ -844,11 +809,68 @@ class Post_Report_Package {
 			),
 		), $back_chapters );
 
-		$this->update_toc_cache( $parent_id, $constructed_toc );
+		return $constructed_toc;
+	}
+
+	protected function construct_toc( $post_id ) {
+		$parent_id = $this->get_report_parent_id( $post_id );
+
+		$constructed_toc = $this->__construct_toc( $post_id );
 
 		update_post_meta( $parent_id, self::$constructed_toc_key, $constructed_toc );
 
+		$this->update_toc_cache( $parent_id, $constructed_toc );
+
 		return $constructed_toc;
+	}
+
+	/**
+	 * This function will work with any post type, if the post is not a report package and does not have backchapter posts then it will just collapse the internal chapters into the main list.
+	 * @param mixed $post_id
+	 * @return mixed
+	 */
+	public function get_constructed_toc( $post_id ) {
+		$parent_id = $this->get_report_parent_id( $post_id );
+
+		$cached_toc = $this->get_toc_cache( $parent_id );
+		
+		if ( false !== $cached_toc ) {
+			return $cached_toc;
+		}
+
+		$stored_toc = get_post_meta( $parent_id, self::$constructed_toc_key, true );
+		return $stored_toc;
+	}
+
+	/**
+	 * @hook prc_api_endpoints
+	 */
+	public function register_rest_endpoint($endpoints) {
+		$endpoint = array(
+			'route' => '/report-package/regenerate-toc',
+			'methods' => 'POST',
+			'callback' => array($this, 'restfully_regenerate_toc'),
+			'args' => array(
+				'postId' => array(
+					'required' => true,
+					'type' => 'integer',
+				),
+			),
+			'permission_callback' => function() {
+				return current_user_can( 'edit_posts' );
+			},
+		);
+		return array_merge($endpoints, array($endpoint));
+	}
+
+	public function restfully_regenerate_toc(\WP_REST_Request $request) {
+		error_log('restfully_regenerate_toc');
+		$post_id = $request->get_param('postId');
+		error_log('post_id: '.$post_id);
+		if ( empty($post_id) ) {
+			return new WP_Error('400', 'Missing post_id parameter.');
+		}
+		return $this->construct_toc( $post_id );
 	}
 
 	public function get_pagination($post_id) {

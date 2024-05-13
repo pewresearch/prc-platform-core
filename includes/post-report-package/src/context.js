@@ -1,3 +1,5 @@
+/* eslint-disable max-lines-per-function */
+/* eslint-disable max-len */
 /**
  * External Dependencies
  */
@@ -24,10 +26,12 @@ const postReportPackageContext = createContext();
 
 const usePostReportPackageContext = (postId, postType, currentPostId) => {
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
-	const {canDelete, isResolving} = useResourcePermissions('posts', postId);
+	const { canDelete, isResolving } = useResourcePermissions('posts', postId);
 
 	const [materials, setMaterials] = useState(meta?.reportMaterials ?? []);
-	const [backChapters, setBackChapters] = useState(meta?.multiSectionReport ?? []);
+	const [backChapters, setBackChapters] = useState(
+		meta?.multiSectionReport ?? []
+	);
 	const debounceMaterials = useDebounce(materials, 500);
 	const debounceBackChapters = useDebounce(backChapters, 500);
 
@@ -43,8 +47,8 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 
 	// This approach doesnt support cross collabration as well but it works for now. Leaving the entity sync version below for reference.
 	useEffect(() => {
-		console.log("Materials...", materials);
-		if ( ! allowEditing || undefined === meta ) {
+		console.log('Materials...', materials);
+		if (!allowEditing || undefined === meta) {
 			return;
 		}
 		setMeta({
@@ -54,8 +58,8 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 	}, [debounceMaterials]);
 
 	useEffect(() => {
-		console.log("Back Chapters...", backChapters);
-		if ( ! allowEditing || undefined === meta ) {
+		console.log('Back Chapters...', backChapters);
+		if (!allowEditing || undefined === meta) {
 			return;
 		}
 		setMeta({
@@ -84,9 +88,9 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 	// }, [meta]);
 
 	const getLatestStateByItemType = (itemsType = 'materials') => {
-		if ( 'materials' === itemsType ) {
+		if ('materials' === itemsType) {
 			return [...materials];
-		} else if ( 'backChapters' === itemsType ) {
+		} else if ('backChapters' === itemsType) {
 			return [...backChapters];
 		}
 		return [];
@@ -104,9 +108,9 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		newItems.splice(newIndex, 0, item);
 
 		let fn = () => console.log('reorder', oldIndex, newIndex, itemsType);
-		if ( 'materials' === itemsType ) {
+		if ('materials' === itemsType) {
 			fn = setMaterials;
-		} else if ( 'backChapters' === itemsType ) {
+		} else if ('backChapters' === itemsType) {
 			fn = setBackChapters;
 		}
 
@@ -126,9 +130,9 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		newItems.push(obj);
 
 		let fn = () => console.log('append', key, value, obj, itemsType);
-		if ( 'materials' === itemsType ) {
+		if ('materials' === itemsType) {
 			fn = setMaterials;
-		} else if ( 'backChapters' === itemsType ) {
+		} else if ('backChapters' === itemsType) {
 			fn = setBackChapters;
 		}
 		fn(newItems);
@@ -143,9 +147,9 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		newItems.splice(index, 1);
 
 		let fn = () => console.log('remove', index, itemsType);
-		if ( 'materials' === itemsType ) {
+		if ('materials' === itemsType) {
 			fn = setMaterials;
-		} else if ( 'backChapters' === itemsType ) {
+		} else if ('backChapters' === itemsType) {
 			fn = setBackChapters;
 		}
 
@@ -156,15 +160,25 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		if (!allowEditing) {
 			return;
 		}
-		console.log('updateItem', index, valueKey, value, itemsType, allowEditing, isResolving, canDelete);
+		console.log(
+			'updateItem',
+			index,
+			valueKey,
+			value,
+			itemsType,
+			allowEditing,
+			isResolving,
+			canDelete
+		);
 		const newItems = getLatestStateByItemType(itemsType);
 
 		newItems[index][valueKey] = value;
 
-		let fn = () => console.log('updateItem', index, valueKey, value, itemsType);
-		if ( 'materials' === itemsType ) {
+		let fn = () =>
+			console.log('updateItem', index, valueKey, value, itemsType);
+		if ('materials' === itemsType) {
 			fn = setMaterials;
-		} else if ( 'backChapters' === itemsType ) {
+		} else if ('backChapters' === itemsType) {
 			fn = setBackChapters;
 		}
 
@@ -187,8 +201,17 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 
 const usePostReportPackage = () => useContext(postReportPackageContext);
 
-function ProvidePostReportPackage({ postId, postType, currentPostId, children }) {
-	const provider = usePostReportPackageContext(postId, postType, currentPostId);
+function ProvidePostReportPackage({
+	postId,
+	postType,
+	currentPostId,
+	children,
+}) {
+	const provider = usePostReportPackageContext(
+		postId,
+		postType,
+		currentPostId
+	);
 	return (
 		<postReportPackageContext.Provider value={provider}>
 			{children}

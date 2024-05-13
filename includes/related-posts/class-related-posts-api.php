@@ -35,6 +35,46 @@ class Related_Posts_API extends Related_Posts {
 		$label = ucwords(str_replace("-", " ", $label));
 	}
 
+	private function get_related_posts_from_parsely($post_id) {
+		// check cache for related posts
+		$related_posts = wp_cache_get( $post_id, 'parsely_related_posts' );
+		if ( false !== $related_posts ) {
+			return $related_posts;
+		}
+		$primary_taxonomy_term_id = \yoast_get_primary_term_id('category', $this->ID);
+		$primary_taxonomy_term = get_term_by( 'term_taxonomy_id', (int) $primary_taxonomy_term_id, 'category' );
+		$section = $primary_taxonomy_term->name;
+		// query parsely for related posts for this post by url by post id and by primary topic term/section name
+		$related_posts = array();
+		$api_url = 'https://api.parsely.com/v2/related?apikey=pewresearch.org&section='.$section.'url=' . get_permalink( $post_id );
+		$response = \vip_safe_wp_remote_get( $api_url );
+		if ( is_wp_error( $response ) ) {
+			return $related_posts;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+		if ( ! is_array( $data ) || empty( $data ) ) {
+			return $related_posts;
+		}
+
+		$related_posts = array_map(function($item) {
+			return array(
+				'postId' => $item['post_id'],
+				'postType' => get_post_type($item['post_id']),
+				'url' => get_permalink($item['post_id']),
+				'title' => $item['title'],
+				'date' => $item['pub_date'],
+				'excerpt' => $item['excerpt'],
+				'label' => $this->get_label($item['post_id']),
+			);
+		}, $data);
+
+		// Store the related posts for 1 day.
+		wp_cache_set( $post_id, $related_posts, 'parsely_related_posts', 1 * DAY_IN_SECONDS );
+		return $related_posts;
+	}
+
 	private function get_posts_with_matching_primary_terms($posts_per_page = 5, $fallback_to_taxonomy = false) {
 		$taxonomy = $this->args['taxonomy'];
 		$meta_key = '_yoast_wpseo_primary_'.$taxonomy;
@@ -110,6 +150,8 @@ class Related_Posts_API extends Related_Posts {
 		if ( $this->is_JSON($data) ) {
 			$data = json_decode( $data, true );
 		}
+
+		do_action('qm/debug', "RELATED: " . print_r($data, true));
 
 		$related_posts = array();
 		if ( empty( $data ) ) {

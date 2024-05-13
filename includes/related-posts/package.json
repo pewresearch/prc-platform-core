@@ -11,6 +11,8 @@
 		"test": "wp-scripts test-unit"
 	},
 	"dependencies": {
+		"@emotion/styled": "^11.11.5",
+		"@wordpress/icons": "^9.48.0",
 		"react-movable": "^3.0.4"
 	}
 }

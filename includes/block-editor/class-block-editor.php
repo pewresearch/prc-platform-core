@@ -23,6 +23,7 @@ class Block_Editor {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->init($loader);
 	}
 
 	public function init($loader = null) {
@@ -33,11 +34,10 @@ class Block_Editor {
 
 	public function register_assets() {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
-		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
 
 		$script = wp_register_script(
-			$asset_slug,
+			self::$handle,
 			$script_src,
 			$asset_file['dependencies'],
 			$asset_file['version'],
@@ -85,6 +85,7 @@ class Block_Editor {
 	}
 
 	public function enqueue_assets() {
+		do_action('qm/debug', self::$handle);
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
 			wp_enqueue_script( self::$handle );

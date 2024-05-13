@@ -40,25 +40,16 @@ class Pagination extends Post_Report_Package {
 	 * @return void
 	 */
 	public function set_posts_structure() {
-		$back_chapters = $this->get_back_chapters( $this->post_id );
+		$chapters = $this->get_constructed_toc( $this->post_id );
+		if ( empty($chapters) ) {
+			return [];
+		}
 		// we want to return this data but strip out internal_chapters, we also want to add an is_active key to each chapter. and check against the current post id.
 		$posts = array_map( function( $chapter ) {
 			$chapter['is_active'] = $chapter['id'] === $this->post_id;
 			unset( $chapter['internal_chapters'] );
 			return $chapter;
-		}, $back_chapters );
-
-		$parent_post_id = $this->get_report_parent_id( $this->post_id );
-		$parent_post = get_post( $parent_post_id );
-		wp_reset_postdata();
-		// add to the beginning of the array the parent post.
-		array_unshift( $posts, array(
-			'id' => $parent_post->ID,
-			'title' => $parent_post->post_title,
-			'link' => get_permalink( $parent_post->ID ),
-			'slug' => $parent_post->post_name,
-			'is_active' => $parent_post->ID === $this->post_id,
-		) );
+		}, $chapters );
 
 		return $posts;
 	}

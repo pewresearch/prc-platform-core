@@ -45,7 +45,6 @@ class Multisite_Post_Migration {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
 		$asset_slug = self::$handle;
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
-		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -55,14 +54,7 @@ class Multisite_Post_Migration {
 			true
 		);
 
-		$style = wp_register_style(
-			$asset_slug,
-			$style_src,
-			array(),
-			$asset_file['version']
-		);
-
-		if ( ! $script || ! $style ) {
+		if ( ! $script ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
 
@@ -70,10 +62,16 @@ class Multisite_Post_Migration {
 	}
 
 	public function enqueue_assets() {
+		global $current_screen;
+		if ( $current_screen->base === 'site-editor' ) {
+			return;
+		}
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_enqueue_script( self::$handle );
-			wp_enqueue_style( self::$handle );
+			if ( get_post_meta(get_the_ID(), '_stub_post', true) ) {
+				wp_enqueue_script( self::$handle );
+				wp_enqueue_style( self::$handle );
+			}
 		}
 	}
 

@@ -214,13 +214,15 @@ class WP_Admin {
 			);
 		}
 
-		if ( $wp_query->is_category() && $wp_query->is_main_query() ) {
+		if ( ($wp_query->is_category() || $wp_query->is_tax('regions-countries') || $wp_query->is_tax('collection')) && $wp_query->is_main_query() ) {
 			$queried_object = $wp_query->get_queried_object();
+			$queried_taxonomy = $queried_object->taxonomy;
+
 			$block_modules = get_posts(array(
 				'post_type' => 'block_module',
 				'tax_query' => array(
 					array(
-						'taxonomy' => 'category',
+						'taxonomy' => $queried_taxonomy,
 						'field' => 'slug',
 						'terms' => $queried_object->slug,
 						'include_children' => false,
@@ -229,6 +231,7 @@ class WP_Admin {
 				'fields' => 'ids',
 				'posts_per_page' => 3,
 			));
+
 			if ( $block_modules ) {
 				foreach ( $block_modules as $block_module_id ) {
 					$block_area = wp_get_object_terms( $block_module_id, 'block_area', array( 'fields' => 'names' ));

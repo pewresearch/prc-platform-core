@@ -50,10 +50,11 @@ function Bylines() {
 						placeholder={__('Add new byline…', 'prc-platform-core')}
 						entityType="taxonomy"
 						entitySubType="bylines"
-						onSelect={(item) => {
-							append(randomId(), item.id, true);
+						onSelect={(entity) => {
+							append(randomId(), entity.entityId, true);
 						}}
 						clearOnSelect={true}
+						showType={false}
 					>
 						<ListWrapper>
 							<List

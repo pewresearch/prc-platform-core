@@ -37,6 +37,7 @@ class Staff_Bylines {
 		'mini-course',
 		'course',
 		'quiz',
+		'decoded',
 	);
 
 	public static $staff_post_type_args = array(

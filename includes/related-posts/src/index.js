@@ -13,7 +13,6 @@ import { useEffect } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useEntityProp } from '@wordpress/core-data';
-import { Card, CardBody } from '@wordpress/components';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 
 /**
@@ -29,45 +28,6 @@ function randomId() {
 	return `_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-function SearchItem({ item, onSelect }) {
-	console.log('<SearchItem>', item);
-	if (!item) {
-		return null;
-	}
-
-	const { status, title } = item;
-
-	return (
-		// eslint-disable-next-line jsx-a11y/click-events-have-key-events
-		<Card
-			onClick={() => {
-				console.log('SELECTED', item);
-				onSelect(item);
-			}}
-			size="small"
-			style={{
-				cursor: 'pointer',
-				':hover': {
-					'background-color': '#f3f4f5',
-				},
-			}}
-		>
-			<CardBody
-				style={{
-					display: 'flex',
-				}}
-			>
-				<div>
-					<strong>
-						{title.rendered ? title.rendered : title}
-						{'draft' === status ? ` (draft)` : null}
-					</strong>
-				</div>
-			</CardBody>
-		</Card>
-	);
-}
-
 function RelatedPostsPanel() {
 	const { append, reorder } = useDispatch('prc/related-posts');
 
@@ -76,7 +36,7 @@ function RelatedPostsPanel() {
 			items: select('prc/related-posts').getItems(),
 			postType: select('core/editor').getCurrentPostType(),
 		}),
-		[],
+		[]
 	);
 
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta');
@@ -89,20 +49,32 @@ function RelatedPostsPanel() {
 	}, [items]);
 
 	return (
-		<PluginDocumentSettingPanel name="prc-related-posts" title="Related Posts">
+		<PluginDocumentSettingPanel
+			name="prc-related-posts"
+			title="Related Posts"
+		>
 			<WPEntitySearch
-				placeholder={__('Enter URL or search for post', 'prc-platform-core')}
+				placeholder={__(
+					'Enter URL or search for a related post',
+					'prc-platform-core'
+				)}
 				entityType="postType"
-				entitySubType="post"
-				onSelect={(item) => {
-					console.log('ITEM', item);
+				entitySubType={[
+					'post',
+					'short-read',
+					'fact-sheet',
+					'feature',
+					'quiz',
+				]}
+				onSelect={(entity) => {
+					// Transform the entity into something usable for related posts.
 					append({
 						key: randomId(),
-						link: item.canonical_url,
-						postId: item.id,
-						title: item.title.rendered,
-						date: item.date,
-						label: item.label,
+						link: entity.entityUrl,
+						postId: entity.entityId,
+						title: entity.entityName,
+						date: entity.entityDate,
+						label: entity.entityName,
 					});
 				}}
 				clearOnSelect={true}
@@ -116,7 +88,9 @@ function RelatedPostsPanel() {
 							to: newIndex,
 						})
 					}
-					renderList={({ children, props }) => <div {...props}>{children}</div>}
+					renderList={({ children, props }) => (
+						<div {...props}>{children}</div>
+					)}
 					renderItem={({ value, props, index }) => (
 						<div {...props}>
 							<ListStoreItem

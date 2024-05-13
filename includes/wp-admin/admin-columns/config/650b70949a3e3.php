@@ -7,7 +7,7 @@ return array (
     'title' => '',
     'type' => 'block_module',
     'id' => '650b70949a3e3',
-    'updated' => 1713372334,
+    'updated' => 1715177788,
     'columns' => 
     array (
       'title' => 
@@ -72,7 +72,7 @@ return array (
         'filter_label' => '',
         'name' => 'taxonomy-block_area',
       ),
-      '5750459e97ced8' => 
+      'taxonomy-regions-countries' => 
       array (
         'type' => 'taxonomy-regions-countries',
         'label' => 'Regions & Countries',
@@ -84,9 +84,25 @@ return array (
         'sort' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
-        'filter' => 'off',
+        'filter' => 'on',
         'filter_label' => '',
-        'name' => '5750459e97ced8',
+        'name' => 'taxonomy-regions-countries',
+      ),
+      '433aaec6604188' => 
+      array (
+        'type' => 'taxonomy-collection',
+        'label' => 'Collections',
+        'width' => '',
+        'width_unit' => '%',
+        'edit' => 'on',
+        'enable_term_creation' => 'off',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'on',
+        'filter_label' => '',
+        'name' => '433aaec6604188',
       ),
       'date' => 
       array (

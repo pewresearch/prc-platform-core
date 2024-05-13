@@ -55,7 +55,7 @@ function ListStoreItem({
 }) {
 	const { remove, setItemProp } = useDispatch(`prc/${storeName}`);
 	const [labelText, setLabelText] = useState(
-		undefined !== label ? label : defaultLabel,
+		undefined !== label ? label : defaultLabel
 	);
 
 	useEffect(() => {
@@ -78,7 +78,10 @@ function ListStoreItem({
 					<IconButton
 						icon="no-alt"
 						onClick={() => {
-							if (false !== onRemove && 'function' === typeof onRemove) {
+							if (
+								false !== onRemove &&
+								'function' === typeof onRemove
+							) {
 								onRemove();
 							}
 							remove(index);

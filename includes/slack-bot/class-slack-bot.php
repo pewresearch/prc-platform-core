@@ -78,7 +78,7 @@ class Slack_Bot {
 	}
 
 	/**
-	 * Register endpoint for getting theme colors
+	 * Register slackbot endpoint
 	 * @hook prc_api_endpoints
 	 * @param mixed $endpoints
 	 * @return void

@@ -25,6 +25,7 @@ class Permalink_Rewrites {
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		$this->init($loader);
+		require_once( plugin_dir_path( __FILE__ ) . 'class-url-helper.php' );
 	}
 
 	public function init($loader = null) {

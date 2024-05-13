@@ -320,20 +320,41 @@ class Datasets {
 		if ( ! $id ) {
 			return new WP_Error( 'no_id', 'No dataset ID provided.', array( 'status' => 400 ) );
 		}
+		$file_url = null;
 		$attachment_id = get_post_meta( $id, self::$download_meta_key, true );
+		// We need to fall back and look for
 		if ( $attachment_id ) {
-			$attachment_url = wp_get_attachment_url( $attachment_id );
+			$file_url = wp_get_attachment_url( $attachment_id );
+		} else {
+			// Legacy Conditional Check:
+			$dataset_download_url = get_post_meta( $id, 'dataset_download_url', true );
+			if ( !$dataset_download_url ) {
+				$original_post_id = get_post_meta( $id, 'dt_original_post_id', true );
+				$original_site_id = get_post_meta( $id, 'dt_original_site_id', true );
+				if ( $original_post_id && $original_site_id ) {
+					switch_to_blog( $original_site_id );
+					$file_url = get_post_meta( $original_post_id, 'dataset_download_url', true );
+					restore_current_blog();
+					if ( $file_url ) {
+						// We need to update the attachment id for this dataset. Next time the user downloads it, we'll have this data earlier.
+						update_post_meta( $id, 'dataset_download_url', $file_url );
+					}
+				}
+			}
+		}
+
+		if ( ! $file_url ) {
+			return rest_ensure_response( array(
+				'error' => 'No file found for dataset.',
+			) );
+		} else {
 			// Log the download.
 			$download_logger = new Datasets_Download_Logger();
 			$download_logger->increment_download_total( $id );
 			$download_logger->log_monthly_download_count( $id );
 			$download_logger->log_dataset_to_user( $uid, $id );
 			return rest_ensure_response( array(
-				'file_url' => $attachment_url,
-			) );
-		} else {
-			return rest_ensure_response( array(
-				'error' => 'No attachment found for dataset.',
+				'file_url' => $file_url,
 			) );
 		}
 	}
