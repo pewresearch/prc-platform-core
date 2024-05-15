@@ -142,8 +142,15 @@ class Languages extends Taxonomies {
 
 	public function restfully_get_post_for_translation( \WP_REST_Request $request ) {
 		$post_id = $request->get_param( 'post_id' );
-		$blocks = $this->provide_object_for_translation($post_id);
-		return $blocks;
+		$to_return = [];
+		$to_return['entityId'] = $post_id;
+		$to_return['entityType'] = get_post_type($post_id);
+		$to_return['entityTranslatables'] = [
+			'title' => get_the_title($post_id),
+			'excerpt' => get_the_excerpt($post_id),
+			'blocks' => $this->provide_object_for_translation($post_id),
+		];
+		return $to_return;
 	}
 
 	public function provide_object_for_translation($post_id) {
