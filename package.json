@@ -1,12 +1,16 @@
 {
 	"name": "@pewresearch/prc-platform-core",
+	"description": "PRC Platform Core",
+	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/env": "^8.2.0"
+		"@wordpress/scripts": "^27.1.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"taffydb": "^2.7.3",
+		"uuid": "^9.0.1",
+		"wp-hookdoc": "^0.2.0"
 	},
 	"scripts": {
-		"env:start": "wp-env start",
-		"env:stop": "wp-env stop",
-		"env:clean": "wp-env clean-all; wp-env start",
-		"env:destroy": "wp-env destroy"
+		"docs:build": "node ./.docs/pre-build.js; jsdoc -c ./.docs/config.json -r ./includes"
 	}
 }

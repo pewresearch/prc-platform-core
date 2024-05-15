@@ -1,0 +1,81 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-prc-platform-facets-selected-tokens {
+	color: inherit;
+	background: inherit;
+	padding: 0;
+	margin: 0;
+	gap: 10px;
+
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+
+	@keyframes fadeIn {
+		0% {opacity: 0;}
+		100% {opacity: 1;}
+	}
+
+	&:not(.has-tokens):not(.wp-block) {
+		display: none;
+	}
+	&.has-tokens {
+		animation: fadeIn 0.3s ease 0s;
+	}
+
+	&__label {
+		margin: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		order: 1;
+	}
+
+	&__tokens-list {
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		flex-grow: 1;
+		overflow-x: auto;
+		order: 2;
+		gap: inherit;
+	}
+
+	&__reset {
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		justify-content: flex-end;
+		order: 3;
+		& > div {
+			max-width: fit-content;
+		}
+	}
+
+	&__token {
+		border: none;
+		cursor: pointer;
+		color: inherit;
+		background: inherit;
+		border: 1px solid currentColor;
+		border-radius: 0.285714rem;
+		font-weight: 700;
+		font-size: 0.9em;
+		line-height: 1;
+		padding: 0.5833em 0.833em;
+		text-transform: none;
+		transition: background 0.1s ease 0s;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 5px;
+		min-width: fit-content;
+	}
+
+}

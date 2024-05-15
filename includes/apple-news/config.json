@@ -1,0 +1,15 @@
+{
+	"data": {
+	  "createdAt": "2015-09-21T02:22:23Z",
+	  "modifiedAt": "2024-04-02T12:10:41Z",
+	  "id": "624a329b-0d3b-4b82-8ce2-457f29dd281d",
+	  "type": "channel",
+	  "shareUrl": "https://apple.news/TYkoymw07S4KM4kV_Kd0oHQ",
+	  "links": {
+		"defaultSection": "https://news-api.apple.com/sections/ac2c33a4-fc76-3d60-9a08-8b52227aecef",
+		"self": "https://news-api.apple.com/channels/624a329b-0d3b-4b82-8ce2-457f29dd281d"
+	  },
+	  "name": "Pew Research Center",
+	  "website": "http://www.pewresearch.org/"
+	}
+  }

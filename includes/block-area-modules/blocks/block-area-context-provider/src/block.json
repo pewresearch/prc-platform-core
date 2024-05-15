@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "prc-platform/block-area-context-provider",
+	"version": "0.1.0",
+	"title": "Block Area Context Provider",
+	"description": "Collect the Story Item IDs from all block areas and provide them to query blocks to prevent story repetition.",
+	"category": "theme",
+	"keywords": [
+		"block area",
+		"block module",
+		"topic lede",
+		"featured lede"
+	],
+	"supports": {
+		"anchor": true,
+		"html": false
+	},
+	"usesContext": [
+		"postId",
+		"postType",
+		"queryId",
+		"query",
+		"queryContext",
+		"templateSlug",
+		"previewPostType"
+	],
+	"textdomain": "prc-block-area-context-provider",
+	"editorScript": "file:./index.js"
+}

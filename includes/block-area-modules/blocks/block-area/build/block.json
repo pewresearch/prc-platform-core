@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "prc-platform/block-area",
+  "version": "3.0.0",
+  "title": "Block Area",
+  "description": "A block area is like a template part but with greater editorial control.",
+  "category": "theme",
+  "keywords": [
+    "block area",
+    "block module",
+    "topic lede",
+    "featured lede"
+  ],
+  "attributes": {
+    "ref": {
+      "type": "integer"
+    },
+    "blockAreaSlug": {
+      "type": "string"
+    },
+    "taxonomyName": {
+      "type": "string"
+    },
+    "taxonomyTermSlug": {
+      "type": "string"
+    },
+    "inheritTermFromTemplate": {
+      "type": "boolean"
+    }
+  },
+  "supports": {
+    "anchor": true,
+    "html": false,
+    "interactivity": true
+  },
+  "usesContext": [
+    "queryId",
+    "query",
+    "queryContext",
+    "templateSlug",
+    "previewPostType"
+  ],
+  "textdomain": "prc-block-area",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
+}

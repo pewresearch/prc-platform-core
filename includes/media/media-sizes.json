@@ -1,0 +1,218 @@
+{
+    "chapter": {
+        "width": 1350,
+        "height": 405,
+        "crop": false,
+        "label": "Chapter"
+    },
+    "200-wide": {
+        "width": 200,
+        "height": null,
+        "crop": false,
+        "label": "200 Wide"
+    },
+    "260-wide": {
+        "width": 260,
+        "height": null,
+        "crop": false,
+        "label": "260 Wide"
+    },
+    "310-wide": {
+        "width": 310,
+        "height": null,
+        "crop": false,
+        "label": "310 Wide"
+    },
+    "420-wide": {
+        "width": 420,
+        "height": null,
+        "crop": false,
+        "label": "420 Wide"
+    },
+    "640-wide": {
+        "width": 640,
+        "height": null,
+        "crop": false,
+        "label": "640 Wide"
+    },
+    "740-wide": {
+        "width": 740,
+        "height": null,
+        "crop": false,
+        "label": "740 Wide"
+    },
+    "1400-wide": {
+        "width": 1400,
+        "height": null,
+        "crop": false,
+        "label": "1400 Wide"
+    },
+    "75-square": {
+        "width": 75,
+        "height": 75,
+        "crop": true,
+        "label": "75 Square"
+    },
+    "140-square": {
+        "width": 140,
+        "height": 140,
+        "crop": true,
+        "label": "140 Square"
+    },
+	"160-portrait": {
+		"width": 160,
+		"height": 320,
+		"crop": false,
+		"label": "Staff Portrait Thumbnail"
+	},
+	"320-portrait": {
+		"width": 320,
+		"height": 640,
+		"crop": false,
+		"label": "Staff Portrait"
+	},
+    "260-square": {
+        "width": 260,
+        "height": 260,
+        "crop": true,
+        "label": "260 Square"
+    },
+    "200-by-133": {
+        "width": 200,
+        "height": 133,
+        "crop": true,
+        "label": "200 by 133"
+    },
+    "740-by-416": {
+        "width": 740,
+        "height": 416,
+        "crop": true,
+        "label": "740 by 416"
+    },
+    "540-by-304": {
+        "width": 540,
+        "height": 304,
+        "crop": true,
+        "label": "540 by 304"
+    },
+    "A1": {
+        "width": 564,
+        "height": 317,
+        "crop": true,
+        "label": "A1"
+    },
+    "A1-HIDPI": {
+        "width": 1128,
+        "height": 634,
+        "crop": true,
+        "label": "A1-HIDPI"
+    },
+    "A1-SMALL": {
+        "width": 690,
+        "height": 388,
+        "crop": true,
+        "label": "A1-SMALL"
+    },
+    "A1-SMALL-HIDPI": {
+        "width": 1380,
+        "height": 776,
+        "crop": true,
+        "label": "A1-SMALL-HIDPI"
+    },
+    "A2": {
+        "width": 268,
+        "height": 151,
+        "crop": true,
+        "label": "A2"
+    },
+    "A2-HIDPI": {
+        "width": 536,
+        "height": 302,
+        "crop": true,
+        "label": "A2-HIDPI"
+    },
+    "A2-SMALL": {
+        "width": 690,
+        "height": 388,
+        "crop": true,
+        "label": "A2-SMALL"
+    },
+    "A2-SMALL-HIDPI": {
+        "width": 1380,
+        "height": 776,
+        "crop": true,
+        "label": "A2-SMALL-HIDPI"
+    },
+    "A3": {
+        "width": 194,
+        "height": 110,
+        "crop": true,
+        "label": "A3"
+    },
+    "A3-HIDPI": {
+        "width": 388,
+        "height": 220,
+        "crop": true,
+        "label": "A3-HIDPI"
+    },
+    "A3-SMALL": {
+        "width": 148,
+        "height": 84,
+        "crop": true,
+        "label": "A3-SMALL"
+    },
+    "A3-SMALL-HIDPI": {
+        "width": 296,
+        "height": 168,
+        "crop": true,
+        "label": "A3-SMALL-HIDPI"
+    },
+    "A4": {
+        "width": 268,
+        "height": 151,
+        "crop": true,
+        "label": "A4"
+    },
+    "A4-HIDPI": {
+        "width": 536,
+        "height": 302,
+        "crop": true,
+        "label": "A4-HIDPI"
+    },
+    "A4-SMALL": {
+        "width": 690,
+        "height": 388,
+        "crop": true,
+        "label": "A4-SMALL"
+    },
+    "A4-SMALL-SHIDPI": {
+        "width": 1380,
+        "height": 776,
+        "crop": true,
+        "label": "A4-SMALL-SHIDPI"
+    },
+    "XL": {
+        "width": 720,
+        "height": 405,
+        "crop": true,
+        "label": "XL"
+    },
+    "XL-HIDPI": {
+        "width": 1440,
+        "height": 810,
+        "crop": true,
+        "label": "XL-HIDPI"
+    },
+    "facebook": {
+        "width": 1200,
+        "height": 628,
+        "crop": true,
+        "label": "Facebook"
+    },
+    "twitter": {
+        "width": 1200,
+        "height": 628,
+        "crop": true,
+        "label": "Twitter"
+    }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "prc-platform/dataset-atp-legal-acceptance",
+  "version": "0.1.0",
+  "title": "Dataset Download",
+  "category": "theme",
+  "description": "Provides an ATP Legal Acceptance form for users.",
+  "attributes": {
+    "datasetId": {
+      "type": "string"
+    },
+    "nonce": {
+      "type": "string"
+    }
+  },
+  "supports": {
+    "interactivity": true
+  },
+  "textdomain": "dataset-atp-legal-acceptance",
+  "editorScript": "file:./index.js",
+  "render": "file:./render.php",
+  "style": "file:./style-index.css",
+  "viewScriptModule": "file:./view.js"
+}

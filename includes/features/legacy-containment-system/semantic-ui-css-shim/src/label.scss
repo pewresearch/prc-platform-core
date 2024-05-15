@@ -1,0 +1,1831 @@
+/*!
+ * # Semantic UI - Label
+ * http://github.com/semantic-org/semantic-ui/
+ *
+ *
+ * Released under the MIT license
+ * http://opensource.org/licenses/MIT
+ *
+ */
+
+@use "master.variables"as variables;
+@use "colors";
+@use 'sass:math';
+
+/*******************************
+              Label
+ *******************************/
+
+/*-------------------
+        Element
+ --------------------*/
+
+$verticalAlign: baseline;
+$verticalMargin: 0em;
+$horizontalMargin: variables.$relative2px;
+$backgroundColor: #E8E8E8;
+$color: colors.$mutedTextColor;
+$backgroundImage: none;
+$verticalPadding: 0.5833em;
+/* medium is not $emSize custom value required */
+$horizontalPadding: 0.833em;
+$borderRadius: variables.$absoluteBorderRadius;
+$textTransform: none;
+$fontWeight: variables.$bold;
+$borderWidth: 1px;
+$border: 0px solid transparent;
+
+$lineHeightOffset: -(math.div($verticalPadding, 2));
+
+$labelTransitionDuration: variables.$defaultDuration;
+$labelTransitionEasing: variables.$defaultEasing;
+$transition: background $labelTransitionDuration $labelTransitionEasing;
+
+/* Group */
+$groupVerticalMargin: 0.5em;
+$groupHorizontalMargin: 0.5em;
+
+/*-------------------
+         Parts
+ --------------------*/
+
+/* Link */
+$linkOpacity: 0.5;
+$linkTransition: $labelTransitionDuration opacity $labelTransitionEasing;
+
+/* Icon */
+$iconDistance: 0.75em;
+
+/* Image */
+$imageHeight: (1em + $verticalPadding * 2);
+
+/* Detail */
+$detailFontWeight: variables.$bold;
+$detailOpacity: 0.8;
+$detailIconDistance: 0.25em;
+$detailMargin: 1em;
+
+/* Delete */
+$deleteOpacity: $linkOpacity;
+$deleteSize: variables.$relativeSmall;
+$deleteMargin: 0.5em;
+$deleteTransition: background $labelTransitionDuration $labelTransitionEasing;
+
+/*-------------------
+         Types
+ --------------------*/
+
+/* Image Label */
+$imageLabelBackground: $backgroundColor;
+$imageLabelVerticalPadding: $verticalPadding;
+$imageLabelHorizontalPadding: $horizontalPadding;
+$imageLabelTextDistance: 0.5em;
+$imageLabelDetailDistance: $imageLabelTextDistance;
+$imageLabelBorderRadius: $borderRadius;
+$imageLabelBoxShadow: none;
+$imageLabelPadding: $imageLabelVerticalPadding $imageLabelHorizontalPadding $imageLabelVerticalPadding $imageLabelTextDistance;
+
+$imageLabelImageMargin: -$verticalPadding $imageLabelTextDistance -$verticalPadding -$imageLabelTextDistance;
+$imageLabelImageBorderRadius: $imageLabelBorderRadius 0em 0em $imageLabelBorderRadius;
+$imageLabelImageHeight: $imageHeight;
+
+$imageLabelDetailBackground: colors.$strongTransparentBlack;
+$imageLabelDetailPadding: $imageLabelVerticalPadding $imageLabelHorizontalPadding;
+$imageLabelDetailMargin: -$imageLabelVerticalPadding -$imageLabelHorizontalPadding -$imageLabelVerticalPadding $imageLabelDetailDistance;
+
+/*-------------------
+         States
+ --------------------*/
+
+/* Hover */
+$labelHoverBackgroundColor: #E0E0E0;
+$labelHoverBackgroundImage: none;
+$labelHoverTextColor: colors.$hoveredTextColor;
+
+/* Active */
+$labelActiveBackgroundColor: #D0D0D0;
+$labelActiveBackgroundImage: none;
+$labelActiveTextColor: colors.$selectedTextColor;
+
+/* Active Hover */
+$labelActiveHoverBackgroundColor: #C8C8C8;
+$labelActiveHoverBackgroundImage: none;
+$labelActiveHoverTextColor: colors.$selectedTextColor;
+
+
+/*-------------------
+       Variations
+ --------------------*/
+
+/* Basic */
+$basicBackground: none colors.$white;
+$basicBorderWidth: 1px;
+$basicBorder: $basicBorderWidth solid colors.$borderColor;
+$basicColor: colors.$textColor;
+$basicBoxShadow: none;
+
+$basicHoverBackground: $basicBackground;
+$basicHoverColor: colors.$linkHoverColor;
+$basicHoverBorder: $basicBorder;
+$basicHoverBoxShadow: $basicBoxShadow;
+
+/* Tag */
+$tagCircleColor: colors.$white;
+$tagCircleSize: 0.5em;
+$tagHorizontalPadding: 1.5em;
+$tagCircleBoxShadow: 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+$tagTriangleRightOffset: 100%;
+$tagTriangleTopOffset: 50%;
+$tagTriangleSize: 1.56em;
+$tagTriangleBackgroundImage: none;
+$tagTransition: none;
+/* Avoids error with background: inherit; on animation */
+
+/* Ribbon */
+$ribbonTriangleSize: 1.2em;
+$ribbonShadowColor: rgba(0, 0, 0, 0.15);
+
+$ribbonMargin: 1rem;
+$ribbonOffset: -$ribbonMargin - strip-unit($ribbonTriangleSize);
+$ribbonDistance: $ribbonMargin+strip-unit($ribbonTriangleSize);
+$rightRibbonOffset: calc(100% + #{$ribbonMargin} + #{$ribbonTriangleSize});
+
+$ribbonImageTopDistance: 1rem;
+$ribbonImageMargin: -0.05rem;
+/* Rounding Offset on Triangle */
+$ribbonImageOffset: -$ribbonImageMargin - strip-unit($ribbonTriangleSize);
+$rightRibbonImageOffset: calc(100% + #{$ribbonImageMargin} + #{$ribbonTriangleSize});
+
+$ribbonTableMargin: variables.$relativeMini;
+/* Rounding Offset on Triangle */
+$ribbonTableOffset: -$ribbonTableMargin - $ribbonTriangleSize;
+$rightRibbonTableOffset: calc(100% + #{$ribbonTableMargin} + #{$ribbonTriangleSize});
+
+
+/* Colors */
+$redTextColor: colors.$white;
+$orangeTextColor: colors.$white;
+$yellowTextColor: colors.$white;
+$oliveTextColor: colors.$white;
+$greenTextColor: colors.$white;
+$tealTextColor: colors.$white;
+$blueTextColor: colors.$white;
+$violetTextColor: colors.$white;
+$purpleTextColor: colors.$white;
+$pinkTextColor: colors.$white;
+$brownTextColor: colors.$white;
+$greyTextColor: colors.$white;
+$blackTextColor: colors.$white;
+
+$redHoverTextColor: colors.$white;
+$orangeHoverTextColor: colors.$white;
+$yellowHoverTextColor: colors.$white;
+$oliveHoverTextColor: colors.$white;
+$greenHoverTextColor: colors.$white;
+$tealHoverTextColor: colors.$white;
+$blueHoverTextColor: colors.$white;
+$violetHoverTextColor: colors.$white;
+$purpleHoverTextColor: colors.$white;
+$pinkHoverTextColor: colors.$white;
+$brownHoverTextColor: colors.$white;
+$greyHoverTextColor: colors.$white;
+$blackHoverTextColor: colors.$white;
+
+$redRibbonShadow: darken(colors.$red, 10);
+$orangeRibbonShadow: darken(colors.$orange, 10);
+$yellowRibbonShadow: darken(colors.$yellow, 10);
+$oliveRibbonShadow: darken(colors.$olive, 10);
+$greenRibbonShadow: darken(colors.$green, 10);
+$tealRibbonShadow: darken(colors.$teal, 10);
+$blueRibbonShadow: darken(colors.$blue, 10);
+$violetRibbonShadow: darken(colors.$violet, 10);
+$purpleRibbonShadow: darken(colors.$purple, 10);
+$pinkRibbonShadow: darken(colors.$pink, 10);
+$brownRibbonShadow: darken(colors.$brown, 10);
+$greyRibbonShadow: darken(colors.$grey, 10);
+$blackRibbonShadow: darken(colors.$black, 10);
+
+/* Attached */
+$attachedSegmentPadding: 2rem;
+$attachedVerticalPadding: 0.75em;
+$attachedHorizontalPadding: 1em;
+
+$attachedCornerBorderRadius: variables.$u3px;
+$attachedBorderRadius: $borderRadius;
+
+/* Corner */
+$cornerSizeRatio: 1;
+$cornerTransition: color $labelTransitionDuration $labelTransitionEasing;
+$cornerTriangleSize: 4em;
+$cornerTriangleTransition: border-color $labelTransitionDuration $labelTransitionEasing;
+$cornerTriangleZIndex: 1;
+
+$cornerIconSize: variables.$relativeLarge;
+$cornerIconTopOffset: variables.$relative9px;
+$cornerIconLeftOffset: variables.$relative11px;
+
+/* Corner Text */
+$cornerTextWidth: 3em;
+$cornerTextWeight: variables.$bold;
+$cornerTextSize: 1em;
+
+/* Horizontal */
+$horizontalLabelMinWidth: 3em;
+$horizontalLabelMargin: 0.5em;
+$horizontalLabelVerticalPadding: 0.4em;
+
+/* Circular Padding */
+$circularPadding: 0.5em;
+$circularMinSize: 2em;
+$emptyCircleSize: 0.5em;
+
+/* Pointing */
+$pointingBorderColor: inherit;
+$pointingBorderWidth: $borderWidth;
+$pointingVerticalDistance: 1em;
+$pointingTriangleSize: 0.6666em;
+$pointingHorizontalDistance: $pointingTriangleSize;
+
+$pointingTriangleTransition: background $labelTransitionDuration $labelTransitionEasing;
+$pointingTriangleZIndex: 2;
+
+/* Basic Pointing */
+$basicPointingTriangleOffset: -$pointingBorderWidth;
+
+/* Floating */
+$floatingTopOffset: -1em;
+$floatingLeftOffset: -1.5em;
+$floatingZIndex: 100;
+
+/*-------------------
+         Group
+ --------------------*/
+
+/* Sizing */
+$mini : variables.$u9px;
+$tiny : variables.$u10px;
+$small : variables.$u11px;
+$medium : variables.$u12px;
+$large : variables.$absoluteMedium;
+$big : variables.$absoluteBig;
+$huge : variables.$absoluteHuge;
+$massive : variables.$absoluteMassive;
+
+
+/*******************************
+             Label
+ *******************************/
+
+.ui.label {
+    display: inline-block;
+    line-height: 1;
+    vertical-align: $verticalAlign;
+
+    margin: $verticalMargin $horizontalMargin;
+
+    background-color: $backgroundColor;
+    background-image: $backgroundImage;
+    padding: $verticalPadding $horizontalPadding;
+    color: $color;
+
+    text-transform: $textTransform;
+    font-weight: $fontWeight;
+    //
+    font-family: variables.$sansSerifFont;
+
+    border: $border;
+    border-radius: $borderRadius;
+    transition: $transition;
+}
+
+.ui.label:first-child {
+    margin-left: 0em;
+}
+
+.ui.label:last-child {
+    margin-right: 0em;
+}
+
+/* Link */
+a.ui.label {
+    cursor: pointer;
+}
+
+/* Inside Link */
+.ui.label>a {
+    cursor: pointer;
+    color: inherit;
+    opacity: $linkOpacity;
+    transition: $linkTransition;
+}
+
+.ui.label>a:hover {
+    opacity: 1;
+}
+
+/* Image */
+.ui.label>img {
+    width: auto !important;
+    vertical-align: middle;
+    height: $imageHeight !important;
+}
+
+/* Icon */
+.ui.label>.icon {
+    width: auto;
+    margin: 0em $iconDistance 0em 0em;
+}
+
+/* Detail */
+.ui.label>.detail {
+    display: inline-block;
+    vertical-align: top;
+    font-weight: $detailFontWeight;
+    margin-left: $detailMargin;
+    opacity: $detailOpacity;
+}
+
+.ui.label>.detail .icon {
+    margin: 0em $detailIconDistance 0em 0em;
+}
+
+/* Removable label */
+.ui.label>.close.icon,
+.ui.label>.delete.icon {
+    cursor: pointer;
+    margin-right: 0em;
+    margin-left: $deleteMargin;
+    font-size: $deleteSize;
+    opacity: $deleteOpacity;
+    transition: $deleteTransition;
+}
+
+.ui.label>.delete.icon:hover {
+    opacity: 1;
+}
+
+/*-------------------
+        Group
+ --------------------*/
+
+.ui.labels>.label {
+    margin: 0em $groupHorizontalMargin $groupVerticalMargin 0em;
+}
+
+/*-------------------
+        Coupling
+ --------------------*/
+
+.ui.header>.ui.label {
+    margin-top: $lineHeightOffset;
+}
+
+/* Remove border radius on attached segment */
+.ui.attached.segment>.ui.top.left.attached.label,
+.ui.bottom.attached.segment>.ui.top.left.attached.label {
+    border-top-left-radius: 0;
+}
+
+.ui.attached.segment>.ui.top.right.attached.label,
+.ui.bottom.attached.segment>.ui.top.right.attached.label {
+    border-top-right-radius: 0;
+}
+
+.ui.top.attached.segment>.ui.bottom.left.attached.label {
+    border-bottom-left-radius: 0;
+}
+
+.ui.top.attached.segment>.ui.bottom.right.attached.label {
+    border-bottom-right-radius: 0;
+}
+
+/* Padding on next content after a label */
+.ui.top.attached.label:first-child+ :not(.attached),
+.ui.top.attached.label+[class*="right floated"]+* {
+    margin-top: $attachedSegmentPadding !important;
+}
+
+.ui.bottom.attached.label:first-child~ :last-child:not(.attached) {
+    margin-top: 0em;
+    margin-bottom: $attachedSegmentPadding !important;
+}
+
+/*******************************
+              Types
+ *******************************/
+
+.ui.image.label {
+    width: auto !important;
+    margin-top: 0em;
+    margin-bottom: 0em;
+    max-width: 9999px;
+    vertical-align: baseline;
+    text-transform: none;
+
+    background: $imageLabelBackground;
+    padding: $imageLabelPadding;
+    border-radius: $imageLabelBorderRadius;
+    box-shadow: $imageLabelBoxShadow;
+}
+
+.ui.image.label img {
+    display: inline-block;
+    vertical-align: top;
+
+    height: $imageLabelImageHeight;
+    margin: $imageLabelImageMargin;
+    border-radius: $imageLabelImageBorderRadius;
+}
+
+.ui.image.label .detail {
+    background: $imageLabelDetailBackground;
+    margin: $imageLabelDetailMargin;
+    padding: $imageLabelDetailPadding;
+    border-radius: 0em $imageLabelBorderRadius $imageLabelBorderRadius 0em;
+}
+
+/*-------------------
+          Tag
+ --------------------*/
+
+.ui.tag.labels .label,
+.ui.tag.label {
+    margin-left: 1em;
+    position: relative;
+    padding-left: $tagHorizontalPadding;
+    padding-right: $tagHorizontalPadding;
+
+    border-radius: 0em $borderRadius $borderRadius 0em;
+    transition: $tagTransition;
+}
+
+.ui.tag.labels .label:before,
+.ui.tag.label:before {
+    position: absolute;
+    transform: translateY(-50%) translateX(50%) rotate(-45deg);
+
+    top: $tagTriangleTopOffset;
+    right: $tagTriangleRightOffset;
+    content: "";
+
+    background-color: inherit;
+    background-image: $tagTriangleBackgroundImage;
+
+    width: $tagTriangleSize;
+    height: $tagTriangleSize;
+    transition: $tagTransition;
+}
+
+.ui.tag.labels .label:after,
+.ui.tag.label:after {
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: -($tagCircleSize * 0.5);
+
+    margin-top: -($tagCircleSize * 0.5);
+    background-color: $tagCircleColor !important;
+    width: $tagCircleSize;
+    height: $tagCircleSize;
+
+    box-shadow: $tagCircleBoxShadow;
+    border-radius: variables.$circularRadius;
+}
+
+/*-------------------
+     Corner Label
+ --------------------*/
+
+.ui.corner.label {
+    position: absolute;
+    top: 0em;
+    right: 0em;
+    margin: 0em;
+    padding: 0em;
+    text-align: center;
+
+    border-color: $backgroundColor;
+
+    width: $cornerTriangleSize;
+    height: $cornerTriangleSize;
+    z-index: $cornerTriangleZIndex;
+    transition: $cornerTriangleTransition;
+}
+
+/* Icon Label */
+.ui.corner.label {
+    background-color: transparent !important;
+}
+
+.ui.corner.label:after {
+    position: absolute;
+    content: "";
+    right: 0em;
+    top: 0em;
+    z-index: -1;
+
+    width: 0em;
+    height: 0em;
+    background-color: transparent !important;
+
+    border-top: 0em solid transparent;
+    border-right: $cornerTriangleSize solid transparent;
+    border-bottom: $cornerTriangleSize solid transparent;
+    border-left: 0em solid transparent;
+
+    border-right-color: inherit;
+    transition: $cornerTriangleTransition;
+}
+
+.ui.corner.label .icon {
+    cursor: default;
+    position: relative;
+    top: $cornerIconTopOffset;
+    left: $cornerIconLeftOffset;
+    font-size: $cornerIconSize;
+    margin: 0em;
+}
+
+/* Left Corner */
+.ui.left.corner.label,
+.ui.left.corner.label:after {
+    right: auto;
+    left: 0em;
+}
+
+.ui.left.corner.label:after {
+    border-top: $cornerTriangleSize solid transparent;
+    border-right: $cornerTriangleSize solid transparent;
+    border-bottom: 0em solid transparent;
+    border-left: 0em solid transparent;
+
+    border-top-color: inherit;
+}
+
+.ui.left.corner.label .icon {
+    left: -$cornerIconLeftOffset;
+}
+
+/* Segment */
+.ui.segment>.ui.corner.label {
+    top: -1px;
+    right: -1px;
+}
+
+.ui.segment>.ui.left.corner.label {
+    right: auto;
+    left: -1px;
+}
+
+/*-------------------
+        Ribbon
+ --------------------*/
+
+.ui.ribbon.label {
+    position: relative;
+    margin: 0em;
+    min-width: max-content;
+    border-radius: 0em $borderRadius $borderRadius 0em;
+    border-color: $ribbonShadowColor;
+}
+
+.ui.ribbon.label:after {
+    position: absolute;
+    content: "";
+
+    top: 100%;
+    left: 0%;
+    background-color: transparent !important;
+
+    border-style: solid;
+    border-width: 0em $ribbonTriangleSize $ribbonTriangleSize 0em;
+    border-color: transparent;
+    border-right-color: inherit;
+
+    width: 0em;
+    height: 0em;
+}
+
+/* Positioning */
+.ui.ribbon.label {
+    left: $ribbonOffset;
+    margin-right: -$ribbonTriangleSize;
+    padding-left: $ribbonDistance;
+    padding-right: $ribbonTriangleSize;
+}
+
+.ui[class*="right ribbon"].label {
+    left: $rightRibbonOffset;
+    padding-left: $ribbonTriangleSize;
+    padding-right: $ribbonDistance;
+}
+
+/* Right Ribbon */
+.ui[class*="right ribbon"].label {
+    text-align: left;
+    transform: translateX(-100%);
+    border-radius: $borderRadius 0em 0em $borderRadius;
+}
+
+.ui[class*="right ribbon"].label:after {
+    left: auto;
+    right: 0%;
+
+    border-style: solid;
+    border-width: $ribbonTriangleSize $ribbonTriangleSize 0em 0em;
+    border-color: transparent;
+    border-top-color: inherit;
+}
+
+/* Inside Table */
+.ui.image>.ribbon.label,
+.ui.card .image>.ribbon.label {
+    position: absolute;
+    top: $ribbonImageTopDistance;
+}
+
+.ui.card .image>.ui.ribbon.label,
+.ui.image>.ui.ribbon.label {
+    left: $ribbonImageOffset;
+}
+
+.ui.card .image>.ui[class*="right ribbon"].label,
+.ui.image>.ui[class*="right ribbon"].label {
+    left: $rightRibbonImageOffset;
+    padding-left: $horizontalPadding;
+}
+
+/* Inside Table */
+.ui.table td>.ui.ribbon.label {
+    left: $ribbonTableOffset;
+}
+
+.ui.table td>.ui[class*="right ribbon"].label {
+    left: $rightRibbonTableOffset;
+    padding-left: $horizontalPadding;
+}
+
+/*-------------------
+       Attached
+ --------------------*/
+
+.ui[class*="top attached"].label,
+.ui.attached.label {
+    width: 100%;
+    position: absolute;
+    margin: 0em;
+    top: 0em;
+    left: 0em;
+
+    padding: $attachedVerticalPadding $attachedHorizontalPadding;
+
+    border-radius: $attachedCornerBorderRadius $attachedCornerBorderRadius 0em 0em;
+}
+
+.ui[class*="bottom attached"].label {
+    top: auto;
+    bottom: 0em;
+    border-radius: 0em 0em $attachedCornerBorderRadius $attachedCornerBorderRadius;
+}
+
+.ui[class*="top left attached"].label {
+    width: auto;
+    margin-top: 0em !important;
+    border-radius: $attachedCornerBorderRadius 0em $attachedBorderRadius 0em;
+}
+
+.ui[class*="top right attached"].label {
+    width: auto;
+    left: auto;
+    right: 0em;
+    border-radius: 0em $attachedCornerBorderRadius 0em $attachedBorderRadius;
+}
+
+.ui[class*="bottom left attached"].label {
+    width: auto;
+    top: auto;
+    bottom: 0em;
+    border-radius: 0em $attachedBorderRadius 0em $attachedCornerBorderRadius;
+}
+
+.ui[class*="bottom right attached"].label {
+    top: auto;
+    bottom: 0em;
+    left: auto;
+    right: 0em;
+    width: auto;
+    border-radius: $attachedBorderRadius 0em $attachedCornerBorderRadius 0em;
+}
+
+/*******************************
+              States
+ *******************************/
+
+/*-------------------
+       Disabled
+ --------------------*/
+
+.ui.label.disabled {
+    opacity: 0.5;
+}
+
+/*-------------------
+         Hover
+ --------------------*/
+
+a.ui.labels .label:hover,
+a.ui.label:hover {
+    background-color: $labelHoverBackgroundColor;
+    border-color: $labelHoverBackgroundColor;
+
+    background-image: $labelHoverBackgroundImage;
+    color: $labelHoverTextColor;
+}
+
+.ui.labels a.label:hover:before,
+a.ui.label:hover:before {
+    color: $labelHoverTextColor;
+}
+
+/*-------------------
+         Active
+ --------------------*/
+
+.ui.active.label {
+    background-color: $labelActiveBackgroundColor;
+    border-color: $labelActiveBackgroundColor;
+
+    background-image: $labelActiveBackgroundImage;
+    color: $labelActiveTextColor;
+}
+
+.ui.active.label:before {
+    background-color: $labelActiveBackgroundColor;
+    background-image: $labelActiveBackgroundImage;
+    color: $labelActiveTextColor;
+}
+
+/*-------------------
+      Active Hover
+ --------------------*/
+
+a.ui.labels .active.label:hover,
+a.ui.active.label:hover {
+    background-color: $labelActiveHoverBackgroundColor;
+    border-color: $labelActiveHoverBackgroundColor;
+
+    background-image: $labelActiveHoverBackgroundImage;
+    color: $labelActiveHoverTextColor;
+}
+
+.ui.labels a.active.label:activehover:before,
+a.ui.active.label:activehover:before {
+    background-color: $labelActiveHoverBackgroundColor;
+    background-image: $labelActiveHoverBackgroundImage;
+    color: $labelActiveHoverTextColor;
+}
+
+/*-------------------
+       Visible
+ --------------------*/
+
+.ui.labels.visible .label,
+.ui.label.visible:not(.dropdown) {
+    display: inline-block !important;
+}
+
+/*-------------------
+       Hidden
+ --------------------*/
+
+.ui.labels.hidden .label,
+.ui.label.hidden {
+    display: none !important;
+}
+
+/*******************************
+            Variations
+ *******************************/
+
+/*-------------------
+        Colors
+ --------------------*/
+
+/*--- Red ---*/
+.ui.red.labels .label,
+.ui.red.label {
+    background-color: colors.$red !important;
+    border-color: colors.$red !important;
+    color: $redTextColor !important;
+}
+
+/* Link */
+.ui.red.labels .label:hover,
+a.ui.red.label:hover {
+    background-color: colors.$redHover !important;
+    border-color: colors.$redHover !important;
+    color: $redHoverTextColor !important;
+}
+
+/* Corner */
+.ui.red.corner.label,
+.ui.red.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.red.ribbon.label {
+    border-color: $redRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.red.label {
+    background: $basicBackground !important;
+    color: colors.$red !important;
+    border-color: colors.$red !important;
+}
+
+.ui.basic.red.labels a.label:hover,
+a.ui.basic.red.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$redHover !important;
+    border-color: colors.$redHover !important;
+}
+
+/*--- Orange ---*/
+.ui.orange.labels .label,
+.ui.orange.label {
+    background-color: colors.$orange !important;
+    border-color: colors.$orange !important;
+    color: $orangeTextColor !important;
+}
+
+/* Link */
+.ui.orange.labels .label:hover,
+a.ui.orange.label:hover {
+    background-color: colors.$orangeHover !important;
+    border-color: colors.$orangeHover !important;
+    color: $orangeHoverTextColor !important;
+}
+
+/* Corner */
+.ui.orange.corner.label,
+.ui.orange.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.orange.ribbon.label {
+    border-color: $orangeRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.orange.label {
+    background: $basicBackground !important;
+    color: colors.$orange !important;
+    border-color: colors.$orange !important;
+}
+
+.ui.basic.orange.labels a.label:hover,
+a.ui.basic.orange.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$orangeHover !important;
+    border-color: colors.$orangeHover !important;
+}
+
+/*--- Yellow ---*/
+.ui.yellow.labels .label,
+.ui.yellow.label {
+    background-color: colors.$yellow !important;
+    border-color: colors.$yellow !important;
+    color: $yellowTextColor !important;
+}
+
+/* Link */
+.ui.yellow.labels .label:hover,
+a.ui.yellow.label:hover {
+    background-color: colors.$yellowHover !important;
+    border-color: colors.$yellowHover !important;
+    color: $yellowHoverTextColor !important;
+}
+
+/* Corner */
+.ui.yellow.corner.label,
+.ui.yellow.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.yellow.ribbon.label {
+    border-color: $yellowRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.yellow.label {
+    background: $basicBackground !important;
+    color: colors.$yellow !important;
+    border-color: colors.$yellow !important;
+}
+
+.ui.basic.yellow.labels a.label:hover,
+a.ui.basic.yellow.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$yellowHover !important;
+    border-color: colors.$yellowHover !important;
+}
+
+/*--- Olive ---*/
+.ui.olive.labels .label,
+.ui.olive.label {
+    background-color: colors.$olive !important;
+    border-color: colors.$olive !important;
+    color: $oliveTextColor !important;
+}
+
+/* Link */
+.ui.olive.labels .label:hover,
+a.ui.olive.label:hover {
+    background-color: colors.$oliveHover !important;
+    border-color: colors.$oliveHover !important;
+    color: $oliveHoverTextColor !important;
+}
+
+/* Corner */
+.ui.olive.corner.label,
+.ui.olive.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.olive.ribbon.label {
+    border-color: $greenRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.olive.label {
+    background: $basicBackground !important;
+    color: colors.$olive !important;
+    border-color: colors.$olive !important;
+}
+
+.ui.basic.olive.labels a.label:hover,
+a.ui.basic.olive.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$oliveHover !important;
+    border-color: colors.$oliveHover !important;
+}
+
+/*--- Green ---*/
+.ui.green.labels .label,
+.ui.green.label {
+    background-color: colors.$green !important;
+    border-color: colors.$green !important;
+    color: $greenTextColor !important;
+}
+
+/* Link */
+.ui.green.labels .label:hover,
+a.ui.green.label:hover {
+    background-color: colors.$greenHover !important;
+    border-color: colors.$greenHover !important;
+    color: $greenHoverTextColor !important;
+}
+
+/* Corner */
+.ui.green.corner.label,
+.ui.green.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.green.ribbon.label {
+    border-color: $greenRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.green.label {
+    background: $basicBackground !important;
+    color: colors.$green !important;
+    border-color: colors.$green !important;
+}
+
+.ui.basic.green.labels a.label:hover,
+a.ui.basic.green.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$greenHover !important;
+    border-color: colors.$greenHover !important;
+}
+
+/*--- Teal ---*/
+.ui.teal.labels .label,
+.ui.teal.label {
+    background-color: colors.$teal !important;
+    border-color: colors.$teal !important;
+    color: $tealTextColor !important;
+}
+
+/* Link */
+.ui.teal.labels .label:hover,
+a.ui.teal.label:hover {
+    background-color: colors.$tealHover !important;
+    border-color: colors.$tealHover !important;
+    color: $tealHoverTextColor !important;
+}
+
+/* Corner */
+.ui.teal.corner.label,
+.ui.teal.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.teal.ribbon.label {
+    border-color: $tealRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.teal.label {
+    background: $basicBackground !important;
+    color: colors.$teal !important;
+    border-color: colors.$teal !important;
+}
+
+.ui.basic.teal.labels a.label:hover,
+a.ui.basic.teal.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$tealHover !important;
+    border-color: colors.$tealHover !important;
+}
+
+/*--- Blue ---*/
+.ui.blue.labels .label,
+.ui.blue.label {
+    background-color: colors.$blue !important;
+    border-color: colors.$blue !important;
+    color: $blueTextColor !important;
+}
+
+/* Link */
+.ui.blue.labels .label:hover,
+a.ui.blue.label:hover {
+    background-color: colors.$blueHover !important;
+    border-color: colors.$blueHover !important;
+    color: $blueHoverTextColor !important;
+}
+
+/* Corner */
+.ui.blue.corner.label,
+.ui.blue.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.blue.ribbon.label {
+    border-color: $blueRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.blue.label {
+    background: $basicBackground !important;
+    color: colors.$blue !important;
+    border-color: colors.$blue !important;
+}
+
+.ui.basic.blue.labels a.label:hover,
+a.ui.basic.blue.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$blueHover !important;
+    border-color: colors.$blueHover !important;
+}
+
+/*--- Violet ---*/
+.ui.violet.labels .label,
+.ui.violet.label {
+    background-color: colors.$violet !important;
+    border-color: colors.$violet !important;
+    color: $violetTextColor !important;
+}
+
+/* Link */
+.ui.violet.labels .label:hover,
+a.ui.violet.label:hover {
+    background-color: colors.$violetHover !important;
+    border-color: colors.$violetHover !important;
+    color: $violetHoverTextColor !important;
+}
+
+/* Corner */
+.ui.violet.corner.label,
+.ui.violet.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.violet.ribbon.label {
+    border-color: $violetRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.violet.label {
+    background: $basicBackground !important;
+    color: colors.$violet !important;
+    border-color: colors.$violet !important;
+}
+
+.ui.basic.violet.labels a.label:hover,
+a.ui.basic.violet.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$violetHover !important;
+    border-color: colors.$violetHover !important;
+}
+
+/*--- Purple ---*/
+.ui.purple.labels .label,
+.ui.purple.label {
+    background-color: colors.$purple !important;
+    border-color: colors.$purple !important;
+    color: $purpleTextColor !important;
+}
+
+/* Link */
+.ui.purple.labels .label:hover,
+a.ui.purple.label:hover {
+    background-color: colors.$purpleHover !important;
+    border-color: colors.$purpleHover !important;
+    color: $purpleHoverTextColor !important;
+}
+
+/* Corner */
+.ui.purple.corner.label,
+.ui.purple.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.purple.ribbon.label {
+    border-color: $purpleRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.purple.label {
+    background: $basicBackground !important;
+    color: colors.$purple !important;
+    border-color: colors.$purple !important;
+}
+
+.ui.basic.purple.labels a.label:hover,
+a.ui.basic.purple.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$purpleHover !important;
+    border-color: colors.$purpleHover !important;
+}
+
+/*--- Pink ---*/
+.ui.pink.labels .label,
+.ui.pink.label {
+    background-color: colors.$pink !important;
+    border-color: colors.$pink !important;
+    color: $pinkTextColor !important;
+}
+
+/* Link */
+.ui.pink.labels .label:hover,
+a.ui.pink.label:hover {
+    background-color: colors.$pinkHover !important;
+    border-color: colors.$pinkHover !important;
+    color: $pinkHoverTextColor !important;
+}
+
+/* Corner */
+.ui.pink.corner.label,
+.ui.pink.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.pink.ribbon.label {
+    border-color: $pinkRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.pink.label {
+    background: $basicBackground !important;
+    color: colors.$pink !important;
+    border-color: colors.$pink !important;
+}
+
+.ui.basic.pink.labels a.label:hover,
+a.ui.basic.pink.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$pinkHover !important;
+    border-color: colors.$pinkHover !important;
+}
+
+/*--- Brown ---*/
+.ui.brown.labels .label,
+.ui.brown.label {
+    background-color: colors.$brown !important;
+    border-color: colors.$brown !important;
+    color: $brownTextColor !important;
+}
+
+/* Link */
+.ui.brown.labels .label:hover,
+a.ui.brown.label:hover {
+    background-color: colors.$brownHover !important;
+    border-color: colors.$brownHover !important;
+    color: $brownHoverTextColor !important;
+}
+
+/* Corner */
+.ui.brown.corner.label,
+.ui.brown.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.brown.ribbon.label {
+    border-color: $brownRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.brown.label {
+    background: $basicBackground !important;
+    color: colors.$brown !important;
+    border-color: colors.$brown !important;
+}
+
+.ui.basic.brown.labels a.label:hover,
+a.ui.basic.brown.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$brownHover !important;
+    border-color: colors.$brownHover !important;
+}
+
+/*--- Grey ---*/
+.ui.grey.labels .label:not(.flat),
+.ui.grey.label:not(.flat) {
+    background-color: colors.$grey !important;
+    border-color: colors.$grey !important;
+    color: $greyTextColor !important;
+
+    /* Link */
+    &:hover {
+        background-color: colors.$greyHover !important;
+        border-color: colors.$greyHover !important;
+        color: $greyHoverTextColor !important;
+    }
+}
+
+/* Corner */
+.ui.grey.corner.label,
+.ui.grey.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.grey.ribbon.label {
+    border-color: $brownRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.grey.label {
+    background: $basicBackground !important;
+    color: colors.$grey !important;
+    border-color: colors.$grey !important;
+}
+
+.ui.basic.grey.labels a.label:hover,
+a.ui.basic.grey.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$greyHover !important;
+    border-color: colors.$greyHover !important;
+}
+
+/* Flat */
+.ui.flat.grey.labels .label,
+.ui.flat.grey.label {
+    color: colors.$grey !important;
+}
+
+/*--- Black ---*/
+.ui.black.labels .label,
+.ui.black.label {
+    background-color: colors.$black !important;
+    border-color: colors.$black !important;
+    color: $blackTextColor !important;
+}
+
+/* Link */
+.ui.black.labels .label:hover,
+a.ui.black.label:hover {
+    background-color: colors.$blackHover !important;
+    border-color: colors.$blackHover !important;
+    color: $blackHoverTextColor !important;
+}
+
+/* Corner */
+.ui.black.corner.label,
+.ui.black.corner.label:hover {
+    background-color: transparent !important;
+}
+
+/* Ribbon */
+.ui.black.ribbon.label {
+    border-color: $brownRibbonShadow !important;
+}
+
+/* Basic */
+.ui.basic.black.label {
+    background: $basicBackground !important;
+    color: colors.$black !important;
+    border-color: colors.$black !important;
+}
+
+.ui.basic.black.labels a.label:hover,
+a.ui.basic.black.label:hover {
+    background-color: colors.$white !important;
+    color: colors.$blackHover !important;
+    border-color: colors.$blackHover !important;
+}
+
+/*-------------------
+      PRC Projects
+ --------------------*/
+// Text color only
+.label {
+    &.pewresearch {
+        color: colors.$slate;
+    }
+
+    &.politics,
+    &.u-s-politics {
+        color: colors.$lightBrownPrimary;
+    }
+
+    &.journalism,
+    &.media-news {
+        color: colors.$plum;
+    }
+
+    &.religion {
+        color: colors.$forumBlue;
+    }
+
+    &.hispanic {
+        color: colors.$mediumBrownPrimary;
+    }
+
+    &.social-trends {
+        color: colors.$tealPrimary;
+    }
+
+    &.internet,
+    &.internet-tech {
+        color: colors.$internetBlue;
+    }
+
+    &.science {
+        color: colors.$orangePrimary;
+    }
+
+    &.global {
+        color: colors.$globalGreen;
+    }
+
+    .methodology-report,
+    .research-methodology {
+        color: colors.$lightBrownPrimary;
+    }
+}
+
+// Basic
+.ui.basic.label {
+    &.pewresearch {
+        color: colors.$slate;
+        border-color: colors.$slate;
+        font-weight: lighter;
+    }
+
+    &.politics,
+    &.u-s-politics {
+        color: colors.$lightBrownPrimary;
+        border-color: colors.$lightBrownPrimary;
+        font-weight: lighter;
+    }
+
+    &.journalism,
+    &.media-news {
+        color: colors.$plum;
+        border-color: colors.$plum;
+        font-weight: lighter;
+    }
+
+    &.religion {
+        color: colors.$forumBlue;
+        border-color: colors.$forumBlue;
+        font-weight: lighter;
+    }
+
+    &.hispanic {
+        color: colors.$mediumBrownPrimary;
+        border-color: colors.$mediumBrownPrimary;
+        font-weight: lighter;
+    }
+
+    &.social-trends {
+        color: colors.$tealPrimary;
+        border-color: colors.$tealPrimary;
+        font-weight: lighter;
+    }
+
+    &.internet,
+    &.internet-tech {
+        color: colors.$internetBlue;
+        border-color: colors.$internetBlue;
+        font-weight: lighter;
+    }
+
+    &.science {
+        color: colors.$orangePrimary;
+        border-color: colors.$orangePrimary;
+        font-weight: lighter;
+    }
+
+    &.global {
+        color: colors.$globalGreen;
+        border-color: colors.$globalGreen;
+        font-weight: lighter;
+    }
+
+    .methodology-report,
+    .research-methodology {
+        color: colors.$lightBrownPrimary;
+        border-color: colors.$lightBrownPrimary;
+        font-weight: lighter;
+    }
+}
+
+// Background color
+.ui.label:not(.basic) {
+    &.pewresearch {
+        background-color: colors.$slate;
+        border-color: colors.$slate;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.politics,
+    &.u-s-politics {
+        background-color: colors.$lightBrownPrimary;
+        border-color: colors.$lightBrownPrimary;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.journalism,
+    &.media-news {
+        background-color: colors.$plum;
+        border-color: colors.$plum;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.religion {
+        background-color: colors.$forumBlue;
+        border-color: colors.$forumBlue;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.hispanic {
+        background-color: colors.$mediumBrownPrimary;
+        border-color: colors.$mediumBrownPrimary;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.social-trends {
+        background-color: colors.$tealPrimary;
+        border-color: colors.$tealPrimary;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.internet,
+    &.internet-tech {
+        background-color: colors.$internetBlue;
+        border-color: colors.$internetBlue;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.science {
+        background-color: colors.$orangePrimary;
+        border-color: colors.$orangePrimary;
+        color: white;
+        font-weight: lighter;
+    }
+
+    &.global {
+        background-color: colors.$globalGreen;
+        border-color: colors.$globalGreen;
+        color: white;
+        font-weight: lighter;
+    }
+
+    .methodology-report,
+    .research-methodology {
+        background-color: colors.$lightBrownPrimary;
+        border-color: colors.$lightBrownPrimary;
+        color: white;
+        font-weight: lighter;
+    }
+}
+
+/*-------------------
+         Basic
+ --------------------*/
+
+.ui.basic.label {
+    background: $basicBackground;
+    border: $basicBorder;
+    color: $basicColor;
+    box-shadow: $basicBoxShadow;
+}
+
+/* Link */
+a.ui.basic.label:hover {
+    text-decoration: none;
+    background: $basicHoverBackground;
+    color: $basicHoverColor;
+    box-shadow: $basicHoverBorder;
+    box-shadow: $basicHoverBoxShadow;
+}
+
+/* Pointing */
+.ui.basic.pointing.label:before {
+    border-color: inherit;
+}
+
+/*-------------------
+         Flat
+ --------------------*/
+
+.ui.flat.label {
+    background: none;
+    border: none;
+    color: $basicColor;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+}
+
+/* Link */
+a.ui.flat.label:hover {
+    text-decoration: underline;
+    background: none;
+    color: $basicHoverColor;
+    box-shadow: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+}
+
+/*-------------------
+        Fluid
+ --------------------*/
+
+.ui.label.fluid,
+.ui.fluid.labels>.label {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/*-------------------
+        Inverted
+ --------------------*/
+
+.ui.inverted.labels .label,
+.ui.inverted.label {
+    color: colors.$invertedTextColor !important;
+}
+
+/*-------------------
+      Horizontal
+ --------------------*/
+
+.ui.horizontal.labels .label,
+.ui.horizontal.label {
+    margin: 0em $horizontalLabelMargin 0em 0em;
+
+    padding: $horizontalLabelVerticalPadding $horizontalPadding;
+    min-width: $horizontalLabelMinWidth;
+    text-align: center;
+}
+
+/*-------------------
+        Circular
+ --------------------*/
+
+.ui.circular.labels .label,
+.ui.circular.label {
+    min-width: $circularMinSize;
+    min-height: $circularMinSize;
+
+    padding: $circularPadding !important;
+
+    line-height: 1em;
+    text-align: center;
+    border-radius: variables.$circularRadius;
+}
+
+.ui.empty.circular.labels .label,
+.ui.empty.circular.label {
+    min-width: 0em;
+    min-height: 0em;
+    overflow: hidden;
+    width: $emptyCircleSize;
+    height: $emptyCircleSize;
+    vertical-align: baseline;
+}
+
+/*-------------------
+        Pointing
+ --------------------*/
+
+.ui.pointing.label {
+    position: relative;
+}
+
+.ui.attached.pointing.label {
+    position: absolute;
+}
+
+.ui.pointing.label:before {
+    background-color: inherit;
+    background-image: inherit;
+    border-width: none;
+    border-style: solid;
+    border-color: $pointingBorderColor;
+}
+
+/* Arrow */
+.ui.pointing.label:before {
+    position: absolute;
+    content: "";
+    transform: rotate(45deg);
+    background-image: none;
+
+    z-index: $pointingTriangleZIndex;
+    width: $pointingTriangleSize;
+    height: $pointingTriangleSize;
+    transition: $pointingTriangleTransition;
+}
+
+/*--- Above ---*/
+.ui.pointing.label,
+.ui[class*="pointing above"].label {
+    margin-top: $pointingVerticalDistance;
+}
+
+.ui.pointing.label:before,
+.ui[class*="pointing above"].label:before {
+    border-width: $borderWidth 0px 0px $borderWidth;
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+    top: 0%;
+    left: 50%;
+}
+
+/*--- Below ---*/
+.ui[class*="bottom pointing"].label,
+.ui[class*="pointing below"].label {
+    margin-top: 0em;
+    margin-bottom: $pointingVerticalDistance;
+}
+
+.ui[class*="bottom pointing"].label:before,
+.ui[class*="pointing below"].label:before {
+    border-width: 0px $borderWidth $borderWidth 0px;
+    top: auto;
+    right: auto;
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+    top: 100%;
+    left: 50%;
+}
+
+/*--- Left ---*/
+.ui[class*="left pointing"].label {
+    margin-top: 0em;
+    margin-left: $pointingHorizontalDistance;
+}
+
+.ui[class*="left pointing"].label:before {
+    border-width: 0px 0px $borderWidth $borderWidth;
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+    bottom: auto;
+    right: auto;
+    top: 50%;
+    left: 0em;
+}
+
+/*--- Right ---*/
+.ui[class*="right pointing"].label {
+    margin-top: 0em;
+    margin-right: $pointingHorizontalDistance;
+}
+
+.ui[class*="right pointing"].label:before {
+    border-width: $borderWidth $borderWidth 0px 0px;
+    transform: translateX(50%) translateY(-50%) rotate(45deg);
+    top: 50%;
+    right: 0%;
+    bottom: auto;
+    left: auto;
+}
+
+/* Basic Pointing */
+
+/*--- Above ---*/
+.ui.basic.pointing.label:before,
+.ui.basic[class*="pointing above"].label:before {
+    margin-top: $basicPointingTriangleOffset;
+}
+
+/*--- Below ---*/
+.ui.basic[class*="bottom pointing"].label:before,
+.ui.basic[class*="pointing below"].label:before {
+    bottom: auto;
+    top: 100%;
+    margin-top: -$basicPointingTriangleOffset;
+}
+
+/*--- Left ---*/
+.ui.basic[class*="left pointing"].label:before {
+    top: 50%;
+    left: $basicPointingTriangleOffset;
+}
+
+/*--- Right ---*/
+.ui.basic[class*="right pointing"].label:before {
+    top: 50%;
+    right: $basicPointingTriangleOffset;
+}
+
+/*------------------
+    Floating Label
+ -------------------*/
+
+.ui.floating.label {
+    position: absolute;
+    z-index: $floatingZIndex;
+    top: $floatingTopOffset;
+    left: 100%;
+    margin: 0em 0em 0em $floatingLeftOffset !important;
+}
+
+/*-------------------
+         Sizes
+ --------------------*/
+
+.ui.mini.labels .label,
+.ui.mini.label {
+    font-size: $mini;
+}
+
+.ui.tiny.labels .label,
+.ui.tiny.label {
+    font-size: $tiny;
+}
+
+.ui.small.labels .label,
+.ui.small.label {
+    font-size: $small;
+}
+
+.ui.labels .label,
+.ui.label {
+    font-size: $medium;
+}
+
+.ui.large.labels .label,
+.ui.large.label {
+    font-size: $large;
+}
+
+.ui.big.labels .label,
+.ui.big.label {
+    font-size: $big;
+}
+
+.ui.huge.labels .label,
+.ui.huge.label {
+    font-size: $huge;
+}
+
+.ui.massive.labels .label,
+.ui.massive.label {
+    font-size: $massive;
+}

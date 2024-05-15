@@ -1,0 +1,35 @@
+@use "sass:math";
+@use "sass:string";
+@use "sass:map";
+
+@function replace-unit($number, $unit:null) {
+       $all-units: ("px": 1px, "%": 1%, "em": 1em, "rem" : 1rem, "ex" : 1ex, "cm": 1cm, "mm": 1mm, "in": 1in, "pt": 1pt, "pc": 1pc, "ch": 1ch, "vh": 1vh, "vw": 1vw, "vmin": 1vmin, "vmax": 1vmax);
+
+       $exunit: unit($number);
+
+       @if string.length($exunit)==0 {
+              @return $number * map.get($all-units, $unit);
+       }
+
+       @else {
+              $new-unit: math.div($number, map.get($all-units, $exunit)) * map.get($all-units, $unit);
+              @return $new-unit;
+       }
+
+}
+
+
+@function strip-unit($number) {
+       $all-units: ("px": 1px, "%": 1%, "em": 1em, "rem" : 1rem, "ex" : 1ex, "cm": 1cm, "mm": 1mm, "in": 1in, "pt": 1pt, "pc": 1pc, "ch": 1ch, "vh": 1vh, "vw": 1vw, "vmin": 1vmin, "vmax": 1vmax);
+
+       $exunit: unit($number);
+
+       @if string.length($exunit)==0 {
+              @return $number;
+       }
+
+       @else {
+              $result: math.div($number, map.get($all-units, $exunit));
+              @return $result
+       }
+}

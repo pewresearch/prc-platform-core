@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "prc-platform/homepages",
+  "version": "0.1.0",
+  "title": "Homepage",
+  "description": "Returns the most recently published homepage.",
+  "category": "theme",
+  "keywords": [
+    "homepage",
+    "home",
+    "front page",
+    "frontpage"
+  ],
+  "supports": {
+    "anchor": true,
+    "html": false
+  },
+  "usesContext": [
+    "queryId",
+    "query",
+    "queryContext",
+    "templateSlug",
+    "previewPostType"
+  ],
+  "textdomain": "prc-block-area",
+  "editorScript": "file:./index.js"
+}

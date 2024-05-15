@@ -1,0 +1,11 @@
+.wp-block-prc-platform-facets-context-provider {
+	&.is-processing {
+		.wp-block-prc-block-story-item,
+		.wp-block-prc-platform-facets-selected-tokens,
+		.wp-block-prc-platform-facets-pager,
+		.wp-block-prc-platform-facet-template {
+			opacity: 0.5;
+			pointer-events: none;
+		}
+	}
+}

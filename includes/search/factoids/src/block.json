@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "prc-platform/search-factoids",
+	"version": "0.1.0",
+	"title": "Search Factoids",
+	"description": "Returns the queried search factoid.",
+	"category": "theme",
+	"keywords": ["search", "factoid", "search factoid"],
+	"supports": {
+		"anchor": true,
+		"html": false
+	},
+	"usesContext": [
+		"queryId",
+		"query",
+		"queryContext",
+		"templateSlug",
+		"previewPostType"
+	],
+	"textdomain": "prc-block-search-factoids",
+	"editorScript": "file:./index.js"
+}

@@ -1,0 +1,45 @@
+{
+	"version": "1.2",
+	"roles": {
+		"producer": {
+			"name": "Producer",
+			"inherits": "editor",
+			"capabilities": {
+				"list_users": true,
+				"edit_users": true,
+				"add_users": true,
+				"promote_users": true,
+				"create_users": true,
+				"wpseo_manage_options": true,
+				"wpseo_edit_advanced_metadata": true,
+				"wpseo_bulk_edit": true,
+				"edit_theme_options": true
+			}
+		},
+		"social-editor": {
+			"name": "Social Editor",
+			"inherits": "editor",
+			"capabilities": {
+				"wpseo_manage_options": true,
+				"wpseo_edit_advanced_metadata": true,
+				"wpseo_bulk_edit": true
+			}
+		},
+		"comms-editor": {
+			"name": "Communications Editor",
+			"inherits": "editor",
+			"capabilities": {
+				"wpseo_manage_options": true,
+				"wpseo_edit_advanced_metadata": true,
+				"wpseo_bulk_edit": true
+			}
+		},
+		"designer": {
+			"name": "Designer",
+			"inherits": "editor",
+			"capabilities": {
+				"edit_theme_options": true
+			}
+		}
+	}
+}

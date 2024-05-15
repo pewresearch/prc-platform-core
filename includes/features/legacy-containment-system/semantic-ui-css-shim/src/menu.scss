@@ -1,0 +1,2593 @@
+/*
+ * # Semantic - Menu
+ * http://github.com/semantic-org/semantic-ui/
+ *
+ *
+ * Copyright 2015 Contributor
+ * Released under the MIT license
+ * http://opensource.org/licenses/MIT
+ *
+ */
+
+@use "master.variables"as variables;
+@use "functions" as functions;
+@use "colors";
+@use 'sass:math';
+
+
+/*******************************
+              Menu
+ *******************************/
+// wp-block-navigation is-style-secondary-pointing
+/*-------------------
+       Collection
+ --------------------*/
+
+/* Menu */
+$verticalMargin: variables.$medium;
+$horizontalMargin: 0em;
+$margin: $verticalMargin $horizontalMargin;
+$background: #FFFFFF;
+$fontFamily: variables.$sansSerifFont; // Edited by Seth
+$itemBackground: none;
+$fontWeight: variables.$normal;
+$borderWidth: 1px;
+$border: $borderWidth solid colors.$borderColor;
+$boxShadow: variables.$subtleShadow;
+$borderRadius: 0; // Originally variables.$defaultBorderRadius; by seth
+
+
+/* Menu Item */
+$itemVerticalPadding: variables.$relativeSmall;
+$itemHorizontalPadding: variables.$relativeLarge;
+$itemTextTransform: capitalize;
+$itemTransition: background variables.$defaultDuration variables.$defaultEasing,
+box-shadow variables.$defaultDuration variables.$defaultEasing,
+color variables.$defaultDuration variables.$defaultEasing;
+$itemFontWeight: variables.$normal;
+$itemTextColor: colors.$textColor;
+$itemLinkUnderline: none;
+$itemLinkHoverUnderline: underline;
+
+$minHeight: ($itemVerticalPadding * 2)+1em;
+
+/* Divider */
+$dividerSize: 1px;
+$dividerBackground: colors.$internalBorderColor;
+
+/* Sub Menu */
+$subMenuDistance: 0.5em;
+$subMenuMargin: $subMenuDistance -$itemHorizontalPadding 0em;
+$subMenuFontSize: variables.$relativeTiny;
+$subMenuTextColor: rgba(0, 0, 0, 0.5);
+
+$subMenuIndent: 0em;
+$subMenuHorizontalPadding: math.div($itemHorizontalPadding, variables.$tinySize)+$subMenuIndent;
+$subMenuVerticalPadding: 0.5em;
+
+/* Text Item */
+$textLineHeight: 1.3;
+
+/*--------------
+     Elements
+ ---------------*/
+
+/* Icon */
+$iconFloat: none;
+$iconMargin: 0em variables.$relative5px 0em 0em;
+$iconOpacity: 0.9;
+
+/* Dropdown Icon */
+$dropdownIconFloat: right;
+$dropdownIconDistance: 1em;
+
+/* Header */
+$headerBackground: '';
+$headerWeight: variables.$bold;
+$headerTextTransform: variables.$normal;
+
+/* Vertical Icon */
+$verticalIconFloat: right;
+$verticalIconMargin: 0em 0em 0em 0.5em;
+
+/* Vertical Header */
+$verticalHeaderMargin: 0em 0em 0.5em;
+$verticalHeaderFontSize: variables.$relativeMedium;
+$verticalHeaderFontWeight: variables.$bold;
+
+/* Pointing Arrow */
+$arrowSize: variables.$relative8px;
+$arrowBorderWidth: 1px;
+$arrowBorder: $arrowBorderWidth solid colors.$solidBorderColor;
+$arrowTransition: background variables.$defaultDuration variables.$defaultEasing;
+$arrowZIndex: 2;
+
+$arrowHoverColor: #F2F2F2;
+$arrowActiveColor: $arrowHoverColor;
+$arrowActiveHoverColor: $arrowActiveColor;
+
+$arrowVerticalHoverColor: $arrowHoverColor;
+$arrowVerticalActiveColor: $arrowActiveColor;
+$arrowVerticalSubMenuColor: colors.$white;
+
+/*--------------
+     Couplings
+ ---------------*/
+
+/* Button */
+$buttonSize: variables.$relativeMedium;
+$buttonOffset: 0em;
+$buttonMargin: -0.5em 0em;
+$buttonVerticalPadding: variables.$relativeMini;
+
+/* Input */
+$inputSize: variables.$relativeMedium;
+$inputVerticalMargin: -0.5em;
+$inputOffset: 0em;
+$inputVerticalPadding: variables.$relative8px;
+
+/* Image */
+$imageMargin: -0.3em 0em;
+$imageWidth: 2.5em;
+$verticalImageWidth: auto;
+
+/* Label */
+$labelOffset: -0.15em;
+$labelBackground: #999999;
+$labelTextColor: colors.$white;
+
+$labelTextMargin: 1em;
+$labelVerticalPadding: 0.3em;
+$labelHorizontalPadding: variables.$relativeMini;
+
+$labelAndIconFloat: none;
+$labelAndIconMargin: 0em 0.5em 0em 0em;
+
+/* Dropdown in Menu */
+$dropdownMenuBoxShadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.08);
+
+$dropdownBackground: #FFFFFF;
+$dropdownMenuDistance: 0em;
+$dropdownMenuBorderRadius: $borderRadius;
+
+$dropdownItemFontSize: 1em;
+$dropdownItemPadding: variables.$relativeMini variables.$relativeLarge;
+$dropdownItemBackground: transparent;
+$dropdownItemColor: colors.$textColor;
+$dropdownItemTextTransform: none;
+$dropdownItemFontWeight: variables.$normal;
+$dropdownItemBoxShadow: none;
+$dropdownItemTransition: none;
+
+$dropdownItemIconFloat: none;
+$dropdownItemIconFontSize: variables.$relativeMedium;
+$dropdownItemIconMargin: 0em 0.75em 0em 0em;
+
+$dropdownHoveredItemBackground: colors.$transparentBlack;
+$dropdownHoveredItemColor: colors.$selectedTextColor;
+
+/* Dropdown Variations */
+$dropdownVerticalMenuBoxShadow: 0 1px 3px 0px rgba(0, 0, 0, 0.08);
+$secondaryDropdownMenuDistance: variables.$relative5px;
+$pointingDropdownMenuDistance: 0.75em;
+$invertedSelectionDropdownColor: colors.$invertedTextColor;
+
+/*--------------
+      States
+ ---------------*/
+
+/* Hovered Item */
+$hoverItemBackground: colors.$subtleTransparentBlack;
+$hoverItemTextColor: colors.$selectedTextColor;
+
+/* Pressed Item */
+$pressedItemBackground: colors.$subtleTransparentBlack;
+$pressedItemTextColor: $hoverItemTextColor;
+
+
+/* Active Item */
+$activeItemBackground: colors.$transparentBlack;
+$activeItemTextColor: colors.$selectedTextColor;
+$activeItemFontWeight: variables.$normal;
+$activeIconOpacity: 1;
+$activeItemBoxShadow: none;
+
+/* Active Hovered Item */
+$activeHoverItemBackground: colors.$transparentBlack;
+$activeHoverItemColor: colors.$selectedTextColor;
+
+/* Selected Dropdown */
+$dropdownSelectedItemBackground: colors.$transparentBlack;
+$dropdownSelectedItemColor: colors.$selectedTextColor;
+
+/* Active Dropdown */
+$dropdownActiveItemBackground: colors.$subtleTransparentBlack;
+$dropdownActiveItemColor: colors.$selectedTextColor;
+$dropdownActiveItemFontWeight: variables.$bold;
+
+/* Active Sub Menu */
+$subMenuActiveBackground: transparent;
+$subMenuActiveTextColor: $activeItemTextColor;
+$subMenuActiveFontWeight: variables.$bold;
+
+
+/*--------------
+      Types
+ ---------------*/
+
+/* Vertical */
+$verticalBoxShadow: $boxShadow;
+$verticalPointerWidth: 2px;
+$verticalBackground: #FFFFFF;
+$verticalItemBackground: none;
+$verticalDividerBackground: $dividerBackground;
+
+$verticalActiveBoxShadow: none;
+
+
+/* Secondary */
+$secondaryItemSpacing: variables.$relative5px;
+$secondaryBackground: none;
+$secondaryMargin: 0em -$secondaryItemSpacing;
+$secondaryItemBackground: none;
+$secondaryItemMargin: 0em $secondaryItemSpacing;
+$secondaryItemVerticalPadding: variables.$relativeMini;
+$secondaryItemHorizontalPadding: variables.$relativeSmall;
+$secondaryItemPadding: variables.$relativeMini variables.$relativeSmall;
+$secondaryItemBorderRadius: variables.$defaultBorderRadius;
+$secondaryItemTransition: color variables.$defaultDuration variables.$defaultEasing;
+$secondaryItemColor: colors.$unselectedTextColor;
+
+$secondaryHoverItemBackground: colors.$transparentBlack;
+$secondaryHoverItemColor: colors.$selectedTextColor;
+
+$secondaryActiveItemBackground: colors.$transparentBlack;
+$secondaryActiveItemColor: colors.$selectedTextColor;
+$secondaryActiveHoverItemBackground: colors.$transparentBlack;
+$secondaryActiveHoverItemColor: colors.$selectedTextColor;
+
+$secondaryActiveHoveredItemBackground: colors.$transparentBlack;
+$secondaryActiveHoveredItemColor: colors.$selectedTextColor;
+
+$secondaryHeaderBackground: none transparent;
+$secondaryHeaderBorder: none;
+
+$secondaryItemVerticalSpacing: $secondaryItemSpacing;
+$secondaryVerticalItemMargin: 0em 0em $secondaryItemVerticalSpacing;
+$secondaryVerticalItemBorderRadius: variables.$defaultBorderRadius;
+
+$secondaryMenuSubMenuMargin: 0em -$secondaryItemHorizontalPadding;
+$secondaryMenuSubMenuItemMargin: 0em;
+$secondarySubMenuHorizontalPadding: math.div($itemHorizontalPadding, variables.$tinySize)+$subMenuIndent;
+$secondaryMenuSubMenuItemPadding: variables.$relative7px $secondarySubMenuHorizontalPadding;
+
+/* Pointing */
+$secondaryPointingBorderWidth: 2px;
+$secondaryPointingBorderColor: colors.$borderColor;
+$secondaryPointingItemVerticalPadding: variables.$relativeTiny;
+$secondaryPointingItemHorizontalPadding: variables.$relativeLarge;
+
+$secondaryPointingHoverTextColor: colors.$textColor;
+
+$secondaryPointingActiveBorderColor: colors.$black;
+$secondaryPointingActiveTextColor: colors.$selectedTextColor;
+$secondaryPointingActiveFontWeight: variables.$bold;
+
+$secondaryPointingActiveDropdownBorderColor: transparent;
+
+$secondaryPointingActiveHoverBorderColor: $secondaryPointingActiveBorderColor;
+$secondaryPointingActiveHoverTextColor: $secondaryPointingActiveTextColor;
+
+$secondaryPointingHeaderColor: colors.$darkTextColor;
+$secondaryVerticalPointingItemMargin: 0em (-$secondaryPointingBorderWidth) 0em 0em;
+
+
+/* Inverted Secondary */
+$secondaryInvertedColor: colors.$invertedLightTextColor;
+
+$secondaryInvertedHoverBackground: colors.$transparentWhite;
+$secondaryInvertedHoverColor: colors.$invertedSelectedTextColor;
+
+$secondaryInvertedActiveBackground: colors.$strongTransparentWhite;
+$secondaryInvertedActiveColor: colors.$invertedSelectedTextColor;
+
+/* Inverted Pointing */
+$secondaryPointingInvertedBorderColor: colors.$whiteBorderColor;
+$secondaryPointingInvertedItemTextColor: colors.$invertedTextColor;
+$secondaryPointingInvertedItemHeaderColor: colors.$white;
+$secondaryPointingInvertedItemHoverTextColor: colors.$selectedTextColor;
+$secondaryPointingInvertedActiveBorderColor: colors.$white;
+$secondaryPointingInvertedActiveColor: colors.$invertedSelectedTextColor;
+
+
+/* Tiered */
+$tieredActiveItemBackground: #FCFCFC;
+$tieredActiveMenuBackground: #FCFCFC;
+
+$tieredSubMenuTextTransform: variables.$normal;
+$tieredSubMenuFontWeight: variables.$normal;
+
+$tieredSubMenuColor: colors.$lightTextColor;
+
+$tieredSubMenuHoverBackground: none transparent;
+$tieredSubMenuHoverColor: colors.$hoveredTextColor;
+
+$tieredSubMenuActiveBackground: none transparent;
+$tieredSubMenuActiveColor: colors.$selectedTextColor;
+
+$tieredInvertedSubMenuBackground: rgba(0, 0, 0, 0.2);
+
+
+/* Icon */
+$iconMenuTextAlign: center;
+$iconMenuItemColor: colors.$black;
+$iconMenuInvertedItemColor: colors.$white;
+
+
+/* Tabular */
+$tabularBorderColor: colors.$solidBorderColor;
+$tabularBackgroundColor: transparent;
+$tabularBackground: none $tabularBackgroundColor;
+$tabularBorderWidth: 1px;
+$tabularOppositeBorderWidth: $tabularBorderWidth+1px;
+$tabularVerticalPadding: $itemVerticalPadding;
+$tabularHorizontalPadding: variables.$relativeHuge;
+$tabularBorderRadius: 0; // Origginally variables.$defaultBorderRadius; by seth
+$tabularTextColor: $itemTextColor;
+$tabularTextTransform: uppercase;
+
+$tabularHoveredTextColor: colors.$hoveredTextColor;
+
+$tabularVerticalBackground: none $tabularBackgroundColor;
+
+$tabularFluidOffset: 1px;
+$tabularFluidWidth: calc(100% + #{($tabularFluidOffset * 2)});
+
+$tabularActiveBackground: none colors.$white;
+$tabularActiveColor: colors.$selectedTextColor;
+$tabularActiveBoxShadow: none;
+$tabularActiveWeight: variables.$bold;
+
+
+
+/* Pagination */
+$paginationMinWidth: 1rem;
+$paginationActiveBackground: colors.$white; // originally by colors.$transparentBlack;
+$paginationActiveTextColor: colors.$linkColor; // originally by colors.$selectedTextColor;
+
+/* Labeled Icon */
+$labeledIconItemHorizontalPadding: variables.$relativeMassive;
+$labeledIconSize: variables.$relativeMassive;
+$labeledIconMinWidth: 6em;
+$labeledIconTextMargin: 0.5rem;
+
+
+/* Text */
+$textMenuItemSpacing: variables.$relative7px;
+$textMenuMargin: variables.$relativeMedium -($textMenuItemSpacing);
+$textMenuItemColor: colors.$mutedTextColor;
+$textMenuItemFontWeight: variables.$normal;
+$textMenuItemMargin: 0em 0em;
+$textMenuItemPadding: variables.$relative5px $textMenuItemSpacing;
+$textMenuItemTransition: opacity variables.$defaultDuration variables.$defaultEasing;
+
+$textMenuSubMenuMargin: 0em;
+$textMenuSubMenuItemMargin: 0em;
+$textMenuSubMenuItemPadding: variables.$relative7px 0em;
+
+$textMenuActiveItemFontWeight: variables.$normal;
+$textMenuActiveItemColor: colors.$selectedTextColor;
+
+$textMenuHeaderSize: variables.$relativeSmall;
+$textMenuHeaderColor: colors.$darkTextColor;
+$textMenuHeaderFontWeight: variables.$bold;
+$textMenuHeaderTextTransform: uppercase;
+
+$textVerticalMenuMargin: variables.$relativeMedium 0em;
+$textVerticalMenuHeaderMargin: variables.$relative8px 0em variables.$relative10px;
+$textVerticalMenuItemMargin: variables.$relative8px 0em;
+
+$textVerticalMenuIconFloat: none;
+$textVerticalMenuIconMargin: $iconMargin;
+
+
+/*--------------
+    Variations
+ ---------------*/
+
+/* Inverted */
+$invertedBackground: colors.$black;
+$invertedBoxShadow: none;
+$invertedBorder: 0px solid transparent;
+$invertedHeaderBackground: transparent;
+
+$invertedItemBackground: transparent;
+$invertedItemTextColor: colors.$invertedTextColor;
+
+/* Inverted Sub Menu */
+$invertedSubMenuBackground: transparent;
+$invertedSubMenuColor: colors.$invertedUnselectedTextColor;
+
+/* Inverted Hover */
+$invertedHoverBackground: colors.$transparentWhite;
+$invertedHoverColor: colors.$invertedSelectedTextColor;
+
+$invertedSubMenuHoverBackground: transparent;
+$invertedSubMenuHoverColor: colors.$invertedSelectedTextColor;
+
+/* Pressed */
+$invertedMenuPressedBackground: colors.$transparentWhite;
+$invertedMenuPressedColor: colors.$invertedSelectedTextColor;
+
+/* Inverted Active */
+$invertedActiveBackground: colors.$strongTransparentWhite;
+$invertedActiveColor: colors.$invertedSelectedTextColor;
+$invertedArrowActiveColor: #3D3E3F;
+
+/* Inverted Active Hover  */
+$invertedActiveHoverBackground: $invertedActiveBackground;
+$invertedActiveHoverColor: colors.$white;
+$invertedArrowActiveHoverColor: $invertedArrowActiveColor;
+
+$invertedSubMenuActiveBackground: transparent;
+$invertedSubMenuActiveColor: colors.$white;
+
+/* Inverted Menu Divider */
+$invertedDividerBackground: rgba(255, 255, 255, 0.08);
+$invertedVerticalDividerBackground: $invertedDividerBackground;
+
+/* Inverted Colored */
+$invertedColoredDividerBackground: $dividerBackground;
+$invertedColoredActiveBackground: colors.$strongTransparentBlack;
+
+/* Relaxed */
+$relaxedMargin: 24px;
+
+/* Fixed */
+$fixedPrecedingGridMargin: 2.75rem;
+
+/* Floated */
+$floatedDistance: 0.5rem;
+
+/* Attached */
+$attachedTopOffset: 0px;
+$attachedBottomOffset: 0px;
+$attachedHorizontalOffset: -$borderWidth;
+$attachedWidth: calc(100% - #{($attachedHorizontalOffset * 2)});
+$attachedBoxShadow: none;
+$attachedBorder: $borderWidth solid colors.$solidBorderColor;
+$attachedBottomBoxShadow: $boxShadow,
+$attachedBoxShadow;
+
+/* Resize large sizes */
+$mini: variables.$u11px;
+$tiny: variables.$u12px;
+$small: variables.$u13px;
+$large: variables.$u15px;
+$big: variables.$u16px;
+$huge: variables.$u17px;
+$massive: variables.$u18px;
+
+/* Sizes */
+$miniWidth: 9rem;
+$tinyWidth: 11rem;
+$smallWidth: 13rem;
+$mediumWidth: 15rem;
+$largeWidth: 18rem;
+$bigWidth: 20rem;
+$hugeWidth: 22rem;
+$massiveWidth: 25rem;
+
+
+/*******************************
+             Standard
+ *******************************/
+
+/*------------------
+   Menu Base Style
+ ------------------*/
+
+.ui.menu {
+    display: flex;
+    margin: $margin;
+    font-family: $fontFamily;
+    background: $background;
+    font-weight: $fontWeight;
+    border: $border;
+    box-shadow: $boxShadow;
+    border-radius: $borderRadius;
+    min-height: $minHeight;
+
+    &:after {
+        content: "";
+        display: block;
+        height: 0px;
+        clear: both;
+        visibility: hidden;
+    }
+
+    &:first-child {
+        margin-top: 0rem;
+    }
+
+    &:last-child {
+        margin-bottom: 0rem;
+    }
+
+    /*--------------
+       Sub-Menu
+   ---------------*/
+
+    .menu {
+        margin: 0em;
+    }
+
+    &:not(.vertical)>.menu {
+        display: flex;
+    }
+
+    /*--------------
+         Item
+   ---------------*/
+
+    &:not(.vertical) .item,
+    &:not(.vertical) .block-list-appender.wp-block {
+        display: flex;
+        align-items: center;
+    }
+
+    .item {
+        text-transform: $itemTextTransform;
+    }
+
+    .block-list-appender.wp-block,
+    .item,
+    .wp-block-navigation-link {
+        position: relative;
+        vertical-align: middle;
+        line-height: 1;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        flex: 0 0 auto;
+        user-select: none;
+
+        background: $itemBackground;
+        padding: $itemVerticalPadding $itemHorizontalPadding;
+        color: $itemTextColor;
+        font-weight: $itemFontWeight;
+        transition: $itemTransition;
+
+        /* Border */
+        &:before {
+            position: absolute;
+            content: "";
+            top: 0%;
+            right: 0px;
+            height: 100%;
+
+            width: $dividerSize;
+            background: $dividerBackground;
+        }
+    }
+
+    .wp-block-navigation-link {
+        a {
+            color: black;
+            text-decoration: none;
+
+            &:visited {
+                color: black;
+            }
+        }
+    }
+
+    &>.item:first-child,
+    &>.wp-block-navigation__container>.wp-block-navigation-link:first-child {
+        border-radius: $borderRadius 0px 0px $borderRadius;
+    }
+}
+
+/*--------------
+       Item
+ ---------------*/
+
+
+/*--------------
+   Text Content
+ ---------------*/
+
+.ui.menu .text.item>*,
+.ui.menu .item>a:not(.ui),
+.ui.menu .item>p:only-child {
+    user-select: text;
+    line-height: $textLineHeight;
+}
+
+.ui.menu .item>p:first-child {
+    margin-top: 0;
+}
+
+.ui.menu .item>p:last-child {
+    margin-bottom: 0;
+}
+
+/*--------------
+       Icons
+ ---------------*/
+
+.ui.menu .item>i.icon {
+    opacity: $iconOpacity;
+    float: $iconFloat;
+    margin: $iconMargin;
+}
+
+/*--------------
+      Button
+ ---------------*/
+
+.ui.menu:not(.vertical) .item>.button {
+    position: relative;
+    top: $buttonOffset;
+    margin: $buttonMargin;
+    padding-bottom: $buttonVerticalPadding;
+    padding-top: $buttonVerticalPadding;
+    font-size: $buttonSize;
+}
+
+/*----------------
+  Grid / Container
+ -----------------*/
+
+.ui.menu>.grid,
+.ui.menu>.container {
+    display: flex;
+    align-items: inherit;
+    flex-direction: inherit;
+}
+
+/*--------------
+      Inputs
+ ---------------*/
+
+.ui.menu .item>.input {
+    width: 100%;
+}
+
+.ui.menu:not(.vertical) .item>.input {
+    position: relative;
+    top: $inputOffset;
+    margin: $inputVerticalMargin 0em;
+}
+
+.ui.menu .item>.input input {
+    font-size: $inputSize;
+    padding-top: $inputVerticalPadding;
+    padding-bottom: $inputVerticalPadding;
+}
+
+/*--------------
+      Header
+ ---------------*/
+
+.ui.menu .header.item,
+.ui.vertical.menu .header.item {
+    margin: 0em;
+    background: $headerBackground;
+    text-transform: $headerTextTransform;
+    font-weight: $headerWeight;
+}
+
+.ui.vertical.menu .item>.header:not(.ui) {
+    margin: $verticalHeaderMargin;
+    font-size: $verticalHeaderFontSize;
+    font-weight: $verticalHeaderFontWeight;
+}
+
+/*--------------
+     Dropdowns
+ ---------------*/
+
+/* Dropdown Icon */
+.ui.menu .item>i.dropdown.icon {
+    padding: 0em;
+    float: $dropdownIconFloat;
+    margin: 0em 0em 0em $dropdownIconDistance;
+}
+
+/* Menu */
+.ui.menu .dropdown.item .menu {
+    min-width: calc(100% - 1px);
+    border-radius: 0em 0em $dropdownMenuBorderRadius $dropdownMenuBorderRadius;
+    background: $dropdownBackground;
+    margin: $dropdownMenuDistance 0px 0px;
+    box-shadow: $dropdownMenuBoxShadow;
+    flex-direction: column !important;
+}
+
+/* Menu Items */
+.ui.menu .ui.dropdown .menu>.item {
+    margin: 0;
+    text-align: left;
+    font-size: $dropdownItemFontSize !important;
+    padding: $dropdownItemPadding !important;
+    background: $dropdownItemBackground !important;
+    color: $dropdownItemColor !important;
+    text-transform: $dropdownItemTextTransform !important;
+    font-weight: $dropdownItemFontWeight !important;
+    box-shadow: $dropdownItemBoxShadow !important;
+    transition: $dropdownItemTransition !important;
+}
+
+.ui.menu .ui.dropdown .menu>.item:hover {
+    background: $dropdownHoveredItemBackground !important;
+    color: $dropdownHoveredItemColor !important;
+}
+
+.ui.menu .ui.dropdown .menu>.selected.item {
+    background: $dropdownSelectedItemBackground !important;
+    color: $dropdownSelectedItemColor !important;
+}
+
+.ui.menu .ui.dropdown .menu>.active.item {
+    background: $dropdownActiveItemBackground !important;
+    font-weight: $dropdownActiveItemFontWeight !important;
+    color: $dropdownActiveItemColor !important;
+}
+
+.ui.menu .ui.dropdown.item .menu .item:not(.filtered) {
+    display: block;
+}
+
+.ui.menu .ui.dropdown .menu>.item .icon:not(.dropdown) {
+    display: inline-block;
+    font-size: $dropdownItemIconFontSize !important;
+    float: $dropdownItemIconFloat;
+    margin: $dropdownItemIconMargin !important;
+}
+
+/* Secondary */
+.ui.secondary.menu .dropdown.item>.menu,
+.ui.text.menu .dropdown.item>.menu {
+    border-radius: $dropdownMenuBorderRadius;
+    margin-top: $secondaryDropdownMenuDistance;
+}
+
+/* Pointing */
+.ui.menu .pointing.dropdown.item .menu {
+    margin-top: $pointingDropdownMenuDistance;
+}
+
+/* Inverted */
+.ui.inverted.menu .search.dropdown.item>.search,
+.ui.inverted.menu .search.dropdown.item>.text {
+    color: $invertedSelectionDropdownColor;
+}
+
+/* Vertical */
+.ui.vertical.menu .dropdown.item>.icon {
+    float: right;
+    content: "\f0da";
+    margin-left: 1em;
+}
+
+.ui.vertical.menu .dropdown.item .menu {
+    left: 100%;
+    min-width: 0;
+    margin: 0em 0em 0em $dropdownMenuDistance;
+    box-shadow: $dropdownVerticalMenuBoxShadow;
+    border-radius: 0em $dropdownMenuBorderRadius $dropdownMenuBorderRadius $dropdownMenuBorderRadius;
+}
+
+.ui.vertical.menu .dropdown.item.upward .menu {
+    bottom: 0;
+}
+
+.ui.vertical.menu .dropdown.item:not(.upward) .menu {
+    top: 0;
+}
+
+.ui.vertical.menu .active.dropdown.item {
+    border-top-right-radius: 0em;
+    border-bottom-right-radius: 0em;
+}
+
+.ui.vertical.menu .dropdown.active.item {
+    box-shadow: none;
+}
+
+/* Evenly Divided */
+.ui.item.menu .dropdown .menu .item {
+    width: 100%;
+}
+
+/*--------------
+      Labels
+ ---------------*/
+
+.ui.menu .item>.label {
+    background: $labelBackground;
+    color: $labelTextColor;
+    margin-left: $labelTextMargin;
+    padding: $labelVerticalPadding $labelHorizontalPadding;
+}
+
+.ui.vertical.menu .item>.label {
+    background: $labelBackground;
+    color: $labelTextColor;
+    margin-top: $labelOffset;
+    margin-bottom: $labelOffset;
+    padding: $labelVerticalPadding $labelHorizontalPadding;
+}
+
+.ui.menu .item>.floating.label {
+    padding: $labelVerticalPadding $labelHorizontalPadding;
+}
+
+/*--------------
+      Images
+ ---------------*/
+
+.ui.menu .item>img:not(.ui) {
+    display: inline-block;
+    vertical-align: middle;
+    margin: $imageMargin;
+    width: $imageWidth;
+}
+
+.ui.vertical.menu .item>img:not(.ui):only-child {
+    display: block;
+    max-width: 100%;
+    width: $verticalImageWidth;
+}
+
+/*******************************
+           Coupling
+ *******************************/
+
+/*--------------
+      List
+ ---------------*/
+
+/* Menu divider shouldnt apply */
+.ui.menu .list .item:before {
+    background: none !important;
+}
+
+/*--------------
+      Sidebar
+ ---------------*/
+
+/* Show vertical dividers below last */
+
+.ui.vertical.sidebar.menu>.item:first-child:before {
+    display: block !important;
+}
+
+.ui.vertical.sidebar.menu>.item::before {
+    top: auto;
+    bottom: 0px;
+}
+
+/*--------------
+     Container
+ ---------------*/
+
+@media only screen and (max-width: variables.$largestMobileScreen) {
+    .ui.menu>.ui.container {
+        width: 100% !important;
+        margin-left: 0em !important;
+        margin-right: 0em !important;
+    }
+}
+
+@media only screen and (min-width: variables.$tabletBreakpoint) {
+    .ui.menu:not(.secondary):not(.text):not(.tabular):not(.borderless)>.container>.item:not(.right):not(.borderless):first-child {
+        border-left: $dividerSize solid $dividerBackground;
+    }
+}
+
+/*******************************
+              States
+ *******************************/
+
+/*--------------
+       Hover
+ ---------------*/
+
+.ui.link.menu .item:hover,
+.ui.menu .dropdown.item:hover,
+.ui.menu .link.item:hover,
+.ui.menu a.item:hover {
+    cursor: pointer;
+    background: $hoverItemBackground;
+    color: $hoverItemTextColor;
+}
+
+/*--------------
+      Pressed
+ ---------------*/
+
+.ui.link.menu .item:active,
+.ui.menu .link.item:active,
+.ui.menu a.item:active {
+    background: $pressedItemBackground;
+    color: $pressedItemTextColor;
+}
+
+/*--------------
+      Active
+ ---------------*/
+
+.ui.menu .active.item,
+.wp-block-navigation .wp-block-navigation-link.current-menu-item {
+    background: $activeItemBackground;
+    color: $activeItemTextColor;
+    font-weight: $activeItemFontWeight;
+    box-shadow: $activeItemBoxShadow;
+}
+
+.ui.menu .active.item>i.icon,
+.wp-block-navigation .wp-block-navigation-link.current-menu-item>i.icon {
+    opacity: $activeIconOpacity;
+}
+
+/*--------------
+   Active Hover
+ ---------------*/
+
+.ui.menu .active.item:hover,
+.ui.vertical.menu .active.item:hover,
+.wp-block-navigation .wp-block-navigation-link.current-menu-item:hover {
+    background-color: $activeHoverItemBackground;
+    color: $activeHoverItemColor;
+}
+
+/*--------------
+      Disabled
+ ---------------*/
+
+.ui.menu .item.disabled,
+.ui.menu .item.disabled:hover {
+    cursor: default !important;
+    background-color: transparent !important;
+    color: colors.$disabledTextColor !important;
+}
+
+/*******************************
+              Types
+ *******************************/
+
+/*------------------
+ Floated Menu / Item
+ -------------------*/
+
+/* Relaxed */
+.ui.relaxed.menu {
+    margin-top: $relaxedMargin;
+    margin-bottom: $relaxedMargin;
+}
+
+/* Left Floated */
+.ui.menu:not(.vertical) .left.item,
+.ui.menu:not(.vertical) :not(.dropdown)>.left.menu {
+    display: flex;
+    margin-right: auto !important;
+}
+
+/* Right Floated */
+.ui.menu:not(.vertical) .right.item,
+.ui.menu:not(.vertical) .right.menu {
+    display: flex;
+    margin-left: auto !important;
+}
+
+/* Swapped Borders */
+.ui.menu .right.item::before,
+.ui.menu .right.menu>.item::before {
+    right: auto;
+    left: 0;
+}
+
+/*--------------
+     Vertical
+ ---------------*/
+
+.ui.vertical.menu {
+    display: block;
+    flex-direction: column;
+    background: $verticalBackground;
+    box-shadow: $verticalBoxShadow;
+}
+
+/*--- Item ---*/
+.ui.vertical.menu .item {
+    display: block;
+    background: $verticalItemBackground;
+    border-top: none;
+    border-right: none;
+}
+
+.ui.vertical.menu>.item:first-child {
+    border-radius: $borderRadius $borderRadius 0px 0px;
+}
+
+.ui.vertical.menu>.item:last-child {
+    border-radius: 0px 0px $borderRadius $borderRadius;
+}
+
+/*--- Label ---*/
+.ui.vertical.menu .item>.label {
+    float: right;
+    text-align: center;
+}
+
+/*--- Icon ---*/
+.ui.vertical.menu .item>i.icon {
+    width: variables.$iconWidth;
+    float: $verticalIconFloat;
+    margin: $verticalIconMargin;
+}
+
+.ui.vertical.menu .item>.label+i.icon {
+    float: $labelAndIconFloat;
+    margin: $labelAndIconMargin;
+}
+
+/*--- Border ---*/
+.ui.vertical.menu .item:before {
+    position: absolute;
+    content: "";
+    top: 0%;
+    left: 0px;
+    width: 100%;
+    height: $dividerSize;
+    background: $verticalDividerBackground;
+}
+
+.ui.vertical.menu .item:first-child:before {
+    display: none !important;
+}
+
+/*--- Sub Menu ---*/
+.ui.vertical.menu .item>.menu {
+    margin: $subMenuMargin;
+}
+
+.ui.vertical.menu .menu .item {
+    background: none;
+    padding: $subMenuVerticalPadding $subMenuHorizontalPadding;
+    font-size: $subMenuFontSize;
+    color: $subMenuTextColor;
+}
+
+.ui.vertical.menu .item .menu a.item:hover,
+.ui.vertical.menu .item .menu .link.item:hover {
+    color: colors.$darkTextColor;
+}
+
+.ui.vertical.menu .menu .item:before {
+    display: none;
+}
+
+/* Vertical Active */
+.ui.vertical.menu .active.item {
+    background: $activeItemBackground;
+    border-radius: 0em;
+    box-shadow: $verticalActiveBoxShadow;
+}
+
+.ui.vertical.menu>.active.item:first-child {
+    border-radius: $borderRadius $borderRadius 0em 0em;
+}
+
+.ui.vertical.menu>.active.item:last-child {
+    border-radius: 0em 0em $borderRadius $borderRadius;
+}
+
+.ui.vertical.menu>.active.item:only-child {
+    border-radius: $borderRadius;
+}
+
+.ui.vertical.menu .active.item .menu .active.item {
+    border-left: none;
+}
+
+.ui.vertical.menu .item .menu .active.item {
+    background-color: $subMenuActiveBackground;
+    font-weight: $subMenuActiveFontWeight;
+    color: $subMenuActiveTextColor;
+}
+
+/*--------------
+      Tabular
+ ---------------*/
+
+.ui.tabular.menu {
+    border-radius: 0em;
+    box-shadow: none !important;
+    border: none;
+    background: $tabularBackground;
+    border-bottom: $tabularBorderWidth solid $tabularBorderColor;
+}
+
+.ui.tabular.fluid.menu {
+    width: $tabularFluidWidth !important;
+}
+
+.ui.tabular.menu .item {
+    background: transparent;
+    border-bottom: none;
+
+    border-left: $tabularBorderWidth solid transparent;
+    border-right: $tabularBorderWidth solid transparent;
+    border-top: $tabularOppositeBorderWidth solid transparent;
+    padding: $tabularVerticalPadding $tabularHorizontalPadding;
+    color: $tabularTextColor;
+}
+
+.ui.tabular.menu .item:before {
+    display: none;
+}
+
+/* Hover */
+.ui.tabular.menu .item:hover {
+    background-color: transparent;
+    color: $tabularHoveredTextColor;
+}
+
+/* Active */
+.ui.tabular.menu .active.item {
+    background: $tabularActiveBackground;
+    color: $tabularActiveColor;
+    border-top-width: $tabularBorderWidth;
+    border-color: $tabularBorderColor;
+    font-weight: $tabularActiveWeight;
+    margin-bottom: -$tabularBorderWidth;
+    box-shadow: $tabularActiveBoxShadow;
+    border-radius: $tabularBorderRadius $tabularBorderRadius 0px 0px !important;
+}
+
+/* Coupling with segment for attachment */
+.ui.tabular.menu+.attached:not(.top).segment,
+.ui.tabular.menu+.attached:not(.top).segment+.attached:not(.top).segment {
+    border-top: none;
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-right: 0px;
+    width: 100%;
+}
+
+.top.attached.segment+.ui.bottom.tabular.menu {
+    position: relative;
+    width: $tabularFluidWidth;
+    left: -$tabularFluidOffset;
+}
+
+/* Bottom Vertical Tabular */
+.ui.bottom.tabular.menu {
+    background: $tabularBackground;
+    border-radius: 0em;
+    box-shadow: none !important;
+    border-bottom: none;
+    border-top: $tabularBorderWidth solid $tabularBorderColor;
+}
+
+.ui.bottom.tabular.menu .item {
+    background: none;
+    border-left: $tabularBorderWidth solid transparent;
+    border-right: $tabularBorderWidth solid transparent;
+    border-bottom: $tabularBorderWidth solid transparent;
+    border-top: none;
+}
+
+.ui.bottom.tabular.menu .active.item {
+    background: $tabularActiveBackground;
+    color: $tabularActiveColor;
+    border-color: $tabularBorderColor;
+    margin: -$tabularBorderWidth 0px 0px 0px;
+    border-radius: 0px 0px $tabularBorderRadius $tabularBorderRadius !important;
+}
+
+/* Vertical Tabular (Left) */
+.ui.vertical.tabular.menu {
+    background: $tabularVerticalBackground;
+    border-radius: 0em;
+    box-shadow: none !important;
+    border-bottom: none;
+    border-right: $tabularBorderWidth solid $tabularBorderColor;
+
+    &[data-borderHidden="true"] {
+        border-right: $tabularBorderWidth solid transparent;
+    }
+}
+
+.ui.vertical.tabular.menu .item {
+    background: none;
+    border-left: $tabularBorderWidth solid transparent;
+    border-bottom: $tabularBorderWidth solid transparent;
+    border-top: $tabularBorderWidth solid transparent;
+    border-right: none;
+    padding: $tabularVerticalPadding*2 $tabularHorizontalPadding;
+    font-weight: 500;
+}
+
+.ui.vertical.tabular.menu .active.item {
+    background: colors.$gray;
+    color: $tabularActiveColor;
+    border-color: $tabularBorderColor;
+    margin: 0px -$tabularBorderWidth 0px 0px;
+    border-radius: $tabularBorderRadius 0px 0px $tabularBorderRadius !important;
+}
+
+/* Vertical Right Tabular */
+.ui.vertical.right.tabular.menu {
+    background: $tabularVerticalBackground;
+    border-radius: 0em;
+    box-shadow: none !important;
+    border-bottom: none;
+    border-right: none;
+    border-left: $tabularBorderWidth solid $tabularBorderColor;
+}
+
+.ui.vertical.right.tabular.menu .item {
+    background: none;
+    border-right: $tabularBorderWidth solid transparent;
+    border-bottom: $tabularBorderWidth solid transparent;
+    border-top: $tabularBorderWidth solid transparent;
+    border-left: none;
+}
+
+.ui.vertical.right.tabular.menu .active.item {
+    background: colors.$gray;
+    color: $tabularActiveColor;
+    border-color: $tabularBorderColor;
+    margin: 0px 0px 0px -$tabularBorderWidth;
+    border-radius: 0px $tabularBorderRadius $tabularBorderRadius 0px !important;
+}
+
+/* Dropdown */
+.ui.tabular.menu .active.dropdown.item {
+    margin-bottom: 0px;
+    border-left: $tabularBorderWidth solid transparent;
+    border-right: $tabularBorderWidth solid transparent;
+    border-top: $tabularOppositeBorderWidth solid transparent;
+    border-bottom: none;
+}
+
+/*--------------
+    Pagination
+ ---------------*/
+.ui.pagination.menu {
+    margin: 0em;
+    display: inline-flex;
+    vertical-align: middle;
+    // Seth Additions:
+    box-shadow: none;
+    border: none;
+    min-height: 1rem;
+    padding-top: 0;
+}
+
+.ui.pagination.menu .item:last-child {
+    border-radius: 0em $borderRadius $borderRadius 0em;
+    // Seth Additions:
+    margin-right: 0;
+}
+
+.ui.compact.menu .item:last-child {
+    border-radius: 0em $borderRadius $borderRadius 0em;
+}
+
+.ui.pagination.menu .item:last-child:before {
+    display: none;
+}
+
+// Seth Addition: This removes the line between items
+.ui.pagination.menu .item:before,
+.ui.pagination.menu .item:last-child:before {
+    display: none;
+}
+
+.ui.pagination.menu .item {
+    min-width: $paginationMinWidth;
+    text-align: center;
+    // Seth's Addition
+    border: 1px solid lightgray;
+    margin-right: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0;
+}
+
+.ui.pagination.menu .icon.item i.icon {
+    vertical-align: top;
+}
+
+/* Active */
+.ui.pagination.menu .active.item {
+    // border-top: none;
+    // padding-top: $itemVerticalPadding;
+    background-color: $paginationActiveBackground;
+    // color: $paginationActiveTextColor;
+    font-weight: 500;
+    box-shadow: none;
+    // Seth's Addition:
+    border: none;
+    padding-top: 0.25rem;
+    cursor: default;
+}
+
+/* Template Tag */
+#js-pagination {
+    margin-top: functions.replace-unit(math.div(50, variables.$baseUnit), rem);
+
+    a {
+        cursor: pointer;
+    }
+
+    &>div {
+        display: flex;
+        padding-top: 25px;
+
+        &>div:nth-of-type(2) {
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+        }
+    }
+
+    @media only screen and (max-width: variables.$largestMobileScreen) {
+        &>div {
+            flex-wrap: wrap;
+
+            &>div:nth-of-type(1) {
+                order: 1;
+                width: 50%;
+            }
+
+            &>div:nth-of-type(2) {
+                order: 3;
+                padding-top: 1rem;
+                width: 100%;
+            }
+
+            &>div:nth-of-type(3) {
+                order: 2;
+                width: 50%;
+                text-align: right;
+            }
+        }
+    }
+
+    .next,
+    .previous {
+        text-transform: uppercase;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        font-size: variables.$medium;
+        font-family: variables.$sansSerifFont;
+        color: black;
+    }
+
+    .disabled {
+        color: #ccc;
+    }
+}
+
+/*--------------
+    Secondary
+ ---------------*/
+
+.ui.secondary.menu,
+.wp-block-navigation.is-style-secondary,
+.wp-block-navigation.is-style-secondary-pointing {
+    background: $secondaryBackground;
+    margin-left: -$secondaryItemSpacing;
+    margin-right: -$secondaryItemSpacing;
+    border-radius: 0em;
+    border: none;
+    box-shadow: none;
+}
+
+/* Item */
+.ui.secondary.menu .item,
+.wp-block-navigation.is-style-secondary .wp-block-navigation-link,
+.wp-block-navigation.is-style-secondary-pointing .wp-block-navigation-link {
+    align-self: center;
+    box-shadow: none;
+    border: none;
+    padding: $secondaryItemPadding;
+    margin: $secondaryItemMargin;
+    // background: $secondaryItemBackground;
+    transition: $secondaryItemTransition;
+    border-radius: $secondaryItemBorderRadius;
+
+    /* No Divider */
+    &:before {
+        display: none !important;
+    }
+
+    /* Header */
+    &.header {
+        border-radius: 0em;
+        border-right: $secondaryHeaderBorder;
+        background: $secondaryHeaderBackground;
+    }
+
+    /* Image */
+    &>img:not(.ui) {
+        margin: 0em;
+    }
+
+    /* Active */
+    // $TODO WHAT??
+    .ui.secondary.menu .item.active {
+        box-shadow: none;
+        background: $secondaryActiveItemBackground;
+        color: $secondaryActiveItemColor;
+        border-radius: $secondaryItemBorderRadius;
+
+        &:hover {
+            box-shadow: none;
+            background: $secondaryActiveHoverItemBackground;
+            color: $secondaryActiveHoverItemColor;
+        }
+    }
+}
+
+/* Hover */
+.ui.secondary.menu .dropdown.item:hover,
+.ui.secondary.menu .link.item:hover,
+.ui.secondary.menu a.item:hover {
+    background: $secondaryHoverItemBackground;
+    color: $secondaryHoverItemColor;
+}
+
+
+/* Inverted */
+.ui.secondary.inverted.menu .link.item,
+.ui.secondary.inverted.menu a.item {
+    color: $secondaryInvertedColor !important;
+}
+
+.ui.secondary.inverted.menu .dropdown.item:hover,
+.ui.secondary.inverted.menu .link.item:hover,
+.ui.secondary.inverted.menu a.item:hover {
+    background: $secondaryInvertedHoverBackground;
+    color: $secondaryInvertedHoverColor !important;
+}
+
+.ui.secondary.inverted.menu .active.item {
+    background: $secondaryInvertedActiveBackground;
+    color: $secondaryInvertedActiveColor !important;
+}
+
+/* Fix item margins */
+.ui.secondary.item.menu {
+    margin-left: 0em;
+    margin-right: 0em;
+}
+
+.ui.secondary.item.menu .item:last-child {
+    margin-right: 0em;
+}
+
+.ui.secondary.attached.menu {
+    box-shadow: none;
+}
+
+/* Sub Menu */
+.ui.vertical.secondary.menu .item:not(.dropdown)>.menu {
+    margin: $secondaryMenuSubMenuMargin;
+}
+
+.ui.vertical.secondary.menu .item:not(.dropdown)>.menu>.item {
+    margin: $secondaryMenuSubMenuItemMargin;
+    padding: $secondaryMenuSubMenuItemPadding;
+}
+
+/*---------------------
+    Secondary Vertical
+ -----------------------*/
+
+.ui.secondary.vertical.menu>.item {
+    border: none;
+    margin: $secondaryVerticalItemMargin;
+    border-radius: $secondaryVerticalItemBorderRadius !important;
+}
+
+.ui.secondary.vertical.menu>.header.item {
+    border-radius: 0em;
+}
+
+/* Sub Menu */
+.ui.vertical.secondary.menu .item>.menu .item {
+    background-color: transparent;
+}
+
+/* Inverted */
+.ui.secondary.inverted.menu {
+    background-color: transparent;
+}
+
+/*---------------------
+    Secondary Pointing
+ -----------------------*/
+
+.ui.secondary.pointing.menu,
+nav.wp-block-navigation.is-style-secondary-pointing {
+    margin-left: 0em;
+    margin-right: 0em;
+    border-bottom: $secondaryPointingBorderWidth solid $secondaryPointingBorderColor;
+}
+
+.ui.secondary.pointing.menu .item,
+nav.wp-block-navigation.is-style-secondary-pointing .wp-block-navigation-link {
+    border-bottom-color: transparent;
+    border-bottom-style: solid;
+    border-radius: 0em;
+    align-self: flex-end;
+
+    margin: 0em 0em (-$secondaryPointingBorderWidth);
+    padding: $secondaryPointingItemVerticalPadding $secondaryPointingItemHorizontalPadding;
+    border-bottom-width: $secondaryPointingBorderWidth;
+    transition: $secondaryItemTransition;
+
+    /* Item Types */
+    &.header {
+        color: $secondaryPointingHeaderColor !important;
+    }
+
+    &.text {
+        box-shadow: none !important;
+    }
+
+    &:after {
+        display: none;
+    }
+
+    /* Active */
+    &.active,
+    &.current-menu-item {
+        background-color: transparent;
+        box-shadow: none;
+        border-color: $secondaryPointingActiveBorderColor;
+        font-weight: $secondaryPointingActiveFontWeight;
+        color: $secondaryPointingActiveTextColor;
+
+        &:hover {
+            border-color: $secondaryPointingActiveHoverBorderColor;
+            color: $secondaryPointingActiveHoverTextColor;
+        }
+
+        &.dropdown {
+            border-color: $secondaryPointingActiveDropdownBorderColor;
+        }
+    }
+}
+
+/* Hover */
+.ui.secondary.pointing.menu .dropdown.item:hover,
+.ui.secondary.pointing.menu .link.item:hover,
+.ui.secondary.pointing.menu a.item:hover,
+nav.wp-block-navigation.is-style-secondary-pointing .wp-block-navigation-link:hover {
+    background-color: transparent;
+    color: $secondaryPointingHoverTextColor;
+}
+
+/* Pressed */
+.ui.secondary.pointing.menu .dropdown.item:active,
+.ui.secondary.pointing.menu .link.item:active,
+.ui.secondary.pointing.menu a.item:active,
+nav.wp-block-navigation.is-style-secondary-pointing .wp-block-navigation-link:active {
+    background-color: transparent;
+    border-color: $secondaryPointingBorderColor;
+}
+
+/* Vertical Pointing */
+.ui.secondary.vertical.pointing.menu {
+    border-bottom-width: 0px;
+    border-right-width: $secondaryPointingBorderWidth;
+    border-right-style: solid;
+    border-right-color: $secondaryPointingBorderColor;
+}
+
+.ui.secondary.vertical.pointing.menu .item {
+    border-bottom: none;
+    border-right-style: solid;
+    border-right-color: transparent;
+    border-radius: 0em !important;
+    margin: $secondaryVerticalPointingItemMargin;
+    border-right-width: $secondaryPointingBorderWidth;
+}
+
+/* Vertical Active */
+.ui.secondary.vertical.pointing.menu .active.item {
+    border-color: $secondaryPointingActiveBorderColor;
+}
+
+/* Inverted */
+.ui.secondary.inverted.pointing.menu {
+    border-color: $secondaryPointingInvertedBorderColor;
+}
+
+.ui.secondary.inverted.pointing.menu {
+    border-width: $secondaryPointingBorderWidth;
+    border-color: $secondaryPointingBorderColor;
+}
+
+.ui.secondary.inverted.pointing.menu .item {
+    color: $secondaryPointingInvertedItemTextColor;
+}
+
+.ui.secondary.inverted.pointing.menu .header.item {
+    color: $secondaryPointingInvertedItemHeaderColor !important;
+}
+
+/* Hover */
+.ui.secondary.inverted.pointing.menu .link.item:hover,
+.ui.secondary.inverted.pointing.menu a.item:hover {
+    color: $secondaryPointingInvertedItemHoverTextColor;
+}
+
+/* Active */
+.ui.secondary.inverted.pointing.menu .active.item {
+    border-color: $secondaryPointingInvertedActiveBorderColor;
+    color: $secondaryPointingInvertedActiveColor;
+}
+
+/*--------------
+     Text Menu
+ ---------------*/
+
+.ui.text.menu {
+    background: none transparent;
+    border-radius: 0px;
+    box-shadow: none;
+    border: none;
+
+    margin: $textMenuMargin;
+}
+
+.ui.text.menu .item {
+    border-radius: 0px;
+    box-shadow: none;
+    align-self: center;
+    margin: $textMenuItemMargin;
+    padding: $textMenuItemPadding;
+    font-weight: $textMenuItemFontWeight;
+    color: $textMenuItemColor;
+    transition: $textMenuItemTransition;
+}
+
+/* Border */
+.ui.text.menu .item:before,
+.ui.text.menu .menu .item:before {
+    display: none !important;
+}
+
+/* Header */
+.ui.text.menu .header.item {
+    background-color: transparent;
+    opacity: 1;
+    color: $textMenuHeaderColor;
+    font-size: $textMenuHeaderSize;
+    text-transform: $textMenuHeaderTextTransform;
+    font-weight: $textMenuHeaderFontWeight;
+}
+
+/* Image */
+.ui.text.menu .item>img:not(.ui) {
+    margin: 0em;
+}
+
+/*--- fluid text ---*/
+.ui.text.item.menu .item {
+    margin: 0em;
+}
+
+/*--- vertical text ---*/
+.ui.vertical.text.menu {
+    margin: $textVerticalMenuMargin;
+}
+
+.ui.vertical.text.menu:first-child {
+    margin-top: 0rem;
+}
+
+.ui.vertical.text.menu:last-child {
+    margin-bottom: 0rem;
+}
+
+.ui.vertical.text.menu .item {
+    margin: $textVerticalMenuItemMargin;
+    padding-left: 0em;
+    padding-right: 0em;
+}
+
+.ui.vertical.text.menu .item>i.icon {
+    float: $textVerticalMenuIconFloat;
+    margin: $iconMargin;
+}
+
+.ui.vertical.text.menu .header.item {
+    margin: $textVerticalMenuHeaderMargin;
+}
+
+/* Vertical Sub Menu */
+.ui.vertical.text.menu .item:not(.dropdown)>.menu {
+    margin: $textMenuSubMenuMargin;
+}
+
+.ui.vertical.text.menu .item:not(.dropdown)>.menu>.item {
+    margin: $textMenuSubMenuItemMargin;
+    padding: $textMenuSubMenuItemPadding;
+}
+
+/*--- hover ---*/
+.ui.text.menu .item:hover {
+    opacity: 1;
+    background-color: transparent;
+}
+
+/*--- active ---*/
+.ui.text.menu .active.item {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    font-weight: $textMenuActiveItemFontWeight;
+    color: $textMenuActiveItemColor;
+}
+
+/*--- active hover ---*/
+.ui.text.menu .active.item:hover {
+    background-color: transparent;
+}
+
+/* Disable Bariations */
+.ui.text.pointing.menu .active.item:after {
+    box-shadow: none;
+}
+
+.ui.text.attached.menu {
+    box-shadow: none;
+}
+
+/* Inverted */
+.ui.inverted.text.menu {
+    border: $invertedBorder !important;
+    background: $invertedBackground !important;
+    box-shadow: $invertedBoxShadow !important;
+}
+
+//.ui.inverted.text.menu, // Seth removal
+.ui.inverted.text.menu .item,
+.ui.inverted.text.menu .item:hover,
+.ui.inverted.text.menu .active.item {
+    background-color: transparent !important;
+}
+
+/* Fluid */
+.ui.fluid.text.menu {
+    margin-left: 0em;
+    margin-right: 0em;
+}
+
+/*--------------
+     Icon Only
+ ---------------*/
+
+/* Vertical Menu */
+.ui.vertical.icon.menu {
+    display: inline-block;
+    width: auto;
+}
+
+/* Item */
+.ui.icon.menu .item {
+    height: auto;
+    text-align: $iconMenuTextAlign;
+    color: $iconMenuItemColor;
+}
+
+/* Icon */
+.ui.icon.menu .item>.icon:not(.dropdown) {
+    margin: 0;
+    opacity: 1;
+}
+
+/* Icon Gylph */
+.ui.icon.menu .icon:before {
+    opacity: 1;
+}
+
+/* (x) Item Icon */
+.ui.menu .icon.item>.icon {
+    width: auto;
+    margin: 0em auto;
+}
+
+/* Vertical Icon */
+.ui.vertical.icon.menu .item>.icon:not(.dropdown) {
+    display: block;
+    opacity: 1;
+    margin: 0em auto;
+    float: none;
+}
+
+/* Inverted */
+.ui.inverted.icon.menu .item {
+    color: $iconMenuInvertedItemColor;
+}
+
+/*--------------
+    Labeled Icon
+ ---------------*/
+
+/* Menu */
+.ui.labeled.icon.menu {
+    text-align: center;
+}
+
+/* Item */
+.ui.labeled.icon.menu .item {
+    min-width: $labeledIconMinWidth;
+    flex-direction: column;
+}
+
+/* Icon */
+.ui.labeled.icon.menu .item>.icon:not(.dropdown) {
+    height: 1em;
+    display: block;
+    font-size: $labeledIconSize !important;
+    margin: 0em auto $labeledIconTextMargin !important;
+}
+
+/* Fluid */
+.ui.fluid.labeled.icon.menu>.item {
+    min-width: 0em;
+}
+
+/*******************************
+            Variations
+ *******************************/
+
+/*--------------
+     Stackable
+ ---------------*/
+
+@media only screen and (max-width: variables.$largestMobileScreen) {
+    .ui.stackable.menu {
+        flex-direction: column;
+    }
+
+    .ui.stackable.menu .item {
+        width: 100% !important;
+    }
+
+    .ui.stackable.menu .item:before {
+        position: absolute;
+        content: "";
+        top: auto;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        height: $dividerSize;
+        background: $verticalDividerBackground;
+    }
+
+    .ui.stackable.menu .left.menu,
+    .ui.stackable.menu .left.item {
+        margin-right: 0 !important;
+    }
+
+    .ui.stackable.menu .right.menu,
+    .ui.stackable.menu .right.item {
+        margin-left: 0 !important;
+    }
+
+    .ui.stackable.menu .right.menu,
+    .ui.stackable.menu .left.menu {
+        flex-direction: column;
+    }
+}
+
+/*--------------
+     Inverted
+ ---------------*/
+
+.ui.inverted.menu {
+    border: $invertedBorder;
+    background: $invertedBackground;
+    box-shadow: $invertedBoxShadow;
+}
+
+/* Menu Item */
+.ui.inverted.menu .item,
+.ui.inverted.menu .item>a:not(.ui) {
+    background: $invertedItemBackground;
+    color: $invertedItemTextColor;
+}
+
+.ui.inverted.menu .item.menu {
+    background: $invertedSubMenuBackground;
+}
+
+/*--- Border ---*/
+.ui.inverted.menu .item:before {
+    background: $invertedDividerBackground;
+}
+
+.ui.vertical.inverted.menu .item:before {
+    background: $invertedVerticalDividerBackground;
+}
+
+/* Sub Menu */
+.ui.vertical.inverted.menu .menu .item,
+.ui.vertical.inverted.menu .menu .item a:not(.ui) {
+    color: $invertedSubMenuColor;
+}
+
+/* Header */
+.ui.inverted.menu .header.item {
+    margin: 0em;
+    background: $invertedHeaderBackground;
+    box-shadow: none;
+}
+
+/* Disabled */
+.ui.inverted.menu .item.disabled,
+.ui.inverted.menu .item.disabled:hover {
+    color: colors.$invertedDisabledTextColor;
+}
+
+/*--- Hover ---*/
+.ui.link.inverted.menu .item:hover,
+.ui.inverted.menu .dropdown.item:hover,
+.ui.inverted.menu .link.item:hover,
+.ui.inverted.menu a.item:hover {
+    background: $invertedHoverBackground;
+    color: $invertedHoverColor;
+}
+
+.ui.vertical.inverted.menu .item .menu a.item:hover,
+.ui.vertical.inverted.menu .item .menu .link.item:hover {
+    background: $invertedSubMenuBackground;
+    color: $invertedSubMenuHoverColor;
+}
+
+/*--- Pressed ---*/
+.ui.inverted.menu a.item:active,
+.ui.inverted.menu .link.item:active {
+    background: $invertedMenuPressedBackground;
+    color: $invertedMenuPressedColor;
+}
+
+/*--- Active ---*/
+.ui.inverted.menu .active.item {
+    background: $invertedActiveBackground;
+    color: $invertedActiveColor !important;
+}
+
+.ui.inverted.vertical.menu .item .menu .active.item {
+    background: $invertedSubMenuActiveBackground;
+    color: $invertedSubMenuActiveColor;
+}
+
+.ui.inverted.pointing.menu .active.item:after {
+    background: $invertedArrowActiveColor !important;
+    margin: 0em !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/*--- Active Hover ---*/
+.ui.inverted.menu .active.item:hover {
+    background: $invertedActiveHoverBackground;
+    color: $invertedActiveHoverColor !important;
+}
+
+.ui.inverted.pointing.menu .active.item:hover:after {
+    background: $invertedArrowActiveHoverColor !important;
+}
+
+/*--------------
+      Floated
+ ---------------*/
+
+.ui.floated.menu {
+    float: left;
+    margin: 0rem $floatedDistance 0rem 0rem;
+}
+
+.ui.floated.menu .item:last-child:before {
+    display: none;
+}
+
+.ui.right.floated.menu {
+    float: right;
+    margin: 0rem 0rem 0rem $floatedDistance;
+}
+
+/*--------------
+     Inverted
+ ---------------*/
+
+/* Beige */
+.ui.inverted.beige.menu {
+    background: none;
+    min-height: inherit;
+    border-radius: 0;
+
+    .item {
+        background-color: colors.$beigeDark;
+        color: colors.$oatmealText !important;
+        padding: 0.5rem 1rem;
+        border-radius: 0 !important;
+        border: 0;
+        border-right: 1px solid white;
+        font-size: variables.$absoluteMini;
+        letter-spacing: 0.078rem;
+
+        &:last-of-type {
+            border-right: none;
+        }
+
+        &:hover {
+            color: colors.$oatmealText;
+            background-color: colors.$beigeDark;
+        }
+    }
+
+    .active.item {
+        background-color: colors.$beige !important;
+        font-weight: normal !important;
+        border-color: none !important;
+
+        &:hover {
+            color: colors.$oatmealText !important;
+        }
+    }
+}
+
+/* Oatmeal */
+.ui.inverted.oatmeal.menu {
+    background: none;
+    min-height: inherit;
+    border-radius: 0;
+
+    .item {
+        background-color: colors.$oatmealDark;
+        color: colors.$oatmealText !important;
+        padding: 0.5rem 1rem;
+        border-radius: 0 !important;
+        border: 0;
+        border-right: 1px solid white;
+        font-size: variables.$absoluteMini;
+        letter-spacing: 0.078rem;
+
+        &:last-of-type {
+            border-right: none;
+        }
+
+        &:hover {
+            color: colors.$oatmealText;
+            background-color: colors.$oatmealDark;
+        }
+    }
+
+    .active.item {
+        background-color: colors.$oatmeal !important;
+        font-weight: normal !important;
+        border-color: none !important;
+
+        &:hover {
+            color: colors.$oatmealText !important;
+        }
+    }
+}
+
+/** HELPERS **/
+
+/*--------------
+      Fitted
+ ---------------*/
+
+.ui.fitted.menu .item,
+.ui.fitted.menu .item .menu .item,
+.ui.menu .fitted.item {
+    padding: 0em;
+}
+
+.ui.horizontally.fitted.menu .item,
+.ui.horizontally.fitted.menu .item .menu .item,
+.ui.menu .horizontally.fitted.item {
+    padding-top: $itemVerticalPadding;
+    padding-bottom: $itemVerticalPadding;
+}
+
+.ui.vertically.fitted.menu .item,
+.ui.vertically.fitted.menu .item .menu .item,
+.ui.menu .vertically.fitted.item {
+    padding-left: $itemHorizontalPadding;
+    padding-right: $itemHorizontalPadding;
+}
+
+/*--------------
+    Borderless
+ ---------------*/
+
+.ui.menu.attached.borderless {
+    border: none !important;
+}
+
+.ui.borderless.menu .item:before,
+.ui.borderless.menu .item .menu .item:before,
+.ui.menu .borderless.item:before {
+    background: none !important;
+}
+
+/*-------------------
+        Compact
+ --------------------*/
+
+.ui.compact.menu {
+    display: inline-flex;
+    margin: 0em;
+    vertical-align: middle;
+
+    .item:last-child {
+        border-radius: 0em $borderRadius $borderRadius 0em;
+
+        &:before {
+            display: none;
+        }
+    }
+}
+
+.ui.compact.vertical.menu {
+    display: inline-block;
+    width: auto !important;
+
+    .item:last-child::before {
+        display: block;
+    }
+}
+
+/*-------------------
+         Fluid
+ --------------------*/
+
+.ui.menu.fluid,
+.ui.vertical.menu.fluid {
+    width: 100% !important;
+}
+
+/*-------------------
+       Evenly Sized
+ --------------------*/
+
+.ui.item.menu,
+.ui.item.menu .item {
+    width: 100%;
+    padding-left: 0em !important;
+    padding-right: 0em !important;
+    margin-left: 0em !important;
+    margin-right: 0em !important;
+    text-align: center;
+    justify-content: center;
+}
+
+.ui.attached.item.menu {
+    margin: 0em $attachedHorizontalOffset !important;
+}
+
+.ui.item.menu .item:last-child:before {
+    display: none;
+}
+
+.ui.menu.two.item .item {
+    width: 50%;
+}
+
+.ui.menu.three.item .item {
+    width: 33.333%;
+}
+
+.ui.menu.four.item .item {
+    width: 25%;
+}
+
+.ui.menu.five.item .item {
+    width: 20%;
+}
+
+.ui.menu.six.item .item {
+    width: 16.666%;
+}
+
+.ui.menu.seven.item .item {
+    width: 14.285%;
+}
+
+.ui.menu.eight.item .item {
+    width: 12.5%;
+}
+
+.ui.menu.nine.item .item {
+    width: 11.11%;
+}
+
+.ui.menu.ten.item .item {
+    width: 10%;
+}
+
+.ui.menu.eleven.item .item {
+    width: 9.09%;
+}
+
+.ui.menu.twelve.item .item {
+    width: 8.333%;
+}
+
+/*--------------
+      Fixed
+ ---------------*/
+
+.ui.menu.fixed {
+    position: fixed;
+    z-index: 101;
+    margin: 0em;
+    width: 100%;
+}
+
+.ui.menu.fixed,
+.ui.menu.fixed .item:first-child,
+.ui.menu.fixed .item:last-child {
+    border-radius: 0px !important;
+}
+
+.ui.fixed.menu,
+.ui[class*="top fixed"].menu {
+    top: 0px;
+    left: 0px;
+    right: auto;
+    bottom: auto;
+}
+
+.ui[class*="top fixed"].menu {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.ui[class*="right fixed"].menu {
+    border-top: none;
+    border-bottom: none;
+    border-right: none;
+    top: 0px;
+    right: 0px;
+    left: auto;
+    bottom: auto;
+    width: auto;
+    height: 100%;
+}
+
+.ui[class*="bottom fixed"].menu {
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    bottom: 0px;
+    left: 0px;
+    top: auto;
+    right: auto;
+}
+
+.ui[class*="left fixed"].menu {
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    top: 0px;
+    left: 0px;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    height: 100%;
+}
+
+/* Coupling with Grid */
+.ui.fixed.menu+.ui.grid {
+    padding-top: $fixedPrecedingGridMargin;
+}
+
+/*-------------------
+        Pointing
+ --------------------*/
+
+.ui.pointing.menu,
+.wp-block-navigation.is-style-pointing {
+
+    .item,
+    .wp-block-navigation-link {
+
+        &.active,
+        &.current-menu-item {
+            &:after {
+                visibility: visible;
+                background-color: $arrowActiveColor;
+            }
+
+            &.dropdown:after {
+                visibility: hidden;
+            }
+
+            &:hover:after {
+                background-color: $arrowHoverColor;
+            }
+
+            &:hover:after {
+                background-color: $arrowActiveHoverColor;
+            }
+        }
+
+        &:after {
+            visibility: hidden;
+            position: absolute;
+            content: "";
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%) rotate(45deg);
+            background: none;
+
+            margin: ($arrowBorderWidth * 0.5) 0em 0em;
+            width: $arrowSize;
+            height: $arrowSize;
+
+            border: none;
+            border-bottom: $arrowBorder;
+            border-right: $arrowBorder;
+
+            z-index: $arrowZIndex;
+            transition: $arrowTransition;
+        }
+    }
+
+    /* Don't double up pointers */
+    .dropdown.active.item:after,
+    .active.item .menu .active.item:after {
+        display: none;
+    }
+}
+
+.ui.pointing.vertical.menu {
+    .menu .active.item:after {
+        background-color: $arrowVerticalSubMenuColor;
+    }
+
+    .item {
+        &.active:hover:after {
+            background-color: $arrowVerticalHoverColor;
+        }
+
+        &.active:after {
+            background-color: $arrowVerticalActiveColor;
+        }
+
+        &:after {
+            position: absolute;
+            top: 50%;
+            right: 0%;
+            bottom: auto;
+            left: auto;
+
+            transform: translateX(50%) translateY(-50%) rotate(45deg);
+            margin: 0em (-(math.div($arrowBorderWidth, 2))) 0em 0em;
+
+            border: none;
+            border-top: $arrowBorder;
+            border-right: $arrowBorder;
+        }
+    }
+}
+
+/*--------------
+     Attached
+ ---------------*/
+
+/* Middle */
+.ui.attached.menu {
+    top: 0px;
+    bottom: 0px;
+    border-radius: 0px;
+    margin: 0em $attachedHorizontalOffset;
+    width: $attachedWidth;
+    max-width: $attachedWidth;
+    box-shadow: $attachedBoxShadow;
+}
+
+.ui.attached+.ui.attached.menu:not(.top) {
+    border-top: none;
+}
+
+/* Top */
+.ui[class*="top attached"].menu {
+    bottom: 0px;
+    margin-bottom: 0em;
+    top: $attachedTopOffset;
+    margin-top: $verticalMargin;
+    border-radius: $borderRadius $borderRadius 0em 0em;
+}
+
+.ui.menu[class*="top attached"]:first-child {
+    margin-top: 0em;
+}
+
+/* Bottom */
+.ui[class*="bottom attached"].menu {
+    bottom: 0px;
+    margin-top: 0em;
+    top: $attachedBottomOffset;
+    margin-bottom: $verticalMargin;
+    box-shadow: $attachedBottomBoxShadow;
+    border-radius: 0em 0em $borderRadius $borderRadius;
+}
+
+.ui[class*="bottom attached"].menu:last-child {
+    margin-bottom: 0em;
+}
+
+/* Attached Menu Item */
+.ui.top.attached.menu>.item:first-child {
+    border-radius: $borderRadius 0em 0em 0em;
+}
+
+.ui.bottom.attached.menu>.item:first-child {
+    border-radius: 0em 0em 0em $borderRadius;
+}
+
+/* Tabular Attached */
+.ui.attached.menu:not(.tabular) {
+    border: $attachedBorder;
+}
+
+.ui.attached.inverted.menu {
+    border: none;
+}
+
+.ui.attached.tabular.menu {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+}
+
+
+
+
+
+
+/** Things to not touch during refactor **/
+
+
+
+/*--------------
+      Sizes
+ ---------------*/
+
+/* Mini */
+.ui.mini.menu {
+    font-size: $mini;
+}
+
+.ui.mini.vertical.menu {
+    width: $miniWidth;
+}
+
+/* Tiny */
+.ui.tiny.menu {
+    font-size: $tiny;
+}
+
+.ui.tiny.vertical.menu {
+    width: $tinyWidth;
+}
+
+/* Small */
+.ui.small.menu {
+    font-size: $small;
+}
+
+.ui.small.vertical.menu {
+    width: $smallWidth;
+}
+
+/* Medium */
+.ui.menu,
+.wp-block-navigation {
+    font-size: variables.$medium;
+}
+
+.ui.vertical.menu {
+    width: $mediumWidth;
+}
+
+/* Large */
+.ui.large.menu {
+    font-size: $large;
+}
+
+.ui.large.vertical.menu {
+    width: $largeWidth;
+}
+
+/* Huge */
+.ui.huge.menu {
+    font-size: $huge;
+}
+
+.ui.huge.vertical.menu {
+    width: $hugeWidth;
+}
+
+/* Big */
+.ui.big.menu {
+    font-size: $big;
+}
+
+.ui.big.vertical.menu {
+    width: $bigWidth;
+}
+
+/* Massive */
+.ui.massive.menu {
+    font-size: $massive;
+}
+
+.ui.massive.vertical.menu {
+    width: $massiveWidth;
+}
+
+// PRC Menu Block
+.wp-block-prc-block-menu {
+    &>.menu {
+        padding-top: 0;
+    }
+
+    &.items-justified-center:not(.vertical)>.menu {
+        justify-content: center;
+    }
+
+    &.items-justified-right:not(.vertical)>.menu {
+        justify-content: flex-end;
+    }
+
+    &.items-justified-center.vertical>.menu {
+        text-align: center;
+    }
+
+    &.items-justified-right.vertical>.menu {
+        text-align: right;
+    }
+
+    .block-list-appender {
+        display: flex;
+        align-items: center;
+        max-width: inherit !important;
+        margin: inherit !important;
+    }
+}
+
+.ui.menu.block-editor-block-list__layout {
+    &>.item {
+        max-width: inherit !important;
+        margin: 0 !important;
+    }
+}
+
+.wp-block-prc-block-menu .wp-block-prc-block-menu {
+    margin: 0 !important;
+}
+
+.wp-block-prc-block-menu>.ui.menu {
+    &>.wp-block-prc-block-post-publish-date {
+        flex-grow: 1;
+    }
+}

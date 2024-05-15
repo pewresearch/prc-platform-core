@@ -1,0 +1,15 @@
+{
+	"name": "@pewresearch/prc-platform-multisite-post-migration",
+	"description": "Tools to aid in the multisite collapse.",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^27.6.0"
+	},
+	"scripts": {
+		"build:panel": "wp-scripts build src/migration-panel/index.js --output-path=build/migration-panel",
+		"build:legacy": "wp-scripts build src/legacy-frontend-fixes/index.js --output-path=build/legacy-frontend-fixes"
+	},
+	"dependencies": {
+		"@emotion/styled": "^11.11.5"
+	}
+}

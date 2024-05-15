@@ -1,0 +1,48 @@
+$block_area_color: #02b5d5;
+$block_area_color_rgb: 2, 181, 213;
+
+.wp-block-prc-platform-block-area.wp-block {
+	margin-block-end: 1.5em;
+	.block-area-edit__toolbar {
+		margin-top: 1.5em;
+		display: flex;
+		flex-direction: row;
+		column-gap: 1em;
+		.components-button {
+			margin: 0!important;
+		}
+	}
+	.block-area-edit__step {
+		display: block;
+		pre {
+			display: inline-block!important;
+			font-weight: bold;
+		}
+	}
+	.block-area-edit__review-settings-heading {
+		font-weight: bold;
+		text-transform: capitalize;
+		margin-block-start: 0;
+		margin-block-end: 0;
+	}
+}
+
+
+.is-outline-mode .block-editor-block-list__block:not(.remove-outline).wp-block-prc-platform-block-area {
+	&.is-highlighted,
+	&.is-selected {
+		box-shadow: inset 0 0 0 var(--wp-admin-border-width-focus) $block_area_color;
+	}
+
+	&.block-editor-block-list__block:not([contenteditable]):focus {
+		&::after {
+			box-shadow: 0 0 0 var(--wp-admin-border-width-focus) $block_area_color;
+		}
+	}
+	&.block-editor-block-list__block:not([contenteditable]).has-block-overlay:hover:not(.is-dragging-blocks):not(.is-multi-selected) {
+		&::before {
+			background: rgba(2, 181, 213, .04);
+			box-shadow: 0 0 0 1px $block_area_color inset;
+		}
+	}
+}

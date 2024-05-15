@@ -1,0 +1,16 @@
+/**
+* Default styles for the icon library
+*/
+
+i.icon {
+	display: inline-block;
+	font-size: 14px;
+	line-height: 1;
+	vertical-align: middle;
+	& > svg {
+		display: block;
+		width: 1em;
+		height: 1em;
+		fill: currentColor;
+	}
+}

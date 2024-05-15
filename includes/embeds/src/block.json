@@ -1,0 +1,7 @@
+{
+	"name": "prc-platform/embeds-controls",
+	"version": "0.1.0",
+	"editorScript": "file:./index.js",
+	"viewScript": ["file:./view.js", "file:./view-embed.js", "file:./iframe-resizer.js", "file:./iframe-resizer-content-window.js"],
+	"style": "file:./style.css"
+}
