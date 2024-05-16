@@ -8,7 +8,7 @@
     "@wordpress/dependency-extraction-webpack-plugin": "^4.10.0",
     "@wordpress/dom-ready": "^3.6.0",
     "@wordpress/html-entities": "^3.7.0",
-    "@wordpress/scripts": "^25.4.0"
+    "@wordpress/scripts": "^27.9.0"
   },
   "dependencies": {
     "classnames": "^2.3.1",
