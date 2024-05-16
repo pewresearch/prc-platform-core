@@ -34,11 +34,14 @@ export default function Edit({ clientId, context }) {
 		POST_TYPE,
 		queryArgs
 	);
+
+	// This sets the previewed homepage ID to the first homepage record fetched from the API and updates it if the latest homepage has changed.
 	useEffect(() => {
 		if (records?.length === 0 || !hasResolved) {
 			return;
 		}
-		if (!previewedHomepageId) {
+		// If there is no previewed homepage or the previewed homepage is different from the one that was just fetched, update the previewed homepage ID.
+		if (records[0].id && previewedHomepageId !== records[0].id) {
 			setPreviewedHomepageId(records[0].id);
 		}
 	}, [hasResolved, records, previewedHomepageId]);

@@ -29,6 +29,14 @@
       "type": "boolean"
     }
   },
+  "example": {
+    "attributes": {
+      "blockAreaSlug": "topic-lede",
+      "taxonomyName": "category",
+      "taxonomyTermSlug": "climate-energy-environment"
+    },
+    "viewportWidth": 1200
+  },
   "supports": {
     "anchor": true,
     "html": false,

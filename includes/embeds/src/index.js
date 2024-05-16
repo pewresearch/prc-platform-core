@@ -3,9 +3,9 @@
  */
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { Fragment, useEffect, useState } from '@wordpress/element';
+import { Fragment } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginBlockSettingsMenuItem } from '@wordpress/edit-post';
+import { PluginBlockSettingsMenuItem } from '@wordpress/editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal Dependencies
