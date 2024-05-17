@@ -75,6 +75,13 @@ class Facet_Template {
 			}
 			$options[] = $opts;
 		}
+		// sort $options such that isSelected are first
+		usort($options, function($a, $b) {
+			if ( $a['isSelected'] === $b['isSelected'] ) {
+				return 0;
+			}
+			return $a['isSelected'] ? -1 : 1;
+		});
 		$field['attrs']['options'] = $options;
 		if (null !== $field_value) {
 			$field['attrs']['value'] = $field_value;
@@ -101,7 +108,8 @@ class Facet_Template {
 		$field_template = $inner_blocks[0];
 		$content = '';
 		$expanded_content = '';
-		$i = 1;
+		// make sure $selected_choices are first in the $facet_choices array
+		$blocks_to_generate = [];
 		foreach ($facet_choices as $choice) {
 			$field = $field_template;
 			$count = $choice['count'] > 250 ? '250+' : $choice['count'];
@@ -109,13 +117,24 @@ class Facet_Template {
 			$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
 			$field['attrs']['value'] = $choice['value'];
 			$field['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);
+			$blocks_to_generate[] = $field;
+		}
+		// sort it such that the defaultChecked are first
+		usort($blocks_to_generate, function($a, $b) {
+			if ( $a['attrs']['defaultChecked'] === $b['attrs']['defaultChecked'] ) {
+				return 0;
+			}
+			return $a['attrs']['defaultChecked'] ? -1 : 1;
+		});
 
+		$i = 1;
+		foreach ($blocks_to_generate as $block) {
 			$parsed = new WP_Block_Parser_Block(
-				$field['blockName'],
-				$field['attrs'],
-				$field['innerBlocks'],
-				$field['innerHTML'],
-				$field['innerContent']
+				$block['blockName'],
+				$block['attrs'],
+				$block['innerBlocks'],
+				$block['innerHTML'],
+				$block['innerContent']
 			);
 
 			if ( $i > 5 ) {

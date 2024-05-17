@@ -74,6 +74,9 @@
       "label": "No Label"
     }
   ],
+  "ancestor": [
+    "prc-platform/facets-context-provider"
+  ],
   "textdomain": "facet-template",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",

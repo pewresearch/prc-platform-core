@@ -79,8 +79,17 @@ class Languages extends Taxonomies {
 	 * @throws TypeError
 	 * @throws InvalidArgumentException
 	 */
-	public function set_language_on_pub( $post ) {
-		$this->set_language_from_content( $post->ID, $post->post_content );
+	public function schedule_langauge_analysis($post) {
+		as_enqueue_async_action( 'prc_language_analysis', array( 'post_id' => $post->ID ) );
+	}
+
+	public function handle_scheduled_language_analysis($args) {
+		$post_id = $args['post_id'];
+		$post_content = get_the_content($post_id);
+		if (empty($post_content)) {
+			return;
+		}
+		return $this->set_language_from_content($post_id, $post_content);
 	}
 
 	/**

@@ -31,7 +31,7 @@ class Facets {
 			"show_expanded" => "no",
 			"ghosts" => "yes",
 			"preserve_ghosts" => "no",
-			"operator" => "and",
+			"operator" => "or",
 			"orderby" => "count",
 			"count" => "50",
 			"soft_limit" => "5"

@@ -2,6 +2,7 @@
 namespace PRC\Platform;
 use WP_Error;
 use WP_Query;
+use WP_Term;
 
 // For admin notices see https://github.com/Automattic/vip-go-mu-plugins/tree/develop/admin-notice
 // AND https://github.com/Automattic/vip-go-mu-plugins/blob/develop/async-publish-actions.php
@@ -195,9 +196,17 @@ class WP_Admin {
 		/**
 		 * Edit Menu
 		 */
+		$queried_object = $wp_query->get_queried_object();
+		$type = '';
 		// Check for the current post type...
-		$post_type = get_post_type();
-		$edit_node_name = 'post' === $post_type ? 'edit' : 'edit_' . $post_type;
+		if ( $queried_object instanceof WP_Term ) {
+			$type = $queried_object->taxonomy;
+			$type = 'datasets' === $type ? 'dataset' : $type;
+			$type = 'bylines' === $type ? 'staff' : $type;
+		} elseif ( 'wp_post' === $type ) {
+			$type = $queried_object->post_type;
+		}
+		$edit_node_name = 'post' === $type ? 'edit' : 'edit_' . $type;
 		$edit = $wp_admin_bar->get_node($edit_node_name);
 		if ( !$edit ) {
 			// Fallback to just edit.

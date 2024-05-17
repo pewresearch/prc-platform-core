@@ -29,7 +29,7 @@ class Apple_News {
 	public function init($loader = null) {
 		if (null !== $loader) {
 			$loader->add_filter( 'apple_news_exporter_byline', $this, 'get_bylines', 10, 2) ;
-			$loader->add_filter( 'apple_news_skip_push', $this, 'skip_push', 10, 1) ;
+			$loader->add_filter( 'apple_news_skip_push', $this, 'skip_push_on_non_prod_env', 10, 1) ;
 		}
 	}
 
@@ -58,6 +58,6 @@ class Apple_News {
 	public function skip_push_on_non_prod_env($post_id) {
 		// get the post status for $post_id
 		$post_status = get_post_status($post_id);
-		return 'publish' !== $post_status || 'production' !== wp_get_environment_type();
+		return 'publish' !== $post_status && 'production' !== wp_get_environment_type();
 	}
 }

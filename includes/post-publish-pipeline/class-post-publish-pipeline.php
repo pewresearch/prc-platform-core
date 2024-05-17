@@ -40,7 +40,8 @@ class Post_Publish_Pipeline {
 		'mini-course',
 		'press-release',
 		'block_module',
-		'decoded'
+		'decoded',
+		'newsletterglue',
 	);
 
 	/**
@@ -114,6 +115,7 @@ class Post_Publish_Pipeline {
 		$label = 'Report';
 
 		$terms = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'names' ) );
+
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			$term_name = array_shift( $terms );
 			if (is_object($term_name)) {
@@ -133,6 +135,14 @@ class Post_Publish_Pipeline {
 			$label = "Short Read";
 		} elseif ( 'events' === $post_type ) {
 			$label = "Event";
+		} elseif ( 'dataset' === $post_type ) {
+			$label = "Dataset";
+		} elseif ( 'newsletterglue' === $post_type ) {
+			$label = "Newsletter";
+		} elseif ( 'press-release' === $post_type ) {
+			$label = "Press Release";
+		} elseif ( 'decoded' === $post_type ) {
+			$label = "Decoded";
 		}
 
 		return $label;
@@ -558,4 +568,3 @@ class Post_Publish_Pipeline {
 		}
 	}
 }
-

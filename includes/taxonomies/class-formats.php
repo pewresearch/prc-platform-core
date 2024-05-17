@@ -5,11 +5,13 @@ class Formats extends Taxonomies {
 	protected static $taxonomy = 'formats';
 	protected static $enforced_post_type_pairs = [
 		'short-read' => 'short-read',
-		'interactive' => 'feature',
+		'feature' => 'feature',
 		'fact-sheet' => 'fact-sheet',
 		'press-release' => 'press-release',
 		'quiz' => 'quiz',
 		'decoded' => 'decoded',
+		'dataset' => 'dataset',
+		'newsletterglue' => 'newsletterglue',
 	];
 
 	public function __construct($loader) {
@@ -51,7 +53,7 @@ class Formats extends Taxonomies {
 
 		$args = array(
 			'labels'            => $labels,
-			'hierarchical'      => false,
+			'hierarchical'      => true,
 			'public'            => true,
 			'show_ui'           => true,
 			'show_admin_column' => true,
@@ -63,15 +65,13 @@ class Formats extends Taxonomies {
 		$post_types = apply_filters( "prc_taxonomy_{$taxonomy_name}_post_types", array(
 			'post',
 			'short-read',
-			'fact-sheets',
 			'fact-sheet',
-			'interactives',
-			'interactive',
 			'feature',
 			'press-release',
 			'quiz',
 			'decoded',
-			'stub'
+			'dataset',
+			'newsletterglue'
 		) );
 
 		register_taxonomy( $taxonomy_name, $post_types, $args );
