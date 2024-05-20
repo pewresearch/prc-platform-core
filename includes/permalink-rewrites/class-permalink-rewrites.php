@@ -3,6 +3,10 @@ namespace PRC\Platform;
 use WP_Error;
 use WP_REST_Request;
 
+/**
+ * @NOTE: This class is used to filter and structure rewrite rules, tags, and query vars for the PRC Platform.
+ * You will find most of the rewrite rules in taxonomies/research-teams, as this taxonomy drives most of the custom permalink structure for objects on PRC-Platform.
+ */
 class Permalink_Rewrites {
 	/**
 	 * The version of this plugin.
@@ -30,20 +34,11 @@ class Permalink_Rewrites {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			$loader->add_filter( 'robots_txt', $this, 'manage_robots_txt', 10, 2 );
 			$loader->add_action( 'init', $this, 'register_rewrites' );
 			$loader->add_action( 'init', $this, 'register_tags' );
 			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 		}
-	}
-
-	function manage_robots_txt( $output, $public ) {
-		// Blocking search pages from googlebot
-		$output .= 'Disallow: /search/' . PHP_EOL;
-		$output .= 'Disallow: /search' . PHP_EOL;
-		$output .= 'Disallow: /?s=' . PHP_EOL;
-		return $output;
 	}
 
 	/**

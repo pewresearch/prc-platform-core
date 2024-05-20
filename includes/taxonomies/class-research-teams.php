@@ -108,15 +108,14 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/embed/?$'] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&iframe=true';
 					$new_rules[$term_name . '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/iframe/?$'] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&iframe=true';
 					// Add attachment rule:
-					$new_rules[$term_name . '/[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/?[^/iframe]$'] = 'index.php?attachment=$matches[1]';
+					$new_rules[$term_name . '/[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'fact-sheet' === $post_type ) {
 					$new_rules[$term_name . '/fact-sheet/([^/]+)/?$'] = 'index.php?post_type=fact-sheet&name=$matches[1]';
 					// Add attachment rule:
 					$new_rules[$term_name . '/fact-sheet/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'quiz' === $post_type ) {
+					// Add /quiz rules:
 					$new_rules[$term_name . '/quiz/([^/]+)/?$'] = 'index.php?post_type=quiz&name=$matches[1]';
-					// Add attachment rule:
-					$new_rules[$term_name . '/quiz/[^/]+/([^/]+)/?[^/iframe]$'] = 'index.php?attachment=$matches[1]';
 					// Add /results rules:
 					$new_rules[$term_name . '/quiz/([^/]+)/results/?$'] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
 					// A new, cacheable, results archetype rule.
@@ -124,6 +123,8 @@ class Research_Teams extends Taxonomies {
 					// Add iframe and embed rules:
 					$new_rules[$term_name . '/quiz/([^/]+)/embed/?$'] = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
 					$new_rules[$term_name . '/quiz/([^/]+)/iframe/?$'] = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
+					// Add attachment rule:
+					$new_rules[$term_name . '/quiz/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'feature' === $post_type ) {
 					$new_rules[$term_name . '/feature/([^/]+)/?$'] = 'index.php?post_type=feature&name=$matches[1]';
 					// Add attachment rule, very, very specific. This will only hit for attachment names that are 5 or more characters long.
