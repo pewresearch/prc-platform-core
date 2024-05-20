@@ -11,7 +11,7 @@ class Formats extends Taxonomies {
 		'quiz' => 'quiz',
 		'decoded' => 'decoded',
 		'dataset' => 'dataset',
-		'newsletterglue' => 'newsletterglue',
+		'newsletterglue' => 'newsletter',
 	];
 
 	public function __construct($loader) {
