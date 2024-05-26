@@ -29,6 +29,7 @@ class Pagination extends Post_Report_Package {
 	 * 'link' => 'https://example.com/chapter-1',
 	 * 'slug' => 'chapter-1',
 	 * 'internal_chapters' => array(),
+	 * 'page_num' => 1
 	 * ),
 	 * array(
 	 * 'id' => 456,
@@ -36,6 +37,7 @@ class Pagination extends Post_Report_Package {
 	 * 'link' => 'https://example.com/chapter-2',
 	 * 'slug' => 'chapter-2',
 	 * 'internal_chapters' => array(),
+	 * 'page_num' => 2
 	 * )
 	 * @return void
 	 */
@@ -107,13 +109,16 @@ class Pagination extends Post_Report_Package {
 	private function return_pagination_data() {
 		$pagination = array();
 		$posts = $this->posts;
+		$page_num = 1;
 		foreach( $posts as $key => $chapter ) {
 			$pagination[] = array(
 				'id' => $chapter['id'],
 				'title' => $chapter['title'],
 				'link' => $chapter['link'],
 				'is_active' => $chapter['is_active'],
+				'page_num' => $page_num,
 			);
+			$page_num++;
 		}
 		return $pagination;
 	}

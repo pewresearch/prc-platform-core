@@ -833,7 +833,7 @@ class Post_Report_Package {
 		$parent_id = $this->get_report_parent_id( $post_id );
 
 		$cached_toc = $this->get_toc_cache( $parent_id );
-		
+
 		if ( false !== $cached_toc ) {
 			return $cached_toc;
 		}
@@ -864,18 +864,46 @@ class Post_Report_Package {
 	}
 
 	public function restfully_regenerate_toc(\WP_REST_Request $request) {
-		error_log('restfully_regenerate_toc');
 		$post_id = $request->get_param('postId');
-		error_log('post_id: '.$post_id);
 		if ( empty($post_id) ) {
 			return new WP_Error('400', 'Missing post_id parameter.');
 		}
 		return $this->construct_toc( $post_id );
 	}
 
+	/**
+	 * Converts the TOC Chapters Data into Pagination Data.
+	 * @param mixed $post_id
+	 * @return array
+	 */
+	public function get_pagination_data($post_id) {
+		$chapters = $this->get_constructed_toc( $post_id );
+		if ( empty($chapters) ) {
+			return [];
+		}
+		// we want to return this data but strip out internal_chapters, we also want to add an is_active key to each chapter. and check against the current post id.
+		$paginated_items = array_map( function( $chapter ) use ($post_id) {
+			$chapter['is_active'] = $chapter['id'] === $post_id;
+			unset( $chapter['internal_chapters'] );
+			return $chapter;
+		}, $chapters );
+
+		return $paginated_items;
+	}
+
+	// TOC Pagination gets constructed by the pagination class in the block library.
 	public function get_pagination($post_id) {
-		$pagination = new Pagination( $post_id );
-		return $pagination->get();
+		$items = $this->get_pagination_data( $post_id );
+		// Construct the pagination data:
+		$pagination = new \PRC\Platform\Blocks\Pagination( $items );
+		// Return the pagination data.
+		$to_return = array(
+			'current_post' => $pagination->get_current_item(),
+			'next_post' => $pagination->get_next_item(),
+			'previous_post' => $pagination->get_previous_item(),
+			'pagination_items' => $pagination->get_items(),
+		);
+		return $to_return;
 	}
 
 	/**
