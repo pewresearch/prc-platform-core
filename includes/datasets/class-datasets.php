@@ -545,7 +545,7 @@ class Datasets {
 
 	public function get_dataset_description_for_block_binding() {
 		$dataset_id = get_the_ID();
-		if ( is_tax('datasets') ) {
+		if ( is_tax(self::$taxonomy_object_name) || is_singular(self::$post_object_name) ) {
 			$dataset_term_id = get_queried_object_id();
 			$dataset = \TDS\get_related_post($dataset_term_id, 'datasets');
 			$dataset_id = $dataset->ID;
