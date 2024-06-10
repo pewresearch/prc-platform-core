@@ -16,6 +16,6 @@
 		"plugin-zip": "wp-scripts plugin-zip"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^27.4.0"
+		"@wordpress/scripts": "^28.0.0"
 	}
 }

@@ -4,7 +4,7 @@
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
 		"@wordpress/icons": "^9.42.0",
-		"@wordpress/scripts": "^27.2.0"
+		"@wordpress/scripts": "^28.0.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build --experimental-modules",
