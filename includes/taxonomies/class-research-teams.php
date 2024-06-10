@@ -84,7 +84,7 @@ class Research_Teams extends Taxonomies {
 
 	// Adds a rewrite rule for each research term for the approved post types.
 	public function add_rewrite_rules($rules) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return $rules;
 		}
 		$new_rules = array();
@@ -153,7 +153,7 @@ class Research_Teams extends Taxonomies {
 	 * @return mixed
 	 */
 	public function modify_post_permalinks($permalink, $post) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return $permalink;
 		}
 		// Check if post has the "disable_research_team_permalink" meta key
@@ -166,7 +166,7 @@ class Research_Teams extends Taxonomies {
 			$terms = get_the_terms($post, self::$taxonomy);
 			if ($terms && !is_wp_error($terms)) {
 				// Get the primary term
-				$primary_term_id = \yoast_get_primary_term_id(self::$taxonomy, $post->ID);
+				$primary_term_id = get_primary_term_id(self::$taxonomy, $post->ID);
 				// search through $terms from a term object with term_id of $primary_term_id
 				$primary_term = array_filter($terms, function ($term) use ($primary_term_id) {
 					return $term->term_id == $primary_term_id;

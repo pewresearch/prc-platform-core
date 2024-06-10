@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+use DougSisk\CountryState\CountryState;
 
 function get_wp_admin_current_post_type() {
 	global $post, $typenow, $current_screen;
@@ -97,7 +98,7 @@ function log_error($error) {
 		}
 	}
 
-	do_action('qm/debug', print_r([
+	do_action('qm/debug', 'LOG_ERROR:' . print_r([
 		'message' => $message,
 		'code' => $code,
 	], true));
@@ -123,4 +124,97 @@ function log_error($error) {
 	}
 
 	return $error;
+}
+
+function get_list_of($list_of = null) {
+	$country_state = new CountryState();
+	if ( 'us-states' === $list_of ) {
+		// Get array of US states
+		$list = $country_state->getStates('US');
+		$tmp = [];
+		foreach ($list as $value => $label) {
+			$tmp[] = [
+				'label' => $label,
+				'value' => $value,
+			];
+		}
+		return $tmp;
+	} elseif ( 'countries' === $list_of ) {
+		// Get array of countries
+		$list = $country_state->getCountries();
+		$tmp = [];
+		foreach ($list as $value => $label) {
+			$tmp[] = [
+				'label' => $label,
+				'value' => $value,
+			];
+		}
+		return $tmp;
+	} elseif ( 'industries' === $list_of ) {
+		return [
+			[
+				'label' => 'Agriculture',
+				'value' => 'agriculture',
+			],
+			[
+				'label' => 'Automotive',
+				'value' => 'automotive',
+			],
+			[
+				'label' => 'Construction',
+				'value' => 'construction',
+			],
+			[
+				'label' => 'Education',
+				'value' => 'education',
+			],
+			[
+				'label' => 'Finance',
+				'value' => 'finance',
+			],
+			[
+				'label' => 'Healthcare',
+				'value' => 'healthcare',
+			],
+			[
+				'label' => 'Hospitality',
+				'value' => 'hospitality',
+			],
+			[
+				'label' => 'Manufacturing',
+				'value' => 'manufacturing',
+			],
+			[
+				'label' => 'Media',
+				'value' => 'media',
+			],
+			[
+				'label' => 'Nonprofit',
+				'value' => 'nonprofit',
+			],
+			[
+				'label' => 'Real Estate',
+				'value' => 'real-estate',
+			],
+			[
+				'label' => 'Retail',
+				'value' => 'retail',
+			],
+			[
+				'label' => 'Technology',
+				'value' => 'technology',
+			],
+			[
+				'label' => 'Transportation',
+				'value' => 'transportation',
+			],
+			[
+				'label' => 'Other',
+				'value' => 'other',
+			],
+		];
+	} else {
+		// Return an empty array
+		return [];
+	}
 }

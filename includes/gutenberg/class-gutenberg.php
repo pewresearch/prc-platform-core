@@ -48,6 +48,8 @@ class Gutenberg {
 			$loader->add_action( 'menu_order', $this, 'group_admin_menus_together', 101 );
 			// Remove the "Block Directory" from the block inserter.
 			remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets' );
+			// Remove the "Core Block Patterns" from the pattern directory.
+			$loader->add_action( 'after_setup_theme', $this, 'unregister_core_block_patterns', 999 );
 			// Disable loading remote block patterns, we only want local or DB sourced block patterns.
 			add_filter(
 				'should_load_remote_block_patterns',
@@ -110,7 +112,7 @@ class Gutenberg {
 		return $new_menu_order;
 	}
 
-	public function unregister_unused_blocks() {
-
+	public function unregister_core_block_patterns() {
+		remove_theme_support( 'core-block-patterns' );
 	}
 }

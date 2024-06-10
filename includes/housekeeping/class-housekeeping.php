@@ -44,6 +44,10 @@ class Housekeeping {
 		}
 	}
 
+	public function send_notification() {
+
+	}
+
 	/**
 	 * Every month we'll clean up any drafts that have not been modified in 30 days.
 	 * @hook prc_run_monthly
@@ -100,15 +104,17 @@ class Housekeeping {
 		}, $posts_not_cleaned);
 		$failure_list = implode( '<br>', $failure_list );
 
+		// @TODO: Change this to Slack notification
 		wp_mail(
 			$this->email_contact,
-			'🧹 PRC Platform System Notice: Weekly Draft Cleanup Results for: ' . $sitename,
+			'🧹 PRC Platform System Notice: Monthly Draft Cleanup Results for: ' . $sitename,
 			!empty($posts_cleaned) ? 'The following posts were trashed 🗑️: ' . $success_list : 'No posts were found to be trashed 🙂. This is a good thing everyone is doing their part!'
 		);
 
 		if ( !empty($posts_not_cleaned) ) {
 			$posts_not_cleaned_mesage = array_map(function($post_id) { return wp_sprintf('<a href="%s">%s (%s)</a>', get_permalink($post_id), get_the_title($post_id), (string) $post_id);}, $posts_not_cleaned);
 			$posts_not_cleaned_mesage = implode(', ', $posts_not_cleaned_mesage);
+			// @TODO: Change this to Slack notification
 			wp_mail(
 				$this->email_contact,
 				'🧹 PRC Platform System Notice: Weekly Draft Cleanup Failures for: ' . $sitename,
@@ -141,6 +147,7 @@ class Housekeeping {
 
 		$query_message = is_bool($query) && $query ? 'Quiz cleanup successful.' : 'Quiz cleanup failed.';
 
+		// @TODO: Change this to Slack notification
 		wp_mail(
 			$this->email_contact,
 			'🧹 (🎓 Quizzes) PRC Platform System Notice: Monthly Quiz Cleanup '. is_bool($query) && $query ? 'Success' : 'Failure',

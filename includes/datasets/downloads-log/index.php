@@ -11,14 +11,7 @@ class Datasets_Download_Logger extends Datasets {
 	public function __construct() {
 
 	}
-
-	public function init_db() {
-		// Dont run anywhere but the primary site.
-		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
-			return;
-		}
-	}
-
+	
 	/**
 	 * Register meta for the dataset download logger.
 	 * @hook init

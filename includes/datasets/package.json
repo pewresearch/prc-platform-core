@@ -1,14 +1,14 @@
 {
 	"name": "@pewresearch/prc-platform-datasets",
-	"description": "Datasets functionality for PRC Platform. Includes a block to render a download button that uses PRC User Accounts to provide user context, and a panel to manage an individual dataset.",
+	"description": "Datasets functionality for PRC Platform. Includes a block to render a download button that uses PRC User Accounts to provide user context, and a panel to manage an individual dataset. There are blocks for dataset description, as well as ATP legal acceptance.",
 	"license": "GPL-2.0-or-later",
-	"devDependencies": {
-		"@wordpress/scripts": "^27.2.0"
-	},
 	"scripts": {
 		"build": "wp-scripts build --experimental-modules"
 	},
+	"devDependencies": {
+		"@wordpress/scripts": "^28.0.0"
+	},
 	"dependencies": {
-		"@wordpress/icons": "^9.42.0"
+		"@wordpress/icons": "^10.0.0"
 	}
 }

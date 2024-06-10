@@ -41,7 +41,7 @@ class Related_Posts_API extends Related_Posts {
 		if ( false !== $related_posts ) {
 			return $related_posts;
 		}
-		$primary_taxonomy_term_id = \yoast_get_primary_term_id('category', $this->ID);
+		$primary_taxonomy_term_id = get_primary_term_id('category', $this->ID);
 		$primary_taxonomy_term = get_term_by( 'term_taxonomy_id', (int) $primary_taxonomy_term_id, 'category' );
 		$section = $primary_taxonomy_term->name;
 		// query parsely for related posts for this post by url by post id and by primary topic term/section name
@@ -81,7 +81,7 @@ class Related_Posts_API extends Related_Posts {
 		$related_posts = array();
 
 		// Get the primary topic for this post.
-		$primary_taxonomy_term_id = \yoast_get_primary_term_id($taxonomy, $this->ID);
+		$primary_taxonomy_term_id = get_primary_term_id($taxonomy, $this->ID);
 		$primary_taxonomy_term = get_term_by( 'term_taxonomy_id', (int) $primary_taxonomy_term_id, $taxonomy );
 
 		if ( ! $primary_taxonomy_term ) {

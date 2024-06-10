@@ -12,7 +12,7 @@ class Admin_Columns_Pro {
 	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $loader ) {
-		if ( get_current_blog_id() === PRC_PRIMARY_SITE_ID ) {
+		if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() ) {
 			$loader->add_filter( 'acp/storage/file/directory', $this, 'acp_load_via_files' );
 		}
 		$loader->add_action( 'ac/ready', $this, 'register_columns' );

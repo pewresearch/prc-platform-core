@@ -32,7 +32,7 @@ class Topic_Category extends Taxonomies {
 	 * @return mixed
 	 */
 	public function change_category_labels_to_topic( $args, $taxonomy ) {
-		if ( get_current_blog_ID() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return $args;
 		}
 		if ( $taxonomy === self::$taxonomy ) {
@@ -79,7 +79,7 @@ class Topic_Category extends Taxonomies {
 	}
 
 	public function enqueue_category_name_change_script() {
-		if ( get_current_blog_ID() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return null;
 		}
 		$registered = $this->register_category_name_change_filters();

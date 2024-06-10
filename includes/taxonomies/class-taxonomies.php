@@ -31,6 +31,7 @@ class Taxonomies {
 		require_once( plugin_dir_path( __FILE__ ) . 'class-collections.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-decoded-category.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-formats.php' );
+		require_once( plugin_dir_path( __FILE__ ) . 'class-fund-pools.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-languages.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-mode-of-analysis.php' );
 		require_once( plugin_dir_path( __FILE__ ) . 'class-regions-countries.php' );
@@ -59,6 +60,7 @@ class Taxonomies {
 			new Collections($loader);
 			new Decoded_Category($loader);
 			new Formats($loader);
+			new Fund_Pools($loader);
 			new Languages($loader);
 			new Mode_Of_Analysis($loader);
 			new Regions_Countries($loader);
@@ -164,6 +166,14 @@ class Taxonomies {
 		update_term_meta( $term_id, '_last_updated_by', $user_id );
 		// Update the _created_at term meta to the current time.
 		update_term_meta( $term_id, '_last_updated_at', current_time( 'mysql' ) );
+	}
+}
+
+function get_primary_term_id($taxonomy, $post_id) {
+	if ( ! function_exists( 'yoast_get_primary_term_id' ) ) {
+		return false;
+	} else {
+		return yoast_get_primary_term_id($taxonomy, $post_id);
 	}
 }
 

@@ -104,7 +104,10 @@ class Facets_API {
 		if ( is_paged() && 100 < get_query_var('paged') ) {
 			$failover = true;
 		}
-		if ( is_search() || PRC_PRIMARY_SITE_ID !== get_current_blog_id() || $failover) {
+		if ( 1 === get_current_blog_id() ) {
+			$failover = true;
+		}
+		if ( is_search() || $failover) {
 			// @TODO: Experiment with creating a ElasticPress Facets data provider that matches this format... just needs to transform arguments...
 			return [
 				'facets'     => [],

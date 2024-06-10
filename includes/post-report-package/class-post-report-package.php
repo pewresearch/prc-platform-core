@@ -516,7 +516,7 @@ class Post_Report_Package {
 
 		$materials = get_post_meta( $post_id, self::$report_materials_meta_key, true );
 
-		if (!empty($datasets) && !empty($materials)) {
+		if (!empty($datasets) && !empty($materials) && is_array($materials)) {
 			$materials = array_merge($materials, $datasets);
 		}
 

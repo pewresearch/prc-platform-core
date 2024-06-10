@@ -759,7 +759,7 @@ class Features {
 				}
 				// get the primary research-team taxonomy term slug for this based on the $post_slug
 				$post = get_page_by_path( $post_slug, OBJECT, self::$post_type );
-				$primary_research_term = yoast_get_primary_term( 'research-teams', $post->ID );
+				$primary_research_term = get_primary_term_id('research-teams', $post->ID);
 				$primary_research_term = sanitize_title( $primary_research_term );
 				$url_prefix = $primary_research_term ? $primary_research_term . '/' : '';
 				add_rewrite_rule(

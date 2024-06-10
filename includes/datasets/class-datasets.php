@@ -143,7 +143,6 @@ class Datasets {
 			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
 
 			$download_logger = new Datasets_Download_Logger();
-			$loader->add_action( 'init', $download_logger, 'init_db' );
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
 			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_logger_endpoint' );
@@ -544,7 +543,26 @@ class Datasets {
 		}
 	}
 
+	public function get_dataset_description_for_block_binding() {
+		$dataset_id = get_the_ID();
+		if ( is_tax('datasets') ) {
+			$dataset_term_id = get_queried_object_id();
+			$dataset = \TDS\get_related_post($dataset_term_id, 'datasets');
+			$dataset_id = $dataset->ID;
+		}
+		$dataset_content = get_post_field('post_content', $dataset_id);
+		$content = apply_filters('the_content', $dataset_content);
+		return $content;
+	}
+
 	public function block_init() {
+		register_block_bindings_source(
+			'prc-platform/dataset-description',
+			[
+				'label'              => __( 'Dataset Description', 'prc-platform/dataset-description' ),
+				'get_value_callback' => [$this,'get_dataset_description_for_block_binding'],
+			]
+		);
 		register_block_type( __DIR__ . '/build/dataset-atp-legal-acceptance-block' );
 		register_block_type( __DIR__ . '/build/dataset-description-block' );
 		register_block_type( __DIR__ . '/build/download-block' );

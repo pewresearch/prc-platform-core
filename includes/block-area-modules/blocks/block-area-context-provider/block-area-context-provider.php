@@ -60,7 +60,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 		if ( $query->is_front_page() ) {
 			return $query;
 		}
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return $query;
 		}
 		if ( $query->is_archive() && $query->is_category() && $query->is_main_query() ) {

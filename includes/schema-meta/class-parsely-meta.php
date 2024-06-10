@@ -143,7 +143,7 @@ class Parsely_Section extends Abstract_Indexable_Tag_Presenter {
 		$object_type = $this->presentation->model->object_type;
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id = $this->presentation->model->object_id;
-		return null !== $object_id && 'post' === $object_type ? yoast_get_primary_term( 'category', $object_id ) : '';
+		return null !== $object_id && 'post' === $object_type ? get_primary_term_id( 'category', $object_id ) : '';
 	}
 }
 

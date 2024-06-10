@@ -18,14 +18,13 @@ const { actions } = store('prc-platform/dataset-download', {
 					},
 				})
 				.then((response) => {
-					// If there's a file_url in the response, download it...
-					// ooooo that felt... bad to type
-					// should run a file check here? only pdfs and zips? not sure theres an attack vector here
 					if (response?.file_url) {
 						window.open(response.file_url, '_blank');
 					}
 				})
-				.catch((error) => {});
+				.catch((error) => {
+					console.error(error);
+				});
 		},
 		async checkATP(uid, token, datasetId, NONCE) {
 			const { ref } = getElement();

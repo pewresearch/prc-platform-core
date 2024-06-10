@@ -61,6 +61,7 @@ class Slack_Bot {
 				1
 			);
 
+			//@TODO: For some reason this doesnt seem to be firing with parent posts?
 			$loader->add_action( 'prc_platform_on_publish', $this, 'schedule_post_published_notification', 100 );
 		}
 	}

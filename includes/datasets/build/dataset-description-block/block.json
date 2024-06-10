@@ -6,41 +6,6 @@
   "title": "Dataset Description",
   "category": "theme",
   "description": "Displays the description for the dataset.",
-  "attributes": {},
-  "supports": {
-    "anchor": true,
-    "html": false,
-    "spacing": {
-      "blockGap": true,
-      "margin": true,
-      "padding": true,
-      "__experimentalDefaultControls": {
-        "padding": true,
-        "margin": true
-      }
-    },
-    "color": {
-      "text": true,
-      "background": true
-    },
-    "typography": {
-      "fontSize": true,
-      "lineHeight": true,
-      "__experimentalFontFamily": true,
-      "__experimentalFontWeight": true,
-      "__experimentalFontStyle": true,
-      "__experimentalTextTransform": true,
-      "__experimentalTextDecoration": true,
-      "__experimentalLetterSpacing": true,
-      "__experimentalDefaultControls": {
-        "fontSize": true,
-        "fontAppearance": true,
-        "textTransform": true,
-        "lineHeight": true
-      }
-    }
-  },
   "textdomain": "dataset-description",
-  "editorScript": "file:./index.js",
-  "render": "file:./render.php"
+  "editorScript": "file:./index.js"
 }

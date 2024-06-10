@@ -56,7 +56,7 @@ class Permalink_Rewrites {
 	 * @uses prc_platform_rewrite_rules
 	 */
 	public function register_rewrites() {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return;
 		}
 		$rewrite_rules = apply_filters( 'prc_platform_rewrite_rules', array() );
@@ -72,7 +72,7 @@ class Permalink_Rewrites {
 	 * @return void
 	 */
 	public function register_tags() {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return;
 		}
 		$rewrite_tags = apply_filters( 'prc_platform_rewrite_tags', array() );
@@ -89,7 +89,7 @@ class Permalink_Rewrites {
 	 * @return array $query_vars
 	 */
 	public function register_query_vars($query_vars) {
-		if ( get_current_blog_id() !== PRC_PRIMARY_SITE_ID ) {
+		if ( 1 === get_current_blog_id() ) {
 			return $query_vars;
 		}
 		$rewrite_query_vars = apply_filters( 'prc_platform_rewrite_query_vars', array() );
