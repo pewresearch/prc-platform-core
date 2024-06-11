@@ -5,6 +5,7 @@ use LogicException;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
+use WP_Term;
 
 class Features {
 	public static $post_type = 'feature';
@@ -760,6 +761,12 @@ class Features {
 				// get the primary research-team taxonomy term slug for this based on the $post_slug
 				$post = get_page_by_path( $post_slug, OBJECT, self::$post_type );
 				$primary_research_term = get_primary_term_id('research-teams', $post->ID);
+				$primary_research_term = get_term_by( 'id', $primary_research_term, 'research-teams' );
+				if ( $primary_research_term instanceof WP_Term ) {
+					$primary_research_term = $primary_research_term->slug;
+				} else {
+					$primary_research_term = '';
+				}
 				$primary_research_term = sanitize_title( $primary_research_term );
 				$url_prefix = $primary_research_term ? $primary_research_term . '/' : '';
 				add_rewrite_rule(

@@ -41,18 +41,20 @@ class WP_Admin {
 				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
 			}
 
+			// Actions
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
 			$loader->add_action( 'login_enqueue_scripts', $this, 'login_logo' );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_admin_bar', 100 );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_tools_menu', 101 );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_edit_menu', 102 );
-			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
 			$loader->add_action( 'admin_print_footer_scripts', $this, 'admin_footer' );
-			$loader->add_filter( 'disable_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
 			$loader->add_action( 'admin_menu', $this, 'modify_menu', 10 );
 			$loader->add_action( 'wp_dashboard_setup' , $this, 'remove_dashboard_widgets', 99 );
-			$loader->add_filter( 'multisite_enhancements_status_label', $this, 'multisite_enhancement_plugin_sites_label', 10, 2 );
 			$loader->add_action( 'init', $this, 'disable_emojis' );
+			// Filters
+			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
+			$loader->add_filter( 'disable_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
+			$loader->add_filter( 'multisite_enhancements_status_label', $this, 'multisite_enhancement_plugin_sites_label', 10, 2 );
 			$loader->add_filter( 'ppp_nonce_life', $this, 'define_public_post_preview_lifetime' ) ;
 			$loader->add_filter( 'the_excerpt', $this, 'remove_overview_from_excerpts' );
 			$loader->add_filter( 'update_footer', $this, 'output_platform_version_in_wp_admin', 100 );
