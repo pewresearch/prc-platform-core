@@ -20,6 +20,7 @@ class Research_Teams extends Taxonomies {
 		$loader->add_filter( 'post_link', $this, 'modify_post_permalinks', 10, 2 );
 		$loader->add_filter( 'post_type_link', $this, 'modify_post_permalinks', 10, 2 );
 		$loader->add_filter( 'rewrite_rules_array', $this, 'add_rewrite_rules', 10, 1 );
+		$loader->add_filter( 'facetwp_preload_url_vars', $this, 'rewrite_datasets_archives', 10, 1 );
 	}
 
 	/**
@@ -134,7 +135,7 @@ class Research_Teams extends Taxonomies {
 					$new_rules[$term_name . '/feature/[^/]+/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 					// $new_rules[$term_name . '/feature/([^/]+)/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 				} else if ( 'dataset' === $post_type ) {
-					$new_rules[$term_name . '/datasets'] = 'index.php?post_type=dataset&research-teams=' . $term_name;
+					$new_rules[$term_name . '/datasets'] = 'index.php?post_type=dataset';
 					$new_rules[$term_name . '/dataset/([^/]+)/?$'] = 'index.php?datasets=$matches[1]';
 					// Add attachment rule:
 					$new_rules[$term_name . '/dataset/[^/]+/([^/]+)/?$'] = 'index.php?attachment=$matches[1]';
@@ -142,6 +143,30 @@ class Research_Teams extends Taxonomies {
 			}
 		}
 		return array_merge($new_rules, $rules);
+	}
+
+	/**
+	 * Rewrites pewresearch.org/{research-team-name}/datasets to preload the selected facet
+	 * @hook facetwp_preload_url_vars
+	 */
+	public function rewrite_datasets_archives($url_vars) {
+		$current_url = FWP()->helper->get_uri();
+		if ( strpos( $current_url, 'datasets' ) === false ) {
+			return $url_vars;
+		}
+		$terms = get_terms(array(
+			'taxonomy' => self::$taxonomy,
+			'hide_empty' => false,
+		));
+		$term_names = array_map(function ($term) {
+			return $term->slug;
+		}, $terms);
+		foreach($term_names as $term_name) {
+			if ( strpos( $current_url, $term_name . '/datasets' ) !== false && empty( $url_vars['research_teams'] ) ){
+				$url_vars['research_teams'] = [ $term_name ];
+			}
+		}
+		return $url_vars;
 	}
 
 	/**
