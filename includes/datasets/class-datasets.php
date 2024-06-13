@@ -141,6 +141,7 @@ class Datasets {
 
 			$loader->add_filter( 'post_type_link', $this, 'modify_dataset_permalink', 20, 2 );
 			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
+			$loader->add_action('enqueue_block_editor_assets', $this, 'register_dataset_description_block');
 
 			$download_logger = new Datasets_Download_Logger();
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
@@ -543,16 +544,30 @@ class Datasets {
 		}
 	}
 
-	public function get_dataset_description_for_block_binding() {
-		$dataset_id = get_the_ID();
+	public function get_dataset_description_for_block_binding($source_args, $block, $attribute_name) {
+		// Don't run this for anything other than the paragraph block.
+		if ( 'core/paragraph' !== $block->name ) {
+			return;
+		}
 		if ( is_tax(self::$taxonomy_object_name) || is_singular(self::$post_object_name) ) {
 			$dataset_term_id = get_queried_object_id();
 			$dataset = \TDS\get_related_post($dataset_term_id, 'datasets');
 			$dataset_id = $dataset->ID;
+		} else {
+			$dataset_id = get_the_ID();
 		}
 		$dataset_content = get_post_field('post_content', $dataset_id);
 		$content = apply_filters('the_content', $dataset_content);
 		return $content;
+	}
+
+	public function register_dataset_description_block() {
+		// get the current directory...
+		$block_json_file = plugin_dir_path( __FILE__ ) . 'build/dataset-description-block/block.json';
+		$block_json = \wp_json_file_decode( $block_json_file, array( 'associative' => true ) );
+		$block_json['file'] = wp_normalize_path( realpath( $block_json_file ) );
+		$editor_script = register_block_script_handle( $block_json, 'editorScript' );
+		wp_enqueue_script( $editor_script );
 	}
 
 	public function block_init() {
@@ -564,7 +579,6 @@ class Datasets {
 			]
 		);
 		register_block_type( __DIR__ . '/build/dataset-atp-legal-acceptance-block' );
-		register_block_type( __DIR__ . '/build/dataset-description-block' );
 		register_block_type( __DIR__ . '/build/download-block' );
 	}
 }

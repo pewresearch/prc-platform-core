@@ -330,3 +330,44 @@ class Homepages {
 		) );
 	}
 }
+
+function get_latest_homepage_id() {
+	$query = new WP_Query( array(
+		'post_type' => Homepages::$post_type,
+		'posts_per_page' => 1,
+		'orderby' => 'date',
+		'order' => 'DESC',
+		'post_status' => 'publish',
+		'fields' => 'ids',
+	) );
+
+	if ( ! $query->have_posts() ) {
+		return false;
+	}
+
+	$homepage_id = $query->posts[0];
+
+	return $homepage_id;
+}
+
+function get_latest_homepage_title() {
+	$id = get_latest_homepage_id();
+	if ( ! $id ) {
+		return '';
+	}
+
+	return wp_sprintf(
+		'Homepage: %1$s',
+		get_the_date( 'm.d.Y', $id )
+	);
+}
+
+function get_latest_homepage_permalink() {
+	$id = get_latest_homepage_id();
+	if ( ! $id ) {
+		return '';
+	}
+
+	$permalink = get_permalink( $id );
+	return $permalink;
+}

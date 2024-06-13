@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "prc-platform/dataset-atp-legal-acceptance",
 	"version": "0.1.0",
-	"title": "Dataset Download",
+	"title": "Dataset ATP Legal Acceptance",
 	"category": "theme",
 	"description": "Provides an ATP Legal Acceptance form for users.",
 	"attributes": {

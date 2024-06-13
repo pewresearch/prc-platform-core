@@ -26,6 +26,9 @@ class Parsely_Title extends Abstract_Indexable_Tag_Presenter {
 		$object_type = $this->presentation->model->object_type;
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id = $this->presentation->model->object_id;
+		if ( is_front_page() ) {
+			return get_latest_homepage_title();
+		}
 		if ( 'post' === $object_type ) {
 			return get_the_title( $object_id );
 		} else if ( 'term' === $object_type ) {
@@ -51,7 +54,13 @@ class Parsely_Link extends Abstract_Indexable_Tag_Presenter {
      * @return string The value of our meta tag.
      */
     public function get() {
-        return $this->presentation->generate_canonical();
+			$object_type = $this->presentation->model->object_type;
+			$object_sub_type = $this->presentation->model->object_sub_type;
+			$object_id = $this->presentation->model->object_id;
+			if ( is_front_page() ) {
+				return get_latest_homepage_permalink();
+			}
+			return $this->presentation->generate_canonical();
     }
 }
 
@@ -73,16 +82,16 @@ class Parsely_Type extends Abstract_Indexable_Tag_Presenter {
      * @return string The value of our meta tag.
      */
     public function get() {
-		$object_type = $this->presentation->model->object_type;
-		$object_sub_type = $this->presentation->model->object_sub_type;
-		if ( 'post' === $object_type ) {
-			if ( 'page' === $object_sub_type ) {
+			$object_type = $this->presentation->model->object_type;
+			$object_sub_type = $this->presentation->model->object_sub_type;
+			if ( 'post' === $object_type ) {
+				if ( 'page' === $object_sub_type ) {
+					return 'page';
+				}
+				return 'post';
+			} else if ( 'term' === $object_type ) {
 				return 'page';
 			}
-			return 'post';
-		} else if ( 'term' === $object_type ) {
-			return 'page';
-		}
     }
 }
 
@@ -168,6 +177,9 @@ class Parsely_Pub_Date extends Abstract_Indexable_Tag_Presenter {
 		$object_type = $this->presentation->model->object_type;
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id = $this->presentation->model->object_id;
+		if ( is_front_page() ) {
+			$object_id = get_latest_homepage_id();
+		}
 		if ( 'post' === $object_type ) {
 			return get_the_date( 'c', $object_id );
 		}
