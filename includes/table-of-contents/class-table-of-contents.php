@@ -385,7 +385,7 @@ class Table_Of_Contents {
 			'methods' => 'POST',
 			'callback' => array($this, 'restfully_regenerate_toc'),
 			'args' => array(
-				'postId' => array(
+				'post_id' => array(
 					'required' => true,
 					'type' => 'integer',
 				),
@@ -398,7 +398,7 @@ class Table_Of_Contents {
 	}
 
 	public function restfully_regenerate_toc(\WP_REST_Request $request) {
-		$post_id = $request->get_param('postId');
+		$post_id = $request->get_param('post_id');
 		if ( empty($post_id) ) {
 			return new WP_Error('400', 'Missing post_id parameter.');
 		}

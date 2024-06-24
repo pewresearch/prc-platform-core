@@ -103,16 +103,7 @@ function log_error($error) {
 		'code' => $code,
 	], true));
 
-	if ( function_exists( 'wp_sentry_safe' ) ) {
-		wp_sentry_safe( function ( \Sentry\State\HubInterface $client ) use ( $error, $message, $code ) {
-			// If the original error was an exception pass it along, otherwise let's create a new one with the message and code (if set)
-			if ( $error instanceof \Exception ) {
-				$client->captureException($error);
-			} else {
-				$client->captureMessage($message, \Sentry\Severity::error() );
-			}
-		} );
-	} elseif ( extension_loaded('newrelic') && function_exists('newrelic_notice_error') ) {
+	if ( extension_loaded('newrelic') && function_exists('newrelic_notice_error') ) {
 		// If the original error was an exception pass it along, otherwise let's create a new one with the message and code (if set)
 		if ( $error instanceof \Throwable ) {
 			\newrelic_notice_error($error);

@@ -6,7 +6,7 @@ import { addQueryArgs } from '@wordpress/url';
 
 export default function regenerateToc(postId) {
 	const path = addQueryArgs('/prc-api/v3/report-package/regenerate-toc', {
-		postId,
+		post_id: postId,
 	});
 	return new Promise((resolve, reject) => {
 		apiFetch({

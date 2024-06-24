@@ -143,7 +143,8 @@ class Embeds {
 	}
 
 	/**
-	 * This is being served on THEIR pages, outside the iframe. We copy this script src in the embed code on our pages.
+	 * This is being served on THEIR pages, outside the iframe.
+	 * We copy this script src in the embed code on our pages.
 	 * @return WP_Error|true
 	 */
 	public function register_resizer_asset() {
@@ -167,7 +168,7 @@ class Embeds {
 	}
 
 	/**
-	 * This is being served on our pages, inside an /iframe.
+	 * This is being served on our pages, inside of an /iframe.
 	 * @return WP_Error|true
 	 */
 	public function register_resizer_window_asset() {
