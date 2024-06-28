@@ -81,7 +81,7 @@ function useProvideAttachments() {
 		if ('number' === typeof postId && false === processing) {
 			toggleProcessing(true);
 			apiFetch({
-				path: `/prc-api/v3/attachments-panel/?postId=${postId}`,
+				path: `/prc-api/v3/attachments-panel/get/${postId}`,
 			}).then((data) => {
 				console.log(
 					'Objects found in attachments rest request...',

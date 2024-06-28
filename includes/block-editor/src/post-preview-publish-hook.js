@@ -30,6 +30,16 @@ const actions = {
 			end: [],
 		},
 	},
+	'mini-course': {
+		preview: {
+			start: [regenerateToc],
+			end: [],
+		},
+		publish: {
+			start: [regenerateToc],
+			end: [],
+		},
+	},
 };
 
 function startPreview(postId, postType) {

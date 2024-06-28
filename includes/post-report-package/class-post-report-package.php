@@ -669,6 +669,7 @@ class Post_Report_Package {
 		if ( !in_array(get_post_type( $post_id ), [
 			'post',
 			'fact-sheet',
+			'mini-course',
 		]) ) {
 			return $results;
 		}
@@ -844,6 +845,7 @@ class Post_Report_Package {
 
 	/**
 	 * @hook prc_api_endpoints
+	 * @TODO move this into table of contents class in prc platform.
 	 */
 	public function register_rest_endpoint($endpoints) {
 		$endpoint = array(
@@ -851,7 +853,7 @@ class Post_Report_Package {
 			'methods' => 'POST',
 			'callback' => array($this, 'restfully_regenerate_toc'),
 			'args' => array(
-				'postId' => array(
+				'post_id' => array(
 					'required' => true,
 					'type' => 'integer',
 				),
@@ -864,7 +866,7 @@ class Post_Report_Package {
 	}
 
 	public function restfully_regenerate_toc(\WP_REST_Request $request) {
-		$post_id = $request->get_param('postId');
+		$post_id = $request->get_param('post_id');
 		if ( empty($post_id) ) {
 			return new WP_Error('400', 'Missing post_id parameter.');
 		}

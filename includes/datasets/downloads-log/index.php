@@ -11,7 +11,7 @@ class Datasets_Download_Logger extends Datasets {
 	public function __construct() {
 
 	}
-	
+
 	/**
 	 * Register meta for the dataset download logger.
 	 * @hook init
@@ -44,7 +44,7 @@ class Datasets_Download_Logger extends Datasets {
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'restfully_log_download' ),
 			'args'                => array(
-				'datesetId' => array(
+				'dataset_id' => array(
 					'required' => true,
 					'type' => 'integer'
 				),
@@ -117,7 +117,7 @@ class Datasets_Download_Logger extends Datasets {
 		}
 		$uid = $data['uid'];
 
-		$id = $request->get_param( 'datesetId' );
+		$id = $request->get_param( 'dataset_id' );
 		if ( ! $id ) {
 			return new WP_Error( 'no_dataset_id', 'No dataset ID provided.', array( 'status' => 400 ) );
 		}

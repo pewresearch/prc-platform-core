@@ -3,6 +3,8 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Post_Visibility {
+	public static $meta_key = '_postVisibility';
+	public static $taxonomy = 'post_visibility';
 	public static $enabled_post_types = array(
 		'post',
 		'short-read',

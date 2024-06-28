@@ -124,22 +124,17 @@ class Attachment_Report {
 	 */
 	public function register_endpoint($endpoints) {
 		array_push($endpoints, array(
-			'route' => '/attachments-report/get',
+			'route' => '/attachments-report/get/(?P<post_id>\d+)',
 			'methods'  => 'GET',
 			'callback' => array( $this, 'get_attachments_restfully' ),
 			'args'                => array(
-				'postId' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						return is_string( $param );
-					},
-				),
-				'mimeType' => array(
+				'mime_type' => array(
 					'validate_callback' => function( $param, $request, $key ) {
 						return is_string( $param );
 					},
 					'default' => 'all',
 				),
-				'includeChildren' => array(
+				'include_children' => array(
 					'validate_callback' => function( $param, $request, $key ) {
 						return is_bool( $param);
 					},
@@ -193,9 +188,9 @@ class Attachment_Report {
 	 * @return void
 	 */
 	public function get_attachments_restfully( WP_REST_Request $request ) {
-		$post_id = $request->get_param( 'postId' );
-		$mime_type = $request->get_param( 'mimeType' );
-		$include_children = $request->get_param( 'includeChildren' );
+		$post_id = $request->get_param( 'post_id' );
+		$mime_type = $request->get_param( 'mime_type' );
+		$include_children = $request->get_param( 'include_children' );
 
 		$post_id = (int) $post_id;
 		// Is this a parent post or child post, if so change the post_id to the parent post.

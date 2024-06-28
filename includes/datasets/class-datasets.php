@@ -258,6 +258,7 @@ class Datasets {
 
 	/**
 	 * Registers the download endpoint. Checks the nonce against user credentials and
+	 * @hook prc_api_endpoints
 	 * @return void
 	 */
 	public function register_dataset_endpoints($endpoints) {
@@ -265,7 +266,7 @@ class Datasets {
 			'route' 		      => 'datasets/get-download',
 			'methods'             => 'POST',
 			'args'                => array(
-				'datasetId' => array(
+				'dataset_id' => array(
 					'required' => true,
 					'type' => 'integer'
 				),
@@ -316,7 +317,7 @@ class Datasets {
 		}
 		$uid = $data['uid'];
 
-		$id = $request->get_param( 'datasetId' );
+		$id = $request->get_param( 'dataset_id' );
 		if ( ! $id ) {
 			return new WP_Error( 'no_id', 'No dataset ID provided.', array( 'status' => 400 ) );
 		}

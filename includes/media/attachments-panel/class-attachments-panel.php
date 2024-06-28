@@ -81,18 +81,14 @@ class Attachments_Panel {
 		}
 	}
 
+	/**
+	 * @hook prc_api_endpoints
+	 */
 	public function register_endpoint($endpoints) {
 		array_push($endpoints, array(
-			'route' => '/attachments-panel',
+			'route' => '/attachments-panel/get/(?P<post_id>\d+)',
 			'methods'  => 'GET',
 			'callback' => array( $this, 'get_attachments_restfully' ),
-			'args'                => array(
-				'postId' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						return is_string( $param );
-					},
-				),
-			),
 			'permission_callback' => function () {
 				return current_user_can( 'edit_posts' );
 			},
@@ -101,7 +97,7 @@ class Attachments_Panel {
 	}
 
 	public function get_attachments_restfully( $request ) {
-		$post_id = $request->get_param( 'postId' );
+		$post_id = $request->get_param( 'post_id' );
 		return $this->get_attachments_by_post_id( $post_id );
 	}
 

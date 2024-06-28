@@ -187,11 +187,11 @@ class Features {
 		);
 
 		$get_data = array(
-			'route' => 'feature/get-data/(?P<attachmentId>\d+)',
+			'route' => 'feature/get-data/(?P<attachment_id>\d+)',
 			'methods' => 'GET',
 			'callback' => array( $this, 'get_data_restfully' ),
 			'args' => array(
-				'asString' => array(
+				'as_string' => array(
 					'default' => false,
 					'type' => 'boolean',
 				),
@@ -211,8 +211,8 @@ class Features {
 	 * @return mixed WP_Error|WP_REST_Response|string
 	 */
 	public function get_data_restfully( \WP_REST_Request $request ) {
-		$attachment_id = $request->get_param('attachmentId');
-		$return_as_string = $request->get_param('asString');
+		$attachment_id = $request->get_param('attachment_id');
+		$return_as_string = $request->get_param('as_string');
 		$data = null;
 		$file_type = null;
 		if ( $attachment_id ) {

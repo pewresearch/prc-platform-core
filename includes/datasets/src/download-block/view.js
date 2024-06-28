@@ -9,7 +9,7 @@ const { actions } = store('prc-platform/dataset-download', {
 		downloadDataset: (datasetId, uid, token, NONCE) => {
 			window?.wp
 				?.apiFetch({
-					path: `/prc-api/v3/datasets/get-download/?datasetId=${datasetId}`,
+					path: `/prc-api/v3/datasets/get-download/?dataset_id=${datasetId}`,
 					method: 'POST',
 					data: {
 						uid,

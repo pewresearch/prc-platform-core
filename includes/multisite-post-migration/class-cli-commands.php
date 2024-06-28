@@ -128,6 +128,112 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			$this->end_bulk_operation();
 		}
 
+		/**
+		 * Follow up cleanup
+		 *
+		 * @subcommand remove_bylines_from_posts
+		 * @synopsis --byline-to-remove=<byline-to-remove> --post-type=<post-type> [--dry-run]
+		 */
+		public function remove_bylines_from_posts( $args, $assoc_args ) {
+			$byline_to_remove = $assoc_args['byline-to-remove'];
+			$post_type = $assoc_args['post-type'];
+
+			$byline_to_remove_term = get_term_by('slug', $byline_to_remove, 'bylines');
+
+			// If --dry-run is not set, then it will default to true. Must set --dry-run explicitly to false to run this command.
+			if ( isset( $assoc_args['dry-run'] ) ) {
+				// Passing `--dry-run=false` to the command leads to the `false` value being set to string `'false'`, but casting `'false'` to bool produces `true`. Thus the special handling.
+				if ( 'false' === $assoc_args['dry-run'] ) {
+					$dry_run = false;
+				} else {
+					$dry_run = (bool) $assoc_args['dry-run'];
+				}
+			} else {
+				$dry_run = true;
+			}
+
+			if ( $dry_run ) {
+				WP_CLI::line( '🛟 Running in dry-run mode, callback is disarmed.' );
+			} else {
+				WP_CLI::line( '☠️ Callback armed and ready' );
+			}
+
+			// Disable term counting, Elasticsearch indexing, and PushPress.
+			$this->start_bulk_operation();
+
+			$posts_per_page = 200;
+			$count = 0; // We'll use this to count the number of posts we've migrated as we go.
+			$paged = 1;
+
+			do {
+				// get all objects that have the duplicate byline and assign them to the canonical byline
+				$query_args = array(
+					'posts_per_page'   => $posts_per_page,
+					'paged'            => $paged,
+					'post_type'        => $post_type,
+					'post_status'      => array('publish', 'public', 'hidden_from_search', 'hidden_from_index'),
+					'tax_query'        => array(
+						array(
+							'taxonomy' => 'bylines',
+							'field'    => 'slug',
+							'terms'    => $byline_to_remove,
+						),
+					),
+				);
+
+				$posts = get_posts($query_args);
+
+				foreach ( $posts as $post ) {
+					// count the number of posts we've migrated as we go.
+					$count++;
+
+					$bylines = get_post_meta( $post->ID, 'bylines', true );
+
+					// Remove the byline from the bylines array
+					if ( is_array( $bylines ) ) {
+						$bylines = array_filter( $bylines, function( $byline ) use ( $byline_to_remove_term ) {
+							return $byline['termId'] !== $byline_to_remove_term->term_id;
+						} );
+					}
+
+					WP_CLI::line( '🔧 Removing byline from: ' . $post->ID . '::' . $post->post_name );
+					WP_CLI::line( '🔧 Updating bylines in post meta: ' . print_r($bylines, true) );
+
+					if ( ! $dry_run ) {
+						// Remove the byline
+						wp_remove_object_terms( $post->ID, $byline_to_remove, 'bylines' );
+						// Update the bylines in post meta
+						update_post_meta( $post->ID, 'bylines', $bylines );
+					}
+				}
+
+				// Free up memory.
+				$this->vip_inmemory_cleanup();
+
+				// Pause.
+				WP_CLI::line('😴💤 sleeping for 5 seconds...');
+				sleep( 5 );
+
+				$paged++;
+			} while ( count( $posts ) );
+
+			if ( false === $dry_run ) {
+				WP_CLI::success( sprintf(
+					'🧼 %s objects are currently being cleaned.',
+					WP_CLI::colorize( '%G'.$count.'%n' ),
+				) );
+			} else {
+				WP_CLI::success( sprintf(
+					'🧼 Dry run complete. %s objects were not cleaned at this time as the safety is still engaged, run with %s to turn off trigger safety.',
+					WP_CLI::colorize( '%G'.$count.'%n' ),
+					WP_CLI::colorize( '%R--dry-run=false%n' ),
+				) );
+			}
+
+			// Trigger a term count as well as trigger bulk indexing of Elasticsearch site.
+			$this->end_bulk_operation();
+		}
+
 
 		/**
 		 * Follow up cleanup
@@ -538,6 +644,52 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 
 			$this->update_attachment_links_in_post($post_id);
+		}
+
+		/**
+		 * Cleanse the DB
+		 * This command is destructive of junk data, as such it is not reversible and also does not have a dry-run trigger safety.
+		 * @subcommand cleanse-db [--operation]
+		 */
+		public function cleanse_db($args, $assoc_args) {
+			if ( !isset($assoc_args['operation'] ) ) {
+				WP_CLI::error( 'Must have --operation defined.');
+			}
+			global $wpdb;
+			$operation = $assoc_args['operation'];
+			if ( 'DROP' === $operation ) {
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_2_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_3_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_4_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_5_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_6_%`;'));
+				// Don't touch rls, wp_7_...
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_8_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_9_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_10_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_16_%`;'));
+				// Dont touch dev-docs, wp_17_...
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_18_%`;'));
+				$wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS `wp_19_%`;'));
+				// Dont touch live site and producers, wp_20_ and wp_21_.
+				// Drop old Gravity Forms table
+				$wpdb->query($wpdb->prepare('DROP TABLE `wp_rg_zapier`;'));
+			} elseif ( 'TRUNCATE' === $operation ) {
+				// Truncate and clean these tables, don't drop them.
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_17_actionscheduler_logs`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_17_actionscheduler_actions`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_postmeta`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_facetwp_index`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_yoast_seo_links`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_posts`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_yoast_indexable_hierarchy`'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_yoast_indexable`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_yoast_primary_term`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_termmeta`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_terms`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_term_relationships`;'));
+				$wpdb->query($wpdb->prepare('TRUNCATE `wp_term_taxonomy`;'));
+			}
 		}
 
 	}

@@ -215,14 +215,13 @@ class Art_Direction {
 		foreach ( $this->enabled_post_types as $post_type ) {
 			register_rest_field(
 				$post_type,
-				'artDirection',
+				'art_direction',
 				array(
 					'schema'       => null,
 					'get_callback' => array( $this, 'get_art_for_api' ),
 					'auth_callback' => function() {
 						return current_user_can('read');
 					},
-					// 'update_callback' => null,
 				)
 			);
 		}
@@ -236,16 +235,9 @@ class Art_Direction {
 	 */
 	public function register_endpoint($endpoints) {
 		array_push($endpoints, array(
-			'route' => '/art-direction/get',
+			'route' => '/art-direction/get/(?P<post_id>\d+)',
 			'methods' => 'GET',
 			'callback' => array( $this, 'restfully_get_art' ),
-			'args' => array(
-				'postId' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						return is_string( $param );
-					},
-				),
-			),
 			'permission_callback' => function () {
 				return true;
 			},
@@ -254,7 +246,7 @@ class Art_Direction {
 	}
 
 	public function restfully_get_art( WP_REST_Request $request ) {
-		$post_id = $request->get_param( 'postId' );
+		$post_id = $request->get_param( 'post_id' );
 		$data = $this->get_art( (int) $post_id );
 		return $data;
 	}

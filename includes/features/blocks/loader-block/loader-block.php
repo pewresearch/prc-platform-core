@@ -182,7 +182,7 @@ class Loader_Block extends Features {
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'restfully_get_referenced_embeds' ),
 			'args'                => array(
-				'postId' => array(
+				'post_id' => array(
 					'validate_callback' => function( $param, $request, $key ) {
 						return is_string( $param );
 					},
@@ -359,7 +359,7 @@ class Loader_Block extends Features {
 	}
 
 	public function restfully_get_referenced_embeds(\WP_REST_Request $request) {
-		$post_id = $request->get_param('postId');
+		$post_id = $request->get_param('post_id');
 		$referenced_embeds = $this->get_referenced_feature_embeds_legacy_pairs($post_id);
 		return rest_ensure_response($referenced_embeds);
 	}

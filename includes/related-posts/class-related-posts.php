@@ -6,7 +6,7 @@ class Related_Posts {
 	public static $cache_key = 'relatedPosts';
 	public static $cache_time = 1 * HOUR_IN_SECONDS;
 	protected static $enabled_post_types = array( 'post', 'short-read', 'decoded' );
-	public static $meta_key = 'relatedPosts';
+	public static $meta_key = 'relatedPosts'; // related_posts
 	public static $schema_properties = array(
 		'date' 	   => array(
 			'type' => 'string',
