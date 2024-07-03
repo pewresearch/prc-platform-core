@@ -3,6 +3,8 @@
  */
 import domReady from '@wordpress/dom-ready';
 
+import './style.scss';
+
 domReady(() => {
 	// Fix figure in figure image migration issue:
 	document.querySelectorAll('figure').forEach((figure) => {

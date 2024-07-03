@@ -39,6 +39,7 @@ class Multisite_Post_Migration {
 			$loader->add_action('init', $this, 'register_fallback_meta');
 			$loader->add_action('rest_api_init', $this, 'register_endpoint');
 			$loader->add_action('init', $this, 'register_primary_term_metas');
+			$loader->add_filter('body_class', $this, 'legacy_fixes_post_classname', 10, 2);
 		}
 	}
 
@@ -62,6 +63,7 @@ class Multisite_Post_Migration {
 	public function register_legacy_fixes_assets() {
 		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/legacy-frontend-fixes/index.asset.php' );
 		$asset_slug = 'prc-platform-multisite-post-migration__image-fixes';
+
 		$script_src  = plugin_dir_url( __FILE__ ) . 'build/legacy-frontend-fixes/index.js';
 		$script = wp_register_script(
 			$asset_slug,
@@ -70,12 +72,36 @@ class Multisite_Post_Migration {
 			$asset_file['version'],
 			true
 		);
-		if ( ! $script ) {
+
+		$style_src  = plugin_dir_url( __FILE__ ) . 'build/legacy-frontend-fixes/style-index.css';
+		$style = wp_register_style(
+			$asset_slug,
+			$style_src,
+			[],
+			$asset_file['version'],
+		);
+
+		if ( ! $script && ! $style ) {
 			return new WP_Error( self::$handle, 'Failed to register all assets' );
 		}
+
 		return true;
 	}
 
+	/**
+	 * @hook post_class
+	 */
+	public function legacy_fixes_post_classname($classes, $css_classes) {
+		if ( !is_singular(['post', 'short-read']) ) {
+			return $classes;
+		}
+		$post_id = get_the_ID();
+		$post_date = get_the_date('Y-m-d', $post_id);
+		if ( strtotime($post_date) < strtotime('2021-01-01') ) {
+			$classes[] = 'prc-legacy-post';
+		}
+		return $classes;
+	}
 
 	public function enqueue_assets() {
 		global $current_screen;
@@ -95,14 +121,16 @@ class Multisite_Post_Migration {
 	public function enqueue_legacy_fixers_on_legacy_posts() {
 		// get the date of this post
 		// if the date is before the first block post date of jan 1 2020 then we need to enqueue the fixers
-		if ( ! is_singular() && !is_admin() ) {
+		if ( ! is_singular() ) {
 			return;
 		}
-		$post_date = get_the_date('Y-m-d');
+		$post_id= get_the_ID();
+		$post_date = get_the_date('Y-m-d', $post_id);
 		if ( strtotime($post_date) < strtotime('2021-01-01') ) {
 			$registered = $this->register_legacy_fixes_assets();
 			if ( !is_wp_error($registered) ) {
 				wp_enqueue_script('prc-platform-multisite-post-migration__image-fixes');
+				wp_enqueue_style('prc-platform-multisite-post-migration__image-fixes');
 			}
 		}
 	}
