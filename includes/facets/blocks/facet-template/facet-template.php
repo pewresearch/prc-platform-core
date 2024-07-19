@@ -226,6 +226,11 @@ class Facet_Template {
 		);
 	}
 
+	public function render_search_facet($facet, $inner_blocks) {
+		do_action('qm/debug', print_r($facet, true));
+		return '<p>Search Facet Here</p>';
+	}
+
 	public function render_block_callback($attributes, $content, $block) {
 		$facets = $block->context['facetsContextProvider']['data']['facets'];
 		if ( empty($facets) ) {
@@ -245,6 +250,8 @@ class Facet_Template {
 			$date_range_facet = $this->render_date_range_facet($facet, $block->parsed_block['innerBlocks']);
 			$new_content .= $date_range_facet['minimum'];
 			$new_content .= $date_range_facet['maximum'];
+		} elseif( in_array($facet_type, ['search'] ) ) {
+			$new_content .= $this->render_search_facet($facet, $block->parsed_block['innerBlocks']);
 		} else {
 			$checkbox_facet = $this->render_checkbox_radio_facet($facet, $block->parsed_block['innerBlocks']);
 			$new_content .= $checkbox_facet['content'];

@@ -48,6 +48,13 @@ export default function Edit({
 	});
 
 	const templateContexts = useMemo(() => {
+		if ('search' === facetType) {
+			return [
+				{
+					label: 'Search',
+				},
+			];
+		}
 		if (['dropdown', 'yearly', 'date_range'].includes(facetType)) {
 			return [
 				{
@@ -86,6 +93,7 @@ export default function Edit({
 						allowedBlocks: [
 							'prc-block/form-input-checkbox',
 							'prc-block/form-input-select',
+							'prc-block/form-input-text',
 						],
 						blockContexts: templateContexts,
 						isResolving: false,

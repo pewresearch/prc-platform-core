@@ -1,0 +1,25 @@
+{
+	"name": "@pewresearch/prc-platform-firebase",
+	"description": "Google Firebase functionality for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^28.2.0",
+		"@wordpress/dependency-extraction-webpack-plugin": "^6.2.0",
+		"@wordpress/readable-js-assets-webpack-plugin": "^3.2.0",
+		"copy-webpack-plugin": "^12.0.2",
+		"cssnano": "^7.0.4",
+		"es-module-shims": "^1.10.0",
+		"postcss": "^8.4.39",
+		"terser-webpack-plugin": "^5.3.10",
+		"webpack": "^5.92.1",
+		"webpack-bundle-analyzer": "^4.10.2"
+	},
+	"dependencies": {
+		"firebase": "^10.12.3"
+	},
+	"module": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=./build",
+		"start": "wp-scripts start index.js --output-path=./build"
+	}
+}

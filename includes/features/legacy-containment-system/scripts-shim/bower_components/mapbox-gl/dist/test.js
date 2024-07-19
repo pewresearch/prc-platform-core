@@ -1,3 +1,0 @@
-var mapboxgl = {
-    test: 'successful'
-};

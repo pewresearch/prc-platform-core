@@ -128,10 +128,10 @@ class Platform_Bootstrap {
 		$this->include('housekeeping/class-housekeeping.php');
 		$this->include('icon-loader/class-icon-loader.php');
 		$this->include('features/class-features.php');
+		$this->include('firebase/class-firebase.php');
 		$this->include('jetpack/class-jetpack.php');
 		$this->include('mailchimp/class-mailchimp.php');
 		$this->include('media/class-media.php');
-		$this->include('multisite-post-migration/class-multisite-post-migration.php');
 		$this->include('newrelic/class-newrelic.php');
 		$this->include('newsletter/class-newsletter.php');
 		$this->include('permalink-rewrites/class-permalink-rewrites.php');
@@ -180,6 +180,7 @@ class Platform_Bootstrap {
 		new Housekeeping( $this->get_version(), $this->get_loader() );
 		new Icon_Loader( $this->get_version(), $this->get_loader() );
 		new Features( $this->get_version(), $this->get_loader() );
+		new Firebase( $this->get_version(), $this->get_loader() );
 		new Jetpack( $this->get_version(), $this->get_loader() );
 		new Mailchimp( $this->get_version(), $this->get_loader() );
 		new Media( $this->get_version(), $this->get_loader() );
@@ -190,7 +191,6 @@ class Platform_Bootstrap {
 				add_post_type_support( 'page', 'custom-fields' );
 			}
 		);
-		new Multisite_Post_Migration( $this->get_version(), $this->get_loader() );
 		new Newrelic( $this->get_version(), $this->get_loader() );
 		new Newsletter( $this->get_version(), $this->get_loader() );
 		new Permalink_Rewrites( $this->version, $this->get_loader() );

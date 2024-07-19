@@ -19,6 +19,8 @@ class WP_Admin {
 
 	public static $handle = 'prc-platform-wp-admin';
 
+	public static $public_post_preview_lifetime = 1209600; // 14 days in seconds
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -35,6 +37,7 @@ class WP_Admin {
 	public function init($loader = null) {
 		if (null !== $loader) {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
+
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
 			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
 			if ( defined('PRC_PLATFORM_TESTING_MODE') && true === PRC_PLATFORM_TESTING_MODE ) {
@@ -400,7 +403,7 @@ class WP_Admin {
 	}
 
 	/**
-	 * This is a serious place no emojis here.
+	 * This is a serious place, no emojis here.
 	 * @hook init
 	 * @return void
 	 */
@@ -433,7 +436,7 @@ class WP_Admin {
 	 * @return int|float
 	 */
 	public function define_public_post_preview_lifetime() {
-		return 14 * DAY_IN_SECONDS;
+		return self::$public_post_preview_lifetime;
 	}
 
 	/**

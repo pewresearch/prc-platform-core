@@ -1,6 +1,7 @@
 <?php
 namespace PRC\Platform;
 
+use Error;
 use WP_Query;
 use WP_Error;
 use TDS;
@@ -176,7 +177,7 @@ class Staff_Bylines {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-
+		require_once plugin_dir_path( __FILE__ ) . 'class-cli-command-guest-author.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';
 		require_once plugin_dir_path( __FILE__ ) . 'staff-info-panel/index.php';
@@ -210,7 +211,11 @@ class Staff_Bylines {
 			$loader->add_action( 'enqueue_block_editor_assets', $staff_info_panel, 'enqueue_assets' );
 			$loader->add_action( 'enqueue_block_editor_assets', $bylines_acknowledgements_panel, 'enqueue_assets' );
 
-			$loader->add_filter('pre_get_posts', $this, 'filter_pre_get_posts', 10, 1);
+			$loader->add_filter( 'pre_get_posts', $this, 'filter_pre_get_posts', 10, 1 );
+
+			$loader->add_filter( 'tds_balancing_from_term', $this, 'override_term_data_store_for_guests', 10, 4 );
+
+			$loader->add_action( 'prc_platform_on_publish', $this, 'enforce_maelestrom', 100, 1 );
 		}
 	}
 
@@ -227,6 +232,20 @@ class Staff_Bylines {
 		TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 
 		$this->register_meta_fields();
+	}
+
+	/**
+	 * Override the term data store for guests, don't try to update it or manage it in the term data store.
+	 * @hook tds_balancing_from_term
+	 */
+	public function override_term_data_store_for_guests($allow, $taxonomy, $post_type, $term_id) {
+		if ( self::$taxonomy_object_name === $taxonomy ) {
+			$term_meta = get_term_meta($term_id, 'is_guest_author', true);
+			if ( $term_meta ) {
+				return true;
+			}
+		}
+		return $allow;
 	}
 
 	public function enable_gutenberg_ramp($post_types) {
@@ -313,7 +332,6 @@ class Staff_Bylines {
 	}
 
 	public function register_meta_fields() {
-		// Register staff meta.
 		register_post_meta(
 			self::$post_object_name,
 			'jobTitle',
@@ -354,6 +372,27 @@ class Staff_Bylines {
 				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
 					//@TODO We should check for producers and up...
+				},
+			)
+		);
+
+		/**
+		 * MAELSTROM
+		 * This is a misnomer!!! As this field is publicly accessible we want to obfuscate what this is for. This is the "safety net" for staff members, this will allow us to hide staff members from certain posts based on that post's region and country taxonomy terms. This is a safety net for staff members and their families back home to ensure they are not targeted by bad actors by working on posts that are sensitive to their home country.
+		 */
+		register_post_meta(
+			self::$post_object_name,
+			'_maelstrom',
+			array(
+				'description'   => '',
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'array',
+				'default'       => [
+					'enabled' => false,
+				],
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
 				},
 			)
 		);
@@ -604,6 +643,45 @@ class Staff_Bylines {
         return $data;
     }
 
+	private function is_byline_protected_by_maelstrom($byline_term_id) {
+		$staff_post_id = get_term_meta($byline_term_id, 'tds_post_id', true);
+		if ( empty($staff_post_id) || false === $staff_post_id ) {
+			return false;
+		}
+		$maelstrom = get_post_meta($staff_post_id, '_maelstrom', true);
+		if ( !is_array($maelstrom) ) {
+			$maelstrom = array(
+				'enabled' => false,
+			);
+		}
+		return $maelstrom;
+	}
+
+	/**
+	 * @hook prc_platform_on_publish
+	 */
+	public function enforce_maelestrom($post) {
+		// Does this post have any bylines?
+		$bylines = get_post_meta( $post->ID, 'bylines', true );
+		if ( !is_array($bylines) ) {
+			return;
+		}
+
+		// Determine if there are any maestrom enabled bylines.
+		$maelstrom_bylines = array_filter($bylines, function($byline) {
+			$maelstrom = $this->is_byline_protected_by_maelstrom($byline['termId']);
+			return $maelstrom['enabled'];
+		});
+
+		// If there are any maelstrom bylines, remove them from the bylines array.
+		if ( !empty($maelstrom_bylines) ) {
+			$bylines = array_filter($bylines, function($byline) use ($maelstrom_bylines) {
+				return !in_array($byline, $maelstrom_bylines);
+			});
+			update_post_meta($post->ID, 'bylines', $bylines);
+		}
+	}
+
 	/**
 	 * Sets byline archives to only show posts with the current byline.
 	 * @hook pre_get_posts
@@ -613,6 +691,8 @@ class Staff_Bylines {
 	public function filter_pre_get_posts($query) {
 		if ( true === $query->get('isPubListingQuery') && $query->is_tax( self::$taxonomy_object_name ) ) {
 			$current_term_slug = $query->get_queried_object()->slug;
+			// check if current_term_slug has maelstrom enabled and if so we need to filter out the regions and countries that are not allowed, an additional precaution.
+
 			// Lets do a quick sanity check and make sure we have a tax_query array, if not we'll set the correct type, if so we'll set the relationship to be AND
 			$tax_query = $query->get('tax_query');
 			if ( !is_array($tax_query) ) {

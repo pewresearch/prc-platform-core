@@ -11,6 +11,8 @@ class Bitly {
 	 */
 	private $version;
 
+	public $env_type;
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -25,8 +27,10 @@ class Bitly {
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
+			$this->env_type = wp_get_environment_type();
 			$loader->add_action( 'wp_head', $this, 'flush_shortlink' );
-			$loader->add_action( 'prc_platform_on_publish', $this, 'update_post_with_shortlink', 10, 1 );
+			$loader->add_action( 'prc_platform_on_publish', $this, 'update_post_with_shortlink', 100, 1 );
+			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'update_post_with_shortlink', 100, 1 );
 			$loader->add_action( 'admin_bar_menu', $this, 'add_quick_edit', 100 );
 			$loader->add_filter( 'get_shortlink', $this, 'filter_get_shortlink', 100, 2 );
 			$loader->add_action( 'init', $this, 'register_meta' );
@@ -38,9 +42,9 @@ class Bitly {
 	}
 
 	private function get_bitly_shortlink( $post_id, $url = null ) {
-		// if ( 'production' !== wp_get_environment_type() ) {
-		// 	return $url;
-		// }
+		if ( 'production' !== $this->env_type ) {
+			return $url;
+		}
 		$rest_url = 'https://api-ssl.bitly.com/v4/shorten';
 
 		$headers = array(
@@ -67,7 +71,7 @@ class Bitly {
 		$response = wp_remote_post( $rest_url, $req_args );
 
 		if ( WP_DEBUG ) {
-			error_log( 'BITLY:: '. print_r( $response, true ) );
+			log_error(print_r( $response, true ));
 		}
 
 		if ( ! is_wp_error( $response ) ) {
@@ -98,6 +102,7 @@ class Bitly {
 	 * @return [type]          [description]
 	 */
 	public function update_post_with_shortlink( $post ) {
+		log_error('update_post_with_shortlink()');
 		if ( is_int( $post ) ) {
 			$post_id = $post;
 		} elseif ( is_object( $post ) && property_exists( $post, 'ID' ) ) {
@@ -127,9 +132,9 @@ class Bitly {
 
 		$permalink = get_permalink( $post_id );
 
-		// if ( 'production' !== wp_get_environment_type() ) {
-		// 	return $permalink;
-		// }
+		if ( 'production' !== $this->env_type ) {
+			return $permalink;
+		}
 
 		$bitly_url = $this->get_bitly_shortlink( $post_id, $permalink );
 		if ( false !== $bitly_url ) {

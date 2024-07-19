@@ -59,7 +59,6 @@ class Features {
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
 
 			new Loader_Block($loader);
-			new Legacy_Interactive_Containment_System($loader);
 		}
 	}
 
@@ -385,7 +384,7 @@ class Features {
 	 */
 	public function load($slug) {
 		$assets = $this->get_asset($slug);
-		error_log(print_r($assets, true));
+
 		$enqueued = array();
 		if (false === $assets) {
 			return $enqueued;
@@ -446,7 +445,7 @@ class Features {
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-legacy-wpackio-loader.php' );
 
-		$deps = array('jquery', 'wp-element', 'firebase');
+		$deps = array('jquery', 'wp-element', 'firebase', 'regenerator-runtime');
 		if ( false !== $args['deps'] && ! empty( $args['deps'] )) {
 			// check if $deps is a string or an array
 			if ( is_string( $args['deps'] ) ) {
@@ -592,7 +591,6 @@ class Features {
 	}
 
 	private function load_dependencies() {
-		require_once plugin_dir_path( __FILE__ ) . '/legacy-containment-system/class-legacy-containment-system.php';
 		$this->load_blocks();
 	}
 
@@ -666,12 +664,8 @@ class Features {
 			$index_data[ $post_slug ] = array();
 		}
 
-		error_log('update_rewrite A' . $post_id . ' - ' . print_r($index_data, true));
-
-
 		$i = 0;
 		foreach ( $patterns as $pattern ) {
-			error_log('...pattern' . print_r($pattern, true));
 			$pattern = $pattern['pattern'];
 			// Setup empty array, also if there is any prior data here this will empty it and recreate the entry ensuring we have the latest data.
 			$index_data[ $post_slug ][ $i ] = array();
@@ -685,8 +679,6 @@ class Features {
 			}
 			$i++;
 		}
-
-		error_log('update_rewrite B' . $post_id . ' - ' . print_r($index_data, true));
 
 		update_option( self::$rewrites_option_key, $index_data );
 
@@ -706,7 +698,6 @@ class Features {
 			return;
 		}
 		$rewrites = get_post_meta( $post->ID, self::$rewrites_meta_key, true );
-		error_log("rewrite_update_hook should be running:: " .$post->ID . '  ' . print_r($rewrites, true));
 		$this->update_rewrite( $post->ID, $post->post_name, $rewrites);
 	}
 
@@ -784,7 +775,6 @@ class Features {
 	 */
 	public function get_rewrites_params() {
 		$index = get_option( self::$rewrites_option_key, array() );
-		error_log('get_rewrites_params: ' . print_r($index, true));
 		if ( ! is_singular( self::$post_type ) || false == $index || empty( $index ) ) {
 			return;
 		}

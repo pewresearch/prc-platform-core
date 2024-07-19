@@ -133,7 +133,7 @@ class Mailchimp_API {
 				'id'        => $result['id'],
 			);
 		} else {
-			return new WP_Error( 'add-interest-to-member-error', __( $list_id . ' - ' . $result['detail'], 'my_textdomain' ), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'add-interest-to-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
 		}
 	}
 
@@ -171,7 +171,7 @@ class Mailchimp_API {
 				'id'        => $result['id'],
 			);
 		} else {
-			return new WP_Error( 'update-newsletter-preferences', __( $list_id . ' - ' . $result['detail'], 'my_textdomain' ), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'update-newsletter-preferences', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
 		}
 
 	}
@@ -244,7 +244,7 @@ class Mailchimp_API {
 				return $this->add_interest( $this->construct_interests( $interests ), $api_key );
 			} else {
 				$subscriber_hash = $mailchimp->subscriberHash( $email );
-				return new WP_Error( 'add-member-error', __( $list_id . ' - ' . $result['detail'], 'my_textdomain' ), array( 'status' => $result['status'] ) );
+				return new WP_Error( 'add-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
 			}
 		}
 	}
@@ -277,7 +277,7 @@ class Mailchimp_API {
 		if ( $mailchimp->success() ) {
 			return $result;
 		} else {
-			return new WP_Error( 'remover-member-error', __( $list_id . ' - ' . $result['detail'], 'my_textdomain' ), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'remover-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
 		}
 	}
 
@@ -308,7 +308,7 @@ class Mailchimp_API {
 		if ( $mailchimp->success() ) {
 			return $result;
 		} else {
-			return new WP_Error( 'get-member-error', __( $list_id . ' - ' . $result['detail'], 'my_textdomain' ), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'get-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
 		}
 	}
 }

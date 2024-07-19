@@ -8,7 +8,9 @@ use WP_Error;
  * @uses prc_platform_on_post_init
  * @uses prc_platform_on_incremental_save
  * @uses prc_platform_on_publish
+ * @uses prc_platform_on_rest_publish
  * @uses prc_platform_on_update
+ * @uses prc_platform_on_rest_update
  * @uses prc_platform_on_unpublish
  * @uses prc_platform_on_trash
  * @uses prc_platform_on_untrash
@@ -90,6 +92,10 @@ class Post_Publish_Pipeline {
 			 * @uses prc_platform_on_rest_update
 			 */
 			$loader->add_action( 'transition_post_status', $this, 'restful_post_updating_hook', 100, 3 );
+			/**
+			 * @uses prc_platform_on_rest_publish
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'restful_post_publishing_hook', 100, 3 );
 			/**
 			 * @uses prc_platform_on_publish
 			 * @uses prc_platform_on_unpublish
@@ -394,6 +400,7 @@ class Post_Publish_Pipeline {
 		if ( !defined( 'REST_REQUEST' ) || true !== REST_REQUEST ) {
 			return;
 		}
+
 		if ( 'draft' === $old_status ) {
 			return;
 		}
@@ -418,6 +425,46 @@ class Post_Publish_Pipeline {
 
 		if ( !is_wp_error($ref_post) ) {
 			do_action( 'prc_platform_on_rest_update', $ref_post, has_blocks( $post ) );
+		}
+	}
+
+	/**
+	 * Runs once, when the post changes from draft to publish.
+	 * @hook transition_post_status
+	 */
+	public function restful_post_publishing_hook( $new_status, $old_status, $post ) {
+		if ( true === $this->is_cli ) {
+			return;
+		}
+		// This will make sure this doesnt run twice on Gutenberg editor.
+		if ( !defined( 'REST_REQUEST' ) || true !== REST_REQUEST ) {
+			return;
+		}
+		if ( 'draft' !== $old_status ) {
+			return;
+		}
+		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {
+			return;
+		}
+		// Make sure the new status IS publish and the old  IS NOT publish. We want only first time published posts.
+		if ( ! in_array( $new_status, $this->published_statuses ) || wp_is_post_revision( $post ) ) {
+			return;
+		}
+		// If we're doing a save_post action then exit early, we don't want to run this twice.
+		if ( doing_action( 'save_post' ) || doing_action( 'prc_platform_on_publish' ) || doing_action( 'prc_platform_on_update' ) ) {
+			return;
+		}
+
+		// If the status before or after is not in the approved statuses then exit early.
+		if ( ! in_array( $new_status, $this->published_statuses ) && ! in_array( $old_status, $this->published_statuses ) ) {
+			return;
+		}
+		error_log('restful_post_publishing_hook:::'.print_r(['new_status' => $new_status, 'old_status' => $old_status, 'published_statuses' => $this->published_statuses], true));
+
+		$ref_post = $this->setup_extra_wp_post_object_fields( $post );
+
+		if ( !is_wp_error($ref_post) ) {
+			do_action( 'prc_platform_on_rest_publish', $ref_post, has_blocks( $post ) );
 		}
 	}
 
@@ -501,11 +548,9 @@ class Post_Publish_Pipeline {
 		if ( in_array( $new_status, $this->published_statuses ) && ! in_array( $old_status, $this->published_statuses ) ) {
 			if ( ! is_wp_error( $ref_post ) ) {
 				do_action( 'prc_platform_on_publish', $ref_post, has_blocks( $post ) );
-				do_action( 'prc_platform_on_publish', $ref_post, has_blocks( $post ) );
 			}
 		} else if ( in_array( $new_status, array('draft') ) && in_array( $old_status, array('publish') ) ) {
 			if ( ! is_wp_error( $ref_post ) ) {
-				do_action( 'prc_platform_on_unpublish', $ref_post, has_blocks( $post ) );
 				do_action( 'prc_platform_on_unpublish', $ref_post, has_blocks( $post ) );
 			}
 		}

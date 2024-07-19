@@ -88,6 +88,17 @@ const getTemplateForType = (type, name) => {
 					},
 				],
 			];
+		case 'search':
+			return [
+				[
+					'prc-block/form-input-text',
+					{
+						type: 'text',
+						label,
+						...defaultAttrs,
+					},
+				],
+			];
 		default:
 			// Default to Radio
 			return [

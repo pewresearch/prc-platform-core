@@ -29,6 +29,15 @@ class Staff {
 		if ( false === $post_id && false !== $term_id && is_int( $term_id ) ) {
 			$post_id = $this->get_staff_post_id_from_term_id( $term_id );
 		}
+		if ( is_wp_error($post_id) && false !== $term_id && is_int( $term_id ) ) {
+			// Check that the term exists...
+			$term = get_term_by('id', $term_id, 'bylines');
+			if ( ! is_a( $term, 'WP_Term' ) ) {
+				return new WP_Error( '404', 'Byline term not found, no matching term found for staff post.' );
+			}
+			$this->set_guest($term_id);
+			return;
+		}
 
 		if ( is_wp_error( $post_id ) ) {
 			return new WP_Error( '404', 'Staff post not found, ID value not found.' );
@@ -40,7 +49,7 @@ class Staff {
 	public function get_staff_post_id_from_term_id($term_id) {
 		$staff_post_id = get_term_meta($term_id, 'tds_post_id', true);
 		if ( empty($staff_post_id) || false === $staff_post_id ) {
-			return new WP_Error( '404', 'This is not a staff post' );
+			return new WP_Error( '404', 'Staff post not found, no post id found for term id.' );
 		}
 		return $staff_post_id;
 	}
@@ -120,6 +129,26 @@ class Staff {
 		$this->photo = $this->get_staff_photo($staff_post_id);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);
+		$this->set_cache();
+	}
+
+	public function set_guest($term_id) {
+		$this->ID = 'guest_'.$term_id;
+		$is_guest_author = get_post_meta( $term_id, 'is_guest_author', true );
+		$term = get_term($term_id);
+		$name = $term->name;
+		$this->name = $name;
+		$this->slug = $term->slug;
+		$this->link = $is_guest_author ? get_term_link( $term_id, 'bylines' ) : false;
+		$this->user_id = false;
+		$this->is_currently_employed = $is_guest_author;
+		$this->bio = '';
+		$this->job_title = $is_guest_author ? 'Guest Author' : 'Guest Contributor';
+		$this->job_title_extended = '';
+		$this->mini_bio = '';
+		$this->photo = false;
+		$this->social_profiles = array();
+		$this->expertise = array();
 		$this->set_cache();
 	}
 
