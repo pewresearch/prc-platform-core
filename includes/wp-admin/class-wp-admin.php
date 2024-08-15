@@ -111,6 +111,35 @@ class WP_Admin {
 		<?php
 	}
 
+	public function view_on_diff_env_tool() {
+		$domain = \PRC\Platform\get_domain();
+		// get the current permalink
+		$permalink = get_permalink();
+		// remove the domain including the preceeding https:// from the permalink
+		$permalink = preg_replace('/https:\/\/[^\/]+\//', '', $permalink);
+		$permalink = str_replace('pewresearch-org/', '', $permalink);
+		$permalink = str_replace($domain, '', $permalink);
+		$urls = [
+			'alpha' => ['url' =>'https://alpha.pewresearch.org/pewresearch-org/' . $permalink, 'label' => 'View on Alpha'],
+			'beta' => ['url' =>'https://beta.pewresearch.org/pewresearch-org/' . $permalink, 'label' => 'View on Beta'],
+			'local' => ['url' => 'https://prc-platform.vipdev.lndo.site/pewresearch-org/' . $permalink, 'label' => 'View on Local'],
+			'production' =>  ['url' => 'https://www.pewresearch.org/' . $permalink, 'label' => 'View on Production'],
+		];
+
+		// Remove the urls for the env we're on.
+		if ( 'local' === wp_get_environment_type() ) {
+			unset($urls['local']);
+		}
+		if ( strpos($domain, 'alpha') ) {
+			unset($urls['alpha']);
+		} elseif ( strpos($domain, 'beta') ) {
+			unset($urls['beta']);
+		} elseif ( 'production' === wp_get_environment_type() ) {
+			unset($urls['production']);
+		}
+		return $urls;
+	}
+
 	public function manage_tools_menu() {
 		global $wp_admin_bar;
 
@@ -165,6 +194,33 @@ class WP_Admin {
 				'title' => 'Attachments Report',
 			),
 		);
+
+		// Create the new Print Beta tool, but only for 'post' types...
+		if ( 'post' === get_post_type() ) {
+			$print_tool = array(
+				'id'    => 'print-engine-beta',
+				'title' => 'Print Engine (BETA)',
+				'href'  => get_permalink() . '?printEngineBeta=true',
+				'parent' => $tools_id,
+				'meta'  => array(
+					'title' => 'Print Engine (BETA)',
+				),
+			);
+			$wp_admin_bar->add_node( $print_tool );
+
+		}
+
+		if (is_singular() ) {
+			$diff_env = $this->view_on_diff_env_tool();
+			foreach ($diff_env as $type => $tool) {
+				$wp_admin_bar->add_node( [
+					'id'	=> 'view-on-' . $type,
+					'title' => $tool['label'],
+					'href'  => $tool['url'],
+					'parent' => $tools_id,
+				] );
+			}
+		}
 
 		if ( $vip_cache_tool || $bitly_tool || $parsely_tool || $attachments_tool || $yoast_redirect_tool || $duplicate_post ) {
 			$wp_admin_bar->add_menu(

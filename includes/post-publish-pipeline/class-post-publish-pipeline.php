@@ -89,14 +89,6 @@ class Post_Publish_Pipeline {
 			 */
 			$loader->add_action( 'transition_post_status', $this, 'post_updating_hook', 99, 3 );
 			/**
-			 * @uses prc_platform_on_rest_update
-			 */
-			$loader->add_action( 'transition_post_status', $this, 'restful_post_updating_hook', 100, 3 );
-			/**
-			 * @uses prc_platform_on_rest_publish
-			 */
-			$loader->add_action( 'transition_post_status', $this, 'restful_post_publishing_hook', 100, 3 );
-			/**
 			 * @uses prc_platform_on_publish
 			 * @uses prc_platform_on_unpublish
 			 */
@@ -109,6 +101,18 @@ class Post_Publish_Pipeline {
 			 * @uses prc_platform_on_untrash
 			 */
 			$loader->add_action( 'untrashed_post', $this, 'post_trashed_hook', 100, 2 );
+			/**
+			 * REST API HOOKS:
+			 * @TODO: more of our functionality should be designed to work with the restful hooks as they'll be more performant and less likely to run into issues with the WP Admin as more and more of WP Admin is subsumed by the block and site editors.
+			 */
+			/**
+			 * @uses prc_platform_on_rest_update
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'restful_post_updating_hook', 101, 3 );
+			/**
+			 * @uses prc_platform_on_rest_publish
+			 */
+			$loader->add_action( 'transition_post_status', $this, 'restful_post_publishing_hook', 102, 3 );
 		}
 	}
 
@@ -538,6 +542,7 @@ class Post_Publish_Pipeline {
 		if ( wp_is_post_revision( $post ) ) {
 			return;
 		}
+
 		if ( doing_action( 'prc_platform_on_publish' ) || doing_action( 'prc_platform_on_unpublish' ) ) {
 			return;
 		}

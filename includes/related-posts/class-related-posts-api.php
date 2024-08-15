@@ -151,8 +151,6 @@ class Related_Posts_API extends Related_Posts {
 			$data = json_decode( $data, true );
 		}
 
-		do_action('qm/debug', "RELATED: " . print_r($data, true));
-
 		$related_posts = array();
 		if ( empty( $data ) ) {
 			return $related_posts;
@@ -192,10 +190,12 @@ class Related_Posts_API extends Related_Posts {
 			return $related_posts;
 		}
 
-		// @TODO !! During the migration some posts did not run the related posts post id match correctly. Probably because of a race condition. In the interim I am going to disable this feature entirely, regardless if the post has good data or not, instead we'll fall back to the primary term match.
-		// Check if the post_id post date is after april 18th 2024 and if not disable the related posts feature.
 		$post_date = get_the_date( 'Y-m-d', $post_id );
-		if ( strtotime( $post_date ) < strtotime( '2024-04-18' ) ) {
+		$legacy_fix_check = get_post_meta( $post_id, '_legacy_related_posts_fixed', true );
+		$legacy_fix_check = boolval($legacy_fix_check);
+		if ( (strtotime( $post_date ) < strtotime( '2024-04-18' )) && true !== $legacy_fix_check ) {
+			do_action('qm/debug', 'Custom Related Posts Disabled For Legacy Post');
+			do_action('qm/debug', print_r(get_post_meta($post_id, 'relatedPosts', true), true));
 			$custom_posts = array();
 		} else {
 			$custom_posts  = $this->get_custom_related_posts();
@@ -207,6 +207,10 @@ class Related_Posts_API extends Related_Posts {
 			if ( 5 > count( $related_posts ) ) {
 				$related_posts = $this->get_posts_with_matching_primary_terms( $per_page, true );
 			}
+			// Sort by date desc.
+			usort( $related_posts, function( $a, $b ) {
+				return strtotime( $b['date'] ) - strtotime( $a['date'] );
+			} );
 		}
 
 		if ( false !== $related_posts && !empty( $related_posts ) ) {
@@ -216,12 +220,8 @@ class Related_Posts_API extends Related_Posts {
 			$related_posts = array();
 		}
 
+		// Splice the custom related posts into the beginning of the related posts array.
 		$related_posts = array_merge( $custom_posts, $related_posts );
-
-		// Sort by date desc.
-		usort( $related_posts, function( $a, $b ) {
-			return strtotime( $b['date'] ) - strtotime( $a['date'] );
-		} );
 
 		// Restrict to only 5 items.
 		$related_posts = array_slice( $related_posts, 0, $per_page );

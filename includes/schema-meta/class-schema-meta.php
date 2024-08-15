@@ -45,6 +45,7 @@ class Schema_Meta {
 			$loader->add_action( 'wp_head', $this, 'ascii', 1 );
 			$loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
 			$loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
+			$loader->add_filter( 'wpseo_canonical', $this, 'yoast_attachment_page_canonical_link' );
 		}
 	}
 
@@ -231,5 +232,15 @@ class Schema_Meta {
 	#
 	-->
 		<?php
+	}
+
+	/**
+	 * @hook wpseo_canonical
+	 */
+	public function yoast_attachment_page_canonical_link($canonical) {
+		if ( is_attachment() ) {
+			$canonical = get_permalink( wp_get_post_parent_id( get_the_ID() ) );
+		}
+		return $canonical;
 	}
 }

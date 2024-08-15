@@ -105,10 +105,10 @@ class Facet_Template {
 	public function render_checkbox_radio_facet($facet, $inner_blocks) {
 		$facet_choices = $facet['choices'];
 		$selected_choices = $facet['selected'];
-		$field_template = $inner_blocks[0];
+		$field_template = $inner_blocks[0]; // The innerblocks should contain the template for how this block should be repeated for each value, or $fact_choices.
 		$content = '';
 		$expanded_content = '';
-		// make sure $selected_choices are first in the $facet_choices array
+		// make sure $selected_choices are first in the $facet_choices array, for a better user experience
 		$blocks_to_generate = [];
 		foreach ($facet_choices as $choice) {
 			$field = $field_template;
@@ -227,7 +227,6 @@ class Facet_Template {
 	}
 
 	public function render_search_facet($facet, $inner_blocks) {
-		do_action('qm/debug', print_r($facet, true));
 		return '<p>Search Facet Here</p>';
 	}
 

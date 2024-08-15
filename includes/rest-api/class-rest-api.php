@@ -30,7 +30,7 @@ class Rest_API {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			// A centralized filter to validate and register /prc-api/v3/ endpoints.
+			// A centralized filter to validate and register /prc-api/v3/ endpoints. `prc_api_endpoints` is the filter name.
 			$loader->add_action( 'rest_api_init', $this, 'register_endpoints' );
 		}
 	}

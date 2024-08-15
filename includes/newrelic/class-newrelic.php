@@ -16,7 +16,14 @@ class Newrelic {
 		// WIP: move the central error logging utility into here but keep a simple php utility exposed.
 	}
 
+	/**
+	 * This is the Newrelic browser performance monitoring script. We output directly into the head so that Newrelic can monitor the page load.
+	 * @TODO container environment variablify the id's and keys so that they can be set in the container environment.
+	 */
 	public function script() {
+		if ( 'production' !== wp_get_environment_type() ) {
+			return;
+		}
 		ob_start();
 		?>
 <script type="text/javascript" id="newrelic-js">

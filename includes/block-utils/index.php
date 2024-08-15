@@ -1,7 +1,6 @@
 <?php
 namespace PRC\Platform\Block_Utils;
-use WP_HTML_Tag_Processor;
-use WP_Error;
+use WP_HTML_Tag_Processor, WP_Block_Type_Registry, WP_Error;
 
 /**
  * FOR EVERY PHP UTIL THERE MUST BE AN ACCOMPANYING JS UTIL
@@ -169,6 +168,23 @@ function get_block_gap_support_value($attributes, $dimension_to_return = false) 
 	return preg_match('/^var:preset\|spacing\|\d+$/', $block_gap) ? 'var(--wp--preset--spacing--' . substr($block_gap, strrpos($block_gap, '|') + 1) . ')' : $block_gap;
 }
 
+function get_block_attributes($block_name, $given_attributes) {
+	// We need to get the block name, then we need to get the block.json, then we need to get the attributes from that
+	$block = WP_Block_Type_Registry::get_instance()->get_registered($block_name);
+	$attributes = null;
+	$attributes = $block->get_attributes();
+	$modified_attributes = [];
+	foreach($attributes as $attr_name => $attr_data) {
+		if (array_key_exists($attr_name, $given_attributes)) {
+			$modified_attributes[$attr_name] = $given_attributes[$attr_name];
+		} elseif (array_key_exists('default', $attr_data)) {
+			$modified_attributes[$attr_name] = $attr_data['default'];
+		} else {
+			$modified_attributes[$attr_name] = null;
+		}
+	}
+	return $modified_attributes;
+}
 
 /**
  * Port of classNames JS library, modernized with PHP 8 features.

@@ -2,6 +2,10 @@
 namespace PRC\Platform;
 use DougSisk\CountryState\CountryState;
 
+function get_domain() {
+	return str_replace(['https://', 'http://'], '', get_site_url());
+}
+
 function get_wp_admin_current_post_type() {
 	global $post, $typenow, $current_screen;
 
@@ -134,6 +138,50 @@ function get_list_of($list_of = null) {
 		// Get array of countries
 		$list = $country_state->getCountries();
 		$tmp = [];
+		foreach ($list as $value => $label) {
+			$tmp[] = [
+				'label' => $label,
+				'value' => $value,
+			];
+		}
+		return $tmp;
+	} elseif ( 'countries-and-regions' === $list_of ) {
+		// Get array of countries AND our PRC defined regions
+		$list = $country_state->getCountries();
+		$tmp = [
+				[
+				'label' => 'All',
+				'value' => 'all',
+			],
+			[
+				'label' => 'Global',
+				'value' => 'global',
+			],
+			[
+				'label' => 'Asia-Pacific',
+				'value' => 'asia-pacific',
+			],
+			[
+				'label' => 'Europe',
+				'value' => 'europe',
+			],
+			[
+				'label' => 'Latin America-Caribbean',
+				'value' => 'latin america-caribbean',
+			],
+			[
+				'label' => 'Middle East-North Africa',
+				'value' => 'middle east-north africa',
+			],
+			[
+				'label' => 'North America',
+				'value' => 'north america',
+			],
+			[
+				'label' => 'Sub-Saharan Africa',
+				'value' => 'sub-saharan africa',
+			],
+		];
 		foreach ($list as $value => $label) {
 			$tmp[] = [
 				'label' => $label,

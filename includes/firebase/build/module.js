@@ -38,10 +38,13 @@ var __webpack_exports__ = {};
 __webpack_require__.d(__webpack_exports__, {
   yA: () => (/* binding */ _app),
   j2: () => (/* binding */ _auth),
+  R4: () => (/* binding */ _confirmPasswordReset),
   C3: () => (/* binding */ _db),
   hg: () => (/* binding */ _onAuthStateChanged),
+  J1: () => (/* binding */ _sendPasswordResetEmail),
   x9: () => (/* binding */ _signInWithEmailAndPassword),
-  CI: () => (/* binding */ _signOut)
+  CI: () => (/* binding */ _signOut),
+  RE: () => (/* binding */ _verifyPasswordResetCode)
 });
 
 ;// CONCATENATED MODULE: ./node_modules/@firebase/util/dist/index.esm2017.js
@@ -3144,7 +3147,7 @@ function isVersionServiceProvider(provider) {
 }
 
 const name$p = "@firebase/app";
-const version$1 = "0.10.6";
+const version$1 = "0.10.7";
 
 /**
  * @license
@@ -3213,7 +3216,7 @@ const name$2 = "@firebase/vertexai-preview";
 const name$1 = "@firebase/firestore-compat";
 
 const index_esm2017_name = "firebase";
-const version = "10.12.3";
+const version = "10.12.4";
 
 /**
  * @license
@@ -4230,7 +4233,7 @@ registerCoreComponents('');
 
 
 var index_esm_name = "firebase";
-var index_esm_version = "10.12.3";
+var index_esm_version = "10.12.4";
 
 /**
  * @license
@@ -10422,7 +10425,7 @@ async function sendPasswordResetEmail(auth, email, actionCodeSettings) {
  * @public
  */
 async function confirmPasswordReset(auth, oobCode, newPassword) {
-    await resetPassword(getModularInstance(auth), {
+    await resetPassword(index_esm2017_getModularInstance(auth), {
         oobCode,
         newPassword
     })
@@ -10457,7 +10460,7 @@ async function applyActionCode(auth, oobCode) {
  * @public
  */
 async function checkActionCode(auth, oobCode) {
-    const authModular = getModularInstance(auth);
+    const authModular = index_esm2017_getModularInstance(auth);
     const response = await resetPassword(authModular, { oobCode });
     // Email could be empty only if the request type is EMAIL_SIGNIN or
     // VERIFY_AND_CHANGE_EMAIL.
@@ -10508,7 +10511,7 @@ async function checkActionCode(auth, oobCode) {
  * @public
  */
 async function verifyPasswordResetCode(auth, code) {
-    const { data } = await checkActionCode(getModularInstance(auth), code);
+    const { data } = await checkActionCode(index_esm2017_getModularInstance(auth), code);
     // Email should always be present since a code was sent to it
     return data.email;
 }
@@ -29400,12 +29403,18 @@ const _auth = getAuth();
 const _signInWithEmailAndPassword = signInWithEmailAndPassword;
 const _onAuthStateChanged = onAuthStateChanged;
 const _signOut = signOut;
+const _sendPasswordResetEmail = sendPasswordResetEmail;
+const _confirmPasswordReset = confirmPasswordReset;
+const _verifyPasswordResetCode = verifyPasswordResetCode;
 const _db = getDatabase();
 
 var __webpack_exports__app = __webpack_exports__.yA;
 var __webpack_exports__auth = __webpack_exports__.j2;
+var __webpack_exports__confirmPasswordReset = __webpack_exports__.R4;
 var __webpack_exports__getDatabase = __webpack_exports__.C3;
 var __webpack_exports__onAuthStateChanged = __webpack_exports__.hg;
+var __webpack_exports__sendPasswordResetEmail = __webpack_exports__.J1;
 var __webpack_exports__signInWithEmailAndPassword = __webpack_exports__.x9;
 var __webpack_exports__signOut = __webpack_exports__.CI;
-export { __webpack_exports__app as app, __webpack_exports__auth as auth, __webpack_exports__getDatabase as getDatabase, __webpack_exports__onAuthStateChanged as onAuthStateChanged, __webpack_exports__signInWithEmailAndPassword as signInWithEmailAndPassword, __webpack_exports__signOut as signOut };
+var __webpack_exports__verifyPasswordResetCode = __webpack_exports__.RE;
+export { __webpack_exports__app as app, __webpack_exports__auth as auth, __webpack_exports__confirmPasswordReset as confirmPasswordReset, __webpack_exports__getDatabase as getDatabase, __webpack_exports__onAuthStateChanged as onAuthStateChanged, __webpack_exports__sendPasswordResetEmail as sendPasswordResetEmail, __webpack_exports__signInWithEmailAndPassword as signInWithEmailAndPassword, __webpack_exports__signOut as signOut, __webpack_exports__verifyPasswordResetCode as verifyPasswordResetCode };

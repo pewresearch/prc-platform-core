@@ -61,8 +61,7 @@ class Slack_Bot {
 				1
 			);
 
-			//@TODO: For some reason this doesnt seem to be firing with parent posts?
-			$loader->add_action( 'prc_platform_on_publish', $this, 'schedule_post_published_notification', 100 );
+			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'schedule_post_published_notification', 100 );
 		}
 	}
 
@@ -112,7 +111,7 @@ class Slack_Bot {
 
 	public function send_notification( $args = array() ) {
 		if ( 'production' !== wp_get_environment_type() ) {
-			return;
+			// return;
 		}
 
 		$args = wp_parse_args( $args, array(
@@ -232,3 +231,6 @@ class Slack_Bot {
 	}
 }
 
+function send_slack_notification($post_id, $args = []) {
+	as_enqueue_async_action('prc_slack_bot_send_notification', $args, $post_id, true, 5);
+}

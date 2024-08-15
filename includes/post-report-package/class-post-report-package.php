@@ -181,6 +181,7 @@ class Post_Report_Package {
 	 */
 	public function register_query_var($qvars) {
 		$qvars[] = 'showBackChapters';
+
 		return $qvars;
 	}
 
@@ -238,7 +239,11 @@ class Post_Report_Package {
 	 * @hook pre_get_posts
 	 */
 	public function filter_pre_get_posts($query) {
-		$show_back_chapters = rest_sanitize_boolean(get_query_var('showBackChapters', false));
+		if (is_admin()) {
+			return;
+		}
+		$show_back_chapters = get_query_var('showBackChapters', false);
+		$show_back_chapters = rest_sanitize_boolean($show_back_chapters);
 		if ( true === $query->get('isPubListingQuery') && false === $show_back_chapters ) {
 			$query->set( 'post_parent', 0 );
 		}
@@ -451,14 +456,30 @@ class Post_Report_Package {
 				'single'        => true,
 				'type'          => 'array',
 				'description'   => 'Array of report material objects.',
-				'show_in_rest'  => array(
-					'schema' => array(
-						'items' => array(
+				'show_in_rest'  => [
+					// This sanitizes the data, making sure empty keys are removed.
+					'prepare_callback' => function( $value, $rest_request ) {
+						$url = $rest_request->get_url_params();
+						$id = $url['id'];
+						$procssed = [];
+						foreach($value as $obj) {
+							$keys = array_keys($obj);
+							foreach($keys as $key) {
+								if ( empty($obj[$key]) ) {
+									unset($obj[$key]);
+								}
+							}
+							$procssed[] = $obj;
+						}
+						return $procssed;
+					},
+					'schema' => [
+						'items' => [
 							'type'       => 'object',
 							'properties' => self::$report_materials_schema_properties,
-						),
-					),
-				),
+						],
+					],
+				],
 				'auth_callback' => function() {
 					return current_user_can( 'edit_posts' );
 				},
@@ -490,6 +511,9 @@ class Post_Report_Package {
 		);
 	}
 
+	/**
+	 * Gets the dataset terms for the given post and then constructs an array of dataset objects for inclusion in report materials.
+	 */
 	public function get_datasets_for_post( $post_id ) {
 		// get the dataset terms for this post...
 		$datasets = wp_get_post_terms( $post_id, 'datasets' );
@@ -518,6 +542,16 @@ class Post_Report_Package {
 
 		if (!empty($datasets) && !empty($materials) && is_array($materials)) {
 			$materials = array_merge($materials, $datasets);
+		}
+
+		if ( true == get_query_var('printEngineBeta', false) ) {
+			$materials = array_merge($materials, [
+				[
+					'type' => 'printEngineBeta',
+					'label' => 'Print Engine (Beta)',
+					'url' => get_permalink( $post_id ) . '?print=true&printEngineBeta=true',
+				]
+			]);
 		}
 
 		return $materials;
@@ -813,7 +847,7 @@ class Post_Report_Package {
 		return $constructed_toc;
 	}
 
-	protected function construct_toc( $post_id ) {
+	public function construct_toc( $post_id ) {
 		$parent_id = $this->get_report_parent_id( $post_id );
 
 		$constructed_toc = $this->__construct_toc( $post_id );

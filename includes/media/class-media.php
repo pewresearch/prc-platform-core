@@ -72,6 +72,17 @@ class Media {
 	}
 
 	/**
+	 * Modifies the default image link to use the raw ?attachment_id url.
+	 * @hook attachment_link
+	 * @param string $link
+	 * @param int $post_id
+	 * @return string
+	 */
+	public function default_image_link(string $link, int $post_id) {
+		return \wp_get_attachment_url( $post_id );
+	}
+
+	/**
 	 * @hook wp_get_attachment_image_src
 	 */
 	public function legacy_webp_handler($image) {

@@ -9,8 +9,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
  */
 const DependencyExtractionWebpackPlugin = require('@wordpress/dependency-extraction-webpack-plugin');
 
-
-
 const webpack = require('webpack');
 
 /**
@@ -77,7 +75,6 @@ module.exports = {
 			react: 'preact/compat',
 			'react-dom': 'preact/compat',
 		}),
-		// TODO: Move it to a different Webpack file.
 		new CopyWebpackPlugin({
 			patterns: [
 				{

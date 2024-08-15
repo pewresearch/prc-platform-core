@@ -27,7 +27,8 @@ function constructNewUrl(selected = false) {
 	});
 	// Remove any query args on the current url.
 	const stableUrl = window.location.href.split('?')[0];
-	// If our url has /page/x/ in it, we need to remove that, we're sending the user back to the first page.
+	// If our url has /page/x/ in it, we need to remove that
+	// we're sending the user back to the first page.
 	const stableUrlClean = stableUrl.replace(/\/page\/\d+\//, '/');
 	const newUrl = addQueryArgs(stableUrlClean, tmp);
 	// console.log(

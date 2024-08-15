@@ -47,7 +47,7 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 
 	// This approach doesnt support cross collabration as well but it works for now. Leaving the entity sync version below for reference.
 	useEffect(() => {
-		console.log('Materials...', materials);
+		console.log('Materials...', postId, meta, materials);
 		if (!allowEditing || undefined === meta) {
 			return;
 		}
