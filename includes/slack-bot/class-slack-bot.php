@@ -28,7 +28,9 @@ class Slack_Bot {
 	private static $username = 'prc_platform';
 
 	protected $webhook;
+	protected $decoded_webhook;
 	protected $token;
+	public $env_type;
 
 	public static $handle = 'prc-platform-slack-bot';
 
@@ -42,6 +44,7 @@ class Slack_Bot {
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		$this->webhook = PRC_PLATFORM_SLACK_WEBHOOK;
+		$this->decoded_webhook = PRC_PLATFORM_SLACK_DECODED_WEBHOOK;
 		$this->token = PRC_PLATFORM_SLACK_TOKEN;
 
 		require_once( plugin_dir_path( __FILE__ ) . 'class-slack-notification.php' );
@@ -51,6 +54,7 @@ class Slack_Bot {
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
+			$this->env_type = wp_get_environment_type();
 			// $loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 
 			$loader->add_action(
@@ -61,7 +65,7 @@ class Slack_Bot {
 				1
 			);
 
-			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'schedule_post_published_notification', 100 );
+			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'schedule_post_published_notification', 200, 1 );
 		}
 	}
 
@@ -110,8 +114,8 @@ class Slack_Bot {
 	}
 
 	public function send_notification( $args = array() ) {
-		if ( 'production' !== wp_get_environment_type() ) {
-			// return;
+		if ( 'production' !== $this->env_type ) {
+			return;
 		}
 
 		$args = wp_parse_args( $args, array(
@@ -130,7 +134,9 @@ class Slack_Bot {
 			return new WP_Error( '400', 'No text provided!' );
 		}
 
-		$bot = new SlackBot($this->webhook, [
+		$webhook = $args['channel'] === '#decoded' ? $this->decoded_webhook : $this->webhook;
+
+		$bot = new SlackBot($webhook, [
 			'token' => $this->token,
 		]);
 
@@ -170,11 +176,12 @@ class Slack_Bot {
 		$regions_countries = get_the_terms( $post_id, 'regions-countries' );
 		$formats = get_the_terms( $post_id, 'formats' );
 		$bylines = get_the_terms( $post_id, 'bylines' );
+		$bitly = get_post_meta( $post_id, 'bitly', true );
 
 		$overview_attachment = [
 			'*URL:* <' . $permalink . ' | ' . $permalink . ' >',
 		];
-		if ( $bitly = get_post_meta( $post_id, 'bitly', true ) ) {
+		if ( !empty($bitly) ) {
 			$overview_attachment[] = '*Bit.ly:* <' . $bitly . ' | ' . $bitly . ' >';
 		}
 		// if ( $excerpt ) {
@@ -199,7 +206,8 @@ class Slack_Bot {
 		// }
 
 		$notification_text = wp_sprintf(
-			"*Title:* <%s | %s> is now live.",
+			"*%s:* <%s | %s> is now live.",
+			$post_type->labels->singular_name,
 			$permalink,
 			$title
 		);
@@ -216,6 +224,8 @@ class Slack_Bot {
 			'text' => $notification_text,
 			'attachments' => $notification_attachments
 		);
+
+		error_log("Slack Bot Args: " . print_r($args, true));
 
 		return $args;
 	}

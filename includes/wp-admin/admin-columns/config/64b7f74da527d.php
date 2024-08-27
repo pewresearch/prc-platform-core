@@ -1,13 +1,13 @@
 <?php
 
 return array (
-  'version' => '6.3.5',
+  'version' => '6.4.10',
   'list_screen' => 
   array (
     'title' => '',
     'type' => 'fact-sheet',
     'id' => '64b7f74da527d',
-    'updated' => 1701269887,
+    'updated' => 1723742816,
     'columns' => 
     array (
       'title' => 
@@ -21,6 +21,8 @@ return array (
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
         'name' => 'title',
       ),
       'date' => 
@@ -29,14 +31,14 @@ return array (
         'label' => 'Date',
         'width' => '',
         'width_unit' => '%',
+        'filter' => 'on',
+        'filter_label' => '',
+        'filter_format' => 'range',
         'export' => 'on',
         'sort' => 'on',
         'edit' => 'on',
         'bulk_edit' => 'on',
         'search' => 'on',
-        'filter' => 'on',
-        'filter_label' => '',
-        'filter_format' => 'range',
         'name' => 'date',
       ),
       '64d1ade4fb22d0' => 
@@ -69,6 +71,7 @@ return array (
         'bulk_edit' => 'on',
         'search' => 'on',
         'filter' => 'on',
+        'filter_label' => '',
         'name' => 'categories',
       ),
       'taxonomy-bylines' => 
@@ -142,15 +145,32 @@ return array (
         'width' => '',
         'width_unit' => '%',
         'date_format' => 'F j, Y g:i a',
+        'filter' => 'off',
+        'filter_label' => '',
+        'filter_format' => '',
         'export' => 'on',
         'sort' => 'on',
         'edit' => 'off',
         'bulk_edit' => 'off',
         'search' => 'on',
+        'name' => '65675175e56040',
+      ),
+      'c02114a9df3b68' => 
+      array (
+        'type' => 'column-date_published',
+        'label' => 'Date Published',
+        'width' => '',
+        'width_unit' => '%',
+        'date_format' => 'wp_default',
         'filter' => 'off',
         'filter_label' => '',
         'filter_format' => '',
-        'name' => '65675175e56040',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => 'c02114a9df3b68',
       ),
     ),
     'settings' => 
@@ -185,6 +205,7 @@ return array (
       'horizontal_scrolling' => 'off',
       'primary_column' => '',
       'filter_segment' => '',
+      'wrapping' => 'wrap',
     ),
   ),
 );

@@ -2,6 +2,7 @@
 namespace PRC\Platform;
 use WP_Error;
 class Bitly {
+	public static $meta_key = 'bitly';
 	/**
 	 * The version of this plugin.
 	 *
@@ -29,8 +30,7 @@ class Bitly {
 		if ( null !== $loader ) {
 			$this->env_type = wp_get_environment_type();
 			$loader->add_action( 'wp_head', $this, 'flush_shortlink' );
-			$loader->add_action( 'prc_platform_on_publish', $this, 'update_post_with_shortlink', 100, 1 );
-			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'update_post_with_shortlink', 100, 1 );
+			$loader->add_action( 'prc_platform_on_rest_publish', $this, 'update_post_with_shortlink', 50, 1 );
 			$loader->add_action( 'admin_bar_menu', $this, 'add_quick_edit', 100 );
 			$loader->add_filter( 'get_shortlink', $this, 'filter_get_shortlink', 100, 2 );
 			$loader->add_action( 'init', $this, 'register_meta' );
@@ -38,12 +38,35 @@ class Bitly {
 	}
 
 	public function register_meta() {
-
+		register_post_meta(
+			'',
+			self::$meta_key,
+			array(
+				'show_in_rest' => true,
+				'single' => true,
+				'type' => 'string',
+			),
+		);
 	}
 
-	private function get_bitly_shortlink( $post_id, $url = null ) {
-		if ( 'production' !== $this->env_type ) {
+	public function get_bitly_url($post_id) {
+		$url = get_post_meta( $post_id, 'bitly', true );
+		if ( is_array( $url ) ) {
+			return $url['url'];
+		} else {
 			return $url;
+		}
+	}
+
+	private function query_bitly_for_link( $post_id, $url = null ) {
+		if ( 'production' !== $this->env_type ) {
+			return new WP_Error(
+				'bitly_error',
+				sprintf( 'Bitly is disabled in %s environment.', $this->env_type ),
+				array(
+					'post_id' => $post_id,
+				)
+			);
 		}
 		$rest_url = 'https://api-ssl.bitly.com/v4/shorten';
 
@@ -80,7 +103,7 @@ class Bitly {
 				return $json->link;
 			}
 		} else {
-			$error = \WP_Error(
+			$error = new WP_Error(
 				'bitly_error',
 				sprintf( 'Retrieving Bitly url for %s resulted in an error.', esc_url( $url ) ),
 				array(
@@ -103,6 +126,9 @@ class Bitly {
 	 */
 	public function update_post_with_shortlink( $post ) {
 		log_error('update_post_with_shortlink()');
+		if ( 'production' !== $this->env_type ) {
+			return;
+		}
 		if ( is_int( $post ) ) {
 			$post_id = $post;
 		} elseif ( is_object( $post ) && property_exists( $post, 'ID' ) ) {
@@ -132,12 +158,8 @@ class Bitly {
 
 		$permalink = get_permalink( $post_id );
 
-		if ( 'production' !== $this->env_type ) {
-			return $permalink;
-		}
-
-		$bitly_url = $this->get_bitly_shortlink( $post_id, $permalink );
-		if ( false !== $bitly_url ) {
+		$bitly_url = $this->query_bitly_for_link( $post_id, $permalink );
+		if ( !is_wp_error($bitly_url) ) {
 			update_post_meta( $post_id, 'bitly', $bitly_url );
 		}
 	}
@@ -156,10 +178,12 @@ class Bitly {
 	}
 
 	public function filter_get_shortlink( $url, $post_id ) {
-		if ( get_post_meta( $post_id, 'bitly', true ) ) {
-			$url = $this->get_shortlink( $post_id );
+		$bitly_short_url = $this->get_shortlink( $post_id );
+		if ( $bitly_short_url ) {
+			return $bitly_short_url;
+		} else {
+			return $url;
 		}
-		return $url;
 	}
 
 	public function flush_shortlink() {
@@ -176,21 +200,32 @@ class Bitly {
 		if ( ! is_singular() ) {
 			return; // Bail early.
 		}
-
-		if ( ! get_post_meta( get_the_ID(), 'bitly', true ) ) {
+		// Post needs to be published...
+		if ( 'publish' !== get_post_status() ) {
 			return;
 		}
 
 		$nonce = wp_create_nonce( 'prc-bitly-nonce' );
 
-		$admin_bar->add_menu(
-			array(
-				'id'    => 'reset-bitly-link',
-				'title' => __( 'Reset Bit.ly Link' ),
-				'href'  => add_query_arg( array( 'flush_bitly' => true, '_bitly_nonce' => $nonce ), get_the_permalink() ),
-				'parent' => 'tools',
-			)
-		);
+		if ( ! get_post_meta( get_the_ID(), 'bitly', true ) ) {
+			$admin_bar->add_menu(
+				array(
+					'id'    => 'reset-bitly-link',
+					'title' => __( 'Generate Bit.ly Link' ),
+					'href'  => add_query_arg( array( 'flush_bitly' => true, '_bitly_nonce' => $nonce ), get_the_permalink() ),
+					'parent' => 'tools',
+				)
+			);
+		} else {
+			$admin_bar->add_menu(
+				array(
+					'id'    => 'reset-bitly-link',
+					'title' => __( 'Reset Bit.ly Link' ),
+					'href'  => add_query_arg( array( 'flush_bitly' => true, '_bitly_nonce' => $nonce ), get_the_permalink() ),
+					'parent' => 'tools',
+				)
+			);
+		}
 	}
 
 	// When the url for a post changes, yoast automatically creates redirects, on that action we should also generate a new bitly url (and maybe save the old ones for reference??)

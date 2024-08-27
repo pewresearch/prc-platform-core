@@ -459,8 +459,6 @@ class Post_Report_Package {
 				'show_in_rest'  => [
 					// This sanitizes the data, making sure empty keys are removed.
 					'prepare_callback' => function( $value, $rest_request ) {
-						$url = $rest_request->get_url_params();
-						$id = $url['id'];
 						$procssed = [];
 						foreach($value as $obj) {
 							$keys = array_keys($obj);

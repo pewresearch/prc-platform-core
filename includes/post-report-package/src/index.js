@@ -56,7 +56,7 @@ function ReportPackagePanel() {
 				</ProvidePostReportPackage>
 			</PluginSidebar>
 			{!isChildPost && (
-				<PluginPrePublishPanel>
+				<PluginPrePublishPanel title="Review Report Package">
 					<ProvidePostReportPackage
 						{...{
 							postType,
@@ -64,13 +64,7 @@ function ReportPackagePanel() {
 							currentPostId: postId,
 						}}
 					>
-						<p>Please review the attached report materials:</p>
 						<ReportMaterials />
-						<p>
-							Please review the attached back chapter posts. These
-							post's status will be updated to match the parent
-							post on publish.
-						</p>
 						<BackChapters />
 					</ProvidePostReportPackage>
 				</PluginPrePublishPanel>

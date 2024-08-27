@@ -25,68 +25,55 @@ class Facet_Template {
 		}
 	}
 
-	/**
-	 * Returns the proper css value for a block's gap attribute.
-	 * Remember to define styles.supports.spacing.blockGap in the block.json file AND
-	 * define styles.spacing.blockGap in the block's attributes (along with margin and padding if enabled) AND
-	 * lastly you'll also need to output the value manually like `style="gap: <?php echo Utils\get_block_gap_support_value($attributes); ?>;"` in the block's render_callback.
-	 * @param mixed $attributes
-	 * @return string
-	 */
-	public function get_block_gap_support_value($attributes, $dimension_to_return = false) {
-		$block_gap = array_key_exists('style', $attributes) && array_key_exists('spacing', $attributes['style']) && array_key_exists('blockGap', $attributes['style']['spacing']) ? $attributes['style']['spacing']['blockGap'] : false;
-		if ( false === $block_gap ) {
-			return '';
-		}
+	protected function format_label($label) {
+		$label_is_datetime = strtotime($label) !== false;
+		$label = $label_is_datetime ? gmdate('Y', strtotime($label)) : $label;
+		return $label;
+	}
 
-		if ( is_array($block_gap) && false !== $dimension_to_return ) {
-			$check_key = 'horizontal' === $dimension_to_return ? 'left' : 'top';
-			$block_gap = array_key_exists($check_key, $block_gap) ? $block_gap[$check_key] : '';
-		} elseif (is_array($block_gap)) {
-			$block_gap = '';
-		}
-
-		return preg_match('/^var:preset\|spacing\|\d+$/', $block_gap) ? 'var(--wp--preset--spacing--' . substr($block_gap, strrpos($block_gap, '|') + 1) . ')' : $block_gap;
+	protected function format_count($count) {
+		return $count > 250 ? '250+' : $count;
 	}
 
 	public function render_dropdown_facet($facet, $inner_blocks) {
 		$field = $inner_blocks[0];
 		$facet_choices = $facet['choices'];
 		if ( empty($facet_choices) ) {
+			do_action('qm/debug', 'UHOH No Facet Values For:'.print_r($facet, true));
 			return '';
 		}
 		$selected_choices = $facet['selected'];
 
-		$options = array();
 		$field_value = null;
+		$options = array();
 		foreach ($facet_choices as $choice) {
-			// Check if the label is a datetime string...
-			$label_is_datetime = strtotime($choice['label']) !== false;
-			$label = $label_is_datetime ? gmdate('Y', strtotime($choice['label'])) : $choice['label'];
-			$count = $choice['count'] > 250 ? '250+' : $choice['count'];
+			// Check if the label is a datetime string and if so format it as a year.
+			$count = $this->format_count($choice['count']);
+			$label = $this->format_label($choice['label']);
+			$label = $label . ' (' . $count . ')';
+			// If the count exceeds 250, show 250+ instead of the actual count.
 			$opts = array(
 				'value' => $choice['value'],
-				'label' => $label . ' (' . $count . ')',
+				'label' => $label,
 				'isSelected' => false,
 			);
+			// If the choice is selected, set the field value to the selected choice.
 			if ( in_array($choice['value'], $selected_choices) ) {
 				$field_value = $choice['value'];
 				$opts['isSelected'] = true;
 			}
+			// Add our option to the options array.
 			$options[] = $opts;
 		}
-		// sort $options such that isSelected are first
-		usort($options, function($a, $b) {
-			if ( $a['isSelected'] === $b['isSelected'] ) {
-				return 0;
-			}
-			return $a['isSelected'] ? -1 : 1;
-		});
+		$field['attrs']['defaultOptions'] = 'custom';
 		$field['attrs']['options'] = $options;
+		// If there is a matching value that's already selected in the facet, set the field value to that value.
 		if (null !== $field_value) {
 			$field['attrs']['value'] = $field_value;
 		}
-		$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
+		// do_action('qm/debug', 'Facet Check:'.print_r($field, true));
+		// do_action('qm/debug', 'Facet Values For:'.print_r($field, true));
+		// Parse new form-input-select block with the updated options.
 		$parsed = new WP_Block_Parser_Block(
 			$field['blockName'],
 			$field['attrs'],
@@ -112,9 +99,9 @@ class Facet_Template {
 		$blocks_to_generate = [];
 		foreach ($facet_choices as $choice) {
 			$field = $field_template;
-			$count = $choice['count'] > 250 ? '250+' : $choice['count'];
-			$field['attrs']['label'] = $choice['label'] . ' (' . $count . ')';
-			$field['attrs']['metadata']['name'] = sanitize_title($choice['label']);
+			$count = $this->format_count($choice['count']);
+			$label = $this->format_label($choice['label']);
+			$field['attrs']['label'] =  $label. ' (' . $count . ')';
 			$field['attrs']['value'] = $choice['value'];
 			$field['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);
 			$blocks_to_generate[] = $field;
@@ -171,7 +158,7 @@ class Facet_Template {
 		foreach (range($min['min'], $min['max']) as $year) {
 			$min_options[] = array(
 				'value' => $year,
-				'label' => $year,
+				'label' => $this->format_label($year),
 			);
 		}
 		$min_field = $inner_blocks[0];
@@ -193,14 +180,14 @@ class Facet_Template {
 
 		// Maximum Range
 		$max = array(
-			'min' => date('Y', strtotime($facet['settings']['range']['max']['minDate'])),
-			'max' => date('Y', strtotime($facet['settings']['range']['max']['maxDate'])),
+			'min' => gmdate('Y', strtotime($facet['settings']['range']['max']['minDate'])),
+			'max' => gmdate('Y', strtotime($facet['settings']['range']['max']['maxDate'])),
 		);
 		$max_options = array();
 		foreach (range($max['min'], $max['max']) as $year) {
 			$max_options[] = array(
 				'value' => $year,
-				'label' => $year,
+				'label' => $this->format_label($year),
 			);
 		}
 		$max_field = $inner_blocks[1];
@@ -281,7 +268,7 @@ class Facet_Template {
 			'data-wp-class--is-expanded' => 'context.expanded',
 			'data-wp-class--has-selections' => 'callbacks.isSelected',
 			'data-wp-class--is-processing' => 'prc-platform/facets-context-provider::state.isProcessing',
-			'style' => '--block-gap: ' . $this->get_block_gap_support_value($attributes) . ';',
+			'style' => '--block-gap: ' . \PRC\Platform\Block_Utils\get_block_gap_support_value($attributes) . ';',
 			'class' => \PRC\Platform\Block_Utils\classNames(array(
 				'is-type-' . $facet_type,
 			))

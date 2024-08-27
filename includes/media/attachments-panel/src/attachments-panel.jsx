@@ -24,41 +24,28 @@ import './style.scss';
 import { ProvideAttachments } from './context';
 import AttachmentsList from './attachments-list';
 
-const HOOK_NAME = 'prc-platform/attachments-panel';
+const HOOK_NAME = 'prc-platform.attachments-panel';
 // With this hook other plugins can add their own panels to the attachments panel. For example, Chart Builder could potentially show it's chart exports. The entire idea of this plugin is to provide a central universe of all media assets for a post/page.
 
-const AttachmentsPanel = withFilters(HOOK_NAME)(() => (
-	// const { flashPrePublishWarning } = useAttachments();
-	<Fragment>
+function AttachmentsPanelComponent() {
+	return (
+		<ProvideAttachments>
+			<AttachmentsList />
+		</ProvideAttachments>
+	);
+}
+
+export default function AttachmentsPanel() {
+	const AttachmentsPanelHook = withFilters(HOOK_NAME)(
+		AttachmentsPanelComponent
+	);
+	return (
 		<PluginSidebar
-			name="prc-attachments-panel"
+			name="prc-platform-attachments-panel"
 			title="Attachments"
 			icon="admin-media"
 		>
-			<ProvideAttachments>
-				<AttachmentsList />
-			</ProvideAttachments>
-			{
-				// Filter Should Hook Here
-			}
+			<AttachmentsPanelHook />
 		</PluginSidebar>
-		{/* {true === flashPrePublishWarning && (
-				<PluginPrePublishPanel
-					name="prc-media-assets-panel-warning"
-					title="Media Assets"
-					icon="admin-media"
-					className="prc-media-assets-panel"
-					initialOpen
-				>
-					<p>
-						{__(
-							'You have un-used images. Please keep the media library tidy by removing any images you no longer need.',
-							'prc-block-plugins',
-						)}
-					</p>
-				</PluginPrePublishPanel>
-			)} */}
-	</Fragment>
-));
-
-export default AttachmentsPanel;
+	);
+}

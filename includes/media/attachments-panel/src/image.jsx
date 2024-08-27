@@ -51,9 +51,9 @@ function Image({
 
 	const isActive = Object.keys(insertedImageIds).includes(id.toString());
 	const [modalActive, toggleModal] = useState(false);
-	const leftShiftKeyPressed = useKeyPress('Shift');
-	const leftOptKeyPressed = useKeyPress('Alt');
-	const leftCommandKeyPressed = useKeyPress('metaKey');
+	const shiftKeyPressed = useKeyPress('Shift');
+	const optionKeyPressed = useKeyPress('Alt');
+	const commandKeyPressed = useKeyPress('Meta');
 
 	// const ref = useRef(null);
 
@@ -85,11 +85,11 @@ function Image({
 				onClick={() => {
 					if (isActive) {
 						selectBlock(insertedImageIds[id].clientId);
-					} else if (leftShiftKeyPressed) {
+					} else if (shiftKeyPressed) {
 						handleImageInsertion(id, url, '640-wide', alt, caption);
-					} else if (leftOptKeyPressed) {
+					} else if (optionKeyPressed) {
 						handleImageReplacement(id, url, attachmentLink);
-					} else if (leftCommandKeyPressed) {
+					} else if (commandKeyPressed) {
 						window.open(editLink, '_blank');
 					} else {
 						toggleModal(true);

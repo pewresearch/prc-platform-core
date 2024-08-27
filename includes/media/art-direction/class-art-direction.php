@@ -60,6 +60,7 @@ class Art_Direction {
 				'type' => 'object',
 				'properties' => null,
 			),
+			// @TODO: Deprecate this image size...
 			'XL'  => array(
 				'type' => 'object',
 				'properties' => null,
@@ -110,11 +111,6 @@ class Art_Direction {
 	 * @var string
 	 */
 	protected static $post_meta_key = 'artDirection';
-	/**
-	 * Legacy post meta key for art direction data. (pre 2019-10-01)
-	 * @var string
-	 */
-	protected static $legacy_post_meta_key = '_art';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -151,30 +147,8 @@ class Art_Direction {
 	}
 
 	public function init_art_direction() {
-		$this->register_art_direction_meta();
-	}
-
-	public function change_featured_image_label( $args, $post_type ) {
-		if ( ! in_array( $post_type, $this->enabled_post_types, true ) ) {
-			return $args;
-		}
-		$new_labels = array();
-		if ( array_key_exists( 'labels', $args ) ) {
-			$labels = $args['labels'];
-			$new_labels['featured_image'] = 'Art Direction';
-			$new_labels['set_featured_image'] = 'Set art image';
-			$new_labels['remove_featured_image'] = 'Remove art image';
-			$new_labels['use_featured_image'] = 'Use as art image';
-		}
-		if ( ! empty( $new_labels ) ) {
-			$args['labels'] = array_merge( $labels, $new_labels );
-		}
-		return $args;
-	}
-
-	public function register_art_direction_meta() {
+		// Register artDirection post meta for each enabled post type.
 		foreach ( $this->enabled_post_types as $post_type ) {
-			// New Meta
 			register_post_meta(
 				$post_type,
 				self::$post_meta_key,
@@ -187,23 +161,28 @@ class Art_Direction {
 					'auth_callback' => function() {
 						return current_user_can( 'edit_posts' );
 					},
-				)
-			);
-
-			// Legacy Meta
-			register_post_meta(
-				$post_type,
-				self::$legacy_post_meta_key,
-				array(
-					'show_in_rest'  => true,
-					'single'        => true,
-					'type'          => 'string',
-					'auth_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					// 'revisions_enabled' => true,
 				)
 			);
 		}
+	}
+
+	public function change_featured_image_label( $args, $post_type ) {
+		if ( ! in_array( $post_type, $this->enabled_post_types, true ) ) {
+			return $args;
+		}
+		$new_labels = array();
+		if ( array_key_exists( 'labels', $args ) ) {
+			$labels = $args['labels'];
+			$new_labels['featured_image'] = 'Art Direction';
+			$new_labels['set_featured_image'] = 'Set art direction image (A1)';
+			$new_labels['remove_featured_image'] = 'Remove art direction (A1) image';
+			$new_labels['use_featured_image'] = 'Use as art direction (A1) image';
+		}
+		if ( ! empty( $new_labels ) ) {
+			$args['labels'] = array_merge( $labels, $new_labels );
+		}
+		return $args;
 	}
 
 	/**
@@ -385,24 +364,7 @@ class Art_Direction {
 
 		// Check for new post meta key artDirection.
 		$all_art = get_post_meta( $parent_post_id, self::$post_meta_key, true );
-		// Fallback to _art if not found.
-		if ( false === $all_art || ! is_array( $all_art ) ) {
-			$all_art = get_post_meta( $parent_post_id, '_art', true );
-		}
-
-		// Double checks the object data is cast as an array.
-		if ( is_object( $all_art ) ) {
-			$all_art = (array) $all_art;
-			foreach ( $all_art as $key => $value ) {
-				if ( is_object( $value ) ) {
-					$all_art[ $key ] = (array) $value;
-				}
-			}
-		}
-
-		// Legacy data is stored asstringified JSON, check for that and decode it.
-		$all_art = is_array( $all_art ) ? $all_art : json_decode( $all_art, true );
-		if ( ! is_array( $all_art ) ) {
+		if ( ! $all_art ) {
 			// Check for fallback image, fallback_to_featured_image will return false explicitly.
 			$all_art = $this->get_fallback_featured_image( $post_id );
 		}

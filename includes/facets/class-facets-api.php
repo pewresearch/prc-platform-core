@@ -11,6 +11,7 @@ use WP_REST_Response;
  * A PHP based API for interacting with Facets WP data via the REST API.
  */
 class Facets_API {
+	protected $enable_cache = false;
 	public $query_args;
 	public $query_id;
 	public $cache_key;
@@ -118,11 +119,10 @@ class Facets_API {
 			];
 		}
 		// @TODO: We should check for things like is_404, is_search, etc. and we should check if there are even results in the query...
-		do_action('qm/debug', 'facets_cache_key:: '.print_r($this->cache_key, true));
 
 		$cache = new Facets_Cache();
 		$cached_data = $cache->get($this->cache_key, $this->cache_group);
-		if ( $cached_data ) {
+		if ( $cached_data && false !== $this->enable_cache ) {
 			return $cached_data;
 		}
 
@@ -145,7 +145,11 @@ class Facets_API {
 
 		$data = apply_filters('prc_platform_facets_api_response', $data);
 
-		$cache->store($this->cache_key, $this->cache_group, $data);
+		do_action('qm/debug', 'Facets_API::QUERY:: '.print_r(['data' => $data, 'args' => $args], true));
+
+		if ( false !== $this->enable_cache ) {
+			$cache->store($this->cache_key, $this->cache_group, $data);
+		}
 
 		return $data;
 	}

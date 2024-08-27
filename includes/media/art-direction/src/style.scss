@@ -1,6 +1,18 @@
-.editor-post-featured-image__preview:hover {
-    img {
-        box-shadow: 0px 1px 5px rgba(0,0,0,0.45);
-        transition: box-shadow 0.2s;
-    }
+.components-button.is-compact.inherit-height {
+	height: inherit!important;
+}
+.components-dropdown.editor-post-url__panel-dropdown {
+	.components-button.editor-post-url__panel-toggle.is-compact {
+		min-height: max-content !important;
+		height: 100%;
+	}
+}
+
+.prc-platform-art-direction__list {
+	min-width: 249px;
+	width: 100%;
+}
+
+.media-modal:has(.prc-platform-art-direction__modal) {
+	z-index: 1999999;
 }

@@ -68,25 +68,6 @@ const usePostReportPackageContext = (postId, postType, currentPostId) => {
 		});
 	}, [debounceBackChapters]);
 
-	// const { materials, setMaterials, backChapters, setBackChapters } = useMemo(() => {
-	// 	return {
-	// 		materials: meta?.reportMaterials,
-	// 		setMaterials(newVal) {
-	// 			setMeta({
-	// 				...meta,
-	// 				reportMaterials: newVal,
-	// 			});
-	// 		},
-	// 		backChapters: meta?.multiSectionReport,
-	// 		setBackChapters(newVal) {
-	// 			setMeta({
-	// 				...meta,
-	// 				multiSectionReport: newVal,
-	// 			});
-	// 		}
-	// 	};
-	// }, [meta]);
-
 	const getLatestStateByItemType = (itemsType = 'materials') => {
 		if ('materials' === itemsType) {
 			return [...materials];

@@ -141,22 +141,23 @@ function Files() {
 function AttachmentsList() {
 	const { attachments, searchTerm, setSearchTerm, mediaEditor } =
 		useAttachments();
-	const postId = useSelect((select) =>
-		select('core/editor').getCurrentPostId()
-	);
 
 	return (
 		<Fragment>
-			<PanelBody
-				title={__('Attachments')}
-				initialOpen
-				className="prc-attachments-list"
+			<div
+				style={{
+					position: 'relative',
+					padding: '1em',
+				}}
 			>
 				<BaseControl
 					id="prc-media-zone"
 					label={__(
-						'Drag and drop images to attach them to the post. Click on an image to select the desired size to insert into the editor. Alternatively, press "Shift + Click" an image to insert it at 640 pixels wide. To replace your selected image block, press "Opt + Click" on the desired image.',
+						'Drag and drop files to attach them to this post or manage existing attachments.',
 						'prc-block-plugins'
+					)}
+					help={__(
+						'Click on an image to select the desired size to insert into the editor. Alternatively, press "Shift + Click" an image to insert it at 640 pixels wide. To replace your selected image block, press "Opt + Click" on the desired image.'
 					)}
 				>
 					{0 < attachments.length && (
@@ -177,7 +178,7 @@ function AttachmentsList() {
 					/>
 					<DragAndDropZone />
 				</BaseControl>
-			</PanelBody>
+			</div>
 			<PanelBody
 				title={__('Images')}
 				initialOpen={attachments.length > 0}

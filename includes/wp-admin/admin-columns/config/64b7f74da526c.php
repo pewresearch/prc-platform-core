@@ -1,13 +1,13 @@
 <?php
 
 return array (
-  'version' => '6.4.6',
+  'version' => '6.4.10',
   'list_screen' => 
   array (
     'title' => 'Default View',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1713480930,
+    'updated' => 1723742833,
     'columns' => 
     array (
       'title' => 
@@ -174,6 +174,23 @@ return array (
         'filter' => 'on',
         'filter_label' => '',
         'name' => '482b94d6cc0830',
+      ),
+      '1cf42c6f960419' => 
+      array (
+        'type' => 'column-date_published',
+        'label' => 'Date Published',
+        'width' => '',
+        'width_unit' => '%',
+        'date_format' => 'wp_default',
+        'filter' => 'off',
+        'filter_label' => '',
+        'filter_format' => '',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'name' => '1cf42c6f960419',
       ),
     ),
     'settings' => 
