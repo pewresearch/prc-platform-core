@@ -161,7 +161,6 @@ class Art_Direction {
 					'auth_callback' => function() {
 						return current_user_can( 'edit_posts' );
 					},
-					// 'revisions_enabled' => true,
 				)
 			);
 		}

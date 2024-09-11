@@ -28,8 +28,11 @@ function convertAssetsS3Interactive({ id, path, react, libraries, styles }) {
 	});
 }
 
-function converTextRaw(text) {
-	console.log('converTextRaw()', text);
+function convertTextRaw(text) {
+	if (!text) {
+		return;
+	}
+	console.log('convertTextRaw()', text);
 	const isLoadInteractive = null !== text.match(/\[load_interactive/);
 	const isJsInteractive = null !== text.match(/\[js_interactive/);
 
@@ -107,14 +110,14 @@ const transforms = {
 			type: 'block',
 			blocks: ['core/shortcode'],
 			transform: ({ text }) => {
-				return converTextRaw(text);
+				return convertTextRaw(text);
 			},
 		},
 		{
 			type: 'block',
 			blocks: ['core/html'],
 			transform: ({ content }) => {
-				return converTextRaw(content);
+				return convertTextRaw(content);
 			},
 		},
 	],

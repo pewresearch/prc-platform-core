@@ -20,6 +20,8 @@ class Staff {
 	public $photo;
 	public $expertise;
 	public $social_profiles;
+	public $wp_user;
+	public $slack_handle;
 	public $is_currently_employed = false;
 
 	protected static $cache_ttl = 1 * HOUR_IN_SECONDS;
@@ -129,6 +131,8 @@ class Staff {
 		$this->photo = $this->get_staff_photo($staff_post_id);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);
+		$this->wp_user = $this->get_wp_user($staff_post_id);
+		$this->slack_handle = $this->get_slack_handle($staff_post_id);
 		$this->set_cache();
 	}
 
@@ -149,6 +153,8 @@ class Staff {
 		$this->photo = false;
 		$this->social_profiles = array();
 		$this->expertise = array();
+		$this->wp_user = false;
+		$this->slack_handle = false;
 		$this->set_cache();
 	}
 
@@ -255,5 +261,42 @@ class Staff {
 			return false;
 		}
 		return array();
+	}
+
+	public function get_wp_user($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		$assigned_user = get_post_meta( $staff_post_id, '_wp_user', true );
+		if ( ! empty( $assigned_user ) ) {
+			return false;
+		}
+		$user = get_userdata( $assigned_user );
+		if ( false === $user ) {
+			return false;
+		}
+		return $user;
+	}
+
+	public function get_slack_handle($staff_post_id = false) {
+		if ( false === $staff_post_id ) {
+			$staff_post_id = $this->ID;
+		}
+		if ( false === $staff_post_id ) {
+			return false;
+		}
+		// Get the user.
+		$wp_user = $this->get_wp_user($staff_post_id);
+		if ( false === $wp_user ) {
+			return false;
+		}
+		$slack_handle = get_user_meta( $wp_user->ID, 'slack_handle', true );
+		if ( empty( $slack_handle ) ) {
+			return false;
+		}
+		return '@'. $slack_handle;
 	}
 }

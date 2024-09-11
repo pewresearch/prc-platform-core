@@ -3,12 +3,10 @@
 	"apiVersion": 3,
 	"name": "prc-platform/interactive",
 	"version": "0.1.0",
-	"title": "Interactive",
-	"description": "Embed a interactive into another post.",
+	"title": "Interactive Feature",
+	"description": "Create an embed of a feature post. Update the feature, and the changes will apply everywhere it is embedded.",
 	"category": "media",
-	"keywords": [
-		"interactive"
-	],
+	"keywords": ["features", "interactive", "embed", "feature"],
 	"attributes": {
 		"ref": {
 			"type": "number"

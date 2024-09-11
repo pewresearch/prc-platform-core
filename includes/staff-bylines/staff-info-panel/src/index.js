@@ -9,6 +9,7 @@ import { registerPlugin } from '@wordpress/plugins';
  */
 import MaelstromPanel from './maelstrom';
 import StaffInfoPanel from './staff-info';
+import WPUserPanel from './wp-user';
 
 registerPlugin('prc-staff-info', {
 	render: () => {
@@ -16,6 +17,7 @@ registerPlugin('prc-staff-info', {
 			<Fragment>
 				<StaffInfoPanel />
 				<MaelstromPanel />
+				<WPUserPanel />
 			</Fragment>
 		);
 	},

@@ -59,6 +59,7 @@ class Features {
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
 
 			new Loader_Block($loader);
+			new Embed_Block($loader);
 		}
 	}
 

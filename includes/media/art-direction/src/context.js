@@ -103,28 +103,37 @@ const useArtDirectionContext = () => {
 		};
 	}, []);
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
-	const { canDelete, isResolving } = useResourcePermissions('posts', postId);
+	const { canDelete, isResolving } = useResourcePermissions(postType, postId);
 	const allowEditing = useMemo(() => {
-		console.log('ART CHECK 0', isResolving, canDelete);
+		console.log('ART CHECK Permissions Check:', isResolving, canDelete);
 		if (isResolving) {
 			return false;
 		}
-		if (canDelete) {
-			return true;
-		}
-		return false;
+		return true;
 	}, [isResolving, canDelete]);
 
 	const [artDirection, setArtDirection] = useState(meta.artDirection || {});
-	const debouncedArtDirection = useDebounce(artDirection, 1000);
+	const debouncedArtDirection = useDebounce(artDirection, 500);
 
 	/**
 	 * Handle saving data back to post.
 	 * This approach doesnt support cross collabration as well... but it works for now.
 	 */
 	useEffect(() => {
-		console.log('ART DIRECTION:', meta, testMeta);
+		console.log(
+			'ART DIRECTION:',
+			meta,
+			testMeta,
+			debouncedArtDirection,
+			artDirection,
+			allowEditing
+		);
 		if (!allowEditing || undefined === meta) {
+			console.log(
+				"ART DIRECTION UHOH: Can't edit or no meta",
+				allowEditing,
+				meta
+			);
 			return;
 		}
 		// If there is an A1 image, set it as the featured image
