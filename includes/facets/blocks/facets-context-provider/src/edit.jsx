@@ -12,10 +12,12 @@ import {
 /**
  * Internal Dependencies
  */
-import useFacetWPSettings from './use-facetwp-settings';
+import useFacetSettings from './use-facet-settings';
 
 export default function Edit({ clientId, context }) {
-	const { settings, isLoading } = useFacetWPSettings();
+	const { templateSlug } = context;
+
+	const { settings, isLoading } = useFacetSettings(templateSlug);
 
 	const newContext = useMemo(() => {
 		return {

@@ -11,7 +11,7 @@
 /**
  * WordPress Dependencies
  */
-import { registerBlockType } from '@wordpress/blocks';
+import { registerBlockType, unregisterBlockType } from '@wordpress/blocks';
 
 /**
  * Internal Dependencies
@@ -37,3 +37,5 @@ const settings = {
  * @see https://developer.wordpress.org/block-editor/developers/block-api/#registering-a-block
  */
 registerBlockType(name, { ...metadata, ...settings });
+
+unregisterBlockType('elasticpress/facet');

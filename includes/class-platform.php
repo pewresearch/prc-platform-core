@@ -180,7 +180,7 @@ class Platform_Bootstrap {
 		new Housekeeping( $this->get_version(), $this->get_loader() );
 		new Icon_Loader( $this->get_version(), $this->get_loader() );
 		new Features( $this->get_version(), $this->get_loader() );
-		new Firebase( $this->get_version(), $this->get_loader() );
+		new Firebase( $this->get_loader() );
 		new Jetpack( $this->get_version(), $this->get_loader() );
 		new Mailchimp( $this->get_version(), $this->get_loader() );
 		new Media( $this->get_version(), $this->get_loader() );

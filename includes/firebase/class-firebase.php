@@ -1,18 +1,30 @@
 <?php
 namespace PRC\Platform;
-use WP_Error;
+use WP_Error, Kreait\Firebase\Factory;
 
+/**
+ * This class is a central method to configuring and interacting with the Firebase SDK.
+ * We use Firebase extensively as an interactives data store, and as a way to manage user authentication.
+ * If your application is writing simutaneously outside user data to a database, you should use Firebase, not MySQL.
+ * Keep MYSQL for PRC data, use Firebase for outside user data.
+ */
 class Firebase {
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * The handle for the firebase js module.
 	 */
-	private $version;
-	public static $instance;
 	public static $handle = '@prc/firebase';
+	/**
+	 * The instance of the Firebase SDK.
+	 */
+	public $instance;
+	/**
+	 * The database instance.
+	 */
+	public $db;
+	/**
+	 * The auth instance.
+	 */
+	public $auth;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -21,19 +33,30 @@ class Firebase {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader ) {
+		$this->instance = ( new Factory() )->withServiceAccount($this->localize_server_side_credentials());
+		$this->db = $this->instance->createDatabase();
+		$this->auth = $this->instance->createAuth();
 		$this->init($loader);
 	}
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action('init', $this, 'register_assets');
-			$loader->add_filter('script_module_data_' . self::$handle, $this, 'localize_firebase');
+			$loader->add_filter('script_module_data_' . self::$handle, $this, 'localize_client_side_credentials');
 		}
 	}
 
-	public function localize_firebase($data) {
+	public function localize_server_side_credentials() {
+		$environment = wp_get_environment_type();
+		if ( 'production' === $environment ) {
+			return file_get_contents( \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json' );
+		} else {
+			return file_get_contents( \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-staging.json' );
+		}
+	}
+
+	public function localize_client_side_credentials($data) {
 		$api_key       = \PRC_PLATFORM_FIREBASE_KEY;
 		$auth_domain   = \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN;
 		$auth_db       = \PRC_PLATFORM_FIREBASE_AUTH_DB;

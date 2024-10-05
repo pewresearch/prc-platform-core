@@ -25,256 +25,148 @@ class Facet_Template {
 		}
 	}
 
-	protected function format_label($label) {
-		$label_is_datetime = strtotime($label) !== false;
-		$label = $label_is_datetime ? gmdate('Y', strtotime($label)) : $label;
-		return $label;
-	}
-
-	protected function format_count($count) {
-		return $count > 250 ? '250+' : $count;
-	}
-
+	/**
+	 * This function takes the innerblocks provided, renders the first bock as a template, and then modifies specific html attributes to render a dropdown facet.
+	 */
 	public function render_dropdown_facet($facet, $inner_blocks) {
-		$field = $inner_blocks[0];
-		$facet_choices = $facet['choices'];
-		if ( empty($facet_choices) ) {
-			do_action('qm/debug', 'UHOH No Facet Values For:'.print_r($facet, true));
-			return '';
-		}
-		$selected_choices = $facet['selected'];
-
-		$field_value = null;
-		$options = array();
-		foreach ($facet_choices as $choice) {
-			// Check if the label is a datetime string and if so format it as a year.
-			$count = $this->format_count($choice['count']);
-			$label = $this->format_label($choice['label']);
-			$label = $label . ' (' . $count . ')';
-			// If the count exceeds 250, show 250+ instead of the actual count.
-			$opts = array(
-				'value' => $choice['value'],
-				'label' => $label,
-				'isSelected' => false,
-			);
-			// If the choice is selected, set the field value to the selected choice.
-			if ( in_array($choice['value'], $selected_choices) ) {
-				$field_value = $choice['value'];
-				$opts['isSelected'] = true;
-			}
-			// Add our option to the options array.
-			$options[] = $opts;
-		}
-		$field['attrs']['defaultOptions'] = 'custom';
-		$field['attrs']['options'] = $options;
-		// If there is a matching value that's already selected in the facet, set the field value to that value.
-		if (null !== $field_value) {
-			$field['attrs']['value'] = $field_value;
-		}
-		// do_action('qm/debug', 'Facet Check:'.print_r($field, true));
-		// do_action('qm/debug', 'Facet Values For:'.print_r($field, true));
-		// Parse new form-input-select block with the updated options.
-		$parsed = new WP_Block_Parser_Block(
-			$field['blockName'],
-			$field['attrs'],
-			$field['innerBlocks'],
-			$field['innerHTML'],
-			$field['innerContent']
+		$field_template = $inner_blocks[0]; // The innerblocks should contain the template for this block, we will render out the html for a default value and then use it as a template for the rest.
+		$parsed_template = new WP_Block_Parser_Block(
+			$field_template['blockName'],
+			$field_template['attrs'],
+			$field_template['innerBlocks'],
+			$field_template['innerHTML'],
+			$field_template['innerContent']
 		);
-		return (
+		$rendered_template = (
 			new WP_Block(
-				(array) $parsed,
+				(array) $parsed_template,
 				array()
 			)
 		)->render();
+		return $rendered_template;
 	}
 
-	public function render_checkbox_radio_facet($facet, $inner_blocks) {
-		$facet_choices = $facet['choices'];
-		$selected_choices = $facet['selected'];
-		$field_template = $inner_blocks[0]; // The innerblocks should contain the template for how this block should be repeated for each value, or $fact_choices.
-		$content = '';
-		$expanded_content = '';
-		// make sure $selected_choices are first in the $facet_choices array, for a better user experience
-		$blocks_to_generate = [];
-		foreach ($facet_choices as $choice) {
-			$field = $field_template;
-			$count = $this->format_count($choice['count']);
-			$label = $this->format_label($choice['label']);
-			$field['attrs']['label'] =  $label. ' (' . $count . ')';
-			$field['attrs']['value'] = $choice['value'];
-			$field['attrs']['defaultChecked'] = in_array($choice['value'], $selected_choices);
-			$blocks_to_generate[] = $field;
-		}
-		// sort it such that the defaultChecked are first
-		usort($blocks_to_generate, function($a, $b) {
-			if ( $a['attrs']['defaultChecked'] === $b['attrs']['defaultChecked'] ) {
-				return 0;
-			}
-			return $a['attrs']['defaultChecked'] ? -1 : 1;
-		});
-
-		$i = 1;
-		foreach ($blocks_to_generate as $block) {
-			$parsed = new WP_Block_Parser_Block(
-				$block['blockName'],
-				$block['attrs'],
-				$block['innerBlocks'],
-				$block['innerHTML'],
-				$block['innerContent']
-			);
-
-			if ( $i > 5 ) {
-				$expanded_content .= (
-					new WP_Block(
-						(array) $parsed,
-						array()
-					)
-				)->render();
-			} else {
-				$content .= (
-					new WP_Block(
-						(array) $parsed,
-						array()
-					)
-				)->render();
-			}
-
-			$i++;
-		}
-		return array(
-			'content' => $content,
-			'expanded_content' => $expanded_content,
+	/**
+	 * This function takes the innerblocks provided, renders the first bock as a template, and then modifies specific html attributes
+	 * for ingestiong by the interactivity api, converting them to wp-directives.
+	 * @param array $inner_blocks
+	 * @return array
+	 */
+	public function render_checkbox_radio_facet_template($inner_blocks, $template_data_src) {
+		$field_template = $inner_blocks[0]; // The innerblocks should contain the template for this block, we will render out the html for a default value and then use it as a template for the rest.
+		$parsed_template = new WP_Block_Parser_Block(
+			$field_template['blockName'],
+			$field_template['attrs'],
+			$field_template['innerBlocks'],
+			$field_template['innerHTML'],
+			$field_template['innerContent']
 		);
-	}
-
-	public function render_date_range_facet($facet, $inner_blocks) {
-		// Minimum Range
-		$min = array(
-			'min' => gmdate('Y', strtotime($facet['settings']['range']['min']['minDate'])),
-			'max' => gmdate('Y', strtotime($facet['settings']['range']['min']['maxDate'])),
-		);
-		$min_options = array();
-		foreach (range($min['min'], $min['max']) as $year) {
-			$min_options[] = array(
-				'value' => $year,
-				'label' => $this->format_label($year),
-			);
-		}
-		$min_field = $inner_blocks[0];
-		$min_field['attrs']['options'] = $min_options;
-		$min_parsed = new WP_Block_Parser_Block(
-			$min_field['blockName'],
-			$min_field['attrs'],
-			$min_field['innerBlocks'],
-			$min_field['innerHTML'],
-			$min_field['innerContent']
-		);
-		// Render the minimum range select
-		$minimum_field = (
+		$rendered_template = (
 			new WP_Block(
-				(array) $min_parsed,
+				(array) $parsed_template,
 				array()
 			)
 		)->render();
 
-		// Maximum Range
-		$max = array(
-			'min' => gmdate('Y', strtotime($facet['settings']['range']['max']['minDate'])),
-			'max' => gmdate('Y', strtotime($facet['settings']['range']['max']['maxDate'])),
+		return wp_sprintf(
+			/* html */'<template data-wp-each--choice="%s" data-wp-each-key="context.choice.value">%s</template>',
+			$template_data_src,
+			$rendered_template,
 		);
-		$max_options = array();
-		foreach (range($max['min'], $max['max']) as $year) {
-			$max_options[] = array(
-				'value' => $year,
-				'label' => $this->format_label($year),
-			);
-		}
-		$max_field = $inner_blocks[1];
-		$max_field['attrs']['options'] = $max_options;
-		$max_parsed = new WP_Block_Parser_Block(
-			$max_field['blockName'],
-			$max_field['attrs'],
-			$max_field['innerBlocks'],
-			$max_field['innerHTML'],
-			$max_field['innerContent']
-		);
-		// Render the maximum range select
-		$maximum_field = (
-			new WP_Block(
-				(array) $max_parsed,
-				array()
-			)
-		)->render();
-
-		return array(
-			'minimum' => $minimum_field,
-			'maximum' => $maximum_field,
-		);
-	}
-
-	public function render_search_facet($facet, $inner_blocks) {
-		return '<p>Search Facet Here</p>';
 	}
 
 	public function render_block_callback($attributes, $content, $block) {
-		$facets = $block->context['facetsContextProvider']['data']['facets'];
+		$target_namespace = 'prc-platform/facets-context-provider';
+		$facets = $block->context[$target_namespace]['facets'];
 		if ( empty($facets) ) {
 			return '<!-- No facets data -->';
 		}
+
 		$facet_type = array_key_exists('facetType', $attributes) ? $attributes['facetType'] : 'checkbox';
+		$facet_limit = array_key_exists('facetLimit', $attributes) ? $attributes['facetLimit'] : 10;
 		$facet_name = array_key_exists('facetName', $attributes) ? $attributes['facetName'] : null;
+		$facet_label = array_key_exists('facetLabel', $attributes) ? $attributes['facetLabel'] : '';
+		$facet_placeholder = wp_strip_all_tags($facet_label);
 		$facet_slug = $facet_name;
-		$facet = $facets[$facet_name];
+
+		$facet = $facets[$facet_slug];
+		$facet_data = $facet['choices'];
+		$selected = (array) $facet['selected'];
+
+		if (empty($facet_data)) {
+			return '<p>No facets data</p>';
+			return '<!-- No choices for this facet -->';
+		}
+		// Sort data by count.
+		usort($facet_data, function($a, $b) {
+			if ($a['count'] === $b['count']) {
+				return 0;
+			}
+			return $a['count'] > $b['count'] ? -1 : 1;
+		});
+
+		$choices = $facet_data;
+		// If the $choices exceeds the limit, we need to remove the excess choices and store them in a separate array, $expanded_choices.
+		$expanded_choices = [];
+		if ( $facet_limit < count($choices) && $facet_type !== 'dropdown' ) {
+			$expanded_choices = array_slice($choices, $facet_limit);
+			$choices = array_slice($choices, 0, $facet_limit);
+		}
 
 		$new_content = '';
 		$expanded_content = '';
 
-		if ( in_array($facet_type, array('dropdown','yearly') ) ) {
+		if ( in_array($facet_type, ['dropdown'] ) ) {
 			$new_content .= $this->render_dropdown_facet($facet, $block->parsed_block['innerBlocks']);
-		} elseif ( in_array($facet_type, array('date_range') ) ) {
-			$date_range_facet = $this->render_date_range_facet($facet, $block->parsed_block['innerBlocks']);
-			$new_content .= $date_range_facet['minimum'];
-			$new_content .= $date_range_facet['maximum'];
-		} elseif( in_array($facet_type, ['search'] ) ) {
-			$new_content .= $this->render_search_facet($facet, $block->parsed_block['innerBlocks']);
+		} elseif ( in_array($facet_type, ['range'] ) ) {
+			$new_content .= '<!-- Range facets are not yet supported. -->';
 		} else {
-			$checkbox_facet = $this->render_checkbox_radio_facet($facet, $block->parsed_block['innerBlocks']);
-			$new_content .= $checkbox_facet['content'];
-			$expanded_content .= $checkbox_facet['expanded_content'];
+			$new_content = $this->render_checkbox_radio_facet_template(
+				$block->parsed_block['innerBlocks'],
+				'state.facetChoices',
+			);
+			$expanded_content = $this->render_checkbox_radio_facet_template(
+				$block->parsed_block['innerBlocks'],
+				'state.facetExpandedChoices',
+			);
 		}
 
 		if ( empty($new_content) ) {
-			return '';
+			return '<!-- Could not render this facet -->';
 		}
 
-		$facet_router_region = md5(wp_json_encode([
-			'slug' => $facet_slug,
-			'type' => $facet_type,
-		]));
-
-		$block_wrapper_attrs = get_block_wrapper_attributes(array(
-			'data-wp-interactive' => wp_json_encode(array(
-				'namespace' => 'prc-platform/facet-template'
-			)),
-			'data-wp-router-region' => $facet_router_region,
+		$block_wrapper_attrs = get_block_wrapper_attributes([
+			'data-wp-interactive' => wp_json_encode([
+				'namespace' => $target_namespace,
+			]),
 			'data-wp-key' => $facet_slug,
-			'data-wp-context' => wp_json_encode(array(
+			'data-wp-context' => wp_json_encode([
+				'placeholder' => $facet_placeholder,
 				'expanded' => false,
 				'expandedLabel' => '+ More',
+				'limit' => $facet_limit,
 				'facetSlug' => $facet_slug,
-			)),
+				'facetType' => $facet_type,
+				'data' => $facet_data,
+				'selected' => $selected,
+				'choices' => $choices,
+				'expandedChoices' => $expanded_choices,
+				'activeIndex' => 0,
+				'searchValue' => '',
+			]),
+			'data-wp-watch--on-updates' => 'callbacks.onUpdates',
 			'data-wp-watch--on-expand' => 'callbacks.onExpand',
+			'data-wp-class--has-expanded-choices' => 'state.hasExpandedChoices',
+			'data-wp-class--has-selections' => 'state.hasSelections',
 			'data-wp-class--is-expanded' => 'context.expanded',
-			'data-wp-class--has-selections' => 'callbacks.isSelected',
-			'data-wp-class--is-processing' => 'prc-platform/facets-context-provider::state.isProcessing',
+			'data-wp-class--is-processing' => 'state.isProcessing',
 			'style' => '--block-gap: ' . \PRC\Platform\Block_Utils\get_block_gap_support_value($attributes) . ';',
-			'class' => \PRC\Platform\Block_Utils\classNames(array(
+			'class' => \PRC\Platform\Block_Utils\classNames([
 				'is-type-' . $facet_type,
-			))
-		));
+			])
+		]);
 
-		if ( in_array($facet_type, array('dropdown','yearly','date_range')) ) {
+		if ( in_array($facet_type, ['dropdown','range']) ) {
 			$template = '<div %1$s>%2$s %3$s</div>';
 		} else {
 			$template = '<div %1$s>%2$s<div class="wp-block-prc-block-facet-template-list">%3$s</div>%4$s</div>';
@@ -284,8 +176,8 @@ class Facet_Template {
 
 		$label = wp_sprintf(
 			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">%3$s</button></span></h5>',
-			array_key_exists('facetLabel', $attributes) ? $attributes['facetLabel'] : '',
-			'actions.onClear',
+			$facet_label,
+			'actions.clearFacet',
 			$clear_icon,
 		);
 

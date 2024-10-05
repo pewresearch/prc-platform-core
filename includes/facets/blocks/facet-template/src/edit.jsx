@@ -8,7 +8,7 @@ import { getBlockGapSupportValue } from '@prc/block-utils';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo } from '@wordpress/element';
 import { useBlockProps, RichText } from '@wordpress/block-editor';
 
 /**
@@ -38,7 +38,7 @@ export default function Edit({
 	clientId,
 	isSelected,
 }) {
-	const { facetName, facetType, facetLabel } = attributes;
+	const { facetName, facetType, facetLabel, facetLimit } = attributes;
 
 	const blockProps = useBlockProps({
 		className: `is-type-${facetType}`,
@@ -55,25 +55,18 @@ export default function Edit({
 				},
 			];
 		}
-		if (['dropdown', 'yearly', 'date_range'].includes(facetType)) {
+		if ('dropdown' === facetType) {
 			return [
 				{
 					label: 'Dropdown',
 				},
 			];
 		}
-		return [
-			{
-				label: 'Item 1',
-			},
-			{
-				label: 'Item 2',
-			},
-			{
-				label: 'Item 3',
-			},
-		];
-	}, [facetType]);
+		// For checkboxes and radio lets return the number of facetLimit
+		return Array.from({ length: facetLimit }, (_, index) => ({
+			label: `Option ${index + 1}`,
+		}));
+	}, [facetType, facetLimit]);
 
 	return (
 		<Fragment>
@@ -100,6 +93,14 @@ export default function Edit({
 						loadingLabel: 'Loading Facet...',
 					}}
 				/>
+				{'dropdown' !== facetType && (
+					<button
+						className="wp-block-prc-platform-facet-template__list-expanded-button"
+						type="button"
+					>
+						+ More
+					</button>
+				)}
 			</div>
 		</Fragment>
 	);

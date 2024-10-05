@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "prc-platform/facet-template",
-	"version": "0.1.0",
+	"version": "2.0.0",
 	"title": "Facet Template",
 	"category": "theme",
 	"description": "Display a facet given its slug and type as a block",
@@ -12,10 +12,23 @@
 			"default": ""
 		},
 		"facetType": {
-			"type": "string"
+			"type": "string",
+			"enum": [ "checkbox", "radio", "dropdown", "range", "search" ]
 		},
 		"facetLabel": {
 			"type": "string"
+		},
+		"facetLimit": {
+			"type": "number",
+			"default": 10
+		},
+		"isInteractive": {
+			"type": "boolean",
+			"default": true
+		},
+		"interactiveNamespace": {
+			"type": "string",
+			"default": "prc-platform/facets-context-provider"
 		}
 	},
 	"supports": {

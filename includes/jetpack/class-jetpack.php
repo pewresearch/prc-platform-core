@@ -91,15 +91,27 @@ class Jetpack {
      * @return array updated extensions array.
      */
 	public function set_available_jetpack_extensions( $extensions ){
-        return array_filter(
+        $modified_extensions = array_filter(
             $extensions,
             function($extension) {
+				$disallowed = self::$disallowed_extensions;
+				// if this is not the primary site add back 'ai-assistant', 'ai-assistant-support',
+				if ( PRC_PRIMARY_SITE_ID !== get_current_blog_id() || 'production' !== wp_get_environment_type() ) {
+					$disallowed = array_diff(
+						$disallowed,
+						array(
+							'ai-assistant',
+							'ai-assistant-support',
+						)
+					);
+				}
 				return ! in_array(
 					$extension,
 					self::$disallowed_extensions
 				);
 			}
         );
+		return $modified_extensions;
     }
 
 	/**

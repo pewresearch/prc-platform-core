@@ -8,6 +8,7 @@ import { select, subscribe } from '@wordpress/data';
  */
 // Actions:
 import regenerateToc from './regenerate-toc-action';
+// import GenerateChartImages from './generate-chart-images';
 
 const actions = {
 	post: {
@@ -20,6 +21,16 @@ const actions = {
 			end: [],
 		},
 	},
+	// chart: {
+	// 	preview: {
+	// 		start: [GenerateChartImages],
+	// 		end: [],
+	// 	},
+	// 	publish: {
+	// 		start: [GenerateChartImages],
+	// 		end: [],
+	// 	},
+	// },
 	'fact-sheet': {
 		preview: {
 			start: [regenerateToc],

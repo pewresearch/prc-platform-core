@@ -366,7 +366,7 @@ class Post_Publish_Pipeline {
 			return;
 		}
 		// This will make sure this doesnt run twice on Gutenberg editor.
-		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
+		if ( defined( 'REST_REQUEST' ) && true !== REST_REQUEST ) {
 			return;
 		}
 		if ( ! in_array( $post->post_type, $this->allowed_post_types ) ) {

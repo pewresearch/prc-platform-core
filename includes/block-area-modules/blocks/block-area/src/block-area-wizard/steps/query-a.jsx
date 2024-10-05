@@ -139,8 +139,8 @@ export default function QueryA({
 					entityId={blockAreaId || false}
 					searchValue={blockAreaName || ''}
 					onSelect={(entity) => {
-						console.log('Block Area Entity: ', entity);
-						setTempBlockAreaSlug(entity.slug);
+						console.log('->Block Area Entity: ', entity);
+						setTempBlockAreaSlug(entity.entitySlug);
 					}}
 					onKeyEnter={() => {
 						console.log('Enter Key Pressed');

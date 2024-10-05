@@ -9,17 +9,11 @@ import { __ } from '@wordpress/i18n';
 import { Fragment, useState, useEffect, useMemo } from '@wordpress/element';
 import { BlockControls, InspectorControls } from '@wordpress/block-editor';
 import {
-	BaseControl,
-	Button,
-	CardDivider,
-	ExternalLink,
 	PanelBody,
 	SelectControl,
+	__experimentalNumberControl as NumberControl,
 	TextControl,
 	ToggleControl,
-	ToolbarButton,
-	ToolbarDropdownMenu,
-	ToolbarGroup,
 } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { createBlocksFromInnerBlocksTemplate } from '@wordpress/blocks';
@@ -33,20 +27,21 @@ const getTemplateForType = (type, name) => {
 		interactiveNamespace: 'prc-platform/facets-context-provider',
 		isInteractive: true,
 	};
-	console.log('getTemplateForType', type, name);
+	console.log('getTemplateForType', type, name, defaultAttrs);
 	const label = `${name
 		.replace(/_/g, ' ')
 		.replace(/\w\S*/g, (w) =>
 			w.replace(/^\w/, (c) => c.toUpperCase())
 		)} Value`;
 	switch (type) {
-		case 'checkboxes':
+		case 'checkbox':
 			return [
 				[
 					'prc-block/form-input-checkbox',
 					{
 						type: 'checkbox',
 						label,
+						interactiveSubsumption: true,
 						...defaultAttrs,
 					},
 				],
@@ -54,36 +49,35 @@ const getTemplateForType = (type, name) => {
 		case 'dropdown':
 			return [
 				[
-					'prc-block/form-input-select',
+					'prc-platform/facet-select-field',
 					{
 						placeholder: label,
+						metadata: {
+							name,
+						},
 						...defaultAttrs,
 					},
 				],
 			];
-		case 'yearly':
+		case 'range':
 			return [
 				[
-					'prc-block/form-input-select',
+					'prc-platform/facet-select-field',
 					{
 						placeholder: label,
-						...defaultAttrs,
-					},
-				],
-			];
-		case 'date_range':
-			return [
-				[
-					'prc-block/form-input-select',
-					{
-						placeholder: label,
+						metadata: {
+							name,
+						},
 						...defaultAttrs,
 					},
 				],
 				[
-					'prc-block/form-input-select',
+					'prc-platform/facet-select-field',
 					{
 						placeholder: label,
+						metadata: {
+							name,
+						},
 						...defaultAttrs,
 					},
 				],
@@ -95,6 +89,7 @@ const getTemplateForType = (type, name) => {
 					{
 						type: 'text',
 						label,
+						interactiveSubsumption: true,
 						...defaultAttrs,
 					},
 				],
@@ -107,6 +102,7 @@ const getTemplateForType = (type, name) => {
 					{
 						type: 'radio',
 						label,
+						interactiveSubsumption: true,
 						...defaultAttrs,
 					},
 				],
@@ -122,7 +118,7 @@ export default function Controls({
 }) {
 	const { replaceInnerBlocks } = useDispatch('core/block-editor');
 
-	const { facetName, facetLabel, facetType } = attributes;
+	const { facetName, facetLabel, facetType, facetLimit } = attributes;
 
 	const { facetsContextProvider } = context;
 
@@ -135,6 +131,7 @@ export default function Controls({
 				},
 			];
 		}
+		console.log('facetsContextProvider', facetsContextProvider);
 		const newOptions = [
 			{
 				label: 'Select a Facet',
@@ -156,19 +153,18 @@ export default function Controls({
 				<div>
 					<SelectControl
 						label="Facet"
-						help="Select a facet from those registered with FacetWP."
+						help="Select a facet from those registered with PRC Platform. Updating this will reset the template and any style changes."
 						options={options}
 						value={facetName}
 						onChange={(value) => {
 							const name = value;
-							const { type } = facetsContextProvider[name];
-							const { label } = facetsContextProvider[name];
+							console.log("FACET SELECTED:", facetsContextProvider[name]);
+							const { type, label } = facetsContextProvider[name];
 							setAttributes({
 								facetName: name,
 								facetType: type,
 								facetLabel: label,
 							});
-
 							const defaultTemplate = getTemplateForType(
 								type,
 								name
@@ -182,9 +178,14 @@ export default function Controls({
 							);
 						}}
 					/>
-					<ExternalLink href="/pewresearch-org/wp-admin/options-general.php?page=facetwp">
-						FacetWP Settings
-					</ExternalLink>
+					<NumberControl
+						label="Limit"
+						help="The number of choices to display. Any additional choices will be hidden behind a 'More' button."
+						value={facetLimit}
+						onChange={(value) =>
+							setAttributes({ facetLimit: value })
+						}
+					/>
 				</div>
 			</PanelBody>
 		</InspectorControls>

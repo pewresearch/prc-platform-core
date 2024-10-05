@@ -38,7 +38,7 @@ class Art_Direction {
 	);
 	/**
 	 * Schema for pewresearch.org art direction.
-	 * A1, A2, A3, A4, XL, facebook, and twitter are all specific contexts that appear in our blocks and themes. They are not arbitrary. Your mileage may vary.
+	 * A1, A2, A3, A4, facebook, and twitter are all specific contexts that appear in our blocks and themes. They are not arbitrary. Your mileage may vary.
 	 * @var (string|(string|null)[][])[]|(string|(string|null)[][]|(string[]|(string|false)[])[][][])[]
 	 */
 	public static $field_schema = array(

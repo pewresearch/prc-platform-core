@@ -1,6 +1,6 @@
 {
 	"name": "facet-template",
-	"version": "0.1.0",
+	"version": "2.0.0",
 	"description": "Display a facet given its slug and type as a block",
 	"author": "Pew Research Center",
 	"license": "GPL-2.0-or-later",
@@ -16,6 +16,6 @@
 		"plugin-zip": "wp-scripts plugin-zip"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^27.2.0"
+		"@wordpress/scripts": "^30.0.2"
 	}
 }

@@ -32,6 +32,13 @@
 		}
 	}
 
+	&:not(.has-expanded-choices) {
+		.wp-block-prc-platform-facet-template__list-expanded-button,
+		.wp-block-prc-platform-facet-template__list-expanded {
+			display: none;
+		}
+	}
+
 	.wp-block-prc-platform-facet-template__list-expanded-button,
 	.wp-block-prc-block-platform-facet-template__clear {
 		appearance: none;

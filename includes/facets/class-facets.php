@@ -6,6 +6,9 @@ use WP_Query;
 use WP_REST_Request;
 use WP_REST_Response;
 
+/**
+ * A PHP based method for interacting with VIP Enterprise Search facets data via blocks anywhere, including archive pages.
+ */
 class Facets {
 	/**
 	 * The version of this plugin.
@@ -16,113 +19,33 @@ class Facets {
 	 */
 	private $version;
 
+	/**
+	 * Initialize the EP Facets class.
+	 */
+	protected $ep_facets;
+
 	public static $handle = 'prc-platform-facets';
 
-	public static $facets = array(
-		array(
-			"name" => "categories",
-			"label" => "Topics",
-			"type" => "checkboxes",
-			"source" => "tax/category",
-			"parent_term" => "",
-			"modifier_type" => "off",
-			"modifier_values" => "",
-			"hierarchical" => "yes",
-			"show_expanded" => "no",
-			"ghosts" => "yes",
-			"preserve_ghosts" => "no",
-			"operator" => "or",
-			"orderby" => "count",
-			"count" => "50",
-			"soft_limit" => "5"
-		),
-		array(
-			"name" => "research_teams",
-			"label" => "Research Teams",
-			"type" => "dropdown",
-			"source" => "tax/research-teams",
-			"label_any" => "Any",
-			"parent_term" => "",
-			"modifier_type" => "off",
-			"modifier_values" => "",
-			"hierarchical" => "no",
-			"orderby" => "count",
-			"count" => "25"
-		),
-		array(
-			"name" => "formats",
-			"label" => "Formats",
-			"type" => "checkboxes",
-			"source" => "tax/formats",
-			"parent_term" => "",
-			"modifier_type" => "off",
-			"modifier_values" => "",
-			"hierarchical" => "no",
-			"show_expanded" => "no",
-			"ghosts" => "yes",
-			"preserve_ghosts" => "no",
-			"operator" => "or",
-			"orderby" => "count",
-			"count" => "-1",
-			"soft_limit" => "5"
-		),
-		array(
-			"name" => "authors",
-			"label" => "Authors",
-			"type" => "dropdown",
-			"source" => "tax/bylines",
-			"label_any" => "Any",
-			"parent_term" => "",
-			"modifier_type" => "off",
-			"modifier_values" => "",
-			"hierarchical" => "no",
-			"orderby" => "count",
-			"count" => "-1"
-		),
-		array(
-			"name" => "time_since",
-			"label" => "Time Since",
-			"type" => "time_since",
-			"source" => "post_date",
-			"label_any" => "By Date Range",
-			"choices" => "Past Month | -30 days\nPast 6 Months | -180 days\nPast 12 Months | -365 days\nPast 2 Years | -730 days"
-		),
-		array(
-			"name" => "date_range",
-			"label" => "Date Range",
-			"type" => "date_range",
-			"source" => "post_date",
-			"compare_type" => "",
-			"fields" => "both",
-			"format" => "Y"
-		),
-		array(
-			"name" => "years",
-			"label" => "Years",
-			"type" => "yearly",
-			"source" => "post_date",
-			"label_any" => "Any",
-			"orderby" => "count",
-			"count" => "75"
-		),
-		array(
-			"name" => "regions_countries",
-			"label" => "Regions & Countries",
-			"type" => "radio",
-			"source" => "tax/regions-countries",
-			"label_any" => "Any",
-			"parent_term" => "",
-			"modifier_type" => "off",
-			"modifier_values" => "",
-			"ghosts" => "yes",
-			"preserve_ghosts" => "no",
-			"orderby" => "count",
-			"count" => "-1"
-		),
-	);
+	/**
+	 * Initialize Facets Class
+	 * @param string $version
+	 * @param mixed $loader
+	 */
+	public function __construct( $version, $loader ) {
+		$this->version = $version;
+
+		// Include middleware for FacetWP and ElasticPress.
+		require_once plugin_dir_path( __FILE__ ) . 'providers/facet-wp/class-facetwp-middleware.php';
+		require_once plugin_dir_path( __FILE__ ) . 'providers/elasticpress/class-elasticpress-middleware.php';
+
+		// Include block files.
+		$this->load_blocks();
+
+		$this->init($loader);
+	}
 
 	/**
-	 * Include all blocks from the plugin's /blocks directory.
+	 * Include all blocks from the /blocks directory.
 	 * @return void
 	 */
 	private function load_blocks() {
@@ -136,58 +59,74 @@ class Facets {
 		}
 	}
 
+	public static function use_ep_facets() {
+		$uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw($_SERVER['REQUEST_URI']) : '';
+		if ( strpos($uri, '/search') !== false ) {
+			return true;
+		}
+		return false;
+	}
+
+	public static function format_label($label) {
+		$label_is_datetime = strtotime($label) !== false;
+		$label = $label_is_datetime ? gmdate('Y', strtotime($label)) : $label;
+		// Render any ampersands and such in the label
+		$label = html_entity_decode($label);
+		return $label;
+	}
+
 	/**
-	 * Initialize Facets Class
-	 * @param string $version
-	 * @param mixed $loader
+	 * Constructs a cache key based on the current query and selected facets.
+	 * @param array $query
+	 * @param array $selected
+	 * @return string
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		require_once plugin_dir_path( __FILE__ ) . 'cache/class-cache.php';
-		require_once plugin_dir_path( __FILE__ ) . 'class-facets-api.php';
-		$this->load_blocks();
-		$this->init($loader);
+	public static function construct_cache_key($query = [], $selected = []) {
+		$invalidate = get_option('prc_facet_cache_invalidate', '10/05/2024');
+		$query = array_merge($query, array(
+			'paged' => 1
+		));
+		return md5(wp_json_encode([
+			'query' => $query,
+			'selected' => $selected,
+			'invalidate' => $invalidate,
+		]));
+	}
+
+	/**
+	 * Constructs a cache group based on the current URL.
+	 */
+	public static function construct_cache_group() {
+		global $wp;
+		$url_params = wp_parse_url( '/' . add_query_arg( array( $_GET ), $wp->request . '/' ) );
+		if ( !is_array($url_params) || !array_key_exists('path', $url_params) ) {
+			return false;
+		}
+		return preg_replace('/\/page\/[0-9]+/', '', $url_params['path']);
 	}
 
 	public function init($loader = null) {
 		if ( null !== $loader ) {
-			new Facets_Cache($loader);
-
-			// FacetWP:
-			$loader->add_filter( 'facetwp_api_can_access', $this, 'allow_facetwp_api_access' );
-			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
-			$loader->add_filter( 'facetwp_indexer_query_args', $this, 'filter_facetwp_indexer_args', 10, 1 );
-			$loader->add_filter( 'facetwp_index_row', $this, 'restrict_facet_row_depth', 10, 1 );
-			$loader->add_filter( 'facetwp_facets', $this, 'facetwp_register_facets', 10, 1 );
-			$loader->add_filter( 'facetwp_is_main_query', $this, 'facetwp_is_main_query', 10, 2 );
+			// FacetWP Back Compat:
+			// We need to determine when to load these middlewares. If it's a search page, lets use EP, otherwise use FacetWP.
+			new FacetWP_Middleware($loader);
+			new ElasticPress_Middleware($loader);
 
 			// Blocks:
 			new Facets_Context_Provider($loader);
 			new Facet_Template($loader);
 			new Facets_Selected_Tokens($loader);
-			new Facets_Pager($loader);
+			new Facets_Results_Info($loader);
+			new Facet_Search_Relevancy($loader);
+			new Facet_Select_Field($loader);
+
+			// Rest Endpoints for Block Editor interactions:
+			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
 		}
 	}
 
 	/**
-	 * Allow FacetWP rest api access
-	 * @hook facetwp_api_can_access
-	 * @return true
-	 */
-	public function allow_facetwp_api_access() {
-		return true;
-	}
-
-	public function facetwp_is_main_query( $is_main_query, $query ) {
-		// Short circuit if we're on a search results page for now.
-		if ( $query->is_search() ) {
-			$is_main_query = false;
-		}
-		return $is_main_query;
-	}
-
-	/**
-	 * Register FacetWP Endpoints
+	 * Register REST API endpoints for facet templating.
 	 * @hook prc_api_endpoints
 	 * @param array $endpoints
 	 * @return array $endpoints
@@ -198,75 +137,25 @@ class Facets {
 			'methods' => 'GET',
 			'callback' => array( $this, 'restfully_get_facet_settings' ),
 			'permission_callback' => '__return_true',
+			'args' => [
+				'templateSlug' => [
+					'description' => 'The slug of the site-editor template. This is used to determine which facets middleware should be enabled.',
+					'type' => 'string',
+					'required' => true,
+					'default' => 'archive',
+				],
+			]
 		);
-		$query = array(
-			'route' => '/facets/query',
-			'methods' => 'POST',
-			'callback' => array( $this, 'restfully_query_facets' ),
-			'permission_callback' => '__return_true',
-		);
-		array_push($endpoints, $settings, $query);
+		array_push($endpoints, $settings);
 		return $endpoints;
 	}
 
-	public function restfully_get_facet_settings() {
-		$settings = get_option('facetwp_settings', false);
-		return json_decode($settings);
-	}
-
-	public function restfully_query_facets( WP_REST_Request $request ) {
-		// @TODO pass existing wp_query args into facets api where null is currently.
-		$nonce_is_valid = wp_verify_nonce( $request->get_header('X-WP-Nonce'), 'wp_rest' );
-		if ( !$nonce_is_valid ) {
-			return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
+	public function restfully_get_facet_settings( WP_REST_Request $request ) {
+		$tempalte_slug = $request->get_param('templateSlug');
+		if ( str_contains($tempalte_slug, 'search') ) {
+			return ElasticPress_Middleware::get_facets_settings();
+		} else {
+			return FacetWP_Middleware::get_facets_settings();
 		}
-		$query_args = null;
-		$facets_api = new Facets_API($query_args);
-		return $facets_api->query();
-	}
-
-	/**
-	 * Manually register FacetWP facets
-	 * @hook facetwp_facets
-	 * @param mixed $facets
-	 * @return mixed
-	 */
-	public function facetwp_register_facets($facets) {
-		return self::$facets;
-	}
-
-	/**
-	 * Use default platform pub listing query args.
-	 * @hook facetwp_indexer_query_args
-	 *
-	 * @param mixed $args
-	 * @return mixed
-	 */
-	public function filter_facetwp_indexer_args( $args ) {
-		$query_defaults = apply_filters('prc_platform_pub_listing_default_args', $args);
-		$query_defaults['post_type'] = array_merge( $query_defaults['post_type'], array( 'dataset' ) );
-		return array_merge($args, $query_defaults);
-	}
-
-	/**
-	 * Limit topic, categories, and other hierarchical facets to depth 0; only returning parent terms.
-	 * @hook facetwp_index_row
-	 * @param mixed $params
-	 * @param mixed $class
-	 * @return mixed
-	 */
-	public function restrict_facet_row_depth($params) {
-		if ( in_array( $params['facet_name'], array(
-			'topics',
-			'topic',
-			'categories',
-			'category',
-		) ) ) {
-			if ( $params['depth'] > 0 ) {
-				// don't index this row
-				$params['facet_value'] = '';
-			}
-		}
-		return $params;
 	}
 }

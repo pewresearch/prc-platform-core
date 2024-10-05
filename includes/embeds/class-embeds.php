@@ -49,7 +49,7 @@ class Embeds {
 			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var', 10, 1 );
 			$loader->add_action( 'init', $this, 'iframe_endpoint', 10 );
 
-			$loader->add_filter( 'request', $this, 'filter_request', 10, 1 );
+			// $loader->add_filter( 'request', $this, 'filter_request', 10, 1 );
 			$loader->add_filter( 'the_title', $this, 'filter_title', 10, 1 );
 			$loader->add_filter( 'the_content', $this, 'filter_content', 10, 1 );
 			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
@@ -305,6 +305,10 @@ class Embeds {
 			$post_content = get_the_content();
 			if ( $this->test_for_embeddable_blocks( $post_content ) ) {
 				$post_content = $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
+				if ( false === $post_content ) {
+					wp_reset_postdata();
+					return '<p><pre>Unable to render embeddable block.</pre></p>';
+				}
 			} else {
 				$post_content = apply_filters( 'the_content', $post_content );
 			}
@@ -327,7 +331,8 @@ class Embeds {
 				show_admin_bar( false );
 				$post_content = $this->get_template_post_content();
 				echo wp_sprintf(
-					'<div class="prc-platform__iframe__content" data-iframe-height>%1$s</div>',
+					'<div class="prc-platform__iframe__content" data-iframe-key="%s" data-iframe-height>%s</div>',
+					get_query_var('iframe'),
 					$post_content,
 				);
 				?>
@@ -430,17 +435,26 @@ class Embeds {
 	public function render_embeddable_block_by_id( $id, $post_content ) {
 		$blocks = parse_blocks( $post_content );
 
+		$render = false;
+
 		foreach ( $blocks as $block ) {
 			if ( array_key_exists('blockName', $block) && in_array( $block['blockName'], self::$allowed_blocks ) ) {
 				if ( array_key_exists('prcEmbed', $block['attrs']) && true === $block['attrs']['prcEmbed']['enabled'] ) {
+					// Set up Render if its available
+					if ( false === $render ) {
+						$render = '<!--PRC Block Embed System-->';
+					}
 					if ( $id === $block['attrs']['prcEmbed']['id'] ) {
-						return render_block( $block );
+						$render .= render_block( $block );
+					}
+					if ( false !== $render ) {
+						$render .= '<!--End PRC Block Embed System-->';
 					}
 				}
 			}
 		}
 
-		return false;
+		return $render;
 	}
 
 	/**
@@ -451,12 +465,12 @@ class Embeds {
 	 * @param  array $vars
 	 * @return array $vars
 	 */
-	public function filter_request( $vars ) {
-		if ( isset( $vars['iframe'] ) ) {
-			$vars['iframe'] = true;
-		}
-		return $vars;
-	}
+	// public function filter_request( $vars ) {
+	// 	if ( isset( $vars['iframe'] ) ) {
+	// 		$vars['iframe'] = true;
+	// 	}
+	// 	return $vars;
+	// }
 
 	/**
 	 * Provides a filter to change the post content of an iframe when viewing an iframe.
