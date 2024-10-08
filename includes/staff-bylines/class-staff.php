@@ -122,12 +122,12 @@ class Staff {
 		$this->bio = apply_filters( 'the_content', $staff_post->post_content );
 		$this->job_title = $this->get_job_title($staff_post_id);
 		$this->job_title_extended = $this->get_job_title_extended($staff_post_id);
-		$this->mini_bio = wp_sprintf(
+		$this->mini_bio = ! empty($this->job_title_extended) ? wp_sprintf(
 			'<a href="%1$s">%2$s</a> <span>is %3$s</span>.',
 			$this->link,
 			$this->name,
 			$this->job_title_extended
-		);
+		) : '';
 		$this->photo = $this->get_staff_photo($staff_post_id);
 		$this->social_profiles = $this->get_social_profiles($staff_post_id);
 		$this->expertise = $this->get_expertise($staff_post_id);

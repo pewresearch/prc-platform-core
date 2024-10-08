@@ -13,7 +13,7 @@ class ElasticPress_Middleware {
 		$loader->add_filter( 'ep_facet_include_taxonomies', $this, 'register_facets' );
 		$loader->add_filter( 'ep_post_formatted_args', $this, 'restructure_ep_taxonomy_args', 10, 3 );
 		$loader->add_filter( 'ep_formatted_args', $this, 'add_date_aggregations', 10, 3 );
-		$loader->add_filter( 'ep_valid_response', $this, 'include_date_aggregation_in_resposne', 19, 4 );
+		$loader->add_filter( 'ep_valid_response', $this, 'include_date_aggregation_in_response', 19, 4 );
 		$loader->add_filter( 'ep_facet_taxonomies_size', $this, 'set_facet_taxonomies_size', 10, 2 );
 		$loader->add_filter( 'ep_set_sort', $this, 'sort_ep_by_date', 20, 2 );
 		$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_vars' );
@@ -198,7 +198,7 @@ class ElasticPress_Middleware {
 	 * @param  mixed $query_object Could be WP_Query, WP_User_Query, etc.
 	 * @since  2.5
 	 */
-	public function include_date_aggregation_in_resposne( $response, $query, $query_args, $query_object ) {
+	public function include_date_aggregation_in_response( $response, $query, $query_args, $query_object ) {
 		if ( empty( $query_object ) || 'WP_Query' !== get_class( $query_object ) || ! $this->ep_facets->is_facetable( $query_object ) ) {
 			return $response;
 		}

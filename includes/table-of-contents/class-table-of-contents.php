@@ -10,6 +10,10 @@ use WP_HTML_Tag_Processor;
  */
 class Table_Of_Contents {
 	public $post_id = null;
+	public static $disabled_post_types = [
+		'attachment',
+		'chart',
+	];
 	public static $handle = 'prc-platform-table-of-contents';
 	public static $enabled_post_types = array( 'post', 'fact-sheet' );
 	public static $legacy_back_chapters_meta_key = 'multiSectionReport';
@@ -71,6 +75,7 @@ class Table_Of_Contents {
 		$public_post_types = get_post_types( array(
 			'public' => true,
 		) );
+		$public_post_types = array_diff( $public_post_types, self::$disabled_post_types );
 		foreach ($public_post_types as $post_type) {
 			register_rest_field(
 				$post_type,
@@ -175,7 +180,6 @@ class Table_Of_Contents {
 	}
 
 	protected function process_legacy_chapter_block($array, $permalink) {
-		$needs_migration = true;
 		$id = $array['attrs']['id'];
 		// Ensure the ID is clean and none of the core/heading block id stuff gets added.
 		if ( preg_match( '/^h-\d+/', $id ) ) {

@@ -82,10 +82,12 @@ class Facets {
 	 * @return string
 	 */
 	public static function construct_cache_key($query = [], $selected = []) {
-		$invalidate = get_option('prc_facet_cache_invalidate', '10/05/2024');
+		$invalidate = '10/05/2024b';
+		// Remove pagination from the query args
 		$query = array_merge($query, array(
 			'paged' => 1
 		));
+		// Construct an md5 hash of the query and selected facets and a quick invalidation metho.
 		return md5(wp_json_encode([
 			'query' => $query,
 			'selected' => $selected,
@@ -98,10 +100,12 @@ class Facets {
 	 */
 	public static function construct_cache_group() {
 		global $wp;
+		// Construct an array of URL parameters from the current request to WP.
 		$url_params = wp_parse_url( '/' . add_query_arg( array( $_GET ), $wp->request . '/' ) );
 		if ( !is_array($url_params) || !array_key_exists('path', $url_params) ) {
 			return false;
 		}
+		// Remove pagination from the cache group
 		return preg_replace('/\/page\/[0-9]+/', '', $url_params['path']);
 	}
 

@@ -177,6 +177,7 @@ class Staff_Bylines {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
+
 		require_once plugin_dir_path( __FILE__ ) . 'class-cli-command-guest-author.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-staff.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-bylines.php';

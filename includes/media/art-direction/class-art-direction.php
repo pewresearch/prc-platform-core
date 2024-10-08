@@ -30,7 +30,7 @@ class Art_Direction {
 		// @TODO: look into a programattic way to determine contrast ratio when setting the image and then set this to true if the contrast ratio is too low, also, perhaps rename this to "hasBorder" or something a little more descriptive.
 		'chartArt' => array(
 			'type' => 'boolean',
-			'default' => false,
+			// 'default' => false,
 		),
 		'caption'  => array(
 			'type' => 'string',

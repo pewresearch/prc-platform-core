@@ -125,6 +125,7 @@ const useArtDirectionContext = () => {
 			meta,
 			testMeta,
 			debouncedArtDirection,
+			meta.artDirection,
 			artDirection,
 			allowEditing
 		);

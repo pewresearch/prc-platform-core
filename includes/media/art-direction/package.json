@@ -4,7 +4,7 @@
 	"description": "Art direction for post like objects subsumes featured image",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/scripts": "^28.6.0"
+		"@wordpress/scripts": "^30.1.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build src/index.js",

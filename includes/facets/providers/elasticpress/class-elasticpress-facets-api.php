@@ -26,7 +26,7 @@ class ElasticPress_Facets_API {
 		$this->cache_group =\PRC\Platform\Facets::construct_cache_group();
 	}
 
-	public function build_url($filters) {
+	public function build_url($filters = []) {
 		return $this->ep_facets->build_query_url($filters);
 	}
 

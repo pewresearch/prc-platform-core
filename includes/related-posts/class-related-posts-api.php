@@ -32,7 +32,10 @@ class Related_Posts_API extends Related_Posts {
 		if ( ! is_wp_error( $terms ) || ! empty( $terms ) ) {
 			$label = array_shift( $terms );
 		}
-		$label = ucwords(str_replace("-", " ", $label));
+		if ( null === $label ) {
+			$label = 'Report';
+		}
+		return ucwords(str_replace("-", " ", $label));
 	}
 
 	private function get_related_posts_from_parsely($post_id) {
