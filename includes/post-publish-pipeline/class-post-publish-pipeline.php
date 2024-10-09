@@ -79,7 +79,7 @@ class Post_Publish_Pipeline {
 			/**
 			 * @uses prc_platform_on_incremental_save
 			 */
-			$loader->add_action( 'save_post', $this, 'post_incremental_save_hook', 10, 3 );
+			$loader->add_action( 'save_post', $this, 'restful_post_incremental_save_hook', 10, 3 );
 			/**
 			 * @uses prc_platform_on_post_init
 			 */
@@ -314,7 +314,7 @@ class Post_Publish_Pipeline {
 	 * @param mixed $update
 	 * @return void
 	 */
-	public function post_incremental_save_hook( $post_id, $post, $update ) {
+	public function restful_post_incremental_save_hook( $post_id, $post, $update ) {
 		if ( true === $this->is_cli ) {
 			return;
 		}
@@ -322,7 +322,7 @@ class Post_Publish_Pipeline {
 			return;
 		}
 		// This will make sure this doesnt run twice on Gutenberg editor.
-		if ( defined( 'REST_REQUEST' ) && true === REST_REQUEST ) {
+		if ( !defined( 'REST_REQUEST' ) || true !== REST_REQUEST ) {
 			return;
 		}
 		if ( ! in_array( $post->post_status, array( 'draft', 'publish' ) ) ) {
@@ -340,7 +340,7 @@ class Post_Publish_Pipeline {
 		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
-		if ( doing_action( 'prc_platform_on_incremental_save' ) ) {
+		if ( doing_action( 'prc_platform_on_incremental_save' ) || doing_action( 'prc_platform_on_rest_publish' ) || doing_action( 'prc_platform_on_rest_update' )) {
 			return;
 		}
 

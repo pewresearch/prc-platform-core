@@ -332,12 +332,12 @@ class Post_Report_Package {
 			}
 
 			if ( is_wp_error( $child_updated ) ) {
-				$errors[] = new WP_Error( '409', 'Failed to update child post state.', $child_updated );
+				$errors[] = new WP_Error( 'post-report-package::failed-to-update-child-post-state', 'Failed to update child post state.', $child_updated );
 			} else {
 				$success[] = $child_updated;
 			}
 			if ( is_wp_error( $terms_updated ) ) {
-				$errors[] = new WP_Error( '409', 'Failed to update child post terms.', $terms_updated );
+				$errors[] = new WP_Error( 'post-report-package::failed-to-update-child-post-terms', 'Failed to update child post terms.', $terms_updated );
 			}
 		}
 
@@ -355,7 +355,7 @@ class Post_Report_Package {
 			'post_parent' => $parent_post_id,
 		), true );
 		if ( is_wp_error( $updated ) ) {
-			return new WP_Error( '412', 'Failed to assign child post to parent.', $updated );
+			return new WP_Error( 'post-report-package::failed-to-assign-child', 'Failed to assign child post to parent.', $updated );
 		}
 		return $updated;
 	}
@@ -900,7 +900,7 @@ class Post_Report_Package {
 	public function restfully_regenerate_toc(\WP_REST_Request $request) {
 		$post_id = $request->get_param('post_id');
 		if ( empty($post_id) ) {
-			return new WP_Error('400', 'Missing post_id parameter.');
+			return new WP_Error('post-report-package::missing-post-id', 'Missing post_id parameter.');
 		}
 		return $this->construct_toc( $post_id );
 	}
