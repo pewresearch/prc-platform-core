@@ -20,10 +20,13 @@ class Facets {
 	private $version;
 
 	/**
-	 * Initialize the EP Facets class.
+	 * Current Site ID
 	 */
-	protected $ep_facets;
+	private $site_id;
 
+	/**
+	 * The unique identifier of this plugin.
+	 */
 	public static $handle = 'prc-platform-facets';
 
 	/**
@@ -33,6 +36,7 @@ class Facets {
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
+		$this->site_id = get_current_blog_id();
 
 		// Include middleware for FacetWP and ElasticPress.
 		require_once plugin_dir_path( __FILE__ ) . 'providers/facet-wp/class-facetwp-middleware.php';
@@ -41,6 +45,7 @@ class Facets {
 		// Include block files.
 		$this->load_blocks();
 
+		// Initialize hybrid facets system.
 		$this->init($loader);
 	}
 
@@ -82,7 +87,7 @@ class Facets {
 	 * @return string
 	 */
 	public static function construct_cache_key($query = [], $selected = []) {
-		$invalidate = '10/05/2024b';
+		$invalidate = '10/09/2024b';
 		// Remove pagination from the query args
 		$query = array_merge($query, array(
 			'paged' => 1
@@ -110,7 +115,7 @@ class Facets {
 	}
 
 	public function init($loader = null) {
-		if ( null !== $loader ) {
+		if ( null !== $loader && $this->site_id === PRC_PRIMARY_SITE_ID ) {
 			// FacetWP Back Compat:
 			// We need to determine when to load these middlewares. If it's a search page, lets use EP, otherwise use FacetWP.
 			new FacetWP_Middleware($loader);

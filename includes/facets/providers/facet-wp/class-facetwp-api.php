@@ -99,7 +99,7 @@ class FacetWP_API {
 				continue;
 			}
 			$taxonomy_facet['choices'][] = [
-				'count' => $facet_obj['count'],
+				'count' => isset($facet_obj['count']) ? $facet_obj['count'] : 0,
 				'label' => \PRC\Platform\Facets::format_label($facet_obj['label']),
 				'slug' => $facet_obj['value'],
 				'facetSlug' => $facet_slug,
@@ -156,7 +156,7 @@ class FacetWP_API {
 		}
 		foreach ($facet['choices'] as $facet_obj) {
 			$standard_facet['choices'][] = [
-				'count' => $facet_obj['count'],
+				'count' => isset($facet_obj['count']) ? $facet_obj['count'] : 0,
 				'label' => \PRC\Platform\Facets::format_label($facet_obj['label']),
 				'slug' => $facet_obj['value'],
 				'facetSlug' => $facet_slug,
