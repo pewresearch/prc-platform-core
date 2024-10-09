@@ -90,8 +90,8 @@ class Post_Report_Package {
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_rest_endpoint' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'set_child_posts', 10, 1 );
-			$loader->add_action( 'prc_platform_on_update', $this, 'update_children', 10, 1 );
-			$loader->add_action( 'prc_platform_on_update', $this, 'clear_toc_cache_on_update', 100, 1 );
+			$loader->add_action( 'prc_platform_on_rest_update', $this, 'update_children', 10, 1 );
+			$loader->add_action( 'prc_platform_on_rest_update', $this, 'clear_toc_cache_on_update', 100, 1 );
 			$loader->add_filter( 'rest_post_query', $this, 'hide_back_chapter_posts_restfully', 10, 2 );
 			$loader->add_filter( 'the_title', $this, 'indicate_back_chapter_post', 10, 2 );
 			// $this->loader->add_filter( 'wpseo_disable_adjacent_rel_links', $post_report_package, 'disable_yoast_adjacent_rel_links_on_report_package' );
