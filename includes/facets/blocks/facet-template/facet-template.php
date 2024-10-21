@@ -94,16 +94,19 @@ class Facet_Template {
 		$selected = (array) $facet['selected'];
 
 		if (empty($facet_data)) {
-			return '<p>No facets data</p>';
 			return '<!-- No choices for this facet -->';
 		}
-		// Sort data by count.
-		usort($facet_data, function($a, $b) {
-			if ($a['count'] === $b['count']) {
-				return 0;
-			}
-			return $a['count'] > $b['count'] ? -1 : 1;
-		});
+
+		// For now, lets restrict this sorting to only lists.
+		if ( $facet_type !== 'dropdown' ) {
+			usort($facet_data, function($a, $b) {
+				if ($a['count'] === $b['count']) {
+					return 0;
+				}
+				return $a['count'] > $b['count'] ? -1 : 1;
+			});
+		}
+
 
 		$choices = $facet_data;
 		// If the $choices exceeds the limit, we need to remove the excess choices and store them in a separate array, $expanded_choices.

@@ -32,7 +32,7 @@ class Schema_Meta {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
 			$loader->add_action( 'wp_head', $this, 'force_search_engines_to_use_meta' );
-			$loader->add_filter( 'wpseo_title', $this, 'yoast_seo_legacy_title_fix', 10, 1 );
+			// $loader->add_filter( 'wpseo_title', $this, 'yoast_seo_legacy_title_fix', 10, 1 ); // I don't think we need this anymore.
 			$loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
 			$loader->add_filter( 'wpseo_opengraph_image', $this, 'get_chart_image', 100, 1 );
 			$loader->add_filter( 'wpseo_metadesc', $this, 'get_chart_description', 100, 1 );
