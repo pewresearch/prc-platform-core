@@ -125,6 +125,7 @@ class Datasets {
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . '/downloads-log/index.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-cli-missing-files.php';
 		$this->init($loader);
 	}
 

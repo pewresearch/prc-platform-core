@@ -18,7 +18,7 @@ $is_atp = get_post_meta( $dataset_id, 'is_atp', true );
 // If this dataset is in the ATP then it needs a modal to accept the ATP legal terms. Here we're manually adding the content from the download block... usually a core/button into the trigger of the poopup. Now, the button is still wired to the download block but the download block can handle opening the modal by accessing the modals' action store when running core/button::onButtonClick.
 if ( $is_atp ) {
 	$modal = \PRC\Platform\Blocks\Popup_Controller\create_modal([
-		'title' => 'Accept ATP',
+		'title' => 'Accept ATP Legal Terms and Conditions to Download',
 		'content' => '<!-- wp:prc-platform/dataset-atp-legal-acceptance {"datasetId": "'.$dataset_id.'", "nonce": "'.$nonce.'"} -->',
 		'backgroundColor' => 'ui-white',
 		'trigger' => $content,

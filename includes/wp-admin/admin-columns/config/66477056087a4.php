@@ -1,13 +1,13 @@
 <?php
 
 return array (
-  'version' => '6.4.6',
+  'version' => '6.4.10',
   'list_screen' => 
   array (
     'title' => '',
     'type' => 'dataset',
     'id' => '66477056087a4',
-    'updated' => 1715957846,
+    'updated' => 1730128809,
     'columns' => 
     array (
       'title' => 
@@ -40,22 +40,6 @@ return array (
         'filter_label' => '',
         'name' => '32aeb9c9ca7efa',
       ),
-      'taxonomy-formats' => 
-      array (
-        'type' => 'taxonomy-formats',
-        'label' => 'Formats',
-        'width' => '',
-        'width_unit' => '%',
-        'edit' => 'on',
-        'enable_term_creation' => 'off',
-        'export' => 'on',
-        'sort' => 'on',
-        'bulk_edit' => 'on',
-        'search' => 'on',
-        'filter' => 'off',
-        'filter_label' => '',
-        'name' => 'taxonomy-formats',
-      ),
       'taxonomy-research-teams' => 
       array (
         'type' => 'taxonomy-research-teams',
@@ -87,6 +71,45 @@ return array (
         'bulk_edit' => 'on',
         'search' => 'on',
         'name' => 'date',
+      ),
+      '5814836bd4fdf4' => 
+      array (
+        'type' => 'column-meta',
+        'label' => 'File',
+        'width' => '',
+        'width_unit' => '%',
+        'field' => '_download_attachment_id',
+        'field_type' => 'library_id',
+        'image_size' => 'full',
+        'image_size_w' => '60',
+        'image_size_h' => '60',
+        'media_link_to' => 'view',
+        'number_of_items' => '10',
+        'before' => '',
+        'after' => '',
+        'edit' => 'on',
+        'export' => 'on',
+        'sort' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '5814836bd4fdf4',
+      ),
+      '54b17e2c828f5c' => 
+      array (
+        'type' => 'column-postid',
+        'label' => 'ID',
+        'width' => '100',
+        'width_unit' => 'px',
+        'before' => '',
+        'after' => '',
+        'export' => 'on',
+        'sort' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '54b17e2c828f5c',
       ),
       'wpseo-score' => 
       array (
@@ -151,25 +174,6 @@ return array (
         'filter' => 'off',
         'filter_label' => '',
         'name' => 'wpseo-focuskw',
-      ),
-      'wpseo-links' => 
-      array (
-        'type' => 'wpseo-links',
-        'label' => '<span class="yoast-linked-to yoast-column-header-has-tooltip" data-tooltip-text="Number of outgoing internal links in this post. See "Yoast Columns" text in the help tab for more info."><span class="screen-reader-text">Outgoing internal links</span></span>',
-        'width' => '',
-        'width_unit' => '%',
-        'sort' => 'on',
-        'name' => 'wpseo-links',
-      ),
-      'wpseo-cornerstone' => 
-      array (
-        'type' => 'wpseo-cornerstone',
-        'label' => '<span class="yoast-column-cornerstone yoast-column-header-has-tooltip" data-tooltip-text="Is this cornerstone content?"><span class="screen-reader-text">Cornerstone content</span></span>',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'sort' => 'on',
-        'name' => 'wpseo-cornerstone',
       ),
     ),
     'settings' => 
