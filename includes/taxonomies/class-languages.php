@@ -54,7 +54,8 @@ class Languages extends Taxonomies {
 			'fact-sheets',
 			'fact-sheet',
 			'stub',
-			'decoded'
+			'decoded',
+			'short-read',
 		) );
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );

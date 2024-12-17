@@ -63,8 +63,7 @@ const { actions } = store('prc-platform/dataset-download', {
 				},
 			})
 				.then((response) => {
-					actions.downloadDataset(datasetId, uid, token, NONCE);
-
+					actions.downloadDataset(datasetId, uid, token, NONCE, context);
 					actions.closeModal();
 				})
 				.catch((error) => {

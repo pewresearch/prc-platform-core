@@ -32,10 +32,16 @@ $block_wrapper_attrs = get_block_wrapper_attributes(array(
 	)),
 	'data-wp-context' => wp_json_encode(array(
 		'datasetId' => $dataset_id,
+		'isProcessing' => false,
+		'isError' => false,
+		'isSuccess' => false,
 		'isATP' => $is_atp,
 		'NONCE' => $nonce,
 	)),
 	'data-wp-bind--data-dataset-id' => 'context.datasetId',
+	'data-wp-watch--is-processing' => 'callbacks.isProcessing',
+	'data-wp-watch--is-error' => 'callbacks.isError',
+	'data-wp-watch--is-success' => 'callbacks.isSuccess',
 ));
 
 echo wp_sprintf(
