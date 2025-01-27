@@ -40,10 +40,12 @@ const { actions } = store('prc-platform/dataset-download', {
 		atpLegalText: ATP_TEXT,
 	},
 	actions: {
-		*closeModal() {
-			const popupController = yield store('prc-block/popup-controller');
-			const { actions: popupActions } = popupController;
-			popupActions.closeAll();
+		*closeDialogs() {
+			const context = yield getContext();
+			context.isProcessing = false;
+			const dialog = yield store('prc-block/dialog');
+			const { actions: dialogActions } = dialog;
+			dialogActions.closeAll();
 		},
 		*accept() {
 			const context = getContext();
@@ -64,15 +66,14 @@ const { actions } = store('prc-platform/dataset-download', {
 			})
 				.then((response) => {
 					actions.downloadDataset(datasetId, uid, token, NONCE, context);
-					actions.closeModal();
+					actions.closeDialogs();
 				})
 				.catch((error) => {
-
-					actions.closeModal();
+					actions.closeDialogs();
 				});
 		},
 		*cancel() {
-			actions.closeModal();
+			actions.closeDialogs();
 		},
 	},
 });

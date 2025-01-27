@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Bylines {
@@ -8,27 +9,29 @@ class Bylines {
 	public $bylines;
 	public $should_display = false;
 
-	public function __construct($post_id, $args = array()) {
-		if ( !is_int($post_id) ) {
+	public function __construct( $post_id, $args = array() ) {
+		if ( ! is_int( $post_id ) ) {
 			$this->bylines = new WP_Error( '404', 'Bylines not found, no post id provided.' );
-		} else  {
-			$parent_post_id = wp_get_post_parent_id( $post_id );
-			$this->post_id = 0 !== $parent_post_id ? $parent_post_id : $post_id;
+		} else {
+			$parent_post_id       = wp_get_post_parent_id( $post_id );
+			$this->post_id        = 0 !== $parent_post_id ? $parent_post_id : $post_id;
 			$this->should_display = $this->determine_bylines_display();
-			$this->bylines = $this->get();
+			$this->bylines        = $this->get();
+			do_action( 'qm/debug', 'BYLINES:' . print_r( $this->bylines, true ) );
 		}
 	}
 
 	/**
 	 * Translates the {key, termId} array to {termId, postId, name, link, jobTitle}
+	 *
 	 * @return void
 	 */
-	private function get_staff_objects($bylines = array()) {
+	private function get_staff_objects( $bylines = array() ) {
 		$to_return = array();
-		foreach( $bylines as $byline ) {
-			$staff = new Staff(false, $byline['termId']);
-			if ( !is_wp_error($staff) ) {
-				$to_return[$byline['termId']] = get_object_vars($staff);
+		foreach ( $bylines as $byline ) {
+			$staff = new Staff( false, $byline['termId'] );
+			if ( ! is_wp_error( $staff ) ) {
+				$to_return[ $byline['termId'] ] = get_object_vars( $staff );
 			}
 		}
 		return $to_return;
@@ -38,18 +41,18 @@ class Bylines {
 		$bylines = array();
 		$bylines = get_post_meta( $this->post_id, 'bylines', true );
 		if ( ! is_array( $bylines ) ) {
-			return new WP_Error( '404', 'Bylines not found, no bylines found for this post '.$this->post_id );
+			return new WP_Error( '404', 'Bylines not found, no bylines found for this post ' . $this->post_id );
 		}
-		return $this->get_staff_objects($bylines);
+		return $this->get_staff_objects( $bylines );
 	}
 
 	private function determine_bylines_display() {
 		$should_display = get_post_meta( $this->post_id, 'displayBylines', true );
-		return rest_sanitize_boolean($should_display);
+		return rest_sanitize_boolean( $should_display );
 	}
 
-	private function format_string($return_html = false) {
-		if ( !is_array($this->bylines) ) {
+	private function format_string( $return_html = false ) {
+		if ( ! is_array( $this->bylines ) ) {
 			return '';
 		}
 		$output = '';
@@ -80,12 +83,12 @@ class Bylines {
 					$d['name']
 				);
 			}
-			$i++;
+			++$i;
 		}
 		return $output;
 	}
 
-	public function format($type = 'array') {
+	public function format( $type = 'array' ) {
 		if ( 'array' === $type ) {
 			return $this->bylines;
 		}
@@ -93,7 +96,7 @@ class Bylines {
 			return $this->format_string();
 		}
 		if ( 'html' === $type ) {
-			return $this->format_string(true);
+			return $this->format_string( true );
 		}
 	}
 }

@@ -1,23 +1,25 @@
 /**
  * WordPress Dependencies
  */
-import { useMemo } from '@wordpress/element';
+import { useMemo, useRef, useState } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { Icon, IconButton } from '@wordpress/components';
+import { Icon, IconButton, TextControl } from '@wordpress/components';
 import { dragHandle } from '@wordpress/icons';
 import { useEntityProp } from '@wordpress/core-data';
 
 export default function ListItem({
 	label,
 	defaultLabel,
-	keyValue,
+	postId,
 	index,
 	children,
+	displayLabelAsInput,
+	onLabelUpdate,
 	onRemove = false,
 	lastItem = false,
 	icon = false,
 }) {
-	const [postTitle] = useEntityProp('postType', 'post', 'title', keyValue);
+	const [postTitle] = useEntityProp('postType', 'post', 'title', postId);
 	const labelText = useMemo(() => {
 		if (
 			undefined === label &&
@@ -32,8 +34,11 @@ export default function ListItem({
 		return defaultLabel;
 	}, [postTitle, label, defaultLabel]);
 
+	const divRef = useRef(null);
+
 	return (
 		<div
+			ref={divRef}
 			style={{
 				background: 'white',
 				paddingBottom: '1em',
@@ -60,7 +65,15 @@ export default function ListItem({
 					}}
 				>
 					{false !== icon && { icon }}
-					<span>{labelText}</span>
+					{displayLabelAsInput ? (
+						<TextControl
+							value={label}
+							placeholder="Edit label..."
+							onChange={(newLabel) => onLabelUpdate(newLabel)}
+						/>
+					) : (
+						<span>{labelText}</span>
+					)}
 				</div>
 				<div style={{ display: 'flex' }}>
 					<IconButton

@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_Query;
 use WP_Term;
@@ -25,22 +26,22 @@ class WP_Admin {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . 'admin-columns/class-admin-columns.php';
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
-		if (null !== $loader) {
+	public function init( $loader = null ) {
+		if ( null !== $loader ) {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
 
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
 			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
-			if ( defined('PRC_PLATFORM_TESTING_MODE') && true === PRC_PLATFORM_TESTING_MODE ) {
+			if ( defined( 'PRC_PLATFORM_TESTING_MODE' ) && true === PRC_PLATFORM_TESTING_MODE ) {
 				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
 			}
 
@@ -52,24 +53,25 @@ class WP_Admin {
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_edit_menu', 102 );
 			$loader->add_action( 'admin_print_footer_scripts', $this, 'admin_footer' );
 			$loader->add_action( 'admin_menu', $this, 'modify_menu', 10 );
-			$loader->add_action( 'wp_dashboard_setup' , $this, 'remove_dashboard_widgets', 99 );
+			$loader->add_action( 'wp_dashboard_setup', $this, 'remove_dashboard_widgets', 99 );
 			$loader->add_action( 'init', $this, 'disable_emojis' );
 			// Filters
 			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
 			$loader->add_filter( 'disable_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
 			$loader->add_filter( 'multisite_enhancements_status_label', $this, 'multisite_enhancement_plugin_sites_label', 10, 2 );
-			$loader->add_filter( 'ppp_nonce_life', $this, 'define_public_post_preview_lifetime' ) ;
+			$loader->add_filter( 'ppp_nonce_life', $this, 'define_public_post_preview_lifetime' );
 			$loader->add_filter( 'the_excerpt', $this, 'remove_overview_from_excerpts' );
 			$loader->add_filter( 'update_footer', $this, 'output_platform_version_in_wp_admin', 100 );
 			$loader->add_filter( 'dashboard_recent_posts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 			$loader->add_filter( 'dashboard_recent_drafts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 
-			new Admin_Columns_Pro($loader);
+			new Admin_Columns_Pro( $loader );
 		}
 	}
 
 	/**
 	 * Change the default admin color scheme to modern and don't allow users to change it.
+	 *
 	 * @param mixed $result
 	 * @return string
 	 */
@@ -81,10 +83,10 @@ class WP_Admin {
 	/**
 	 * @hook dashboard_recent_posts_query_args
 	 */
-	public function show_all_post_types_in_dashboard(array $query_args) {
-		$post_types = ['post', 'short-read', 'fact-sheet', 'feature', 'quiz'];
+	public function show_all_post_types_in_dashboard( array $query_args ) {
+		$post_types = array( 'post', 'short-read', 'fact-sheet', 'feature', 'quiz' );
 
-		if (is_array($post_types)) {
+		if ( is_array( $post_types ) ) {
 			$query_args['post_type'] = $post_types;
 		}
 
@@ -100,7 +102,7 @@ class WP_Admin {
 		?>
 		<style type="text/css">
 			#login h1 a, .login h1 a {
-				background-image: url(<?php echo get_bloginfo('url'); ?>/wp-content/images/logo-login.svg);
+				background-image: url(<?php echo get_bloginfo( 'url' ); ?>/wp-content/images/logo-login.svg);
 				height: 48px;
 				width: 320px;
 				background-size: 320px 48px;
@@ -116,26 +118,38 @@ class WP_Admin {
 		// get the current permalink
 		$permalink = get_permalink();
 		// remove the domain including the preceeding https:// from the permalink
-		$permalink = preg_replace('/https:\/\/[^\/]+\//', '', $permalink);
-		$permalink = str_replace('pewresearch-org/', '', $permalink);
-		$permalink = str_replace($domain, '', $permalink);
-		$urls = [
-			'alpha' => ['url' =>'https://alpha.pewresearch.org/pewresearch-org/' . $permalink, 'label' => 'View on Alpha'],
-			'beta' => ['url' =>'https://beta.pewresearch.org/pewresearch-org/' . $permalink, 'label' => 'View on Beta'],
-			'local' => ['url' => 'https://prc-platform.vipdev.lndo.site/pewresearch-org/' . $permalink, 'label' => 'View on Local'],
-			'production' =>  ['url' => 'https://www.pewresearch.org/' . $permalink, 'label' => 'View on Production'],
-		];
+		$permalink = preg_replace( '/https:\/\/[^\/]+\//', '', $permalink );
+		$permalink = str_replace( 'pewresearch-org/', '', $permalink );
+		$permalink = str_replace( $domain, '', $permalink );
+		$urls      = array(
+			'alpha'      => array(
+				'url'   => 'https://alpha.pewresearch.org/pewresearch-org/' . $permalink,
+				'label' => 'View on Alpha',
+			),
+			'beta'       => array(
+				'url'   => 'https://beta.pewresearch.org/pewresearch-org/' . $permalink,
+				'label' => 'View on Beta',
+			),
+			'local'      => array(
+				'url'   => 'https://prc-platform.vipdev.lndo.site/pewresearch-org/' . $permalink,
+				'label' => 'View on Local',
+			),
+			'production' => array(
+				'url'   => 'https://www.pewresearch.org/' . $permalink,
+				'label' => 'View on Production',
+			),
+		);
 
 		// Remove the urls for the env we're on.
 		if ( 'local' === wp_get_environment_type() ) {
-			unset($urls['local']);
+			unset( $urls['local'] );
 		}
-		if ( strpos($domain, 'alpha') ) {
-			unset($urls['alpha']);
-		} elseif ( strpos($domain, 'beta') ) {
-			unset($urls['beta']);
+		if ( strpos( $domain, 'alpha' ) ) {
+			unset( $urls['alpha'] );
+		} elseif ( strpos( $domain, 'beta' ) ) {
+			unset( $urls['beta'] );
 		} elseif ( 'production' === wp_get_environment_type() ) {
-			unset($urls['production']);
+			unset( $urls['production'] );
 		}
 		return $urls;
 	}
@@ -148,49 +162,49 @@ class WP_Admin {
 		/**
 		 * Tools Menu
 		 */
-		$vip_cache_tool = $wp_admin_bar->get_node('vip-purge-page');
+		$vip_cache_tool = $wp_admin_bar->get_node( 'vip-purge-page' );
 		if ( $vip_cache_tool ) {
 			$vip_cache_tool->parent = $tools_id;
-			$vip_cache_tool = (array) $vip_cache_tool;
-			$wp_admin_bar->remove_node('vip-purge-page');
+			$vip_cache_tool         = (array) $vip_cache_tool;
+			$wp_admin_bar->remove_node( 'vip-purge-page' );
 
 		}
 
-		$bitly_tool = $wp_admin_bar->get_node('reset-bitly-link');
+		$bitly_tool = $wp_admin_bar->get_node( 'reset-bitly-link' );
 		if ( $bitly_tool ) {
 			$bitly_tool->parent = $tools_id;
-			$bitly_tool = (array) $bitly_tool;
-			$wp_admin_bar->remove_node('reset-bitly-link');
+			$bitly_tool         = (array) $bitly_tool;
+			$wp_admin_bar->remove_node( 'reset-bitly-link' );
 		}
 
-		$parsely_tool = $wp_admin_bar->get_node('parsely-stats');
+		$parsely_tool = $wp_admin_bar->get_node( 'parsely-stats' );
 		if ( $parsely_tool ) {
 			$parsely_tool->parent = $tools_id;
-			$parsely_tool = (array) $parsely_tool;
-			$wp_admin_bar->remove_node('parsely-stats');
+			$parsely_tool         = (array) $parsely_tool;
+			$wp_admin_bar->remove_node( 'parsely-stats' );
 		}
 
-		$yoast_redirect_tool = $wp_admin_bar->get_node('wpseo-premium-create-redirect');
+		$yoast_redirect_tool = $wp_admin_bar->get_node( 'wpseo-premium-create-redirect' );
 		if ( $yoast_redirect_tool ) {
 			$yoast_redirect_tool->parent = $tools_id;
-			$yoast_redirect_tool = (array) $yoast_redirect_tool;
-			$wp_admin_bar->remove_node('wpseo-premium-create-redirect');
+			$yoast_redirect_tool         = (array) $yoast_redirect_tool;
+			$wp_admin_bar->remove_node( 'wpseo-premium-create-redirect' );
 		}
 
-		$duplicate_post = $wp_admin_bar->get_node('duplicate-post');
+		$duplicate_post = $wp_admin_bar->get_node( 'duplicate-post' );
 		if ( $duplicate_post ) {
 			$duplicate_post->parent = $tools_id;
-			$duplicate_post = (array) $duplicate_post;
-			$wp_admin_bar->remove_node('duplicate-post');
+			$duplicate_post         = (array) $duplicate_post;
+			$wp_admin_bar->remove_node( 'duplicate-post' );
 		}
 
 		// Create the new Attachment Report tool
 		$attachments_tool = array(
-			'id'    => 'attachments-report',
-			'title' => 'Attachments Report',
-			'href'  => get_permalink() . '?attachmentsReport=true',
+			'id'     => 'attachments-report',
+			'title'  => 'Attachments Report',
+			'href'   => get_permalink() . '?attachmentsReport=true',
 			'parent' => $tools_id,
-			'meta'  => array(
+			'meta'   => array(
 				'title' => 'Attachments Report',
 			),
 		);
@@ -198,11 +212,11 @@ class WP_Admin {
 		// Create the new Print Beta tool, but only for 'post' types...
 		if ( 'post' === get_post_type() ) {
 			$print_tool = array(
-				'id'    => 'print-engine-beta',
-				'title' => 'Print Engine (BETA)',
-				'href'  => get_permalink() . '?printEngineBeta=true',
+				'id'     => 'print-engine-beta',
+				'title'  => 'Print Engine (BETA)',
+				'href'   => get_permalink() . '?printEngineBeta=true',
 				'parent' => $tools_id,
-				'meta'  => array(
+				'meta'   => array(
 					'title' => 'Print Engine (BETA)',
 				),
 			);
@@ -210,15 +224,17 @@ class WP_Admin {
 
 		}
 
-		if (is_singular() ) {
+		if ( is_singular() ) {
 			$diff_env = $this->view_on_diff_env_tool();
-			foreach ($diff_env as $type => $tool) {
-				$wp_admin_bar->add_node( [
-					'id'	=> 'view-on-' . $type,
-					'title' => $tool['label'],
-					'href'  => $tool['url'],
-					'parent' => $tools_id,
-				] );
+			foreach ( $diff_env as $type => $tool ) {
+				$wp_admin_bar->add_node(
+					array(
+						'id'     => 'view-on-' . $type,
+						'title'  => $tool['label'],
+						'href'   => $tool['url'],
+						'parent' => $tools_id,
+					)
+				);
 			}
 		}
 
@@ -258,7 +274,7 @@ class WP_Admin {
 		 * Edit Menu
 		 */
 		$queried_object = $wp_query->get_queried_object();
-		$type = '';
+		$type           = '';
 		// Check for the current post type...
 		if ( $queried_object instanceof WP_Term ) {
 			$type = $queried_object->taxonomy;
@@ -268,13 +284,13 @@ class WP_Admin {
 			$type = $queried_object->post_type;
 		}
 		$edit_node_name = 'post' === $type ? 'edit' : 'edit_' . $type;
-		$edit = $wp_admin_bar->get_node($edit_node_name);
-		if ( !$edit ) {
+		$edit           = $wp_admin_bar->get_node( $edit_node_name );
+		if ( ! $edit ) {
 			// Fallback to just edit.
 			$edit_node_name = 'edit';
-			$edit = $wp_admin_bar->get_node($edit_node_name);
+			$edit           = $wp_admin_bar->get_node( $edit_node_name );
 		}
-		if ( !$edit && is_user_logged_in() ) {
+		if ( ! $edit && is_user_logged_in() ) {
 			$wp_admin_bar->add_menu(
 				array(
 					'id'    => $edit_node_name,
@@ -284,33 +300,35 @@ class WP_Admin {
 			);
 		}
 
-		if ( ($wp_query->is_category() || $wp_query->is_tax('regions-countries') || $wp_query->is_tax('collection')) && $wp_query->is_main_query() ) {
-			$queried_object = $wp_query->get_queried_object();
+		if ( ( $wp_query->is_category() || $wp_query->is_tax( 'regions-countries' ) || $wp_query->is_tax( 'collection' ) ) && $wp_query->is_main_query() ) {
+			$queried_object   = $wp_query->get_queried_object();
 			$queried_taxonomy = $queried_object->taxonomy;
 
-			$block_modules = get_posts(array(
-				'post_type' => 'block_module',
-				'tax_query' => array(
-					array(
-						'taxonomy' => $queried_taxonomy,
-						'field' => 'slug',
-						'terms' => $queried_object->slug,
-						'include_children' => false,
+			$block_modules = get_posts(
+				array(
+					'post_type'      => 'block_module',
+					'tax_query'      => array(
+						array(
+							'taxonomy'         => $queried_taxonomy,
+							'field'            => 'slug',
+							'terms'            => $queried_object->slug,
+							'include_children' => false,
+						),
 					),
-				),
-				'fields' => 'ids',
-				'posts_per_page' => 3,
-			));
+					'fields'         => 'ids',
+					'posts_per_page' => 3,
+				)
+			);
 
 			if ( $block_modules ) {
 				foreach ( $block_modules as $block_module_id ) {
-					$block_area = wp_get_object_terms( $block_module_id, 'block_area', array( 'fields' => 'names' ));
+					$block_area = wp_get_object_terms( $block_module_id, 'block_area', array( 'fields' => 'names' ) );
 					if ( ! empty( $block_area ) ) {
 						$block_area = $block_area[0];
-						$new_node = array(
-							'id' => 'edit-block-module-' . $block_module_id,
-							'title' => 'Edit ' . $block_area,
-							'href' => get_edit_post_link( $block_module_id ),
+						$new_node   = array(
+							'id'     => 'edit-block-module-' . $block_module_id,
+							'title'  => 'Edit ' . $block_area,
+							'href'   => get_edit_post_link( $block_module_id ),
 							'parent' => $edit_id,
 						);
 						$wp_admin_bar->add_node( $new_node );
@@ -319,13 +337,14 @@ class WP_Admin {
 			}
 		}
 
-		$site_editor = $wp_admin_bar->get_node('site-editor');
+		$site_editor = $wp_admin_bar->get_node( 'site-editor' );
 		if ( $site_editor ) {
 			$site_editor->title = 'Edit Template';
 			// now remove the existing node and then add it back again with the updated title
 			$site_editor->parent = $edit_node_name;
-			$wp_admin_bar->remove_node('site-editor');
-			$wp_admin_bar->add_node($site_editor);
+			$wp_admin_bar->remove_node( 'site-editor' );
+			$site_editor = apply_filters( 'prc_platform_admin_bar/site_editor', $site_editor, $wp_query );
+			$wp_admin_bar->add_node( $site_editor );
 		}
 	}
 
@@ -336,19 +355,19 @@ class WP_Admin {
 		 */
 
 		// Get rid of the "Howdy" in the Profile link
-		$my_account = $wp_admin_bar->get_node('my-account');
+		$my_account = $wp_admin_bar->get_node( 'my-account' );
 		if ( $my_account ) {
 			// I actualy just want to remove the "Howdy" part of the greeting, make it just the username.
-			$my_account->title = str_replace('Howdy, ', '', $my_account->title);
+			$my_account->title = str_replace( 'Howdy, ', '', $my_account->title );
 			// now remove the existing node and then add it back again with the updated title
-			$wp_admin_bar->remove_node('my-account');
-			$wp_admin_bar->add_node($my_account);
+			$wp_admin_bar->remove_node( 'my-account' );
+			$wp_admin_bar->add_node( $my_account );
 		}
 
 		// Remove Search
-		$search = $wp_admin_bar->get_node('search');
+		$search = $wp_admin_bar->get_node( 'search' );
 		if ( $search ) {
-			$wp_admin_bar->remove_node('search');
+			$wp_admin_bar->remove_node( 'search' );
 		}
 
 		// Remove fwp cache, comments
@@ -362,9 +381,9 @@ class WP_Admin {
 	}
 
 	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 
@@ -401,6 +420,7 @@ class WP_Admin {
 	/**
 	 * Sometimes you need a quick foolproof way to get the current post type in the admin screen. This is it.
 	 * It's not fancy, it's not clever, but it works.
+	 *
 	 * @return void
 	 */
 	public function admin_footer() {
@@ -408,16 +428,17 @@ class WP_Admin {
 		global $post_type;
 		if ( isset( $post_type ) && is_string( $post_type ) ) {
 			// add the post type to the javascript global object window.prcEditorPostType
-			echo wp_sprintf( '<script>window.prcEditorPostType = "%s";</script>', esc_js($post_type) );
+			echo wp_sprintf( '<script>window.prcEditorPostType = "%s";</script>', esc_js( $post_type ) );
 		}
 	}
 
 	/**
 	 * Disables the cookie banner for logged in users and on non-production environments.
+	 *
 	 * @hook disable_cookiepro
 	 * @return false|void
 	 */
-	public function disable_cookie_banner_conditions($disable = false) {
+	public function disable_cookie_banner_conditions( $disable = false ) {
 		$env = wp_get_environment_type();
 		if ( is_user_logged_in() || 'production' !== $env || is_iframe() ) {
 			return true;
@@ -438,6 +459,7 @@ class WP_Admin {
 
 	/**
 	 * Remove useless widgets from the dashboard.
+	 *
 	 * @hook wp_dashboard_setup
 	 */
 	public function remove_dashboard_widgets() {
@@ -454,12 +476,13 @@ class WP_Admin {
 	 * @param mixed $blog
 	 * @return void
 	 */
-	public function multisite_enhancement_plugin_sites_label($blogname, $blog) {
+	public function multisite_enhancement_plugin_sites_label( $blogname, $blog ) {
 		return $blog->blogname;
 	}
 
 	/**
 	 * This is a serious place, no emojis here.
+	 *
 	 * @hook init
 	 * @return void
 	 */
@@ -488,6 +511,7 @@ class WP_Admin {
 
 	/**
 	 * Change the Public Post Preview plugins default lifetime to 14 days.
+	 *
 	 * @hook ppp_nonce_life
 	 * @return int|float
 	 */
@@ -497,6 +521,7 @@ class WP_Admin {
 
 	/**
 	 * Removes the "Overview" text from the beginning of excerpts.
+	 *
 	 * @hook the_excerpt
 	 * @param mixed $excerpt
 	 * @return string|string[]|null
@@ -505,5 +530,4 @@ class WP_Admin {
 		$excerpt = preg_replace( '/^<p>(\s+|&nbsp;\s+)?Overview\s/', '<p>', $excerpt );
 		return $excerpt;
 	}
-
 }

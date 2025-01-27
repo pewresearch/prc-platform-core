@@ -53,8 +53,8 @@ class Features {
 			$loader->add_action( 'init', $this, 'rewrite_tags' );
 			$loader->add_action( 'init', $this, 'rewrite_index', 11 );
 			$loader->add_action( 'wp_enqueue_scripts', $this, 'register_assets' );
-			$loader->add_action( 'prc_platform_on_publish', $this, 'rewrite_update_hook' );
-			$loader->add_action( 'prc_platform_on_update', $this, 'rewrite_update_hook' );
+			$loader->add_action( 'prc_platform_on_feature_publish', $this, 'rewrite_update_hook' );
+			$loader->add_action( 'prc_platform_on_feature_update', $this, 'rewrite_update_hook' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel_assets' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
 
@@ -690,14 +690,12 @@ class Features {
 
 	/**
 	 * When an feature is published or updated, update the rewrite index.
-	 * @hook prc_platform_on_publish
-	 * @hook prc_platform_on_update
+	 * @hook prc_platform_on_feature_publish
+	 * @hook prc_platform_on_feature_update
 	 * @param mixed $post
 	 */
 	public function rewrite_update_hook( $post ) {
-		if ( self::$post_type !== $post->post_type ) {
-			return;
-		}
+		error_log('PRC_PLATFORM_PUBLISH_PIPELINE: rewrite_update_hook');
 		$rewrites = get_post_meta( $post->ID, self::$rewrites_meta_key, true );
 		$this->update_rewrite( $post->ID, $post->post_name, $rewrites);
 	}

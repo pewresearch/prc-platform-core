@@ -10,6 +10,7 @@ const AVAILABLE_LIBRARIES = [
 	'sharp-thin',
 	'solid',
 	'thin',
+	'custom-icons',
 ];
 
 const Icon = ({ library = 'solid', icon, size = 1 }) => {
@@ -19,6 +20,7 @@ const Icon = ({ library = 'solid', icon, size = 1 }) => {
 	if (AVAILABLE_LIBRARIES.indexOf(library) === -1) {
 		library = 'solid';
 	}
+	console.log('Icon', { library, icon, size });
 	return (
 		<i className="icon">
 			<svg
@@ -27,9 +29,8 @@ const Icon = ({ library = 'solid', icon, size = 1 }) => {
 					height: `${size}em`,
 				}}
 			>
-				{/*  TODO: pre-launch, update the href to the correct path by removing pewresearch-org */}
 				<use
-					href={`${window.location.origin}/pewresearch-org/wp-content/plugins/prc-icon-library/build/icons/sprites/${library}.svg#${icon}`}
+					xlinkHref={`${window.location.origin}/wp-content/plugins/prc-icon-library/build/icons/sprites/${library}.svg#${icon}`}
 				></use>
 			</svg>
 		</i>

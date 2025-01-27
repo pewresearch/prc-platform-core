@@ -14,9 +14,9 @@
  * add_relationship() sets up the relationships
  * get_related_post() returns term's post for storing and returning related meta
  * get_related_term() returns related term (for ex: to base a related posts query on) if we are displaying that post
- *
  */
 namespace TDS;
+
 use WP_Error;
 use WP_Query;
 
@@ -93,15 +93,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		return $relationship;
 	}
 
-	function get_taxonomy_term_by_meta($taxonomy, $meta_key, $meta_value) {
-		$term = get_terms(array(
-			'taxonomy' => $taxonomy,
-			'meta_key' => $meta_key,
-			'meta_value' => $meta_value,
-			'hide_empty' => false,
-		));
+	function get_taxonomy_term_by_meta( $taxonomy, $meta_key, $meta_value ) {
+		$term = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'meta_key'   => $meta_key,
+				'meta_value' => $meta_value,
+				'hide_empty' => false,
+			)
+		);
 
-		if ($term && !is_wp_error($term)) {
+		if ( $term && ! is_wp_error( $term ) ) {
 			return $term[0];
 		}
 
@@ -129,11 +131,11 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		static $post_type_relationships = array();
 
 		if ( isset( $set ) ) {
-			return $post_type_relationships[$for] = $set;
+			return $post_type_relationships[ $for ] = $set;
 		}
 
-		if ( ! empty( $post_type_relationships[$for] ) ) {
-			return $post_type_relationships[$for];
+		if ( ! empty( $post_type_relationships[ $for ] ) ) {
+			return $post_type_relationships[ $for ];
 		}
 
 		$search = array_search( $for, $post_type_relationships );
@@ -142,10 +144,9 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		}
 
 		return null;
-
 	}
 
-	function establish_post_term_connection($post_type, $taxonomy, $post, $post_id) {
+	function establish_post_term_connection( $post_type, $taxonomy, $post, $post_id ) {
 		if ( apply_filters( 'tds_balancing_from_post', balancing_relationship(), $post_type, $taxonomy, $post ) ) {
 			return;
 		}
@@ -157,23 +158,22 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		balancing_relationship( true );
 
 		// Key off term id -> post id to prevent duplicates if name change occurs.
-		$term = false;
+		$term    = false;
 		$term_id = get_post_meta( $post_id, 'tds_term_id', true );
-		if ( function_exists( 'wpcom_vip_get_term_by' ) && !empty( $term_id)) {
+		if ( function_exists( 'wpcom_vip_get_term_by' ) && ! empty( $term_id ) ) {
 			$term = wpcom_vip_get_term_by( 'term_id', $term_id, $taxonomy, ARRAY_A );
-		} elseif (!empty( $term_id)) {
+		} elseif ( ! empty( $term_id ) ) {
 			$term = get_term_by( 'term_id', $term_id, $taxonomy, ARRAY_A );
 		}
 
 		$term_meta = null;
 		$post_meta = null;
 
-		if( !$term )
-		{
+		if ( ! $term ) {
 			$term = wp_insert_term( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) );
-			if( is_wp_error( $term ) ) {
+			if ( is_wp_error( $term ) ) {
 				balancing_relationship( false );
-				if ( extension_loaded('newrelic') && function_exists('newrelic_notice_error') ) {
+				if ( extension_loaded( 'newrelic' ) && function_exists( 'newrelic_notice_error' ) ) {
 					\newrelic_notice_error( 'Error creating a term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title );
 				} else {
 					throw new WP_Error( 'term_insert_error', 'Error creating a term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title );
@@ -182,34 +182,64 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			$term_meta = update_term_meta( $term['term_id'], 'tds_post_id', $post_id );
 			$post_meta = update_post_meta( $post_id, 'tds_term_id', $term['term_id'] );
 		} else {
-			if( is_object( $term ) ) {
+			if ( is_object( $term ) ) {
 				$term = (array) $term;
 			}
 
 			// Quick check if the term name or slug should be updated.
 			$update = false;
-			if( $term['name'] !== $post->post_title ) {
+			if ( $term['name'] !== $post->post_title ) {
 				$term['name'] = $post->post_title;
-				$update = true;
+				$update       = true;
 			}
 
-			if( $term['slug'] !== $post->post_name ) {
+			if ( $term['slug'] !== $post->post_name ) {
 				$term['slug'] = $post->post_name;
-				$update = true;
+				$update       = true;
 			}
 
 			if ( $update ) {
 				$term = wp_update_term( $term['term_id'], $taxonomy, $term );
 			}
 
-			if( is_wp_error( $term ) ) {
+			if ( is_wp_error( $term ) ) {
 				balancing_relationship( false );
 				$error_msg = 'Error updating a post -> term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title;
-				if ( extension_loaded('newrelic') && function_exists('newrelic_notice_error') ) {
+				if ( extension_loaded( 'newrelic' ) && function_exists( 'newrelic_notice_error' ) ) {
 					\newrelic_notice_error( $error_msg );
 				} else {
 					throw new General_Exception( $error_msg );
 				}
+			}
+		}
+
+		// Check to see if this post has a parent, if it does and it's term does not, then we should get the parent posts's matching term id and then set this term's parent to it...
+		if ( $post->post_parent > 0 ) {
+			$parent_post = get_post( $post->post_parent );
+			if ( $parent_post ) {
+				$parent_term = get_related_term( $parent_post );
+				if ( $parent_term ) {
+					$parent_term_id = $parent_term->term_id;
+					$term           = wp_update_term(
+						$term['term_id'],
+						$taxonomy,
+						array(
+							'parent' => $parent_term_id,
+						)
+					);
+				}
+			}
+		} elseif ( $term['parent'] > 0 ) {
+			$parent_term = get_term( $term['parent'], $taxonomy );
+			$parent_post = get_related_post( $parent_term->term_id, $taxonomy );
+			if ( $parent_post ) {
+				$post->post_parent = $parent_post->ID;
+				$post              = wp_update_post(
+					array(
+						'ID'          => $post->ID,
+						'post_parent' => $post->post_parent,
+					)
+				);
 			}
 		}
 
@@ -236,11 +266,10 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		static $balancing_status = false;
 
 		if ( func_num_args() ) {
-			$balancing_status = (boolean) func_get_arg( 0 );
+			$balancing_status = (bool) func_get_arg( 0 );
 		}
 
 		return $balancing_status;
-
 	}
 
 	/**
@@ -284,18 +313,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 
 		$md5 = md5( $post_type . '|' . $taxonomy );
 
-		if ( isset( $existing_closures[$md5] ) ) {
-			return $existing_closures[$md5];
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
 		}
 
 		$closure = function ( $post_id, $post ) use ( $post_type, $taxonomy ) {
 			establish_post_term_connection( $post_type, $taxonomy, $post, $post_id );
 		};
 
-		$existing_closures[$md5] = $closure;
+		$existing_closures[ $md5 ] = $closure;
 
 		return $closure;
-
 	}
 
 	/**
@@ -340,8 +368,8 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		}
 
 		$md5 = md5( $post_type . '|' . $taxonomy );
-		if ( isset( $existing_closures[$md5] ) ) {
-			return $existing_closures[$md5];
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
 		}
 
 		$closure = function ( $term_id ) use ( $post_type, $taxonomy ) {
@@ -352,7 +380,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				return;
 			}
 			balancing_relationship( true );
-			$term_objects = get_objects_in_term( $term_id, $taxonomy );
+			$term_objects        = get_objects_in_term( $term_id, $taxonomy );
 			$matched_term_object = null;
 
 			$create_post = true;
@@ -361,7 +389,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			if ( ! empty( $term_objects ) ) {
 				foreach ( $term_objects as $term_object ) {
 					if ( $post_type === get_post_type( $term_object ) ) {
-						$create_post = false;
+						$create_post         = false;
 						$matched_term_object = $term_object;
 						break;
 					}
@@ -376,18 +404,20 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			}
 
 			if ( true === $create_post ) {
-				$post_id = wp_insert_post( array(
-					'post_type'   => $post_type,
-					'post_title'  => $term->name,
-					'post_name'   => $term->slug,
-					'post_status' => 'publish',
-					'meta_input'  => array(
-						'tds_term_id' => $term->term_id,
-					),
-				) );
+				$post_id   = wp_insert_post(
+					array(
+						'post_type'   => $post_type,
+						'post_title'  => $term->name,
+						'post_name'   => $term->slug,
+						'post_status' => 'publish',
+						'meta_input'  => array(
+							'tds_term_id' => $term->term_id,
+						),
+					)
+				);
 				$term_meta = update_term_meta( $term->term_id, 'tds_post_id', $post_id );
 				wp_set_object_terms( $post_id, $term_id, $taxonomy );
-			} else if ( $matched_term_object ) {
+			} elseif ( $matched_term_object ) {
 				$post = get_post( $matched_term_object );
 
 				if ( null === $post ) {
@@ -395,17 +425,34 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				}
 
 				// Quick check if the post title or post_name should be updated.
-				if( $term->name !== $post->post_title || $term->slug !== $post->post_name ) {
+				if ( $term->name !== $post->post_title || $term->slug !== $post->post_name ) {
 					$post->post_title = $term->name;
-					$post->post_name = $term->slug;
-					$post = wp_update_post( array(
-						'ID' => $post->ID,
-						'post_title' => $post->post_title,
-						'post_name' => $post->post_name,
-					) );
+					$post->post_name  = $term->slug;
+					$post             = wp_update_post(
+						array(
+							'ID'         => $post->ID,
+							'post_title' => $post->post_title,
+							'post_name'  => $post->post_name,
+						)
+					);
 				}
 
-				if( is_wp_error( $post ) ) {
+				// Check for and enforce a parent post relationship the same as the term relationship.
+				if ( $term->parent > 0 && $post->post_parent === 0 ) {
+					$parent_term = get_term( $term->parent, $taxonomy );
+					$parent_post = get_related_post( $parent_term->term_id, $taxonomy );
+					if ( $parent_post ) {
+						$post->post_parent = $parent_post->ID;
+						$post              = wp_update_post(
+							array(
+								'ID'          => $post->ID,
+								'post_parent' => $post->post_parent,
+							)
+						);
+					}
+				}
+
+				if ( is_wp_error( $post ) ) {
 					throw new General_Exception( 'Error updating a term -> post: ' . implode( ', ', $post->get_error_messages() ) . ' Slug: ' . $term->slug . ' / Title: ' . $term->name );
 				}
 			}
@@ -413,9 +460,8 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			balancing_relationship( false );
 		};
 
-		$existing_closures[$md5] = $closure;
+		$existing_closures[ $md5 ] = $closure;
 		return $closure;
-
 	}
 
 	/**
@@ -455,18 +501,23 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return null;
 		}
 
-		$posts = new WP_Query( array(
-			'post_type'           => $post_type,
-			'posts_per_page'      => 1,
-			'tax_query'           => array( array(
-				'taxonomy'        => $term->taxonomy,
-				'field'           => 'id',
-				'terms'           => $term->term_id
-			) ),
-			'ignore_sticky_posts' => true,
-			'include_children'    => false,
-			'no_found_rows'       => true
-		) );
+		$posts = new WP_Query(
+			array(
+				'post_type'           => $post_type,
+				'posts_per_page'      => 1,
+				'post_status'         => array( 'publish', 'draft' ),
+				'tax_query'           => array(
+					array(
+						'taxonomy'         => $term->taxonomy,
+						'field'            => 'id',
+						'terms'            => $term->term_id,
+						'include_children' => false,
+					),
+				),
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+			)
+		);
 
 		return $posts->post_count == 0 ? null : $posts->post;
 	}
@@ -494,7 +545,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return;
 		}
 
-	    $terms = get_the_terms( $post->ID, get_relationship( $post->post_type ) );
+		$terms = get_the_terms( $post->ID, get_relationship( $post->post_type ) );
 
 		if ( is_wp_error( $terms ) || ! $terms ) {
 			return null;
@@ -505,7 +556,6 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		}
 
 		return null;
-
 	}
 
 	/**
@@ -549,7 +599,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return $existing_closures[ $md5 ];
 		}
 
-		$closure = function( $post_id ) use ( $post_type, $taxonomy ) {
+		$closure = function ( $post_id ) use ( $post_type, $taxonomy ) {
 			if ( apply_filters( 'tds_balancing_from_delete_post', balancing_relationship(), $post_type, $taxonomy, $post_id ) ) {
 				return;
 			}
@@ -615,7 +665,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return $existing_closures[ $md5 ];
 		}
 
-		$closure = function( $deleted_term, $deleted_term_taxonomy ) use ( $post_type, $taxonomy ) {
+		$closure = function ( $deleted_term, $deleted_term_taxonomy ) use ( $post_type, $taxonomy ) {
 
 			if ( apply_filters( 'tds_balancing_from_delete_term', balancing_relationship(), $post_type, $taxonomy, $deleted_term ) ) {
 				return;
@@ -629,7 +679,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 
 			// Get post id on term deletion.
 			$post_id = 0;
-			$post = get_related_post( $deleted_term, $taxonomy );
+			$post    = get_related_post( $deleted_term, $taxonomy );
 
 			if ( is_a( $post, 'WP_Post' ) ) {
 				$post_id = $post->ID;

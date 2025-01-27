@@ -1,9 +1,11 @@
 <?php
 namespace PRC\Platform;
+
 use WPSEO_Options;
 
 /**
  * This class handles constructing and managing the broad schema.org object graph and Google/Facebook/Twitter social metadata. As well as research related meta like DOI, PMID, etc.
+ *
  * @package
  */
 class Schema_Meta {
@@ -20,15 +22,15 @@ class Schema_Meta {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
 			$loader->add_action( 'wp_head', $this, 'force_search_engines_to_use_meta' );
@@ -46,6 +48,7 @@ class Schema_Meta {
 			$loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
 			$loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
 			$loader->add_filter( 'wpseo_canonical', $this, 'yoast_attachment_page_canonical_link' );
+			$loader->add_filter( 'wpseo_schema_graph', $this, 'correct_schema_graph_searchaction' );
 		}
 	}
 
@@ -61,7 +64,7 @@ class Schema_Meta {
 		global $paged;
 
 		// On publication pages AND on search pages we do not want to index the page if it is not the first page.
-		if ( is_index(true) && $paged > 1 ) {
+		if ( is_index( true ) && $paged > 1 ) {
 			$robots = 'noindex';
 		}
 
@@ -99,6 +102,7 @@ class Schema_Meta {
 
 	/**
 	 * Remove the Yoast SEO version number from the head.
+	 *
 	 * @hook wpseo_hide_version
 	 */
 	public function yoast_hide_version() {
@@ -107,6 +111,7 @@ class Schema_Meta {
 
 	/**
 	 * Default Twitter to the site's twitter handle rather than personal twitter handles.
+	 *
 	 * @hook wpseo_twitter_creator_account
 	 * @param mixed $twitter
 	 * @return mixed
@@ -129,65 +134,74 @@ class Schema_Meta {
 		return $parsely_metadata; // disable the default metadata
 	}
 
-	public function get_chart_attribute($post_id, $attribute) {
+	public function get_chart_attribute( $post_id, $attribute ) {
 		if ( ! is_singular( 'chart' ) ) {
 			return;
 		}
 
-		$post_content = get_post_field('post_content', $post_id);
+		$post_content = get_post_field( 'post_content', $post_id );
 		// get all of the blocks on the page with the name 'prc-block/chart-builder-controller'
-		$blocks = parse_blocks( $post_content );
-		$controller_blocks = array_filter( $blocks, function( $block ) {
-			return $block['blockName'] === 'prc-block/chart-builder-controller';
-		} );
+		$blocks            = parse_blocks( $post_content );
+		$controller_blocks = array_filter(
+			$blocks,
+			function ( $block ) {
+				return $block['blockName'] === 'prc-block/chart-builder-controller';
+			}
+		);
 		// if there are no chart controller blocks, return
 		if ( empty( $controller_blocks ) ) {
 			return;
 		}
-		$chart_blocks = array_map( function( $block ) {
-			// return inner blocks with the block name 'prc-block/chart-builder'
-			return array_filter( $block['innerBlocks'], function( $inner_block ) {
-				return $inner_block['blockName'] === 'prc-block/chart-builder';
-			} );
-		}, $controller_blocks );
+		$chart_blocks = array_map(
+			function ( $block ) {
+				// return inner blocks with the block name 'prc-block/chart-builder'
+				return array_filter(
+					$block['innerBlocks'],
+					function ( $inner_block ) {
+						return $inner_block['blockName'] === 'prc-block/chart-builder';
+					}
+				);
+			},
+			$controller_blocks
+		);
 		// get the first chart block
 		$chart_block = reset( $chart_blocks );
-		$attributes = $chart_block[1]['attrs'];
+		$attributes  = $chart_block[1]['attrs'];
 
-		$block_attribute = array_key_exists($attribute, $attributes) ? $attributes[$attribute] : false;
+		$block_attribute = array_key_exists( $attribute, $attributes ) ? $attributes[ $attribute ] : false;
 
 		return $block_attribute;
 	}
 
-	public function get_chart_title($title) {
+	public function get_chart_title( $title ) {
 		global $post;
 		if ( ! is_singular( 'chart' ) ) {
 			return $title;
 		}
-		$id = $post->ID;
-		$title = $this->get_chart_attribute($id, 'metaTitle');
+		$id    = $post->ID;
+		$title = $this->get_chart_attribute( $id, 'metaTitle' );
 		return $title;
 	}
 
-	public function get_chart_image($image) {
+	public function get_chart_image( $image ) {
 		global $post;
 		if ( ! is_singular( 'chart' ) ) {
 			return $image;
 		}
-		$id = $post->ID;
-		$png_id = $this->get_chart_attribute($id, 'pngId');
-		$image = wp_get_attachment_url($png_id);
+		$id     = $post->ID;
+		$png_id = $this->get_chart_attribute( $id, 'pngId' );
+		$image  = wp_get_attachment_url( $png_id );
 
 		return $image;
 	}
 
-	public function get_chart_description($description) {
+	public function get_chart_description( $description ) {
 		global $post;
 		if ( ! is_singular( 'chart' ) ) {
 			return $description;
 		}
-		$id = $post->ID;
-		$description = $this->get_chart_attribute($id, 'metaSource');
+		$id          = $post->ID;
+		$description = $this->get_chart_attribute( $id, 'metaSource' );
 		return $description;
 	}
 
@@ -219,6 +233,7 @@ class Schema_Meta {
 
 	/**
 	 * Add a ASCII logo to the head of the site.
+	 *
 	 * @return void
 	 */
 	public function ascii() {
@@ -226,7 +241,7 @@ class Schema_Meta {
 	<!--
 	#   Pew Research Center Digital Publishing Platform (PRC-Platform)
 	#   Github: https://github.com/pewresearch/prc-platform-core
-	#   Version: <?php echo esc_html($this->version); ?>
+	#   Version: <?php echo esc_html( $this->version ); ?>
 	#
 	#   Powered by WordPress VIP
 	#
@@ -237,10 +252,36 @@ class Schema_Meta {
 	/**
 	 * @hook wpseo_canonical
 	 */
-	public function yoast_attachment_page_canonical_link($canonical) {
+	public function yoast_attachment_page_canonical_link( $canonical ) {
 		if ( is_attachment() ) {
 			$canonical = get_permalink( wp_get_post_parent_id( get_the_ID() ) );
 		}
 		return $canonical;
+	}
+
+	/**
+	 * @hook wpseo_schema_graph
+	 */
+	public function correct_schema_graph_searchaction( $graph ) {
+		$graph = array_map(
+			function ( $item ) {
+				if ( isset( $item['@type'] ) && 'WebSite' === $item['@type'] ) {
+					if ( isset( $item['potentialAction'] ) ) {
+						$item['potentialAction'] = array_map(
+							function ( $action ) {
+								if ( isset( $action['@type'] ) && 'SearchAction' === $action['@type'] ) {
+									$action['target']['urlTemplate'] = str_replace('?s=', 'search/', $action['target']['urlTemplate']);
+								}
+								return $action;
+							},
+							$item['potentialAction']
+						);
+					}
+				}
+				return $item;
+			},
+			$graph
+		);
+		return $graph;
 	}
 }

@@ -168,7 +168,14 @@ function get_block_gap_support_value($attributes, $dimension_to_return = false) 
 	return preg_match('/^var:preset\|spacing\|\d+$/', $block_gap) ? 'var(--wp--preset--spacing--' . substr($block_gap, strrpos($block_gap, '|') + 1) . ')' : $block_gap;
 }
 
-function get_block_attributes($block_name, $given_attributes) {
+/**
+ * Returns an array of attributes for a given block name, with the given attributes merged with the block's default attributes.
+ * @param string $block_name The name of the block to get attributes for.
+ * @param array $given_attributes (optional) If no given attributes are provided, the default attributes will be returned.
+ * @param string|null $desired_attribute (optional) If a desired attribute is provided, only that attribute will be returned.
+ * @return array|string|null If a desired attribute is provided, only that attribute will be returned or null if no value can be found. Otherwise, an array of attributes will be returned.
+ */
+function get_block_attributes( string $block_name, array $given_attributes, string|null $desired_attribute = null) {
 	// We need to get the block name, then we need to get the block.json, then we need to get the attributes from that
 	$block = WP_Block_Type_Registry::get_instance()->get_registered($block_name);
 	$attributes = null;
@@ -183,7 +190,29 @@ function get_block_attributes($block_name, $given_attributes) {
 			$modified_attributes[$attr_name] = null;
 		}
 	}
+	if ( null !== $desired_attribute ) {
+		return array_key_exists($desired_attribute, $modified_attributes) ? $modified_attributes[$desired_attribute] : null;
+	}
 	return $modified_attributes;
+}
+
+/**
+ * Converts a spacing preset into a custom value.
+ *
+ * @param string|null $value Value to convert.
+ *
+ * @return string|null CSS var string for given spacing preset value.
+ */
+function get_spacing_preset_css_var( $value ) {
+	if ( empty( $value ) ) {
+		return null;
+	}
+
+	if ( ! preg_match( '/var:preset\|spacing\|(.+)/', $value, $matches ) ) {
+		return $value;
+	}
+
+	return sprintf( 'var(--wp--preset--spacing--%s)', $matches[1] );
 }
 
 /**
@@ -290,6 +319,9 @@ function get_legacy_color_by_slug($slug) {
 
 
 function get_color_by_slug($slug) {
+	if ( is_admin() ) {
+		return $slug;
+	}
 	$colors = \wp_get_global_settings(array('color', 'palette', 'theme'));
 	// check to see if slug is in the legacy color array first
 	$legacy_color = get_legacy_color_by_slug($slug);

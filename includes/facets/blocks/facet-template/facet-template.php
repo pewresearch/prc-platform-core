@@ -175,7 +175,7 @@ class Facet_Template {
 			$template = '<div %1$s>%2$s<div class="wp-block-prc-block-facet-template-list">%3$s</div>%4$s</div>';
 		}
 
-		$clear_icon =  \PRC\Platform\Icons\Render('solid', 'circle-xmark');
+		$clear_icon =  \PRC\Platform\Icons\render('solid', 'circle-xmark');
 
 		$label = wp_sprintf(
 			'<h5 class="wp-block-prc-platform-facet-template__label"><span>%1$s</span><span><button class="wp-block-prc-block-platform-facet-template__clear" data-wp-on--click="%2$s">%3$s</button></span></h5>',

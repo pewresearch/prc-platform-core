@@ -5,7 +5,7 @@ import { FormToggle } from '@wordpress/components';
 import { Fragment, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginPostStatusInfo } from '@wordpress/edit-post';
+import { PluginPostStatusInfo } from '@wordpress/editor';
 
 function PRCPostVisibility() {
 	// Detect if this is the site editor and if so then return early...
@@ -49,7 +49,7 @@ function PRCPostVisibility() {
 				/>
 			</PluginPostStatusInfo>
 			<PluginPostStatusInfo>
-				<label>Hide On Search</label>
+				<label>Hide On Internal /Search</label>
 				<FormToggle
 					checked={'hidden_from_search' === postVisibility}
 					onChange={() => {

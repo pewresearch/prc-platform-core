@@ -1,6 +1,6 @@
 {
 	"name": "pewresearch/prc-platform-core",
-	"description": "Required PHP dependencies for the Pew Research Center digital experience platform.",
+	"description": "Required PHP dependencies for the Pew Research Center's digital experience platform.",
 	"license": "GPL-2.0-or-later",
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0"
@@ -22,7 +22,7 @@
 			"alleyinteractive/composer-wordpress-autoloader": true
 		},
 		"platform": {
-			"php": "8.1"
+			"php": "8.2"
 		}
     }
 }

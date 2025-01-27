@@ -3,7 +3,7 @@ namespace PRC\Platform\Facets;
 
 $token_border_color     = array_key_exists('tokenBorderColor', $attributes) ? $attributes['tokenBorderColor'] : false;
 $token_background_color = array_key_exists('tokenBackgroundColor', $attributes) ? $attributes['tokenBackgroundColor'] : false;
-$clear_icon =  \PRC\Platform\Icons\Render('solid', 'circle-xmark');
+$clear_icon =  \PRC\Platform\Icons\render('solid', 'circle-xmark');
 
 $block_wrapper_attrs = get_block_wrapper_attributes([
 	'id' => wp_unique_id('prc-platform-facets-selected-tokens-'),

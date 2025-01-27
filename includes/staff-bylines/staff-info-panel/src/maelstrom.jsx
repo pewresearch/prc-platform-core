@@ -82,6 +82,7 @@ export default function MaelstromPanel() {
 							console.log('MAELSTROM', x);
 							updateRestricted(x.name);
 						},
+						// @TODO: Further obfuscate this naming
 						taxonomy: 'regions-countries',
 						value: restricted,
 						maxTerms: 5,

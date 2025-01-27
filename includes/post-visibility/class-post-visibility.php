@@ -1,16 +1,17 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Post_Visibility {
-	public static $meta_key = '_postVisibility';
-	public static $taxonomy = 'post_visibility';
+	public static $meta_key           = '_postVisibility';
 	public static $enabled_post_types = array(
 		'post',
 		'short-read',
 		'fact-sheet',
 		'feature',
-		'quiz'
+		'quiz',
+		'collections',
 	);
 
 	/**
@@ -28,15 +29,15 @@ class Post_Visibility {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_custom_visibility_statuses', 10 );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
@@ -51,20 +52,21 @@ class Post_Visibility {
 	/**
 	 * Register custom visibilty statuses that are present on origin posts but only used on stubs to determine their visibility in the index and search.
 	 * The interface for setting these statuses is in plugins/prc-block-plugins.
+	 *
 	 * @return void
 	 */
 	public function register_custom_visibility_statuses() {
-		foreach( self::$enabled_post_types as $post_type ) {
+		foreach ( self::$enabled_post_types as $post_type ) {
 			register_post_meta(
 				$post_type,
 				'_postVisibility',
 				array(
 					'show_in_rest'  => array(
 						'schema' => array(
-							'type' => 'string',
-							'default' => 'public',
+							'type'        => 'string',
+							'default'     => 'public',
 							'description' => 'The visibility of the post in the index and search. Defaults to public. **Private and password protected posts are not affected by this setting and this respects their statuses.**',
-							'enum' => array(
+							'enum'        => array(
 								null,
 								'', // This is the default value
 								'public',
@@ -74,9 +76,9 @@ class Post_Visibility {
 						),
 					),
 					'single'        => true,
-					'default' 	    => 'public',
+					'default'       => 'public',
 					'type'          => 'string',
-					'auth_callback' => function() {
+					'auth_callback' => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
@@ -91,7 +93,8 @@ class Post_Visibility {
 				'exclude_from_search' => true,
 				'public'              => true,
 				'publicly_queryable'  => true,
-				/* WP Statuses specific arguments. */
+				/*
+				WP Statuses specific arguments. */
 				// 'post_type'                   => self::$enabled_post_types, // Only for posts!
 				// 'show_in_metabox_dropdown'    => true,
 				// 'show_in_inline_dropdown'     => true,
@@ -107,7 +110,8 @@ class Post_Visibility {
 				'exclude_from_search' => false,
 				'public'              => true,
 				'publicly_queryable'  => true,
-				/* WP Statuses specific arguments. */
+				/*
+				WP Statuses specific arguments. */
 				// 'post_type'                   => self::$enabled_post_types, // Only for posts!
 				// 'show_in_metabox_dropdown'    => true,
 				// 'show_in_inline_dropdown'     => true,
@@ -117,15 +121,15 @@ class Post_Visibility {
 	}
 
 	public function add_custom_visibility_statuses_to_rest() {
-		foreach( self::$enabled_post_types as $post_type ) {
+		foreach ( self::$enabled_post_types as $post_type ) {
 			register_rest_field(
 				$post_type,
 				'postVisibility',
 				array(
-					'get_callback'    => function( $object ) {
+					'get_callback'    => function ( $object ) {
 						return get_post_meta( $object['id'], '_postVisibility', true );
 					},
-					'update_callback' => function( $value, $object ) {
+					'update_callback' => function ( $value, $object ) {
 						return update_post_meta( $object->ID, '_postVisibility', $value );
 					},
 					'schema'          => array(
@@ -147,12 +151,12 @@ class Post_Visibility {
 	/**
 	 * @hook get_post_status
 	 */
-	public function filter_post_status($post_status, $post) {
+	public function filter_post_status( $post_status, $post ) {
 		// get the _postVisibility meta value and apply to post_status
 		$post_visibility = get_post_meta( $post->ID, '_postVisibility', true );
-		if ( !empty($post_visibility) ) {
+		if ( ! empty( $post_visibility ) ) {
 			$post_visibility = 'public' === $post_visibility ? 'publish' : $post_visibility;
-			$post_status = $post_visibility;
+			$post_status     = $post_visibility;
 		}
 		return $post_status;
 	}
@@ -160,13 +164,13 @@ class Post_Visibility {
 	/**
 	 * @hook prc_platform_on_update
 	 */
-	public function update_post_status_from_post_visibility($post) {
+	public function update_post_status_from_post_visibility( $post ) {
 		$post_id = $post->ID;
-		if ( !in_array($post->post_type, self::$enabled_post_types, true) ) {
+		if ( ! in_array( $post->post_type, self::$enabled_post_types, true ) ) {
 			return;
 		}
 		$post_visibility = get_post_meta( $post_id, '_postVisibility', true );
-		if ( !empty($post_visibility) ) {
+		if ( ! empty( $post_visibility ) ) {
 			$post_visibility = 'public' === $post_visibility ? 'publish' : $post_visibility;
 		} else {
 			$post_visibility = 'publish';
@@ -174,17 +178,17 @@ class Post_Visibility {
 		if ( $post_visibility !== $post->post_status ) {
 			wp_update_post(
 				array(
-					'ID' => $post_id,
-					'post_status' => $post_visibility
+					'ID'          => $post_id,
+					'post_status' => $post_visibility,
 				)
 			);
 		}
 	}
 
 	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -213,62 +217,63 @@ class Post_Visibility {
 
 	/**
 	 * Add appropriate post_status arguments to restful queries.
+	 *
 	 * @hook rest_{post_type}_query
 	 * @param mixed $args
 	 * @param mixed $request
 	 * @return void
 	 */
 	public function filter_rest_query( $args, $request ) {
-		$referer = $request->get_header('referer');
+		$referer = $request->get_header( 'referer' );
 		// Break up the refere into its url params
-		$referer = wp_parse_url( $referer );
-		$referer_query = array_key_exists('query', $referer) ? $referer['query'] : '';
+		$referer       = wp_parse_url( $referer );
+		$referer_query = array_key_exists( 'query', $referer ) ? $referer['query'] : '';
 		$referer_query = wp_parse_args( $referer_query );
-		$post_type = array_key_exists('postType', $referer_query) ? $referer_query['postType'] : '';
-		$post_id = array_key_exists('postId', $referer_query) ? $referer_query['postId'] : '';
+		$post_type     = array_key_exists( 'postType', $referer_query ) ? $referer_query['postType'] : '';
+		$post_id       = array_key_exists( 'postId', $referer_query ) ? $referer_query['postId'] : '';
 
 		$allowed_ids = array(
 			'prc-block-theme//index',
 			'prc-block-theme//home',
-			'prc-block-theme//category'
+			'prc-block-theme//category',
 		);
 
-		$is_publication_listing = $request->get_param('isPubListingQuery');
+		$is_publication_listing = $request->get_param( 'isPubListingQuery' );
 
 		if ( 'wp_template' === $post_type ) {
-			if ( in_array($post_id, $allowed_ids) ){
-				$args['post_status'] = $this->show_publish_and_hidden_from_search($args['post_status']);
+			if ( in_array( $post_id, $allowed_ids ) ) {
+				$args['post_status'] = $this->show_publish_and_hidden_from_search( $args['post_status'] );
 			}
 			if ( 'prc-block-theme//search' === $post_id ) {
-				$args['post_status'] = $this->show_publish_and_hidden_from_index($args['post_status']);
+				$args['post_status'] = $this->show_publish_and_hidden_from_index( $args['post_status'] );
 			}
 		} elseif ( $is_publication_listing ) {
-			$args['post_status'] = $this->show_publish_and_hidden_from_search($args['post_status']);
+			$args['post_status'] = $this->show_publish_and_hidden_from_search( $args['post_status'] );
 		}
 
 		return $args;
 	}
 
-	public function show_publish_and_hidden_from_search($post_status = array()){
-		if ( !is_array($post_status) ) {
-			$post_status = array($post_status);
+	public function show_publish_and_hidden_from_search( $post_status = array() ) {
+		if ( ! is_array( $post_status ) ) {
+			$post_status = array( $post_status );
 		}
 		$to_add = array(
 			'publish',
-			'hidden_from_search'
+			'hidden_from_search',
 		);
-		return array_merge($post_status, $to_add);
+		return array_merge( $post_status, $to_add );
 	}
 
-	public function show_publish_and_hidden_from_index($post_status = array()){
-		if ( !is_array($post_status) ) {
-			$post_status = array($post_status);
+	public function show_publish_and_hidden_from_index( $post_status = array() ) {
+		if ( ! is_array( $post_status ) ) {
+			$post_status = array( $post_status );
 		}
 		$to_add = array(
 			'publish',
-			'hidden_from_index'
+			'hidden_from_index',
 		);
-		return array_merge($post_status, $to_add);
+		return array_merge( $post_status, $to_add );
 	}
 
 	/**
@@ -276,15 +281,20 @@ class Post_Visibility {
 	 * @param mixed $query
 	 * @return mixed
 	 */
-	public function filter_pub_listing_query_args($query) {
-		if ( is_admin() || !is_array($query) ) {
+	public function filter_pub_listing_query_args( $query ) {
+		if ( is_admin() || ! is_array( $query ) ) {
 			return $query;
 		}
-		$post_status = array_key_exists('post_status', $query) ? $query['post_status'] : array();
-		if ( !empty($query['s'] ) ){
-			$query['post_status'] = $this->show_publish_and_hidden_from_index($post_status);
+		$post_status = array_key_exists( 'post_status', $query ) ? $query['post_status'] : array();
+		if ( array_key_exists( 'collection', $query ) && ! empty( $query['collection'] ) ) {
+			$query['post_status'] = $this->show_publish_and_hidden_from_index( $post_status );
+			do_action( 'qm/debug', 'debug_msg : ' . print_r( $query, true ) );
+			return $query;
+		}
+		if ( ! empty( $query['s'] ) ) {
+			$query['post_status'] = $this->show_publish_and_hidden_from_index( $post_status );
 		} else {
-			$query['post_status'] = $this->show_publish_and_hidden_from_search($post_status);
+			$query['post_status'] = $this->show_publish_and_hidden_from_search( $post_status );
 		}
 		return $query;
 	}
@@ -302,8 +312,8 @@ class Post_Visibility {
 	 *
 	 * @param mixed $query
 	 */
-	public function filter_pre_get_posts($query) {
-		if ( true !== $query->get('isPubListingQuery') ) {
+	public function filter_pre_get_posts( $query ) {
+		if ( true !== $query->get( 'isPubListingQuery' ) ) {
 			return;
 		}
 
@@ -315,9 +325,8 @@ class Post_Visibility {
 			$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );
 		}
 		// On bylines only allow "publish" and "hidden from index" posts, giving a full accounting of a persons work. Hidden from search posts wont appear.
-		if ( $query->is_tax('bylines') ) {
+		if ( $query->is_tax( array( 'bylines', 'collection' ) ) ) {
 			$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );
 		}
 	}
-
 }

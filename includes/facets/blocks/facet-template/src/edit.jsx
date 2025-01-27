@@ -8,7 +8,7 @@ import { getBlockGapSupportValue } from '@prc/block-utils';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useMemo } from '@wordpress/element';
+import { Fragment, useMemo, useEffect } from '@wordpress/element';
 import { useBlockProps, RichText } from '@wordpress/block-editor';
 
 /**

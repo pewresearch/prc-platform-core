@@ -73,11 +73,12 @@ class Facets {
 	}
 
 	public static function format_label($label) {
-		$label_is_datetime = strtotime($label) !== false;
-		$label = $label_is_datetime ? gmdate('Y', strtotime($label)) : $label;
+		// If the label is a datetime let's check if its in the years only format and if so, return the year.
+		if ( strtotime($label) !== false ) {
+			return preg_match('/^\d{4}$/', $label) ? $label : gmdate('Y', strtotime($label));
+		}
 		// Render any ampersands and such in the label
-		$label = html_entity_decode($label);
-		return $label;
+		return html_entity_decode($label);
 	}
 
 	/**
@@ -87,7 +88,7 @@ class Facets {
 	 * @return string
 	 */
 	public static function construct_cache_key($query = [], $selected = []) {
-		$invalidate = '10/09/2024b';
+		$invalidate = '10/09/2024g';
 		// Remove pagination from the query args
 		$query = array_merge($query, array(
 			'paged' => 1

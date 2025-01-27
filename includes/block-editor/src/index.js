@@ -13,7 +13,6 @@ import { removeFilter } from '@wordpress/hooks';
 /**
  * Internal Dependencies:
  */
-import postPreviewPublishHook from './post-preview-publish-hook';
 
 function registerPRCBlockCollection() {
 	registerBlockCollection('prc-block', {
@@ -78,10 +77,6 @@ domReady(() => {
 		 * Remove editor panels that we do not use.
 		 */
 		removeEditorPanels();
-		/**
-		 * Register custom hooks.
-		 */
-		postPreviewPublishHook();
 	}
 	/**
 	 * Register the "Pew Research Center" block collection.

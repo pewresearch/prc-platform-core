@@ -11,6 +11,7 @@
 		"start": "wp-scripts start src/index.js"
 	},
 	"dependencies": {
+		"@emotion/styled": "^11.14.0",
 		"react-movable": "^3.0.4"
 	}
 }

@@ -34,10 +34,15 @@ class Firebase {
 	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $loader ) {
-		$this->instance = ( new Factory() )->withServiceAccount($this->localize_server_side_credentials());
-		$this->db = $this->instance->createDatabase();
-		$this->auth = $this->instance->createAuth();
-		$this->init($loader);
+		$credentials = $this->localize_server_side_credentials();
+		if ( !is_wp_error( $credentials ) ) {
+			$this->instance = ( new Factory() )->withServiceAccount($credentials);
+			$this->db = $this->instance->createDatabase();
+			$this->auth = $this->instance->createAuth();
+			$this->init($loader);
+		} else {
+			do_action( 'qm/critical', 'Firebase API can not initialize without service account credentialsl. Some platform features will not work.' );
+		}
 	}
 
 	public function init( $loader = null ) {
@@ -47,13 +52,27 @@ class Firebase {
 		}
 	}
 
+	/**
+	 * Provide the Firebase service account credentials to the server side SDK.
+	 * @return string|WP_Error The service account credentials or an error if the file does not exist.
+	 */
 	public function localize_server_side_credentials() {
 		$environment = wp_get_environment_type();
-		if ( 'production' === $environment ) {
-			return file_get_contents( \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json' );
-		} else {
-			return file_get_contents( \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-staging.json' );
+		$service_account_file = ( 'production' === $environment )
+			? \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json'
+			: \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-staging.json';
+
+		if ( ! file_exists( $service_account_file ) ) {
+			return new WP_Error( 'firebase_service_account', 'Service account file does not exist.' );
 		}
+
+		$credentials = file_get_contents( $service_account_file );
+
+		if ( false === $credentials ) {
+			return new WP_Error( 'firebase_service_account', 'Failed to read service account file.' );
+		}
+
+		return $credentials;
 	}
 
 	public function localize_client_side_credentials($data) {

@@ -1,10 +1,12 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_HTML_Tag_Processor;
 
 /**
  * Provides functionality for allowing embedding of interactives, charts, and other content on other sites.
+ *
  * @package
  */
 class Embeds {
@@ -21,12 +23,12 @@ class Embeds {
 		'core/video',
 		'core/image',
 		'core/group',
-		'prc-block/tabs',
+		// 'prc-block/tabs',
 		'prc-block/accordion-controller',
 		'prc-block/chart',
 		'prc-block/audio-player',
 		'prc-block/quiz',
-		'prc-block/embed-wrapper'
+		'prc-block/embed-wrapper',
 	);
 
 	public static $handle = 'prc-platform-iframe-embeds';
@@ -35,16 +37,16 @@ class Embeds {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'embeds/utils.php';
-		$this->init($loader);
+		require_once plugin_dir_path( __DIR__ ) . 'embeds/utils.php';
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var', 10, 1 );
 			$loader->add_action( 'init', $this, 'iframe_endpoint', 10 );
@@ -74,9 +76,9 @@ class Embeds {
 	}
 
 	public function register_controls_asset() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file          = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$resizer_script_slug = self::$handle . '-controls';
-		$resizer_script_src = plugins_url( 'build/index.js', __FILE__ );
+		$resizer_script_src  = plugins_url( 'build/index.js', __FILE__ );
 
 		$script = wp_register_script(
 			$resizer_script_slug,
@@ -94,14 +96,14 @@ class Embeds {
 	}
 
 	public function register_view_embed_handler() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/view-embed.asset.php' );
+		$asset_file             = include plugin_dir_path( __FILE__ ) . 'build/view-embed.asset.php';
 		$view_embed_script_slug = self::$handle . '-view-embed';
-		$view_embed_script_src = plugins_url( 'build/view-embed.js', __FILE__ );
+		$view_embed_script_src  = plugins_url( 'build/view-embed.js', __FILE__ );
 
 		$script = wp_register_script(
 			$view_embed_script_slug,
 			$view_embed_script_src,
-			array_merge($asset_file['dependencies'], array(self::$handle . '-resizer-script')),
+			array_merge( $asset_file['dependencies'], array( self::$handle . '-resizer-script' ) ),
 			$asset_file['version'],
 			true
 		);
@@ -114,11 +116,11 @@ class Embeds {
 	}
 
 	public function register_embed_footer_style() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/view.asset.php' );
+		$asset_file        = include plugin_dir_path( __FILE__ ) . 'build/view.asset.php';
 		$embed_footer_slug = self::$handle . '-footer';
 
 		$embed_footer_script_src = plugins_url( 'build/view.js', __FILE__ );
-		$embed_footer_style_src = plugins_url( 'build/style-view.css', __FILE__ );
+		$embed_footer_style_src  = plugins_url( 'build/style-view.css', __FILE__ );
 
 		$script = wp_register_script(
 			$embed_footer_slug,
@@ -145,12 +147,13 @@ class Embeds {
 	/**
 	 * This is being served on THEIR pages, outside the iframe.
 	 * We copy this script src in the embed code on our pages.
+	 *
 	 * @return WP_Error|true
 	 */
 	public function register_resizer_asset() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/iframe-resizer.asset.php' );
+		$asset_file          = include plugin_dir_path( __FILE__ ) . 'build/iframe-resizer.asset.php';
 		$resizer_script_slug = self::$handle . '-resizer-script';
-		$resizer_script_src = plugins_url( 'build/iframe-resizer.js', __FILE__ );
+		$resizer_script_src  = plugins_url( 'build/iframe-resizer.js', __FILE__ );
 
 		$script = wp_register_script(
 			$resizer_script_slug,
@@ -169,17 +172,18 @@ class Embeds {
 
 	/**
 	 * This is being served on our pages, inside of an /iframe.
+	 *
 	 * @return WP_Error|true
 	 */
 	public function register_resizer_window_asset() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/iframe-resizer-content-window.asset.php' );
+		$asset_file         = include plugin_dir_path( __FILE__ ) . 'build/iframe-resizer-content-window.asset.php';
 		$window_script_slug = self::$handle . '-resizer-window-script';
-		$window_script_src = plugins_url( 'build/iframe-resizer-content-window.js', __FILE__ );
+		$window_script_src  = plugins_url( 'build/iframe-resizer-content-window.js', __FILE__ );
 
 		$script = wp_register_script(
 			$window_script_slug,
 			$window_script_src,
-			array_merge($asset_file['dependencies'], array('jquery')),
+			array_merge( $asset_file['dependencies'], array( 'jquery' ) ),
 			$asset_file['version'],
 			false
 		);
@@ -193,6 +197,7 @@ class Embeds {
 
 	/**
 	 * Register all the various script and style assets.
+	 *
 	 * @hook init
 	 */
 	public function register_assets() {
@@ -211,11 +216,12 @@ class Embeds {
 				'allowedBlocks' => self::$allowed_blocks,
 			)
 		);
-		wp_enqueue_script(self::$handle . '-controls');
+		wp_enqueue_script( self::$handle . '-controls' );
 	}
 
 	/**
 	 * This adds "prc-platform__iframe" to the body class if the current page is an iframe.
+	 *
 	 * @hook body_class
 	 * @param mixed $classes
 	 * @return mixed $classes
@@ -229,6 +235,7 @@ class Embeds {
 
 	/**
 	 * Add the iframe query var to the list of query vars.
+	 *
 	 * @hook prc_platform_rewrite_query_vars
 	 * @param mixed $qvars
 	 * @return mixed
@@ -240,6 +247,7 @@ class Embeds {
 
 	/**
 	 * Add /iframe endpoint to all permalinks and attachments
+	 *
 	 * @hook init
 	 */
 	public function iframe_endpoint() {
@@ -253,7 +261,7 @@ class Embeds {
 			'single-' . $post->post_type . '-iframe.php',
 			'single-iframe.php',
 		);
-		$template = locate_template($templates);
+		$template  = locate_template( $templates );
 		return $template;
 	}
 
@@ -295,6 +303,7 @@ class Embeds {
 
 	/**
 	 * Return the post content for the iframe template.
+	 *
 	 * @return string
 	 */
 	public function get_template_post_content() {
@@ -304,7 +313,7 @@ class Embeds {
 			// @TODO: Wrap in post-content block.
 			$post_content = get_the_content();
 			if ( $this->test_for_embeddable_blocks( $post_content ) ) {
-				$post_content = $this->render_embeddable_block_by_id( get_query_var('iframe'), $post_content );
+				$post_content = $this->render_embeddable_block_by_id( get_query_var( 'iframe' ), $post_content );
 				if ( false === $post_content ) {
 					wp_reset_postdata();
 					return '<p><pre>Unable to render embeddable block.</pre></p>';
@@ -319,6 +328,7 @@ class Embeds {
 
 	/**
 	 * Default output for /iframe if no template is passed through.
+	 *
 	 * @hook template_redirect
 	 * @return void
 	 */
@@ -332,7 +342,7 @@ class Embeds {
 				$post_content = $this->get_template_post_content();
 				echo wp_sprintf(
 					'<div class="prc-platform__iframe__content" data-iframe-key="%s" data-iframe-height>%s</div>',
-					get_query_var('iframe'),
+					get_query_var( 'iframe' ),
 					$post_content,
 				);
 				?>
@@ -377,6 +387,7 @@ class Embeds {
 
 	/**
 	 * Register the _embeds field for all public post types.
+	 *
 	 * @hook rest_api_init
 	 * @return void
 	 */
@@ -388,28 +399,28 @@ class Embeds {
 				'_embeds',
 				array(
 					'get_callback' => array( $this, 'get_embeddable_blocks' ),
-					'schema' => null,
+					'schema'       => null,
 				)
 			);
 		}
 	}
 
 	public function get_embeddable_blocks( $object, $field_name, $request ) {
-		if ( !array_key_exists('content', $object) || !array_key_exists('rendered', $object['content']) ) {
+		if ( ! array_key_exists( 'content', $object ) || ! array_key_exists( 'rendered', $object['content'] ) ) {
 			return array();
 		}
 
-		$blocks = parse_blocks( $object['content']['rendered'] );
+		$blocks  = parse_blocks( $object['content']['rendered'] );
 		$iframes = array();
 		foreach ( $blocks as $block ) {
 			if ( in_array( $block['blockName'], self::$allowed_blocks ) ) {
-				if ( array_key_exists('prcEmbed', $block['attrs']) && true === $block['attrs']['prcEmbed']['enabled'] ) {
-					$id = $block['attrs']['prcEmbed']['id'];
-					$iframes[$id] = array(
-						'blockName' => $block['blockName'],
-						'attrs' => $block['attrs'],
+				if ( array_key_exists( 'prcEmbed', $block['attrs'] ) && true === $block['attrs']['prcEmbed']['enabled'] ) {
+					$id             = $block['attrs']['prcEmbed']['id'];
+					$iframes[ $id ] = array(
+						'blockName'   => $block['blockName'],
+						'attrs'       => $block['attrs'],
 						'innerBlocks' => $block['innerBlocks'],
-						'iframeSrc' => get_permalink( $object['id'] ) . 'iframe/' . $id . '/',
+						'iframeSrc'   => get_permalink( $object['id'] ) . 'iframe/' . $id . '/',
 					);
 				}
 			}
@@ -418,13 +429,13 @@ class Embeds {
 	}
 
 	public function test_for_embeddable_blocks( $content = '' ) {
-		if ( ! has_blocks( $content) ) {
+		if ( ! has_blocks( $content ) ) {
 			return false;
 		}
 		$blocks = parse_blocks( $content );
 		foreach ( $blocks as $block ) {
 			if ( in_array( $block['blockName'], self::$allowed_blocks ) ) {
-				if ( array_key_exists('prcEmbed', $block['attrs']) && true === $block['attrs']['prcEmbed']['enabled'] ) {
+				if ( array_key_exists( 'prcEmbed', $block['attrs'] ) && true === $block['attrs']['prcEmbed']['enabled'] ) {
 					return true;
 				}
 			}
@@ -438,8 +449,8 @@ class Embeds {
 		$render = false;
 
 		foreach ( $blocks as $block ) {
-			if ( array_key_exists('blockName', $block) && in_array( $block['blockName'], self::$allowed_blocks ) ) {
-				if ( array_key_exists('prcEmbed', $block['attrs']) && true === $block['attrs']['prcEmbed']['enabled'] ) {
+			if ( array_key_exists( 'blockName', $block ) && in_array( $block['blockName'], self::$allowed_blocks ) ) {
+				if ( array_key_exists( 'prcEmbed', $block['attrs'] ) && true === $block['attrs']['prcEmbed']['enabled'] ) {
 					// Set up Render if its available
 					if ( false === $render ) {
 						$render = '<!--PRC Block Embed System-->';
@@ -466,14 +477,15 @@ class Embeds {
 	 * @return array $vars
 	 */
 	// public function filter_request( $vars ) {
-	// 	if ( isset( $vars['iframe'] ) ) {
-	// 		$vars['iframe'] = true;
-	// 	}
-	// 	return $vars;
+	// if ( isset( $vars['iframe'] ) ) {
+	// $vars['iframe'] = true;
+	// }
+	// return $vars;
 	// }
 
 	/**
 	 * Provides a filter to change the post content of an iframe when viewing an iframe.
+	 *
 	 * @hook the_content
 	 *
 	 * @param  string $content the post_content.
@@ -488,6 +500,7 @@ class Embeds {
 
 	/**
 	 * Provides a filter to change the post title only on iframes.
+	 *
 	 * @hook the_title
 	 * @param  string $title
 	 * @return string $title
@@ -501,6 +514,7 @@ class Embeds {
 
 	/**
 	 * Custom hook for the head of iframes
+	 *
 	 * @hook wp_head
 	 */
 	public function head() {
@@ -511,6 +525,7 @@ class Embeds {
 
 	/**
 	 * Custom hook for the footer of iframes
+	 *
 	 * @hook wp_footer
 	 */
 	public function footer() {
@@ -521,6 +536,7 @@ class Embeds {
 
 	/**
 	 * On /iframes enqueue the iframe resizer content window script.
+	 *
 	 * @hook wp_enqueue_scripts
 	 */
 	public function iframe_resizer_script() {
@@ -546,13 +562,14 @@ class Embeds {
 	}
 
 	/**
-	* Register additional attributes for supported blocks.
-	* @hook block_type_metadata
-	* @param mixed $metadata
-	* @return mixed
-	*/
+	 * Register additional attributes for supported blocks.
+	 *
+	 * @hook block_type_metadata
+	 * @param mixed $metadata
+	 * @return mixed
+	 */
 	public function add_attributes( $metadata ) {
-		if ( !in_array($metadata['name'], self::$allowed_blocks) ) {
+		if ( ! in_array( $metadata['name'], self::$allowed_blocks ) ) {
 			return $metadata;
 		}
 
@@ -561,7 +578,7 @@ class Embeds {
 				'type'    => 'object',
 				'default' => array(
 					'enabled' => false,
-					'id' => null,
+					'id'      => null,
 				),
 			);
 		}
@@ -570,16 +587,17 @@ class Embeds {
 	}
 
 	/**
-	* Register additional settings, like context, for supported blocks.
-	* @hook block_type_metadata_settings
-	* @param mixed $settings
-	* @param mixed $metadata
-	* @return mixed
-	*/
-	public function add_settings(array $settings, array $metadata) {
-		if ( in_array($metadata['name'], self::$allowed_blocks) ) {
+	 * Register additional settings, like context, for supported blocks.
+	 *
+	 * @hook block_type_metadata_settings
+	 * @param mixed $settings
+	 * @param mixed $metadata
+	 * @return mixed
+	 */
+	public function add_settings( array $settings, array $metadata ) {
+		if ( in_array( $metadata['name'], self::$allowed_blocks ) ) {
 			$settings['provides_context'] = array_merge(
-				array_key_exists('provides_context', $settings) ? $settings['provides_context'] : array(),
+				array_key_exists( 'provides_context', $settings ) ? $settings['provides_context'] : array(),
 				array(
 					'prc/embed' => 'prcEmbed',
 				)
@@ -590,16 +608,17 @@ class Embeds {
 
 	/**
 	 * Render the iframe embed footer on the front end.
+	 *
 	 * @hook render_block
 	 * @param mixed $block_content
 	 * @param mixed $block
 	 * @return mixed
 	 */
 	public function render( $block_content, $block ) {
-		if ( !array_key_exists('blockName', $block) ) {
+		if ( ! array_key_exists( 'blockName', $block ) ) {
 			return $block_content;
 		}
-		if ( !in_array($block['blockName'], self::$allowed_blocks) || is_admin() ) {
+		if ( ! in_array( $block['blockName'], self::$allowed_blocks ) || is_admin() ) {
 			return $block_content;
 		}
 
@@ -616,22 +635,23 @@ class Embeds {
 
 		$tag = new WP_HTML_Tag_Processor( $block_content );
 		$tag->next_tag();
-		$tag->add_class('is-embeddable');
+		$tag->add_class( 'is-embeddable' );
 		return $tag->get_updated_html() . $this->embed_footer( get_the_ID(), $block_embed_id );
 	}
 
 	/**
 	 * Render the iframe embed footer on the front end.
+	 *
 	 * @param mixed $post_id
 	 * @param mixed $block_embed_id
 	 * @return string|false
 	 */
 	public function embed_footer( $post_id, $block_embed_id ) {
-		$permalink = get_permalink( $post_id );
+		$permalink   = get_permalink( $post_id );
 		$iframe_code = $this->get_iframe_code( $post_id, $permalink . 'iframe/' . $block_embed_id );
 
-		$format_label = "Report";
-		$format_term = get_the_terms( $post_id, 'formats' );
+		$format_label = 'Report';
+		$format_term  = get_the_terms( $post_id, 'formats' );
 		if ( false !== $format_term ) {
 			$format_label = $format_term[0]->slug;
 			// remove formats_ from the beginning of the slug, replace dashes with spaces, and capitalize the first letter in each word.
@@ -645,11 +665,11 @@ class Embeds {
 		<div class="prc-platform__embed-footer">
 			<div class="prc-platform__embed-footer__menu">
 				<span href="#" class="prc-platform__embed-footer__menu__item" aria-controls="prc-platform__embed-footer__code">Embed <i class="code icon"></i></span>
-				<?php if ($this->is_iframe()):?>
-					<a href="<?php echo esc_url($permalink);?>" class="prc-platform__embed-footer__menu__item" target="_blank"><?php echo $format_label;?></a>
-				<?php endif;?>
+				<?php if ( $this->is_iframe() ) : ?>
+					<a href="<?php echo esc_url( $permalink ); ?>" class="prc-platform__embed-footer__menu__item" target="_blank"><?php echo $format_label; ?></a>
+				<?php endif; ?>
 				<div class="prc-platform__embed-footer__menu__right">
-					<a href="https://pewresearch.org" class="prc-platform__embed-footer__menu__item" target="_blank" alt="Open <?php echo $format_label;?> in new window">&copy; PEW RESEARCH CENTER</a>
+					<a href="https://pewresearch.org" class="prc-platform__embed-footer__menu__item" target="_blank" alt="Open <?php echo $format_label; ?> in new window">&copy; PEW RESEARCH CENTER</a>
 				</div>
 			</div>
 			<div class="prc-platform__embed-footer__code prc-platform__embed-code">
@@ -661,16 +681,19 @@ class Embeds {
 	}
 
 	public function get_iframe_code( $post_id, $src = null, $opts = array() ) {
-		$opts = wp_parse_args( $opts, array(
-			'output_as_iframe' => false,
-			'enqueue_view_embed' => false,
-		) );
-		$output_as_iframe = $opts['output_as_iframe'];
+		$opts               = wp_parse_args(
+			$opts,
+			array(
+				'output_as_iframe'   => false,
+				'enqueue_view_embed' => false,
+			)
+		);
+		$output_as_iframe   = $opts['output_as_iframe'];
 		$enqueue_view_embed = $opts['enqueue_view_embed'];
 		if ( empty( $src ) ) {
 			$src = get_permalink( $post_id ) . 'iframe/';
 		}
-		$height = get_post_meta( $post_id, 'iframe_height', true) ?: 500;
+		$height = get_post_meta( $post_id, 'iframe_height', true ) ?: 500;
 
 		if ( ! wp_script_is( self::$handle . '-resizer-script', 'registered' ) ) {
 			return;
@@ -678,20 +701,20 @@ class Embeds {
 		$script_url = wp_scripts()->registered[ self::$handle . '-resizer-script' ]->src;
 
 		if ( true === $output_as_iframe && $enqueue_view_embed ) {
-			wp_enqueue_script(self::$handle . '-view-embed');
+			wp_enqueue_script( self::$handle . '-view-embed' );
 		}
 
 		ob_start();
 		// @TODO: clean this up with sprintf
 		?>
-		<?php if ( false === $output_as_iframe ): ?>
+		<?php if ( false === $output_as_iframe ) : ?>
 		<textarea onClick="this.focus();this.select();">
 		<?php endif; ?>
 		<iframe id="pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>" src="<?php echo esc_url( $src ); ?>" height="<?php echo esc_attr( $height ); ?>px" width="100%" scrolling="no" frameborder="0"></iframe>
-		<?php if ( false === $output_as_iframe ): ?>
+		<?php if ( false === $output_as_iframe ) : ?>
 		<script type='text/javascript' id='pew-iframe-resizer'>(function(){function async_load(){var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='<?php echo esc_url( $script_url ); ?>';s.onload=s.onreadystatechange=function(){var rs=this.readyState;try{iFrameResize([],'iframe#pewresearch-org-embed-<?php echo esc_attr( $post_id ); ?>')}catch(e){}};var embedder=document.getElementById('pew-iframe-resizer');embedder.parentNode.insertBefore(s,embedder)}if(window.attachEvent)window.attachEvent('onload',async_load);else window.addEventListener('load',async_load,false)})();</script>
 		</textarea>
-		<?php endif;?>
+		<?php endif; ?>
 		<?php
 		$output = ob_get_clean();
 		if ( false === $output_as_iframe ) {
@@ -700,6 +723,3 @@ class Embeds {
 		return apply_filters( 'prc_iframe_embed_code', $output, $post_id );
 	}
 }
-
-
-

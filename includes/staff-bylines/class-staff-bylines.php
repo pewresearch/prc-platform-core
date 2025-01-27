@@ -216,7 +216,7 @@ class Staff_Bylines {
 
 			$loader->add_filter( 'tds_balancing_from_term', $this, 'override_term_data_store_for_guests', 10, 4 );
 
-			$loader->add_action( 'prc_platform_on_rest_update', $this, 'enforce_maelestrom', 100, 1 );
+			$loader->add_action( 'prc_platform_on_update', $this, 'enforce_maelestrom', 100, 1 );
 		}
 	}
 

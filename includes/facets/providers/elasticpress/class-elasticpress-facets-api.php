@@ -8,7 +8,7 @@ use WP_Error;
  * A PHP based API for interacting with Facets WP data via the REST API.
  */
 class ElasticPress_Facets_API {
-	protected $enable_cache = true;
+	protected $enable_cache = false;
 	public $cache_key;
 	public $cache_group;
 
@@ -66,6 +66,7 @@ class ElasticPress_Facets_API {
 		}
 		global $ep_facet_aggs;
 		$aggs = $ep_facet_aggs;
+		do_action('qm/debug', 'Facets_API::get_aggregations:: ' . print_r($aggs, true));
 		foreach ($aggs as $facet_slug => $facets_data) {
 			// Handle Year:
 			if ( in_array($facet_slug, [
@@ -186,10 +187,9 @@ class ElasticPress_Facets_API {
 		$aggregations = $this->get_aggregations();
 		$facets = [];
 		foreach ($aggregations as $facet_slug => $facets_data) {
-			do_action('qm/debug', 'Facets_API::get_facets:: Processing facet: ' . $facet_slug);
+			do_action('qm/debug', 'PRC Facets - EP - Processing Facet:: ' . $facet_slug);
 			global $ep_facet_aggs;
 			$aggs = $ep_facet_aggs;
-			do_action('qm/debug', 'RAW FACET DATA FROM EP:'. print_r($aggs[$facet_slug], true));
 			if ( !in_array($facet_slug, [
 				'years',
 				'year',
@@ -199,6 +199,7 @@ class ElasticPress_Facets_API {
 			} else {
 				$facets[$facet_slug] = $this->process_datetime_facet($facet_slug, $facets_data);
 			}
+			do_action('qm/debug', ' -- Returned Facet:'. print_r($facets[$facet_slug], true));
 		}
 
 		if ( !is_preview() || !empty($facets) ) {

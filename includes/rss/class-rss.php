@@ -51,12 +51,12 @@ class RSS_Feeds {
 	}
 
 	/**
+	 * Adjusts the feed cache transient lifetime to 20 seconds.
 	 * @hook wp_feed_cache_transient_lifetime
 	 * @param mixed $seconds
 	 * @return int
 	 */
 	public function adjust_feed_cache_transient_lifetime($seconds) {
-	    // 20 minutes in seconds...
 		return 1200;
 	}
 

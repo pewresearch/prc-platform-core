@@ -4,6 +4,7 @@ namespace PRC\Platform;
 class Taxonomies {
 	/**
 	 * This is the primary taxonomy for the site. This is used for the main permalink structure.
+	 *
 	 * @var string
 	 */
 	public static $primary_taxonomy = 'research-teams';
@@ -21,26 +22,25 @@ class Taxonomies {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 
-		require_once( plugin_dir_path( __FILE__ ) . 'topic-category/class-topic-category.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-collections.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-decoded-category.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-formats.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-fund-pools.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-languages.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-mode-of-analysis.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-regions-countries.php' );
-		require_once( plugin_dir_path( __FILE__ ) . 'class-research-teams.php' );
+		require_once plugin_dir_path( __FILE__ ) . 'topic-category/class-topic-category.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-decoded-category.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-formats.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-fund-pools.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-languages.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-mode-of-analysis.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-regions-countries.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-research-teams.php';
 
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'disable_term_description_filtering' );
 			$loader->add_filter( 'get_terms', $this, 'replace_commas_in_term_names', 10, 1 );
@@ -56,15 +56,14 @@ class Taxonomies {
 			$loader->add_action( 'edit_term', $this, 'hook_on_to_term_update', 10, 4 );
 
 			// Register the taxonomies.
-			new Topic_Category($loader);
-			new Collections($loader);
-			new Decoded_Category($loader);
-			new Formats($loader);
-			new Fund_Pools($loader);
-			new Languages($loader);
-			new Mode_Of_Analysis($loader);
-			new Regions_Countries($loader);
-			new Research_Teams($loader);
+			new Topic_Category( $loader );
+			new Decoded_Category( $loader );
+			new Formats( $loader );
+			new Fund_Pools( $loader );
+			new Languages( $loader );
+			new Mode_Of_Analysis( $loader );
+			new Regions_Countries( $loader );
+			new Research_Teams( $loader );
 		}
 	}
 
@@ -94,6 +93,7 @@ class Taxonomies {
 
 	/**
 	 * Disable 'Global Terms Enabled', this causes issues with shared term slugs. Resolves a long standing taxonomy issue.
+	 *
 	 * @hook global_terms_enabled
 	 * @return false
 	 */
@@ -103,6 +103,7 @@ class Taxonomies {
 
 	/**
 	 * Enable term slug change, this allows us to change the slug of a term without breaking the site.
+	 *
 	 * @hook wpseo_premium_term_redirect_slug_change
 	 * @return true
 	 */
@@ -110,8 +111,8 @@ class Taxonomies {
 		return true;
 	}
 
-	public function modify_post_tag_taxonomy_args($args, $taxonomy) {
-		if ($taxonomy === 'post_tag') {
+	public function modify_post_tag_taxonomy_args( $args, $taxonomy ) {
+		if ( $taxonomy === 'post_tag' ) {
 			// Modify the arguments of the post_tag taxonomy here
 			// For example, you can set 'public' to false to hide it from the admin UI
 			$args['show_ui'] = false;
@@ -121,10 +122,11 @@ class Taxonomies {
 
 	/**
 	 * Register the activity trail meta for the taxonomy.
+	 *
 	 * @hook init
 	 * @param mixed $taxonomy
 	 */
-	public function register_activity_trail_meta($taxonomy = null) {
+	public function register_activity_trail_meta( $taxonomy = null ) {
 		if ( ! $taxonomy ) {
 			return;
 		}
@@ -147,6 +149,7 @@ class Taxonomies {
 
 	/**
 	 * Whenever a term is created this will log when it was created and what user made that change.
+	 *
 	 * @hook create_term edit_term
 	 */
 	public function hook_on_to_term_update( int $term_id, int $tt_id, string $taxonomy, array $args ) {
@@ -155,6 +158,7 @@ class Taxonomies {
 
 	/**
 	 * Whenever a term is updated this will log when it was updated and what user made that change.
+	 *
 	 * @param mixed $term_id
 	 * @param mixed $tt_id
 	 * @param mixed $taxonomy
@@ -169,11 +173,10 @@ class Taxonomies {
 	}
 }
 
-function get_primary_term_id($taxonomy, $post_id) {
+function get_primary_term_id( $taxonomy, $post_id ) {
 	if ( ! function_exists( 'yoast_get_primary_term_id' ) ) {
 		return false;
 	} else {
-		return yoast_get_primary_term_id($taxonomy, $post_id);
+		return yoast_get_primary_term_id( $taxonomy, $post_id );
 	}
 }
-

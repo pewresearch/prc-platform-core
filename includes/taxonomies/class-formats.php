@@ -2,23 +2,24 @@
 namespace PRC\Platform;
 
 class Formats extends Taxonomies {
-	protected static $taxonomy = 'formats';
-	protected static $enforced_post_type_pairs = [
-		'short-read' => 'short-read',
-		'feature' => 'feature',
-		'fact-sheet' => 'fact-sheet',
-		'press-release' => 'press-release',
-		'quiz' => 'quiz',
-		'decoded' => 'decoded',
-		'dataset' => 'dataset',
+	protected static $taxonomy                 = 'formats';
+	protected static $enforced_post_type_pairs = array(
+		'short-read'     => 'short-read',
+		'feature'        => 'feature',
+		'fact-sheet'     => 'fact-sheet',
+		'press-release'  => 'press-release',
+		'quiz'           => 'quiz',
+		'decoded'        => 'decoded',
+		'dataset'        => 'dataset',
 		'newsletterglue' => 'newsletter',
-	];
+		'collections'    => 'collection',
+	);
 
-	public function __construct($loader) {
-		$this->init($loader);
+	public function __construct( $loader ) {
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'enforce_post_type_formats', 10, 1 );
@@ -62,17 +63,21 @@ class Formats extends Taxonomies {
 			'show_in_rest'      => true,
 		);
 
-		$post_types = apply_filters( "prc_taxonomy_{$taxonomy_name}_post_types", array(
-			'post',
-			'short-read',
-			'fact-sheet',
-			'feature',
-			'press-release',
-			'quiz',
-			'decoded',
-			'dataset',
-			'newsletterglue'
-		) );
+		$post_types = apply_filters(
+			"prc_taxonomy_{$taxonomy_name}_post_types",
+			array(
+				'post',
+				'short-read',
+				'fact-sheet',
+				'feature',
+				'press-release',
+				'quiz',
+				'decoded',
+				'dataset',
+				'newsletterglue',
+				'collections',
+			)
+		);
 
 		register_taxonomy( $taxonomy_name, $post_types, $args );
 	}
@@ -84,21 +89,25 @@ class Formats extends Taxonomies {
 	 */
 	/**
 	 * Whenever a short-read post is updated it should have the short-read format enforced. This function will enforce that.
+	 *
 	 * @hook prc_platform_on_incremental_save
 	 * @return void
 	 */
-	public function enforce_post_type_formats($post) {
-		$post_types = array_keys(self::$enforced_post_type_pairs);
-		if ( $post_types && in_array($post->post_type, $post_types) ) {
-			$format_term_slug = self::$enforced_post_type_pairs[$post->post_type];
+	public function enforce_post_type_formats( $post ) {
+		$post_types = array_keys( self::$enforced_post_type_pairs );
+		if ( $post_types && in_array( $post->post_type, $post_types ) ) {
+			$format_term_slug = self::$enforced_post_type_pairs[ $post->post_type ];
 			// Check if the post already has the format, if not, append it.
-			$format = wp_get_object_terms($post->ID, 'formats');
-			$has_enforced_term = array_filter($format, function($term) use ($format_term_slug) {
-				return $term->slug === $format_term_slug;
-			});
-			$has_enforced_term = !empty($has_enforced_term);
-			if ( !$has_enforced_term ) {
-				wp_set_object_terms($post->ID, $format_term_slug, 'formats', true);
+			$format            = wp_get_object_terms( $post->ID, 'formats' );
+			$has_enforced_term = array_filter(
+				$format,
+				function ( $term ) use ( $format_term_slug ) {
+					return $term->slug === $format_term_slug;
+				}
+			);
+			$has_enforced_term = ! empty( $has_enforced_term );
+			if ( ! $has_enforced_term ) {
+				wp_set_object_terms( $post->ID, $format_term_slug, 'formats', true );
 			}
 		}
 	}

@@ -131,7 +131,7 @@ export default function Controls({
 				},
 			];
 		}
-		console.log('facetsContextProvider', facetsContextProvider);
+		// console.log('facetsContextProvider', facetsContextProvider);
 		const newOptions = [
 			{
 				label: 'Select a Facet',

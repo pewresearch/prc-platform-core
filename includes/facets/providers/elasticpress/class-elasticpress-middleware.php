@@ -1,14 +1,29 @@
 <?php
+/**
+ * Middleware for ElasticPress integration.
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
+use \ElasticPress\Feature\Facets\Facets;
+
+/**
+ * Middleware for ElasticPress integration.
+ */
 class ElasticPress_Middleware {
 	protected $ep_facets;
 
-	public function __construct($loader) {
+	public function __construct( $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'class-elasticpress-facets-api.php';
 
 		// ElasticPress:
-		$this->ep_facets = new \ElasticPress\Feature\Facets\Facets();
+		if ( class_exists( '\ElasticPress\Feature\Facets\Facets' ) ) {
+			$this->ep_facets = new Facets();
+		} else {
+			error_log( 'ElasticPress Facets class does not exist.' );
+		}
 		$loader->add_action( 'pre_get_posts', $this, 'take_over_pub_listing_queries', 5, 1 );
 		$loader->add_filter( 'ep_facet_include_taxonomies', $this, 'register_facets' );
 		$loader->add_filter( 'ep_post_formatted_args', $this, 'restructure_ep_taxonomy_args', 10, 3 );
@@ -17,27 +32,26 @@ class ElasticPress_Middleware {
 		$loader->add_filter( 'ep_facet_taxonomies_size', $this, 'set_facet_taxonomies_size', 10, 2 );
 		$loader->add_filter( 'ep_set_sort', $this, 'sort_ep_by_date', 20, 2 );
 		$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_vars' );
-
-
 	}
 
 	/**
 	 * Enforce ElasticPress integration for pub listing queries.
 	 * This allows facets to work on non search queries.
+	 *
 	 * @hook pre_get_posts
 	 * @param WP_Query $query
 	 */
-	public function take_over_pub_listing_queries($query) {
-		if ( $query->get('isPubListingQuery') && $query->is_search() ) {
-			$query->set('ep_integrate', true);
+	public function take_over_pub_listing_queries( $query ) {
+		if ( $query->get( 'isPubListingQuery' ) && $query->is_search() ) {
+			$query->set( 'ep_integrate', true );
 		}
 	}
 
 	/**
 	 * Get the facet UI type for a given taxonomy.
 	 */
-	public static function get_facet_type($facet_slug) {
-		switch ($facet_slug) {
+	public static function get_facet_type( $facet_slug ) {
+		switch ( $facet_slug ) {
 			case 'category':
 			case 'formats':
 				return 'checkbox';
@@ -55,54 +69,56 @@ class ElasticPress_Middleware {
 
 	/**
 	 * Add taxonomy aggregations to ElasticPress.
+	 *
 	 * @hook ep_facet_include_taxonomies
 	 * @param array $taxonomies
 	 * @return array $taxonomies
 	 */
 	public static function get_facets_settings() {
-		$category = get_taxonomy( 'category' );
-		$category->facet_type = self::get_facet_type('category');
-		$formats = get_taxonomy( 'formats' );
-		$formats->facet_type = self::get_facet_type('formats');
-		$bylines = get_taxonomy( 'bylines' );
-		$bylines->facet_type = self::get_facet_type('bylines');
-		$research_teams = get_taxonomy( 'research-teams' );
-		$research_teams->facet_type = self::get_facet_type('research-teams');
-		$regions_countries = get_taxonomy( 'regions-countries' );
-		$regions_countries->facet_type = self::get_facet_type('regions-countries');
-		$years = (object)[
-			'name' => 'years',
-			'label' => 'Years',
-			'facet_type' => self::get_facet_type('years'),
-		];
-		return [
-			'category' => $category,
-			'formats' => $formats,
-			'bylines' => $bylines,
-			'research-teams' => $research_teams,
+		$category                      = get_taxonomy( 'category' );
+		$category->facet_type          = self::get_facet_type( 'category' );
+		$formats                       = get_taxonomy( 'formats' );
+		$formats->facet_type           = self::get_facet_type( 'formats' );
+		$bylines                       = get_taxonomy( 'bylines' );
+		$bylines->facet_type           = self::get_facet_type( 'bylines' );
+		$research_teams                = get_taxonomy( 'research-teams' );
+		$research_teams->facet_type    = self::get_facet_type( 'research-teams' );
+		$regions_countries             = get_taxonomy( 'regions-countries' );
+		$regions_countries->facet_type = self::get_facet_type( 'regions-countries' );
+		$years                         = (object) array(
+			'name'       => 'years',
+			'label'      => 'Years',
+			'facet_type' => self::get_facet_type( 'years' ),
+		);
+		return array(
+			'category'          => $category,
+			'formats'           => $formats,
+			'bylines'           => $bylines,
+			'research-teams'    => $research_teams,
 			'regions-countries' => $regions_countries,
-			'years' => $years,
-		];
+			'years'             => $years,
+		);
 	}
 
-	public function register_facets($taxonomies) {
+	public function register_facets( $taxonomies ) {
 		return self::get_facets_settings();
 	}
 
 	/**
 	 * @hook prc_platform_rewrite_query_vars
 	 */
-	public function register_query_vars($qvars) {
+	public function register_query_vars( $qvars ) {
 		$qvars[] = 'ep_sort__by_date';
 		return $qvars;
 	}
 
 	/**
 	 * Sort ElasticPress results by date.
+	 *
 	 * @hook ep_set_sort
 	 */
 	public function sort_ep_by_date( $sort, $order ) {
-		if ( !get_query_var('ep_sort__by_date') ) {
+		if ( ! get_query_var( 'ep_sort__by_date' ) ) {
 			return $sort;
 		}
 		$sort = array(
@@ -118,36 +134,37 @@ class ElasticPress_Middleware {
 	/**
 	 * Restructure post_filter taxonomy statements to be more scoped. This matches OR inside taxonomy groups, and AND between taxonomy groups.
 	 * This filter is especially formatted for elasticsearch queries.
+	 *
 	 * @hook ep_post_formatted_args
-	 * @param array $args
-	 * @param array $query_args
+	 * @param array    $args
+	 * @param array    $query_args
 	 * @param WP_Query $wp_query
 	 * @return array $args
 	 */
-	public function restructure_ep_taxonomy_args($args, $query_args, $wp_query) {
+	public function restructure_ep_taxonomy_args( $args, $query_args, $wp_query ) {
 		// The taxonomy "should" statements that need to be restructured:
-		if ( !isset($args['post_filter']['bool']['must'][0]['bool']['should']) ) {
+		if ( ! isset( $args['post_filter']['bool']['must'][0]['bool']['should'] ) ) {
 			return $args;
 		}
 		// Some sanity checks:
 		$x = $args['post_filter']['bool']['must'][0]['bool']['should'];
-		if ( !isset($x) ) {
+		if ( ! isset( $x ) ) {
 			return $args;
 		}
-		if ( count($x) <= 1 ) {
+		if ( count( $x ) <= 1 ) {
 			return $args;
 		}
-		$new = [];
+		$new = array();
 		// Restructure the should statements so that they are grouped by taxonomy:
-		foreach ($x as $item) {
-			$new[] = [
-				'bool' => [
+		foreach ( $x as $item ) {
+			$new[] = array(
+				'bool' => array(
 					'should' => $item,
-				],
-			];
+				),
+			);
 		}
 		// Remove the old should statements:
-		unset($args['post_filter']['bool']['must'][0]['bool']['should']);
+		unset( $args['post_filter']['bool']['must'][0]['bool']['should'] );
 		// Add the new structured must/should statements:
 		$args['post_filter']['bool']['must'][0]['bool']['must'] = $new;
 
@@ -158,23 +175,24 @@ class ElasticPress_Middleware {
 	 * Setup a "years" aggregation for ElasticPress.
 	 * This is a custom aggregation that is not provided by ElasticPress and
 	 * will provide a bucketed list of years for the post_date field.
-	 * @param array $formatted_args
-	 * @param array $args
+	 *
+	 * @param array    $formatted_args
+	 * @param array    $args
 	 * @param WP_Query $wp_query
 	 * @return array $year
 	 */
-	protected function set_year_aggregation($formatted_args, $args, $wp_query) {
-		$year = [
+	protected function set_year_aggregation( $formatted_args, $args, $wp_query ) {
+		$year = array(
 			'filter' => $formatted_args['post_filter'],
-			'aggs'   => [
-				'years' => [
-					'terms' => [
+			'aggs'   => array(
+				'years' => array(
+					'terms' => array(
 						'field' => 'date_terms.year',
-						'order' => ['_key' => 'desc'],
-					],
-				],
-			],
-		];
+						'order' => array( '_key' => 'desc' ),
+					),
+				),
+			),
+		);
 		return $year;
 	}
 
@@ -183,7 +201,7 @@ class ElasticPress_Middleware {
 	 */
 	public function add_date_aggregations( $formatted_args, $args, $wp_query ) {
 		// Years Aggregation:
-		$formatted_args['aggs']['date_histogram'] = $this->set_year_aggregation($formatted_args, $args, $wp_query);
+		$formatted_args['aggs']['date_histogram'] = $this->set_year_aggregation( $formatted_args, $args, $wp_query );
 		return $formatted_args;
 	}
 
@@ -214,22 +232,21 @@ class ElasticPress_Middleware {
 						continue;
 					}
 
-					$GLOBALS['ep_facet_aggs'][ $key ] = [];
+					$GLOBALS['ep_facet_aggs'][ $key ] = array();
 
 					foreach ( $agg['buckets'] as $bucket ) {
 						$GLOBALS['ep_facet_aggs'][ $key ][ $bucket['key'] ] = $bucket['doc_count'];
 					}
-
 				}
 			}
 		}
-
 	}
 
 	/**
 	 * Set the size of the taxonomy facets, how many records to return.
+	 *
 	 * @hook ep_facet_taxonomies_size
-	 * @param int $size
+	 * @param int    $size
 	 * @param string $taxonomy
 	 * @return int $size
 	 */

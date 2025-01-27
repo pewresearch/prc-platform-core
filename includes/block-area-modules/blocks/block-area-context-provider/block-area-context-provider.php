@@ -159,7 +159,7 @@ class Block_Area_Context_Provider extends Block_Area_Modules {
 
 	/**
 	 * Clear the cache when a block module is updated.
-	 * @hook prc_platform_on_update
+	 * @hook prc_platform_on_block_module_update
 	 */
 	public function clear_cache_on_block_module_saves($post) {
 		if ( parent::$post_type !== $post->post_type ) {

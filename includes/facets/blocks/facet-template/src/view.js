@@ -103,7 +103,7 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			if (!searchValue) {
 				return data;
 			}
-			console.log('filtering...', searchValue, data);
+
 			// This takes a search term and filters the choices based on the search term.
 			const matches = data.filter((choice) => {
 				const { label } = choice;
@@ -225,7 +225,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 					block: 'nearest',
 				});
 			}
-			console.log('NEXT ACTIVE', nextActive, nextActiveValue, activeItem);
 
 			// facetChoices.forEach((option) => {
 			// 	option.isSelected = false;
@@ -254,7 +253,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 			}
 
 			if (event.keyCode === 40 && event.key === 'ArrowDown') {
-				console.log('DOWN', event.target);
 				actions.moveThroughChoices(1, event.target);
 				return;
 			}
@@ -289,7 +287,6 @@ const { state, actions } = store('prc-platform/facets-context-provider', {
 		onUpdates: () => {
 			const localContext = getContext();
 			const serverContext = getServerContext();
-			console.log('onUpdates', localContext, serverContext, state);
 		},
 		/**
 		 * When the facet is expanded, update the label to be either More or Less.

@@ -35,19 +35,14 @@ class Block_Area_Modules {
 
 			// When saving block_modules update block area context
 			$loader->add_action(
-				'prc_platform_on_update',
+				'prc_platform_on_block_module_update',
 				$this,
 				'on_block_module_update_store_story_item_ids',
-				10, 2
+				10,
+				2
 			);
 			$loader->add_action(
-				'prc_platform_on_rest_update',
-				$this,
-				'on_block_module_update_store_story_item_ids',
-				10, 2
-			);
-			$loader->add_action(
-				'prc_platform_on_update',
+				'prc_platform_on_block_module_update',
 				$block_area_context_provider,
 				'clear_cache_on_block_module_saves'
 			);
@@ -57,7 +52,8 @@ class Block_Area_Modules {
 				'render_block_context',
 				$block_area_context_provider,
 				'construct_block_context',
-				1, 3
+				1,
+				3
 			);
 			$loader->add_filter(
 				'render_block_context',
@@ -328,12 +324,12 @@ class Block_Area_Modules {
 	}
 
 	/**
-	 * @hook prc_platform_on_update, prc_platform_on_rest_update
+	 * @hook prc_platform_on_block_module_update
 	 * @param mixed $post
 	 * @param mixed $has_blocks
 	 * @return void
 	 */
-	public function on_block_module_update_store_story_item_ids($post, $has_blocks){
+	public function on_block_module_update_store_story_item_ids($post){
 		if ( self::$post_type !== $post->post_type ) {
 			return;
 		}

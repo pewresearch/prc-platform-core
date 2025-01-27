@@ -51,14 +51,14 @@ const { state, actions } = store('prc-platform/dataset-download', {
 
 			}
 			if (false === response) {
-				const popupID =
+				const dialogId =
 					ref.parentElement.parentElement.parentElement.getAttribute(
 						'id'
 					);
-				const { actions: popupActions, state: popupState } = store(
-					'prc-block/popup-controller'
+				const { actions: dialogActions } = store(
+					'prc-block/dialog'
 				);
-				popupActions.open(null, popupID);
+				dialogActions.open(dialogId);
 			}
 		},
 		onButtonClick: (event) => {

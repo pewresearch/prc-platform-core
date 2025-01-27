@@ -1,0 +1,14 @@
+{
+	"name": "@pewresearch/prc-platform-post-publish-pipeline",
+	"description": "A PHP and Javascript implementation of a post-publish pipeline for the Pew Research Center platform. This provides convenient, stable, and extensible hooks that follow a post object through it's entire lifecycle; from init into the db, to subsequent incremental saves, to publish, to updates after publish, to unpublishing, to trashing, and lastly to untrashing. All hooks are designed with sanity checks so you don't have to worry about things like ajax, autosaving, revisions, etc. These hooks work, exactly when you expect them to and only when you expect them to.",
+	"version": "3.0.0",
+	"author": "Seth Rubenstein",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.4.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build src/index.js",
+		"start": "wp-scripts start src/index.js"
+	}
+}

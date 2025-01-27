@@ -44,7 +44,7 @@ class Gutenberg {
 	public function init($loader = null) {
 		if ( null !== $loader ){
 			$loader->add_filter( 'use_block_editor_for_post', $this, 'load_gutenberg', 15, 2 );
-			$loader->add_action( 'init', $this, 'add_revisions_to_reusable_blocks' );
+			// $loader->add_action( 'init', $this, 'add_revisions_to_reusable_blocks' );
 			$loader->add_action( 'menu_order', $this, 'group_admin_menus_together', 101 );
 			// Remove the "Block Directory" from the block inserter.
 			remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets' );
@@ -112,7 +112,19 @@ class Gutenberg {
 		return $new_menu_order;
 	}
 
+	/**
+	 * Unregister all core and third-party block patterns.
+	 */
 	public function unregister_core_block_patterns() {
 		remove_theme_support( 'core-block-patterns' );
+		$registered_patterns = \WP_Block_Patterns_Registry::get_instance()->get_all_registered();
+		if ( $registered_patterns ) {
+			foreach ( $registered_patterns as $pattern_properties ) {
+				// if the registered pattern's name does not include `prc-` in the namespace then unregister it.
+				if ( strpos($pattern_properties['name'], 'prc-') === false ) {
+					unregister_block_pattern( $pattern_properties['name'] );
+				}
+			}
+		}
 	}
 }

@@ -30031,5 +30031,8 @@
     "yen-sign",
     "yin-yang",
     "z"
-  ]
+  ],
+	"custom": [
+		"compare"
+	]
 }

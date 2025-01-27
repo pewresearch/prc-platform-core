@@ -2,7 +2,7 @@
  * WordPress Dependencies
  */
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 

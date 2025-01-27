@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_REST_Request;
 
@@ -39,38 +40,39 @@ class Art_Direction {
 	/**
 	 * Schema for pewresearch.org art direction.
 	 * A1, A2, A3, A4, facebook, and twitter are all specific contexts that appear in our blocks and themes. They are not arbitrary. Your mileage may vary.
+	 *
 	 * @var (string|(string|null)[][])[]|(string|(string|null)[][]|(string[]|(string|false)[])[][][])[]
 	 */
 	public static $field_schema = array(
 		'type'       => 'object',
 		'properties' => array(
-			'A1'    => array(
-				'type' => 'object',
+			'A1'       => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
-			'A2'    => array(
-				'type' => 'object',
+			'A2'       => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
-			'A3'    => array(
-				'type' => 'object',
+			'A3'       => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
-			'A4'   => array(
-				'type' => 'object',
+			'A4'       => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
 			// @TODO: Deprecate this image size...
-			'XL'  => array(
-				'type' => 'object',
+			'XL'       => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
 			'facebook' => array(
-				'type' => 'object',
+				'type'       => 'object',
 				'properties' => null,
 			),
-			'twitter' => array(
-				'type' => 'object',
+			'twitter'  => array(
+				'type'       => 'object',
 				'properties' => null,
 			),
 		),
@@ -87,12 +89,14 @@ class Art_Direction {
 
 	/**
 	 * Handle for this plugin's assets.
+	 *
 	 * @var string
 	 */
 	protected static $handle = 'prc-platform-art-direction';
 
 	/**
 	 * Post types that will have art direction enabled.
+	 *
 	 * @var string[]
 	 */
 	public $enabled_post_types = array(
@@ -103,11 +107,14 @@ class Art_Direction {
 		'decoded',
 		'fact-sheet',
 		'quiz',
-		'mini-course'
+		'mini-course',
+		'collection',
 	);
 
 	/**
 	 * Post meta key for art direction data.
+	 *
+	 * @TODO change this to snake case art_direction
 	 * @var string
 	 */
 	protected static $post_meta_key = 'artDirection';
@@ -116,25 +123,25 @@ class Art_Direction {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		// Construct schema and field properties for each image size.
 		$constructed_schema = self::$field_schema;
-		foreach( $constructed_schema['properties'] as $image_size => $schema) {
-			$constructed_schema['properties'][$image_size]['properties'] = self::$field_properties;
+		foreach ( $constructed_schema['properties'] as $image_size => $schema ) {
+			$constructed_schema['properties'][ $image_size ]['properties'] = self::$field_properties;
 		}
 		self::$field_schema = $constructed_schema;
 
 		$this->version = $version;
 
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'art-direction/utils.php';
+		require_once plugin_dir_path( __DIR__ ) . 'art-direction/utils.php';
 
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'init_art_direction' );
 			$loader->add_action( 'rest_api_init', $this, 'register_art_direction_rest_field' );
@@ -158,7 +165,7 @@ class Art_Direction {
 					'show_in_rest'  => array(
 						'schema' => self::$field_schema,
 					),
-					'auth_callback' => function() {
+					'auth_callback' => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
@@ -172,11 +179,11 @@ class Art_Direction {
 		}
 		$new_labels = array();
 		if ( array_key_exists( 'labels', $args ) ) {
-			$labels = $args['labels'];
-			$new_labels['featured_image'] = 'Art Direction';
-			$new_labels['set_featured_image'] = 'Set art direction image (A1)';
+			$labels                              = $args['labels'];
+			$new_labels['featured_image']        = 'Art Direction';
+			$new_labels['set_featured_image']    = 'Set art direction image (A1)';
 			$new_labels['remove_featured_image'] = 'Remove art direction (A1) image';
-			$new_labels['use_featured_image'] = 'Use as art direction (A1) image';
+			$new_labels['use_featured_image']    = 'Use as art direction (A1) image';
 		}
 		if ( ! empty( $new_labels ) ) {
 			$args['labels'] = array_merge( $labels, $new_labels );
@@ -186,6 +193,7 @@ class Art_Direction {
 
 	/**
 	 * Register a field for artDirection on supported post types in the REST API.
+	 *
 	 * @hook rest_api_init
 	 * @return void
 	 */
@@ -195,10 +203,10 @@ class Art_Direction {
 				$post_type,
 				'art_direction',
 				array(
-					'schema'       => null,
-					'get_callback' => array( $this, 'get_art_for_api' ),
-					'auth_callback' => function() {
-						return current_user_can('read');
+					'schema'        => null,
+					'get_callback'  => array( $this, 'get_art_for_api' ),
+					'auth_callback' => function () {
+						return current_user_can( 'read' );
 					},
 				)
 			);
@@ -207,25 +215,29 @@ class Art_Direction {
 
 	/**
 	 * Register the art direction endpoint.
+	 *
 	 * @hook prc_api_endpoints
 	 * @param mixed $endpoints
 	 * @return array
 	 */
-	public function register_endpoint($endpoints) {
-		array_push($endpoints, array(
-			'route' => '/art-direction/get/(?P<post_id>\d+)',
-			'methods' => 'GET',
-			'callback' => array( $this, 'restfully_get_art' ),
-			'permission_callback' => function () {
-				return true;
-			},
-		) );
+	public function register_endpoint( $endpoints ) {
+		array_push(
+			$endpoints,
+			array(
+				'route'               => '/art-direction/get/(?P<post_id>\d+)',
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'restfully_get_art' ),
+				'permission_callback' => function () {
+					return true;
+				},
+			)
+		);
 		return $endpoints;
 	}
 
 	public function restfully_get_art( WP_REST_Request $request ) {
 		$post_id = $request->get_param( 'post_id' );
-		$data = $this->get_art( (int) $post_id );
+		$data    = $this->get_art( (int) $post_id );
 		return $data;
 	}
 
@@ -235,9 +247,9 @@ class Art_Direction {
 	}
 
 	public function register_block_plugin_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 		$script = wp_register_script(

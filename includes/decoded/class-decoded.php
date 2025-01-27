@@ -38,7 +38,7 @@ class Decoded {
 			$loader->add_filter('prc_load_gutenberg', $this, 'enable_gutenberg_ramp');
 			$loader->add_filter('prc_platform_rewrite_rules', $this, 'add_decoded_singular_date_rules', 10, 1);
 			$loader->add_filter('post_type_link', $this, 'get_decoded_permalink', 30, 3);
-			$loader->add_action('prc_platform_on_incremental_save', $this, 'enforce_decoded_format', 10, 1);
+			$loader->add_action('prc_platform_on_decoded_incremental_save', $this, 'enforce_decoded_format', 10, 1);
 		}
 	}
 
@@ -130,7 +130,7 @@ class Decoded {
 
 	/**
 	 * Whenever a decoded post is updated it should have the decoded format enforced. This function will enforce that.
-	 * @hook prc_platform_on_incremental_save
+	 * @hook prc_platform_on_decoded_incremental_save
 	 * @return void
 	 */
 	public function enforce_decoded_format($post) {

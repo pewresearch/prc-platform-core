@@ -55,8 +55,8 @@ $block_wrapper_attrs = get_block_wrapper_attributes([
 	'style' => '--block-gap:' . \PRC\Platform\Block_Utils\get_block_gap_support_value($attributes, 'horizontal') . ';',
 ]);
 
-$caret_up = \PRC\Platform\Icons\Render('solid', 'caret-up');
-$caret_down = \PRC\Platform\Icons\Render('solid', 'caret-down');
+$caret_up = \PRC\Platform\Icons\render('solid', 'caret-up');
+$caret_down = \PRC\Platform\Icons\render('solid', 'caret-down');
 $icon_set = $caret_up . $caret_down;
 
 $template = /* html */'<div %1$s><div class="wp-block-prc-platform-facet-select-field__close-toggle" data-wp-on--click="actions.onExpand">%5$s</div><div class="wp-block-prc-platform-facet-select-field__input">%2$s</div><ul class="wp-block-prc-platform-facet-select-field__list" role="listbox" id="%3$s-listbox" aria-autocomplete="list">%4$s</ul></div>';
