@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Short_Reads {
@@ -20,15 +21,15 @@ class Short_Reads {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
@@ -62,7 +63,7 @@ class Short_Reads {
 			'show_in_rest'       => true,
 			'query_var'          => true,
 			'rewrite'            => array(
-				'slug' => 'short-reads/%year%/%monthnum%/%day%',
+				'slug'       => 'short-reads/%year%/%monthnum%/%day%',
 				'with_front' => true,
 				'pages'      => true,
 				'feeds'      => true,
@@ -71,33 +72,33 @@ class Short_Reads {
 			'has_archive'        => 'short-reads',
 			'hierarchical'       => false,
 			'menu_position'      => 5,
-			'supports'           => array( 'title', 'editor', 'author', 'excerpt', 'revisions', 'thumbnail', 'custom-fields' ),
+			'supports'           => array( 'title', 'editor', 'author', 'excerpt', 'revisions', 'thumbnail', 'custom-fields', 'comments' ),
 			'taxonomies'         => array( 'category' ),
 		);
 
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
+	public function enable_gutenberg_ramp( $post_types ) {
+		array_push( $post_types, self::$post_type );
 		return $post_types;
 	}
 
 	/**
 	 * Convert the %year%, %monthnum%, and %day% placeholders in the post type's rewrite slug to the actual datettime.
+	 *
 	 * @hook post_type_link
 	 * @param mixed $url
 	 * @param mixed $post
 	 * @param mixed $leavename
 	 * @return mixed
 	 */
-	public function get_short_read_permalink($url, $post, $leavename) {
-		if ( self::$post_type == get_post_type($post) ) {
-			$url = str_replace( "%year%", get_the_date('Y', $post), $url );
-			$url = str_replace( "%monthnum%", get_the_date('m', $post), $url );
-			$url = str_replace( "%day%", get_the_date('d', $post), $url );
+	public function get_short_read_permalink( $url, $post, $leavename ) {
+		if ( self::$post_type == get_post_type( $post ) ) {
+			$url = str_replace( '%year%', get_the_date( 'Y', $post ), $url );
+			$url = str_replace( '%monthnum%', get_the_date( 'm', $post ), $url );
+			$url = str_replace( '%day%', get_the_date( 'd', $post ), $url );
 		}
 		return $url;
 	}
-
 }

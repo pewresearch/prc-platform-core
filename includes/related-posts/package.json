@@ -3,7 +3,7 @@
 	"description": "Related Posts functionality for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/scripts": "^26.1.0"
+		"@wordpress/scripts": "^30.9.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build",

@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Decoded {
@@ -23,27 +24,28 @@ class Decoded {
 
 	/**
 	 * Initialize the class and set its properties.
+	 *
 	 * @param mixed $version
 	 * @param mixed $loader
 	 * @return void
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader) {
+	public function init( $loader ) {
 		if ( null !== $loader ) {
-			$loader->add_action('init', $this, 'register_type');
-			$loader->add_filter('prc_load_gutenberg', $this, 'enable_gutenberg_ramp');
-			$loader->add_filter('prc_platform_rewrite_rules', $this, 'add_decoded_singular_date_rules', 10, 1);
-			$loader->add_filter('post_type_link', $this, 'get_decoded_permalink', 30, 3);
-			$loader->add_action('prc_platform_on_decoded_incremental_save', $this, 'enforce_decoded_format', 10, 1);
+			$loader->add_action( 'init', $this, 'register_type' );
+			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
+			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'add_decoded_singular_date_rules', 10, 1 );
+			$loader->add_filter( 'post_type_link', $this, 'get_decoded_permalink', 30, 3 );
+			$loader->add_action( 'prc_platform_on_decoded_incremental_save', $this, 'enforce_decoded_format', 10, 1 );
 		}
 	}
 
 	public function register_type() {
-		$labels  = array(
+		$labels = array(
 			'name'                  => _x( 'Decoded Posts', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Decoded Post', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Decoded', 'text_domain' ),
@@ -78,11 +80,11 @@ class Decoded {
 			'feeds'      => true,
 		);
 
-		$args    = array(
+		$args = array(
 			'label'               => __( 'Decoded', 'text_domain' ),
 			'description'         => __( 'A post type for Decoded blog posts.', 'text_domain' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields' ),
+			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields', 'comments' ),
 			'taxonomies'          => array( 'decoded-category', 'research-teams', 'collection', 'languages', 'formats' ),
 			'hierarchical'        => false,
 			'public'              => true,
@@ -103,15 +105,15 @@ class Decoded {
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
+	public function enable_gutenberg_ramp( $post_types ) {
+		array_push( $post_types, self::$post_type );
 		return $post_types;
 	}
 
 	/**
 	 * @hook prc_platform_rewrite_rules
 	 */
-	public function add_decoded_singular_date_rules($rules) {
+	public function add_decoded_singular_date_rules( $rules ) {
 		$new_rules = array(
 			'^decoded/([0-9]{4})/([0-9]{2})/([0-9]{2})/(.+)/?$' => 'index.php?post_type=decoded&year=$matches[1]&monthnum=$matches[2]&name=$matches[4]',
 		);
@@ -119,30 +121,34 @@ class Decoded {
 	}
 
 	// Splice in the Y/m/d date path into the permalink for decoded posts.
-	public function get_decoded_permalink($url, $post) {
+	public function get_decoded_permalink( $url, $post ) {
 		if ( self::$post_type == $post->post_type ) {
 			$post_name = $post->post_name;
-			$date_path = get_the_date('Y/m/d', $post);
-			$url = str_replace($post_name, $date_path . '/' . $post_name, $url);
+			$date_path = get_the_date( 'Y/m/d', $post );
+			$url       = str_replace( $post_name, $date_path . '/' . $post_name, $url );
 		}
 		return $url;
 	}
 
 	/**
 	 * Whenever a decoded post is updated it should have the decoded format enforced. This function will enforce that.
+	 *
 	 * @hook prc_platform_on_decoded_incremental_save
 	 * @return void
 	 */
-	public function enforce_decoded_format($post) {
+	public function enforce_decoded_format( $post ) {
 		if ( $post->post_type === self::$post_type ) {
 			// Check if the post already has the decoded format, if not, append it.
-			$format = wp_get_object_terms($post->ID, 'formats');
-			$has_decoded_format = array_filter($format, function($term) {
-				return $term->slug === 'decoded';
-			});
-			$has_decoded_format = !empty($has_decoded_format);
-			if ( !$has_decoded_format ) {
-				wp_set_object_terms($post->ID, 'decoded', 'formats', true);
+			$format             = wp_get_object_terms( $post->ID, 'formats' );
+			$has_decoded_format = array_filter(
+				$format,
+				function ( $term ) {
+					return $term->slug === 'decoded';
+				}
+			);
+			$has_decoded_format = ! empty( $has_decoded_format );
+			if ( ! $has_decoded_format ) {
+				wp_set_object_terms( $post->ID, 'decoded', 'formats', true );
 			}
 		}
 	}

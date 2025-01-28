@@ -67,7 +67,6 @@ class Upgrade_To_1_1_0 {
 			if ( $taxonomy !== $term_taxonomy ) {
 				continue;
 			}
-			WP_CLI::line( 'Upgrading term: ' . $term->slug );
 			// Do a "blind update", this basically is an update with no changes just to trigger the save hook.
 			wp_update_term(
 				$term_id,

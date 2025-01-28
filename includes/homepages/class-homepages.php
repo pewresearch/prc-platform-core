@@ -74,7 +74,7 @@ class Homepages {
 			'pages'      => false,
 			'feeds'      => false,
 		);
-		$supports   = array( 'title', 'editor', 'revisions', 'custom-fields' );
+		$supports   = array( 'title', 'editor', 'revisions', 'custom-fields', 'comments' );
 		$args       = array(
 			'label'               => __( 'Homepage', 'text_domain' ),
 			'description'         => __( 'Homepages', 'text_domain' ),

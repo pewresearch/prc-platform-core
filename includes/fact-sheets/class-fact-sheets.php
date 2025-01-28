@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Fact_Sheets {
@@ -20,15 +21,15 @@ class Fact_Sheets {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $version    The version of this plugin.
-	 * @param      Loader    $loader     The loader that will be used to register hooks with WordPress.
+	 * @param      string $version    The version of this plugin.
+	 * @param      Loader $loader     The loader that will be used to register hooks with WordPress.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader) {
+	public function init( $loader ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
@@ -36,7 +37,7 @@ class Fact_Sheets {
 	}
 
 	public function register_type() {
-		$labels  = array(
+		$labels = array(
 			'name'                  => _x( 'Fact Sheets', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Fact Sheet', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Fact Sheets', 'text_domain' ),
@@ -71,11 +72,11 @@ class Fact_Sheets {
 			'feeds'      => true,
 		);
 
-		$args    = array(
+		$args = array(
 			'label'               => __( 'Fact Sheet', 'text_domain' ),
 			'description'         => __( '', 'text_domain' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields' ),
+			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields', 'comments' ),
 			'taxonomies'          => array( 'category', 'research-teams', 'collection', 'languages' ),
 			'hierarchical'        => false,
 			'public'              => true,
@@ -96,8 +97,8 @@ class Fact_Sheets {
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
+	public function enable_gutenberg_ramp( $post_types ) {
+		array_push( $post_types, self::$post_type );
 		return $post_types;
 	}
 }
