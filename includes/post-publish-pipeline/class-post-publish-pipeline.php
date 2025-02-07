@@ -52,6 +52,7 @@ class Post_Publish_Pipeline {
 		'press-release',
 		'block_module',
 		'decoded',
+		'collections',
 	);
 
 	/**
@@ -125,7 +126,7 @@ class Post_Publish_Pipeline {
 			case 'decoded':
 				$label = 'Decoded';
 				break;
-			case 'collection':
+			case 'collections':
 				$label = 'Collection';
 				break;
 		}

@@ -13,6 +13,9 @@ namespace PRC\Platform\Icons;
 use WP_HTML_Get_Element;
 use WP_HTML_Tag_Processor;
 
+define( 'PRC_PLATFORM_ICONS_CACHE_VERSION', '1.0.0' );
+define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
+
 /**
  * Render an icon from the library of your choice.
  * This function will never error out, but will log errors to the PHP error log. This should always gracefully fail and never stop the page from rendering.
@@ -52,9 +55,17 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 		error_log( 'Invalid icon library: ' . $icon_library . '. Defaulting to solid.' );
 		$icon_library = 'solid';
 	}
-	$icon = get_icon_as_url( $icon_library, $icon_name );
-	$size = (float) $size;
-	return wp_sprintf(
+
+	$icon_cache_group = 'prc_icons__rendered';
+	$icon_cache_key   = md5( $icon_library . '_' . $icon_name . '_' . $size . '_' . PRC_PLATFORM_ICONS_CACHE_VERSION );
+	$icon             = wp_cache_get( $icon_cache_key, $icon_cache_group );
+	if ( false !== $icon ) {
+		return $icon;
+	}
+
+	$icon        = get_icon_as_url( $icon_library, $icon_name );
+	$size        = (float) $size;
+	$icon_markup = wp_sprintf(
 		'<i class="%1$s"><svg style="width: %2$s; height: %2$s;"><use xlink:href="%3$s"></use></svg></i>',
 		\PRC\Platform\Block_Utils\classNames(
 			'icon',
@@ -66,6 +77,10 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 		esc_attr( $size . 'em' ),
 		esc_url( $icon ),
 	);
+
+	wp_cache_set( $icon_cache_key, $icon_markup, $icon_cache_group, PRC_PLATFORM_ICONS_CACHE_TTL );
+
+	return $icon_markup;
 }
 
 /**
@@ -95,6 +110,15 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
 	if ( ! defined( 'PRC_PLATFORM_ICONS_URL' ) ) {
 		return '<!-- Error: PRC_PLATFORM_ICONS_URL is not defined. -->';
 	}
+	$icon_cache_group = 'prc_icons__svg';
+	$icon_cache_key   = md5( $library . '_' . $icon . '_' . $fill_color . '_' . PRC_PLATFORM_ICONS_CACHE_VERSION );
+
+	$cached = wp_cache_get( $icon_cache_key, $icon_cache_group );
+
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
 	$iconset = PRC_PLATFORM_ICONS_URL . $library . '.svg';
 	$iconset = wpcom_vip_file_get_contents( $iconset );
 
@@ -110,13 +134,16 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
 	}
 	$tags->next_tag( array( 'tag_name' => 'path' ) );
 	$tags->set_attribute( 'fill', $fill_color );
-	$icon = $tags->get_updated_html();
+	$icon_markup = $tags->get_updated_html();
 
-	return $icon;
+	wp_cache_set( $icon_cache_key, $icon_markup, $icon_cache_group, PRC_PLATFORM_ICONS_CACHE_TTL );
+
+	return $icon_markup;
 }
 
 /**
  * Get the icon as a data URI.
+ * Useful for inlining icons in CSS.
  *
  * @param string $library The library to use.
  * @param string $icon The name of the icon.
@@ -128,6 +155,6 @@ function get_icon_as_data_uri( $library, $icon, $fill_color = 'currentColor' ) {
 	}
 	$icon = get_icon_as_svg( $library, $icon, $fill_color );
 	$icon = rawurlencode( $icon );
-	$icon    = 'data:image/svg+xml,' . $icon;
+	$icon = 'data:image/svg+xml,' . $icon;
 	return $icon;
 }

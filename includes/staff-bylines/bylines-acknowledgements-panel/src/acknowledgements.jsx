@@ -49,7 +49,7 @@ function Acknowledgements() {
 						entityType="taxonomy"
 						entitySubType="bylines"
 						onSelect={(entity) => {
-							append(randomId(), entity.entityId, true);
+							append(randomId(), entity.entityId, false);
 						}}
 						clearOnSelect={true}
 					>

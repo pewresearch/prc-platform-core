@@ -73,8 +73,8 @@ class Fact_Sheets {
 		);
 
 		$args = array(
-			'label'               => __( 'Fact Sheet', 'text_domain' ),
-			'description'         => __( '', 'text_domain' ),
+			'label'               => 'Fact Sheet',
+			'description'         => 'A fact sheet provides information about a specific topic.',
 			'labels'              => $labels,
 			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'revisions', 'custom-fields', 'comments' ),
 			'taxonomies'          => array( 'category', 'research-teams', 'collection', 'languages' ),
