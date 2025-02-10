@@ -17,7 +17,6 @@ class Bylines {
 			$this->post_id        = 0 !== $parent_post_id ? $parent_post_id : $post_id;
 			$this->should_display = $this->determine_bylines_display();
 			$this->bylines        = $this->get();
-			do_action( 'qm/debug', 'BYLINES:' . print_r( $this->bylines, true ) );
 		}
 	}
 

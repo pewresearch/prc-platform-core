@@ -288,7 +288,6 @@ class Post_Visibility {
 		$post_status = array_key_exists( 'post_status', $query ) ? $query['post_status'] : array();
 		if ( array_key_exists( 'collection', $query ) && ! empty( $query['collection'] ) ) {
 			$query['post_status'] = $this->show_publish_and_hidden_from_index( $post_status );
-			do_action( 'qm/debug', 'debug_msg : ' . print_r( $query, true ) );
 			return $query;
 		}
 		if ( ! empty( $query['s'] ) ) {

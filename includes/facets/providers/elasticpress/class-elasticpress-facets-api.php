@@ -192,7 +192,7 @@ class ElasticPress_Facets_API {
 		$aggregations = $this->get_aggregations();
 		$facets       = array();
 		foreach ( $aggregations as $facet_slug => $facets_data ) {
-			do_action( 'qm/debug', 'PRC Facets - EP - Processing Facet:: ' . $facet_slug );
+			// do_action( 'qm/debug', 'PRC Facets - EP - Processing Facet:: ' . $facet_slug );
 			global $ep_facet_aggs;
 			$aggs = $ep_facet_aggs;
 			if ( ! in_array(
@@ -207,7 +207,7 @@ class ElasticPress_Facets_API {
 			} else {
 				$facets[ $facet_slug ] = $this->process_datetime_facet( $facet_slug, $facets_data );
 			}
-			do_action( 'qm/debug', ' -- Returned Facet:' . print_r( $facets[ $facet_slug ], true ) );
+			// do_action( 'qm/debug', ' -- Returned Facet:' . print_r( $facets[ $facet_slug ], true ) );
 		}
 
 		if ( ! is_preview() || ! empty( $facets ) ) {
