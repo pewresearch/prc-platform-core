@@ -1,0 +1,17 @@
+{
+	"name": "@pewresearch/prc-platform-help-center",
+	"version": "1.0.0",
+	"description": "A popup modal for the PRC wiki.",
+	"main": "index.js",
+	"scripts": {
+		"build": "wp-scripts build src/index.js --output-path=build",
+		"start": "wp-scripts start src/index.js --output-path=build"
+	},
+	"author": "Ben Wormald",
+	"license": "GPL-2.0+",
+	"dependencies": {
+		"@wordpress/interface": "^8.1.0",
+		"@wordpress/scripts": "^30.5.1",
+		"react-draggable": "^4.4.6"
+	}
+}

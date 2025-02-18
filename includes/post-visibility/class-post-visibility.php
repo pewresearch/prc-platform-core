@@ -44,6 +44,7 @@ class Post_Visibility {
 			$loader->add_filter( 'rest_post_query', $this, 'filter_rest_query', 100, 2 );
 			$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'filter_pub_listing_query_args', 10, 1 );
 			$loader->add_action( 'pre_get_posts', $this, 'filter_pre_get_posts', 20, 1 );
+			$loader->add_action( 'pre_get_posts', $this, 'hide_post_from_index_on_feeds', 20, 1 );
 			// $loader->add_filter( 'get_post_status', $this, 'filter_post_status', 100, 2 );
 			$loader->add_action( 'prc_platform_on_update', $this, 'update_post_status_from_post_visibility', 10, 1 );
 		}
@@ -296,6 +297,14 @@ class Post_Visibility {
 			$query['post_status'] = $this->show_publish_and_hidden_from_search( $post_status );
 		}
 		return $query;
+	}
+
+	public function hide_post_from_index_on_feeds( $query ) {
+		if ( ! is_feed() ) {
+			return;
+		}
+		// Hide posts in feeds that are hidden from the index.
+		$query->set( 'post_status', $this->show_publish_and_hidden_from_index() );
 	}
 
 	/**

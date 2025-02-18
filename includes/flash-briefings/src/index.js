@@ -1,4 +1,3 @@
-
 /**
  * WordPress Dependencies
  */
@@ -24,24 +23,27 @@ function FlashBriefingPreview() {
 
 	return (
 		<Fragment>
-			 <PluginSidebarMoreMenuItem target="flash-briefing-preview-audio">
-                {__('Flash Briefing Preview Audio', 'flash-briefing-preview-audio')}
-            </PluginSidebarMoreMenuItem>
-            <PluginSidebar
-                name="flash-briefing-preview-audio"
-                title={__('Flash Briefing Preview Audio', 'flash-briefing')}
-            >
+			<PluginSidebarMoreMenuItem target="flash-briefing-preview-audio">
+				{__(
+					'Flash Briefing Preview Audio',
+					'flash-briefing-preview-audio'
+				)}
+			</PluginSidebarMoreMenuItem>
+			<PluginSidebar
+				name="flash-briefing-preview-audio"
+				title={__('Flash Briefing Preview Audio', 'flash-briefing')}
+			>
 				<AlexaPreview blockContent={blockContent} />
 				{/* <PanelBody title="Siri">Siri Goes Here</PanelBody>
 				<PanelBody title="Google">Google Goes Here</PanelBody> */}
-            </PluginSidebar>
+			</PluginSidebar>
 		</Fragment>
 	);
 }
 
 registerPlugin('flash-briefing-preview', {
-    icon: 'media-audio',
-    render: FlashBriefingPreview,
+	icon: 'media-audio',
+	render: FlashBriefingPreview,
 });
 
 // const PPPWraper = withSelect((select, ownProps) => {

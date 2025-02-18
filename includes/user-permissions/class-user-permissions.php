@@ -30,6 +30,13 @@ class User_Permissions {
 	private $version;
 
 	/**
+	 * The ID of the PRC WP Bot user
+	 *
+	 * @var int|null
+	 */
+	public $bot_user_id = null;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -45,6 +52,7 @@ class User_Permissions {
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_group' );
+			$loader->add_action( 'init', $this, 'generate_wp_bot_user' );
 			$loader->add_filter( 'wpcom_vip_enable_two_factor', $this, 'enforce_two_factor', 10, 1 );
 			$loader->add_action( 'admin_init', $this, 'autoload_user_roles' );
 			$loader->add_action( 'init', $this, 'register_common_user_meta' );
@@ -159,6 +167,53 @@ class User_Permissions {
 		if ( ! get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
 			add_user_meta( $user_id, 'prc_copilot_settings', $copilot_defaults, true );
 		}
+	}
+
+	/**
+	 * Generate PRC WP BOT user, who will have editor capabilities. This bot will generate documentation, etc.
+	 * This function is called on plugin activation.
+	 *
+	 * @return void
+	 */
+	public function generate_wp_bot_user() {
+		// get all users
+		$bot_user = get_site_option('prc_wp_bot_user_id');
+		// set the user role to editor
+		if (!$bot_user) {
+			// check if the user exists
+			$existing_user = get_user_by('login', 'prc_wp_bot');
+			if (!$existing_user) {
+				$bot_user_id = wp_insert_user(
+						array(
+						'user_login' => 'prc_wp_bot',
+						'user_pass' => wp_generate_password(),
+						'user_email' => 'bot@pewresearch.org',
+						'display_name' => 'PRC WP Bot',
+						'role' => 'editor',
+					)
+				);
+				if (!is_wp_error($bot_user_id)) {
+					$bot_user = new \WP_User($bot_user_id);
+					$this->bot_user_id = $bot_user->ID;
+					update_site_option('prc_wp_bot_user_id', $this->bot_user_id);
+				} else {
+					do_action('qm/debug', 'Failed to create bot user');
+				}
+			} else {
+				update_site_option('prc_wp_bot_user_id', $existing_user->ID);
+			}
+		} else {
+			$this->bot_user_id = $bot_user;
+		}
+	}
+
+	/**
+	 * Get the bot user ID
+	 *
+	 * @return int|null The bot user ID or null if not set
+	 */
+	public function get_bot_user_id() {
+		return $this->bot_user_id;
 	}
 
 	/**

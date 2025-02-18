@@ -130,6 +130,7 @@ class Platform_Bootstrap {
 		$this->include( 'flash-briefings/class-flash-briefings.php' );
 		$this->include( 'footnotes/class-footnotes.php' );
 		$this->include( 'gutenberg/class-gutenberg.php' );
+    $this->include('help-center/class-help-center.php');
 		$this->include( 'homepages/class-homepages.php' );
 		$this->include( 'housekeeping/class-housekeeping.php' );
 		$this->include( 'icon-loader/class-icon-loader.php' );
@@ -183,6 +184,7 @@ class Platform_Bootstrap {
 		new Flash_Briefings( $this->get_version(), $this->get_loader() );
 		new Footnotes( $this->get_version(), $this->get_loader() );
 		new Gutenberg( $this->get_version(), $this->get_loader() );
+		new Help_Center( $this->get_version(), $this->get_loader() );
 		new Homepages( $this->get_version(), $this->get_loader() );
 		new Housekeeping( $this->get_version(), $this->get_loader() );
 		new Icon_Loader( $this->get_version(), $this->get_loader() );
