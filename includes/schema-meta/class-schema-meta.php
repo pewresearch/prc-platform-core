@@ -270,7 +270,7 @@ class Schema_Meta {
 						$item['potentialAction'] = array_map(
 							function ( $action ) {
 								if ( isset( $action['@type'] ) && 'SearchAction' === $action['@type'] ) {
-									$action['target']['urlTemplate'] = str_replace('?s=', 'search/', $action['target']['urlTemplate']);
+									$action['target']['urlTemplate'] = str_replace( '?s=', 'search/', $action['target']['urlTemplate'] );
 								}
 								return $action;
 							},
