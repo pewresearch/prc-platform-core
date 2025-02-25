@@ -15,6 +15,11 @@ const PLUGIN_NAME = 'prc-platform-help-center';
 function HelpCenter() {
 	const [isOpen, setIsOpen] = useState(false);
 	const editorEl = document.querySelector('.block-editor__container');
+	const templateEditorEl = document.querySelector('.edit-site');
+	const renderEl = editorEl || templateEditorEl;
+	if (!renderEl) {
+		return null;
+	}
 	return (
 		<>
 			<PinnedItems scope="core">
@@ -28,7 +33,7 @@ function HelpCenter() {
 			</PinnedItems>
 			{createPortal(
 				<Panel isOpen={isOpen} close={() => setIsOpen(false)} />,
-				editorEl
+				renderEl
 			)}
 		</>
 	);

@@ -17,7 +17,7 @@ class Upgrades {
 		// For now, create, and run CLI comamnds to run upgrade process manually.
 		// $loader->add_action( 'init', $this, 'check_current_version' );
 		// $loader->add_action( 'init', $this, 'run_upgrades' );
-		$loader->add_action( 'init', $this, 'register_meta' );
+		// $loader->add_action( 'init', $this, 'register_meta' );
 	}
 
 	public function register_meta() {
