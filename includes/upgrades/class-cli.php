@@ -6,7 +6,7 @@ use WP_CLI;
 use WP_Error;
 use wpcom_vip_get_page_by_title;
 
-if ( defined( 'WP_CLI' ) && WP_CLI ) {
+if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WPCOM_VIP_CLI_Command' ) ) {
 	/**
 	 * Manage the migration of posts from one site to the new pewresearch-org.
 	 */

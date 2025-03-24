@@ -8,10 +8,14 @@ import { MediaDropZone } from '@prc/components';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useState, useEffect } from 'react';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginSidebar, PluginPrePublishPanel } from '@wordpress/edit-post';
-import { store as editorStore } from '@wordpress/editor';
+import {
+	PluginSidebar,
+	PluginSidebarMoreMenuItem,
+	PluginPrePublishPanel,
+	store as editorStore,
+} from '@wordpress/editor';
 import { useSelect } from '@wordpress/data';
 import { useEntityProp } from '@wordpress/core-data';
 import {
@@ -21,13 +25,36 @@ import {
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
-
+import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal Dependencies
  */
 
 const PLUGIN_NAME = 'prc-platform-datasets-panel';
 const ALLOWED_TYPES = ['application/zip', 'application/pdf'];
+
+// Custom hook for fetching dataset stats
+function useDatasetStats(postId) {
+	const [stats, setStats] = useState(null);
+
+	useEffect(() => {
+		apiFetch({
+			path: `/prc-api/v3/datasets/download-stats?dataset_id=${postId}`,
+			method: 'GET',
+		})
+			.then((response) => {
+				setStats({
+					success: true,
+					...response,
+				});
+			})
+			.catch((error) => {
+				console.error({ error });
+			});
+	}, [postId]);
+
+	return stats;
+}
 
 function DatasetOptionsPanel() {
 	const { postType, postId } = useSelect((select) => {
@@ -42,7 +69,6 @@ function DatasetOptionsPanel() {
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta', postId);
 
 	const { attachmentId, isAtp, datasetSchema } = useMemo(() => {
-		console.log('meta', meta);
 		return {
 			attachmentId: meta._download_attachment_id || false,
 			isAtp: meta.is_atp || false,
@@ -50,8 +76,13 @@ function DatasetOptionsPanel() {
 		};
 	}, [meta]);
 
+	const datasetStats = useDatasetStats(postId);
+
 	return (
 		<Fragment>
+			<PluginSidebarMoreMenuItem target={PLUGIN_NAME} icon={icon}>
+				{__('Dataset Options')}
+			</PluginSidebarMoreMenuItem>
 			<PluginSidebar
 				name={PLUGIN_NAME}
 				title="Dataset Options"
@@ -100,6 +131,19 @@ function DatasetOptionsPanel() {
 						}}
 					/>
 				</PanelBody>
+				{datasetStats?.success && (
+					<PanelBody title="Dataset Download Stats">
+						<p>
+							<strong>Total Downloads:</strong>{' '}
+							{datasetStats?.total}
+						</p>
+						<TextareaControl
+							disabled
+							label="Monthly Download Stats"
+							value={JSON.stringify(datasetStats?.log, null, 2)}
+						/>
+					</PanelBody>
+				)}
 				{/* @TODO: WIP, Eventually I'd like to get all entities that reference this dataset, but we'll wait for the Supra-Block-Data-Store <PanelBody title="Dataset Posts">
 					<p>A list of posts that are calling this dataset...</p>
 				</PanelBody> */}

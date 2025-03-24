@@ -154,6 +154,7 @@ class Datasets {
 			$loader->add_action( 'init', $download_logger, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $download_logger, 'register_field' );
 			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_logger_endpoint' );
+			$loader->add_filter( 'prc_api_endpoints', $download_logger, 'register_download_stats_endpoint' );
 		}
 	}
 

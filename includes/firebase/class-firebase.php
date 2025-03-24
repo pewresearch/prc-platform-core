@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error, Kreait\Firebase\Factory;
 
 /**
@@ -30,16 +31,16 @@ class Firebase {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $loader ) {
 		$credentials = $this->localize_server_side_credentials();
-		if ( !is_wp_error( $credentials ) ) {
-			$this->instance = ( new Factory() )->withServiceAccount($credentials);
-			$this->db = $this->instance->createDatabase();
-			$this->auth = $this->instance->createAuth();
-			$this->init($loader);
+		if ( ! is_wp_error( $credentials ) ) {
+			$this->instance = ( new Factory() )->withServiceAccount( $credentials );
+			$this->db       = $this->instance->createDatabase();
+			$this->auth     = $this->instance->createAuth();
+			$this->init( $loader );
 		} else {
 			do_action( 'qm/critical', 'Firebase API can not initialize without service account credentialsl. Some platform features will not work.' );
 		}
@@ -47,17 +48,22 @@ class Firebase {
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$loader->add_action('init', $this, 'register_assets');
-			$loader->add_filter('script_module_data_' . self::$handle, $this, 'localize_client_side_credentials');
+			$loader->add_action( 'init', $this, 'register_assets' );
+			$loader->add_filter( 'script_module_data_' . self::$handle, $this, 'localize_client_side_credentials' );
 		}
 	}
 
 	/**
 	 * Provide the Firebase service account credentials to the server side SDK.
+	 *
 	 * @return string|WP_Error The service account credentials or an error if the file does not exist.
 	 */
 	public function localize_server_side_credentials() {
-		$environment = wp_get_environment_type();
+		if ( ! defined( 'WPCOM_VIP_PRIVATE_DIR' ) ) {
+			return new WP_Error( 'firebase_service_account', 'WPCOM_VIP_PRIVATE_DIR is not defined.' );
+		}
+		$environment          = wp_get_environment_type();
+		$environment          = 'production'; // Forcing production for now.
 		$service_account_file = ( 'production' === $environment )
 			? \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json'
 			: \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-staging.json';
@@ -75,22 +81,22 @@ class Firebase {
 		return $credentials;
 	}
 
-	public function localize_client_side_credentials($data) {
-		$api_key       = \PRC_PLATFORM_FIREBASE_KEY;
-		$auth_domain   = \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN;
-		$auth_db       = \PRC_PLATFORM_FIREBASE_AUTH_DB;
-		$project_id    = \PRC_PLATFORM_FIREBASE_PROJECT_ID;
-		$data['apiKey'] = $api_key;
-		$data['authDomain'] = $auth_domain;
+	public function localize_client_side_credentials( $data ) {
+		$api_key             = \PRC_PLATFORM_FIREBASE_KEY;
+		$auth_domain         = \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN;
+		$auth_db             = \PRC_PLATFORM_FIREBASE_AUTH_DB;
+		$project_id          = \PRC_PLATFORM_FIREBASE_PROJECT_ID;
+		$data['apiKey']      = $api_key;
+		$data['authDomain']  = $auth_domain;
 		$data['databaseURL'] = $auth_db;
-		$data['projectId'] = $project_id;
+		$data['projectId']   = $project_id;
 		return $data;
 	}
 
 	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/module.min.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/module.min.asset.php';
 		$asset_slug = self::$handle;
-		$module_src  = plugin_dir_url( __FILE__ ) . 'build/module.min.js';
+		$module_src = plugin_dir_url( __FILE__ ) . 'build/module.min.js';
 
 		$module = wp_register_script_module(
 			$asset_slug,

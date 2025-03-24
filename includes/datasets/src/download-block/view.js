@@ -44,38 +44,35 @@ const { state, actions } = store('prc-platform/dataset-download', {
 				},
 			});
 
-			console.log("User has accepted ATP legal agreement: ", response);
+			console.log('check ATP response: ', response);
 
 			if (true === response) {
 				actions.downloadDataset(datasetId, uid, token, NONCE, context);
-
 			}
 			if (false === response) {
 				const dialogId =
 					ref.parentElement.parentElement.parentElement.getAttribute(
 						'id'
 					);
-				const { actions: dialogActions } = store(
-					'prc-block/dialog'
-				);
-				dialogActions.open(dialogId);
+				const { open } = store('prc-block/dialog')?.actions;
+				open(dialogId);
 			}
 		},
 		onButtonClick: (event) => {
 			event.preventDefault();
 			const context = getContext();
-			const { datasetId, isProcessing, isATP, NONCE } = context;
+			const { datasetId, isATP, NONCE } = context;
 
 			context.isProcessing = true;
 
-			const { state } = store('prc-user-accounts/content-gate');
-			const { token, uid } = state;
+			const { token, uid } = store(
+				'prc-user-accounts/content-gate'
+			)?.state;
 
 			if (isATP) {
 				actions.checkATP(uid, token, datasetId, NONCE);
 			} else {
 				actions.downloadDataset(datasetId, uid, token, NONCE, context);
-
 			}
 		},
 	},
@@ -103,6 +100,6 @@ const { state, actions } = store('prc-platform/dataset-download', {
 			// get the id from .wp-block-button inside the ref element
 			const buttonId = ref.querySelector('.wp-element-button').id;
 			state[buttonId].isSuccess = isSuccess;
-		}
-	}
+		},
+	},
 });

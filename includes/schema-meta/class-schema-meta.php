@@ -217,6 +217,18 @@ class Schema_Meta {
 		if ( is_admin() ) {
 			return $presenters;
 		}
+		global $post;
+		if ( ! $post || ! is_object( $post ) ) {
+			return $presenters;
+		}
+
+		// determine if is RLS template.
+		if ( property_exists( $post, 'post_type' )
+			&& defined( 'PRC_RLS_TEMPLATE_POST_TYPE' )
+			&& PRC_RLS_TEMPLATE_POST_TYPE === $post->post_type ) {
+			return $presenters;
+		}
+
 		if ( class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter' ) && class_exists( 'Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter' ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'class-parsely-meta.php';
 			$presenters[] = new Parsely_Title();
@@ -228,6 +240,7 @@ class Schema_Meta {
 			$presenters[] = new Parsely_Pub_Date();
 			$presenters[] = new Parsely_Authors();
 		}
+		do_action( 'qm/debug', print_r( $presenters, true ) );
 		return $presenters;
 	}
 

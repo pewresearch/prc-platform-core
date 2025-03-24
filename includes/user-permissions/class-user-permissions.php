@@ -177,30 +177,30 @@ class User_Permissions {
 	 */
 	public function generate_wp_bot_user() {
 		// get all users
-		$bot_user = get_site_option('prc_wp_bot_user_id');
+		$bot_user = get_site_option( 'prc_wp_bot_user_id' );
 		// set the user role to editor
-		if (!$bot_user) {
+		if ( ! $bot_user ) {
 			// check if the user exists
-			$existing_user = get_user_by('login', 'prc_wp_bot');
-			if (!$existing_user) {
+			$existing_user = get_user_by( 'login', 'prc_wp_bot' );
+			if ( ! $existing_user ) {
 				$bot_user_id = wp_insert_user(
-						array(
-						'user_login' => 'prc_wp_bot',
-						'user_pass' => wp_generate_password(),
-						'user_email' => 'bot@pewresearch.org',
+					array(
+						'user_login'   => 'prc_wp_bot',
+						'user_pass'    => wp_generate_password(),
+						'user_email'   => 'bot@pewresearch.org',
 						'display_name' => 'PRC WP Bot',
-						'role' => 'editor',
+						'role'         => 'editor',
 					)
 				);
-				if (!is_wp_error($bot_user_id)) {
-					$bot_user = new \WP_User($bot_user_id);
+				if ( ! is_wp_error( $bot_user_id ) ) {
+					$bot_user          = new \WP_User( $bot_user_id );
 					$this->bot_user_id = $bot_user->ID;
-					update_site_option('prc_wp_bot_user_id', $this->bot_user_id);
+					update_site_option( 'prc_wp_bot_user_id', $this->bot_user_id );
 				} else {
-					do_action('qm/debug', 'Failed to create bot user');
+					do_action( 'qm/debug', 'Failed to create bot user' );
 				}
 			} else {
-				update_site_option('prc_wp_bot_user_id', $existing_user->ID);
+				update_site_option( 'prc_wp_bot_user_id', $existing_user->ID );
 			}
 		} else {
 			$this->bot_user_id = $bot_user;
@@ -220,6 +220,10 @@ class User_Permissions {
 	 * @hook init
 	 */
 	public function register_group() {
+		// Check if Vary_Cache class exists
+		if ( ! class_exists( 'Automattic\VIP\Cache\Vary_Cache' ) ) {
+			return;
+		}
 		$this->group_registered = Vary_Cache::register_group( $this->internal_users_group );
 	}
 }

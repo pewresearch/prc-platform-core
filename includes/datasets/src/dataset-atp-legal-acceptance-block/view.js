@@ -41,8 +41,6 @@ const { actions } = store('prc-platform/dataset-download', {
 	},
 	actions: {
 		*closeDialogs() {
-			const context = yield getContext();
-			context.isProcessing = false;
 			const dialog = yield store('prc-block/dialog');
 			const { actions: dialogActions } = dialog;
 			dialogActions.closeAll();
@@ -65,7 +63,13 @@ const { actions } = store('prc-platform/dataset-download', {
 				},
 			})
 				.then((response) => {
-					actions.downloadDataset(datasetId, uid, token, NONCE, context);
+					actions.downloadDataset(
+						datasetId,
+						uid,
+						token,
+						NONCE,
+						context
+					);
 					actions.closeDialogs();
 				})
 				.catch((error) => {

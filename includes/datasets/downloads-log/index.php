@@ -62,6 +62,31 @@ class Datasets_Download_Logger extends Datasets {
 	}
 
 	/**
+	 * Register rest endpoint for dataset download stats.
+	 * @hook prc_api_endpoints
+	 * @param array $endpoints
+	 * @return array $endpoints
+	 */
+	public function register_download_stats_endpoint($endpoints) {
+		$download_stats_endpoint = array(
+			'route' 		      => 'datasets/download-stats',
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'restfully_get_download_stats' ),
+			'args'                => array(
+				'dataset_id' => array(
+					'required' => true,
+					'type' => 'integer'
+				),
+			),
+			'permission_callback' => function () {
+				return current_user_can( 'edit_posts' );
+			},
+		);
+		array_push($endpoints, $download_stats_endpoint);
+		return $endpoints;
+	}
+
+	/**
 	 * Register rest fields for dataset downloads logger.
 	 * @hook rest_api_init
 	 */
@@ -131,6 +156,44 @@ class Datasets_Download_Logger extends Datasets {
 		return $return;
 	}
 
+	/**
+	 * Restfully get the download stats for a dataset.
+	 * @param WP_REST_Request $request
+	 * @return array|WP_Error
+	 */
+	public function restfully_get_download_stats( WP_REST_Request $request ) {
+
+		$dataset_id = $request->get_param( 'dataset_id' );
+		if ( ! $dataset_id ) {
+			return new WP_Error( 'no_dataset_id', 'No dataset ID provided.', array( 'status' => 400 ) );
+		}
+
+		$cache_key = 'dataset_downloads_' . $dataset_id;
+		$cached_data = get_transient($cache_key);
+
+		if (false !== $cached_data) {
+			return $cached_data;
+		}
+
+		$to_return = array(
+			'total' => (int) get_post_meta($dataset_id, '_total_downloads', true),
+			'log' => array(),
+		);
+
+		$start_year = 2020;
+		$current_year = (int) gmdate('Y');
+		$years = range($start_year, $current_year);
+
+		foreach($years as $year) {
+			$meta_key = '_downloads_' . $year;
+			$to_return['log'][$year] = get_post_meta($dataset_id, $meta_key, true);
+		}
+
+		// Cache the data for 24 hours (86400 seconds)
+		set_transient($cache_key, $to_return, DAY_IN_SECONDS);
+
+		return $to_return;
+	}
 	/**
 	 * Increment the total download count for a dataset.
 	 * @param mixed $dataset_id

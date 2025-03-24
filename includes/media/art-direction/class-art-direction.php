@@ -108,8 +108,9 @@ class Art_Direction {
 		'fact-sheet',
 		'quiz',
 		'mini-course',
-		'collection',
+		'collections',
 	);
+
 
 	/**
 	 * Post meta key for art direction data.

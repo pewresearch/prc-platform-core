@@ -51,7 +51,6 @@ class Post_Publish_Pipeline {
 		'mini-course',
 		'press-release',
 		'block_module',
-		'decoded',
 		'collections',
 	);
 
@@ -74,6 +73,11 @@ class Post_Publish_Pipeline {
 			add_filter( 'prc_platform_wp_post_object', array( $this, 'apply_extra_wp_post_object_fields' ), 1, 1 );
 		}
 		$this->init( $loader );
+	}
+
+	public function get_allowed_post_types() {
+		$allowed_post_types = apply_filters( 'prc_platform_post_publish_pipeline_post_types', $this->allowed_post_types );
+		return $allowed_post_types;
 	}
 
 	/**
@@ -226,7 +230,7 @@ class Post_Publish_Pipeline {
 	 */
 	public function register_rest_fields() {
 		$allowed_post_types = array_merge(
-			$this->allowed_post_types,
+			$this->get_allowed_post_types(),
 			array( 'newsletterglue' )
 		);
 		// Add label to object.
@@ -360,7 +364,7 @@ class Post_Publish_Pipeline {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			return;
 		}
-		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) || ! in_array( $post_obj_now->post_type, $this->allowed_post_types ) ) {
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) || ! in_array( $post_obj_now->post_type, $this->get_allowed_post_types() ) ) {
 			return;
 		}
 

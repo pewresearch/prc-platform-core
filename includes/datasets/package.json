@@ -6,9 +6,9 @@
 		"build": "wp-scripts build --experimental-modules"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.1.0"
+		"@wordpress/scripts": "^30.13.0"
 	},
 	"dependencies": {
-		"@wordpress/icons": "^10.0.0"
+		"@wordpress/icons": "^10.20.0"
 	}
 }

@@ -1,8 +1,14 @@
 <?php
 namespace PRC\Platform;
+
 use WPCOM_VIP_CLI_Command;
 use WP_CLI;
 use WP_Error;
+
+// If WPCOM_VIP_CLI_Command does not exist exit early.
+if ( ! class_exists( 'WPCOM_VIP_CLI_Command' ) ) {
+	return;
+}
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	/**
@@ -11,16 +17,16 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	class Dataset_Missing_Files extends WPCOM_VIP_CLI_Command {
 
 		public function __construct() {
-
 		}
 
 		/**
 		 * Query and mark datasets that are missing files.
+		 *
 		 * @param array $args
 		 * @param array $assoc_args
 		 * @synopsis [--dry-run]
 		 */
-		public function run($args, $assoc_args) {
+		public function run( $args, $assoc_args ) {
 			// Disable term counting, Elasticsearch indexing, and PushPress.
 			$this->start_bulk_operation();
 
@@ -42,31 +48,31 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			}
 
 			$posts_per_page = 100;
-			$paged = 1;
-			$count = 0;
+			$paged          = 1;
+			$count          = 0;
 
 			do {
 
-				$args = [
+				$args = array(
 					'post_type'        => 'dataset',
 					'posts_per_page'   => $posts_per_page,
 					'paged'            => $paged,
 					'suppress_filters' => false,
-					'meta_query'       => [
-						[
-							'key' => '_download_attachment_id',
+					'meta_query'       => array(
+						array(
+							'key'     => '_download_attachment_id',
 							'compare' => 'NOT EXISTS',
-						],
-					],
-				];
+						),
+					),
+				);
 
-				$posts = get_posts($args);
+				$posts = get_posts( $args );
 
 				foreach ( $posts as $post ) {
 					if ( ! $dry_run ) {
 						update_post_meta( $post->ID, '_dataset_file_missing', true );
 					}
-					$count++;
+					++$count;
 				}
 
 				// Pause.
@@ -76,9 +82,10 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 				// Free up memory.
 				$this->vip_inmemory_cleanup();
 
-				/* At this point, we have to decide whether to increase the value of $paged. In case a value which is being used for querying the posts (like post_status in our example) is being changed via the command, we should keep the WP_Query starting from the beginning in every iteration.
+				/*
+				At this point, we have to decide whether to increase the value of $paged. In case a value which is being used for querying the posts (like post_status in our example) is being changed via the command, we should keep the WP_Query starting from the beginning in every iteration.
 				* If the any value used for querying the posts is not being changed, then we need to update the value in order to walk through all the posts. */
-				$paged++;
+				++$paged;
 			} while ( count( $posts ) );
 
 			if ( false === $dry_run ) {

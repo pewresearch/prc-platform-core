@@ -103,7 +103,9 @@ class Platform_Bootstrap {
 	 */
 	private function load_dependencies() {
 		// Load VIP Cache Personalization class.
-		require_once WPMU_PLUGIN_DIR . '/cache/class-vary-cache.php';
+		if ( defined( 'WPMU_PLUGIN_DIR' ) && file_exists( WPMU_PLUGIN_DIR . '/cache/class-vary-cache.php' ) ) {
+			require_once WPMU_PLUGIN_DIR . '/cache/class-vary-cache.php';
+		}
 
 		// Include plugin loading class.
 		$this->include( 'class-loader.php' );
@@ -130,7 +132,7 @@ class Platform_Bootstrap {
 		$this->include( 'flash-briefings/class-flash-briefings.php' );
 		$this->include( 'footnotes/class-footnotes.php' );
 		$this->include( 'gutenberg/class-gutenberg.php' );
-    $this->include('help-center/class-help-center.php');
+		$this->include( 'help-center/class-help-center.php' );
 		$this->include( 'homepages/class-homepages.php' );
 		$this->include( 'housekeeping/class-housekeeping.php' );
 		$this->include( 'icon-loader/class-icon-loader.php' );
@@ -146,7 +148,6 @@ class Platform_Bootstrap {
 		$this->include( 'post-report-package/class-post-report-package.php' );
 		$this->include( 'post-visibility/class-post-visibility.php' );
 		$this->include( 'press-releases/class-press-releases.php' );
-		$this->include( 'decoded/class-decoded.php' );
 		$this->include( 'related-posts/class-related-posts.php' );
 		$this->include( 'rest-api/class-rest-api.php' );
 		$this->include( 'rss/class-rss.php' );
@@ -207,7 +208,6 @@ class Platform_Bootstrap {
 		new Post_Report_Package( $this->get_version(), $this->get_loader() );
 		new Post_Visibility( $this->get_version(), $this->get_loader() );
 		new Press_Releases( $this->get_version(), $this->get_loader() );
-		new Decoded( $this->get_version(), $this->get_loader() );
 		new Related_Posts( $this->get_version(), $this->get_loader() );
 		new Rest_API( $this->get_version(), $this->get_loader() );
 		new RSS_Feeds( $this->get_version(), $this->get_loader() );

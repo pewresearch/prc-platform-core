@@ -43,6 +43,16 @@ class Slack_Bot {
 	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
+		if ( ! defined( 'PRC_PLATFORM_SLACK_WEBHOOK' ) ) {
+			return new WP_Error( 'slack_webhook', 'PRC_PLATFORM_SLACK_WEBHOOK is not defined.' );
+		}
+		if ( ! defined( 'PRC_PLATFORM_SLACK_DECODED_WEBHOOK' ) ) {
+			return new WP_Error( 'slack_decoded_webhook', 'PRC_PLATFORM_SLACK_DECODED_WEBHOOK is not defined.' );
+		}
+		if ( ! defined( 'PRC_PLATFORM_SLACK_TOKEN' ) ) {
+			return new WP_Error( 'slack_token', 'PRC_PLATFORM_SLACK_TOKEN is not defined.' );
+		}
+
 		$this->version         = $version;
 		$this->webhook         = PRC_PLATFORM_SLACK_WEBHOOK;
 		$this->decoded_webhook = PRC_PLATFORM_SLACK_DECODED_WEBHOOK;

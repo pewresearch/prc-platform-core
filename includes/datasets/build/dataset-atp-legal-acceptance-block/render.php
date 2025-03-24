@@ -1,8 +1,8 @@
 <?php
 namespace PRC\Platform\Datasets;
 
-wp_enqueue_script('wp-url');
-wp_enqueue_script('wp-api-fetch');
+wp_enqueue_script( 'wp-url' );
+wp_enqueue_script( 'wp-api-fetch' );
 
 ob_start();
 ?>
@@ -13,15 +13,17 @@ ob_start();
 <?php
 $buttons = ob_get_clean();
 
-$block_wrapper_attrs = get_block_wrapper_attributes(array(
-	'data-wp-interactive' => wp_json_encode(array(
-		'namespace' => 'prc-platform/dataset-download'
-	)),
-	'data-wp-context' => wp_json_encode(array(
-		'datasetId' => array_key_exists('datasetId', $attributes) ? $attributes['datasetId'] : null,
-		'NONCE' => array_key_exists('nonce', $attributes) ? $attributes['nonce'] : null,
-	)),
-));
+$block_wrapper_attrs = get_block_wrapper_attributes(
+	array(
+		'data-wp-interactive' => 'prc-platform/dataset-download',
+		'data-wp-context'     => wp_json_encode(
+			array(
+				'datasetId' => array_key_exists( 'datasetId', $attributes ) ? $attributes['datasetId'] : null,
+				'NONCE'     => array_key_exists( 'nonce', $attributes ) ? $attributes['nonce'] : null,
+			)
+		),
+	)
+);
 
 echo wp_sprintf(
 	'<div %1$s>%2$s%3$s</div>',
