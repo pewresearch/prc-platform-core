@@ -1,0 +1,9 @@
+{
+	"name": "@prc/hooks",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=../../../build/@prc/hooks"
+	}
+}

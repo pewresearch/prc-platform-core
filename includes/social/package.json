@@ -1,0 +1,12 @@
+{
+	"name": "@pewresearch/shortlinks",
+	"description": "Shortlinks functionality for PRC Platform",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build src/index.js",
+		"start": "wp-scripts start src/index.js"
+	}
+}

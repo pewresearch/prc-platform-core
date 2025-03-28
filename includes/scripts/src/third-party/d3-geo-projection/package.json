@@ -1,0 +1,13 @@
+{
+	"name": "d3",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0",
+		"d3": "^7.8.5"
+	},
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=../../../build/third-party/d3-geo-projection"
+	},
+	"dependencies": {
+		"d3-geo-projection": "^4.0.0"
+	}
+}

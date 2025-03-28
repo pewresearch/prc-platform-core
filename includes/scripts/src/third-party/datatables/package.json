@@ -1,0 +1,15 @@
+{
+	"name": "datatables",
+	"version": "1.13.8",
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=../../../build/third-party/datatables"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	},
+	"dependencies": {
+		"comma-separated-values": "^3.6.4",
+		"datatables.net-dt": "^1.13.8",
+		"datatables.net-responsive-dt": "^2.5.0"
+	}
+}

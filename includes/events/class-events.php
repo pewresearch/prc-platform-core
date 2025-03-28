@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Events {
@@ -20,18 +21,17 @@ class Events {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader) {
+	public function init( $loader ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 		}
 	}
 
@@ -93,10 +93,5 @@ class Events {
 		);
 
 		register_post_type( self::$post_type, $args );
-	}
-
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
 	}
 }

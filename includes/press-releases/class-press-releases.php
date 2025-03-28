@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Press_Releases {
@@ -23,25 +24,25 @@ class Press_Releases {
 
 	/**
 	 * Initialize the class and set its properties.
+	 *
 	 * @param mixed $version
 	 * @param mixed $loader
 	 * @return void
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader) {
+	public function init( $loader ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
-			$loader->add_filter( 'post_type_link', $this, 'get_press_release_permalink', 10, 3);
+			$loader->add_filter( 'post_type_link', $this, 'get_press_release_permalink', 10, 3 );
 		}
 	}
 
 	public function register_type() {
-		$labels  = array(
+		$labels = array(
 			'name'                  => _x( 'Press Releases', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Press Release', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Press Releases', 'text_domain' ),
@@ -76,7 +77,7 @@ class Press_Releases {
 			'feeds'      => true,
 		);
 
-		$args    = array(
+		$args = array(
 			'label'               => __( 'Press Release', 'text_domain' ),
 			'description'         => __( 'A post type for press releases.', 'text_domain' ),
 			'labels'              => $labels,
@@ -102,16 +103,11 @@ class Press_Releases {
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
-	}
-
 	// Convert the %year% and %monthnum% placeholders in the post type's rewrite slug to the actual year and month.
-	public function get_press_release_permalink($url, $post) {
-		if ( self::$post_type == get_post_type($post) ) {
-			$url = str_replace( "%year%", get_the_date('Y'), $url );
-			$url = str_replace( "%monthnum%", get_the_date('m'), $url );
+	public function get_press_release_permalink( $url, $post ) {
+		if ( self::$post_type == get_post_type( $post ) ) {
+			$url = str_replace( '%year%', get_the_date( 'Y' ), $url );
+			$url = str_replace( '%monthnum%', get_the_date( 'm' ), $url );
 		}
 		return $url;
 	}

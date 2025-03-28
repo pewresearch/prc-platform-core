@@ -124,7 +124,6 @@ $placeholderInvertedLoadingGradient: linear-gradient(
 	&.is-desktop {
 		width: 410px;
 		height: auto;
-		max-height: 800px;
 		box-shadow:
 			0 3px 8px 0 rgba(0, 0, 0, 0.12),
 			0 3px 1px 0 rgba(0, 0, 0, 0.04);
@@ -224,6 +223,7 @@ $placeholderInvertedLoadingGradient: linear-gradient(
 	scroll-behavior: smooth;
 	overflow-y: auto;
 	padding: 0;
+	max-height: 80vh;
 
 	.help-center__container-content-wrapper {
 		height: auto;

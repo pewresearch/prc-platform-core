@@ -11,14 +11,10 @@ use WP_HTML_Tag_Processor;
  */
 class Embeds {
 	/**
-	 * The version of this plugin.
+	 * The allowed blocks.
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var array
 	 */
-	private $version;
-
 	public static $allowed_blocks = array(
 		'core/video',
 		'core/image',
@@ -31,17 +27,20 @@ class Embeds {
 		'prc-block/embed-wrapper',
 	);
 
+	/**
+	 * The handle.
+	 *
+	 * @var string
+	 */
 	public static $handle = 'prc-platform-iframe-embeds';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader    The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader = null ) {
 		require_once plugin_dir_path( __DIR__ ) . 'embeds/utils.php';
 		$this->init( $loader );
 	}

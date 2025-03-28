@@ -10,31 +10,43 @@ use WP_Term;
 
 class WP_Admin {
 	/**
-	 * The version of this plugin.
+	 * The version of the platform, used to output in the admin footer.
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var string
 	 */
-	private $version;
+	public $version = '1.0.0';
 
+	/**
+	 * The handle for the wp-admin script.
+	 *
+	 * @var string
+	 */
 	public static $handle = 'prc-platform-wp-admin';
 
+	/**
+	 * The public post preview lifetime.
+	 *
+	 * @var int
+	 */
 	public static $public_post_preview_lifetime = 1209600; // 14 days in seconds
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader The loader.
 	 */
-	public function __construct( $version, $loader ) {
+	public function __construct( $loader, $version ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . 'admin-columns/class-admin-columns.php';
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
@@ -45,17 +57,17 @@ class WP_Admin {
 				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
 			}
 
-			// Actions
+			// Actions.
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
 			$loader->add_action( 'login_enqueue_scripts', $this, 'login_logo' );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_admin_bar', 100 );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_tools_menu', 101 );
 			$loader->add_action( 'wp_before_admin_bar_render', $this, 'manage_edit_menu', 102 );
 			$loader->add_action( 'admin_print_footer_scripts', $this, 'admin_footer' );
-			$loader->add_action( 'admin_menu', $this, 'modify_menu', 10 );
+			$loader->add_action( 'admin_menu', $this, 'remove_links_menu', 10 );
 			$loader->add_action( 'wp_dashboard_setup', $this, 'remove_dashboard_widgets', 99 );
 			$loader->add_action( 'init', $this, 'disable_emojis' );
-			// Filters
+			// Filters.
 			$loader->add_filter( 'get_user_option_admin_color', $this, 'default_admin_color_scheme' );
 			$loader->add_filter( 'disable_cookiepro', $this, 'disable_cookie_banner_conditions', 10, 1 );
 			$loader->add_filter( 'multisite_enhancements_status_label', $this, 'multisite_enhancement_plugin_sites_label', 10, 2 );
@@ -452,7 +464,7 @@ class WP_Admin {
 	 * @param mixed $menu
 	 * @return void
 	 */
-	public function modify_menu() {
+	public function remove_links_menu() {
 		global $menu;
 		unset( $menu[15] ); // 15 = Links menu
 	}

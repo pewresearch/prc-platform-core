@@ -7,14 +7,24 @@
 
 namespace PRC\Platform;
 
-use \ElasticPress\Feature\Facets\Facets;
+use ElasticPress\Feature\Facets\Facets;
 
 /**
  * Middleware for ElasticPress integration.
  */
 class ElasticPress_Middleware {
+	/**
+	 * The ElasticPress Facets class.
+	 *
+	 * @var \ElasticPress\Feature\Facets\Facets
+	 */
 	protected $ep_facets;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param object $loader The loader object.
+	 */
 	public function __construct( $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'class-elasticpress-facets-api.php';
 

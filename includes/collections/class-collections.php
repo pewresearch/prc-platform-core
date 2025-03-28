@@ -75,7 +75,7 @@ class Collections {
 		'capability_type'    => 'post',
 		'has_archive'        => true,
 		'hierarchical'       => true,
-		'menu_position'      => 30,
+		'menu_position'      => 60,
 		'supports'           => array( 'title', 'editor', 'excerpt', 'revisions', 'custom-fields', 'page-attributes', 'thumbnail' ),
 		'template'           => array(
 			array( 'prc-block/grid-controller', array() ),
@@ -128,7 +128,6 @@ class Collections {
 	 */
 	public function __construct( $plugin_version, $loader ) {
 		$loader->add_action( 'init', $this, 'register_term_data_store' );
-		$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 		$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
 		$loader->add_filter( 'default_wp_template_part_areas', $this, 'kicker_template_areas', 11, 1 );
 		$loader->add_action( 'pre_get_posts', $this, 'filter_posts_on_collection_pages' );
@@ -143,18 +142,6 @@ class Collections {
 		register_taxonomy( self::$taxonomy_object_name, self::$post_types, self::$taxonomy_object_args );
 		$relationship = \TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 		$this->register_kicker_meta();
-	}
-
-	/**
-	 * Enable Gutenberg for collections.
-	 *
-	 * @hook prc_load_gutenberg
-	 * @param  array $post_types [description]
-	 * @return array Post types that should have Gutenberg enabled.
-	 */
-	public function enable_gutenberg_ramp( $post_types ) {
-		array_push( $post_types, self::$post_object_name );
-		return $post_types;
 	}
 
 	/**

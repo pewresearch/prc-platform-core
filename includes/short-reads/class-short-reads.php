@@ -4,35 +4,35 @@ namespace PRC\Platform;
 use WP_Error;
 
 class Short_Reads {
+	/**
+	 * The post type slug for the short reads.
+	 */
 	public static $post_type = 'short-read';
 
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * The handle for the short reads.
 	 */
-	private $version;
-
 	public static $handle = 'prc-platform-short-reads';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader = null ) {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_filter( 'post_type_link', $this, 'get_short_read_permalink', 10, 3 );
 		}
 	}
@@ -71,17 +71,12 @@ class Short_Reads {
 			'capability_type'    => 'post',
 			'has_archive'        => 'short-reads',
 			'hierarchical'       => false,
-			'menu_position'      => 5,
+			'menu_position'      => 6,
 			'supports'           => array( 'title', 'editor', 'author', 'excerpt', 'revisions', 'thumbnail', 'custom-fields', 'comments' ),
 			'taxonomies'         => array( 'category' ),
 		);
 
 		register_post_type( self::$post_type, $args );
-	}
-
-	public function enable_gutenberg_ramp( $post_types ) {
-		array_push( $post_types, self::$post_type );
-		return $post_types;
 	}
 
 	/**

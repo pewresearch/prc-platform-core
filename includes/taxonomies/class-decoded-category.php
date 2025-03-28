@@ -2,14 +2,24 @@
 namespace PRC\Platform;
 
 class Decoded_Category extends Taxonomies {
+	/**
+	 * The taxonomy slug.
+	 *
+	 * @var string
+	 */
 	protected static $taxonomy = 'decoded-category';
 
-	public function __construct($loader) {
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param mixed $loader The loader.
+	 */
+	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register' );
 	}
 
 	public function register() {
-		$labels     = array(
+		$labels = array(
 			'name'                       => _x( 'Decoded Category', 'Taxonomy General Name', 'text_domain' ),
 			'singular_name'              => _x( 'Decoded Category', 'Taxonomy Singular Name', 'text_domain' ),
 			'menu_name'                  => __( 'Decoded Category', 'text_domain' ),
@@ -21,7 +31,7 @@ class Decoded_Category extends Taxonomies {
 			'edit_item'                  => __( 'Edit Decoded Category', 'text_domain' ),
 			'update_item'                => __( 'Update Decoded Category', 'text_domain' ),
 			'view_item'                  => __( 'View Decoded Category', 'text_domain' ),
-			'separate_items_with_commas' => __( 'Separate Decoded Category'. ' with commas', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate Decoded Category with commas', 'text_domain' ),
 			'add_or_remove_items'        => __( 'Add or remove Decoded Category', 'text_domain' ),
 			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
 			'popular_items'              => __( 'Popular Decoded Category', 'text_domain' ),
@@ -45,5 +55,4 @@ class Decoded_Category extends Taxonomies {
 
 		register_taxonomy( self::$taxonomy, 'decoded', $args );
 	}
-
 }

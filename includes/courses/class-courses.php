@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 class Courses {
@@ -20,27 +21,27 @@ class Courses {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 		}
 	}
 
 	/**
 	 * Register the course post type.
+	 *
 	 * @hook init
 	 */
 	public function register_type() {
-		$labels  = array(
+		$labels = array(
 			'name'                  => _x( 'Courses', 'Post Type General Name', 'prc-core' ),
 			'singular_name'         => _x( 'Course', 'Post Type Singular Name', 'prc-core' ),
 			'menu_name'             => __( 'Courses', 'prc-core' ),
@@ -75,7 +76,7 @@ class Courses {
 			'feeds'      => true,
 		);
 
-		$args    = array(
+		$args = array(
 			'label'               => __( 'Course', 'prc-core' ),
 			'description'         => __( 'A post type for newsletter driven mini courses.', 'prc-core' ),
 			'labels'              => $labels,
@@ -99,16 +100,5 @@ class Courses {
 		);
 
 		register_post_type( self::$post_type, $args );
-	}
-
-	/**
-	 * Enable Gutenberg for courses.
-	 * @hook prc_load_gutenberg
-	 * @param  array $post_types [description]
-	 * @return array Post types that should have Gutenberg enabled.
-	 */
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
 	}
 }

@@ -49,7 +49,6 @@ class Features {
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'init', $this, 'rewrite_tags' );
 			$loader->add_action( 'init', $this, 'rewrite_index', 11 );
 			$loader->add_action( 'wp_enqueue_scripts', $this, 'register_assets' );
@@ -102,7 +101,7 @@ class Features {
 			'show_in_menu'        => true,
 			'show_in_nav_menus'   => true,
 			'show_in_admin_bar'   => true,
-			'menu_position'       => 42,
+			'menu_position'       => 5,
 			'menu_icon'           => 'dashicons-analytics',
 			'can_export'          => true,
 			'has_archive'         => true,
@@ -158,18 +157,6 @@ class Features {
 				'type'         => 'string',
 			)
 		);
-	}
-
-	/**
-	 * Signal that Interactive post type should utilize Gutenberg
-	 *
-	 * @hook prc_load_gutenberg
-	 * @param mixed $post_types
-	 * @return array
-	 */
-	public function enable_gutenberg_ramp( $post_types ) {
-		array_push( $post_types, self::$post_type );
-		return $post_types;
 	}
 
 	/**
@@ -244,8 +231,8 @@ class Features {
 						function ( $row ) {
 							return implode( ',', $row );
 						},
-						$data 
-					) 
+						$data
+					)
 				);
 			}
 			return $file;
@@ -279,7 +266,7 @@ class Features {
 				$path = preg_replace( '/\/\//', '/', $path );
 				return $path;
 			},
-			$research_teams 
+			$research_teams
 		);
 		foreach ( $research_teams as $research_team ) {
 			if ( basename( $research_team ) === 'blocks' || basename( $research_team ) === '.template' ) {

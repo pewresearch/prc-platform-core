@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_Query;
 
@@ -21,27 +22,26 @@ class Flash_Briefings {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $version    The version of this plugin.
-	 * @param      Loader    $loader     The loader that will be used to register hooks with WordPress.
+	 * @param      string $version    The version of this plugin.
+	 * @param      Loader $loader     The loader that will be used to register hooks with WordPress.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader) {
+	public function init( $loader ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoints' );
 		}
 	}
 
 	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 
@@ -70,9 +70,9 @@ class Flash_Briefings {
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			$screen = get_current_screen();
+			$screen    = get_current_screen();
 			$api_token = \PRC_PLATFORM_FLASH_BRIEFING_TOKEN;
-			if ( in_array( $screen->post_type, array(self::$post_type) ) ) {
+			if ( in_array( $screen->post_type, array( self::$post_type ) ) ) {
 				wp_enqueue_script( self::$handle );
 				wp_enqueue_style( self::$handle );
 				wp_localize_script(
@@ -89,6 +89,7 @@ class Flash_Briefings {
 
 	/**
 	 * Register the custom post type for the flash brief.
+	 *
 	 * @hook init
 	 */
 	public function register_type() {
@@ -152,93 +153,83 @@ class Flash_Briefings {
 	}
 
 	/**
-	 * Enable Gutenberg for the flash brief.
-	 * @hook prc_load_gutenberg
-	 * @param  array $post_types [description]
-	 * @return array Post types that should have Gutenberg enabled.
-	 */
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
-	}
-
-	/**
 	 * @hook prc_api_endpoints
 	 * @param array $endpoints
 	 * @return array $endpoints
 	 */
-	public function register_endpoints($endpoints) {
+	public function register_endpoints( $endpoints ) {
 		$alexa = array(
-			'route' 			  => '/flash-briefing/alexa',
+			'route'               => '/flash-briefing/alexa',
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'get_alexa_flash_brief' ),
 			'args'                => array(
 				'apikey' => array(
 					'default'           => 0,
-					'validate_callback' => function( $param, $request, $key ) {
+					'validate_callback' => function ( $param, $request, $key ) {
 						return is_numeric( $param );
 					},
 				),
 			),
 			'permission_callback' => function () {
 				return true;
-			}
+			},
 		);
 		// @TODO:
 		$siri = array(
-			'route' 			  => '/flash-briefing/siri',
+			'route'               => '/flash-briefing/siri',
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'get_siri_flash_brief' ),
 			'args'                => array(
 				'apikey' => array(
 					'default'           => 0,
-					'validate_callback' => function( $param, $request, $key ) {
+					'validate_callback' => function ( $param, $request, $key ) {
 						return is_numeric( $param );
 					},
 				),
 			),
 			'permission_callback' => function () {
 				return true;
-			}
+			},
 		);
 		// @TODO:
 		$google = array(
-			'route' 			  => '/flash-briefing/google',
+			'route'               => '/flash-briefing/google',
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'get_google_flash_brief' ),
 			'args'                => array(
 				'apikey' => array(
 					'default'           => 0,
-					'validate_callback' => function( $param, $request, $key ) {
+					'validate_callback' => function ( $param, $request, $key ) {
 						return is_numeric( $param );
 					},
 				),
 			),
 			'permission_callback' => function () {
 				return true;
-			}
+			},
 		);
-		array_push($endpoints, $alexa);
+		array_push( $endpoints, $alexa );
 		return $endpoints;
 	}
 
 	/**
 	 * Get the briefings in a standard structure that other services can transform to their needs.
+	 *
 	 * @return array
 	 */
 	private function get_briefings() {
 		$response = array();
-		$args  = array(
+		$args     = array(
 			'post_type' => self::$post_type,
 		);
-		$query = new WP_Query( $args );
+		$query    = new WP_Query( $args );
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$post_id      = get_the_ID();
-				$date         = get_the_date( 'c', $post_id );
-				$content      = wp_strip_all_tags( get_the_content() ) . ' For more, visit pew research dot org.';
-				$link         = get_post_meta( $post_id, '_yoast_wpseo_canonical', true );
+				$post_id = get_the_ID();
+				$date    = get_the_date( 'c', $post_id );
+				$content = wp_strip_all_tags( get_the_content() ) . ' For more, visit pew research dot org.';
+				$link    = get_post_meta( $post_id, '_yoast_wpseo_canonical', true );
 				if ( empty( $link ) ) {
 					$link = get_permalink( $post_id );
 				}
@@ -247,7 +238,7 @@ class Flash_Briefings {
 					'date'    => $date,
 					'title'   => get_the_title(),
 					'content' => $content,
-					'url' 	  => $link,
+					'url'     => $link,
 				);
 			}
 			wp_reset_postdata();
@@ -269,7 +260,7 @@ class Flash_Briefings {
 			$briefings = $this->get_briefings();
 			if ( ! empty( $briefings ) ) {
 				$response = array();
-				foreach ($briefings as $briefing) {
+				foreach ( $briefings as $briefing ) {
 					$response[] = array(
 						'uid'            => 'prc-daily-brief-' . $briefing['id'],
 						'updateDate'     => $briefing['date'],

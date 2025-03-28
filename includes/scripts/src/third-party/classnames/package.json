@@ -1,0 +1,12 @@
+{
+	"name": "classnames",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=../../../build/third-party/classnames"
+	},
+	"dependencies": {
+		"classnames": "^2.5.1"
+	}
+}

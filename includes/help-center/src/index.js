@@ -2,13 +2,13 @@
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createPortal, useState } from '@wordpress/element';
+import { Fragment, createPortal, useState } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
-import { useSelect } from '@wordpress/data';
 import { Button } from '@wordpress/components';
 import { PinnedItems } from '@wordpress/interface';
-import { Icon } from '@prc/icons';
-import Panel from './Panel';
+import { Icon, helpFilled } from '@wordpress/icons';
+
+import Panel from './panel';
 
 const PLUGIN_NAME = 'prc-platform-help-center';
 
@@ -21,24 +21,22 @@ function HelpCenter() {
 		return null;
 	}
 	return (
-		<>
+		<Fragment>
 			<PinnedItems scope="core">
 				<Button
 					onClick={() => setIsOpen(!isOpen)}
 					description={__('Help Center')}
-					size="default"
-				>
-					<Icon icon="message-question" library="regular" />
-				</Button>
+					size="compact"
+					isPressed={isOpen}
+					icon={helpFilled}
+				/>
 			</PinnedItems>
 			{createPortal(
 				<Panel isOpen={isOpen} close={() => setIsOpen(false)} />,
 				renderEl
 			)}
-		</>
+		</Fragment>
 	);
 }
 
-registerPlugin(PLUGIN_NAME, {
-	render: HelpCenter,
-});
+registerPlugin(PLUGIN_NAME, { render: HelpCenter });

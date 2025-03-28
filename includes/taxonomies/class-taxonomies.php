@@ -10,24 +10,12 @@ class Taxonomies {
 	public static $primary_taxonomy = 'research-teams';
 
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-
+	public function __construct( $loader = null ) {
 		require_once plugin_dir_path( __FILE__ ) . 'topic-category/class-topic-category.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-decoded-category.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-formats.php';
@@ -40,6 +28,11 @@ class Taxonomies {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'disable_term_description_filtering' );
@@ -67,6 +60,11 @@ class Taxonomies {
 		}
 	}
 
+	/**
+	 * Disable term description filtering, allowing any content inside the term description.
+	 *
+	 * @hook disable_term_description_filtering
+	 */
 	public function disable_term_description_filtering() {
 		// Remove HTML Filtering on term description.
 		remove_filter( 'pre_term_description', 'wp_filter_kses' );
@@ -92,7 +90,8 @@ class Taxonomies {
 	}
 
 	/**
-	 * Disable 'Global Terms Enabled', this causes issues with shared term slugs. Resolves a long standing taxonomy issue.
+	 * Disable 'Global Terms Enabled', this causes issues with shared term slugs.
+	 * Resolves a long standing historical PRC taxonomy issue.
 	 *
 	 * @hook global_terms_enabled
 	 * @return false
@@ -173,6 +172,13 @@ class Taxonomies {
 	}
 }
 
+/**
+ * Get the primary term id.
+ *
+ * @param string $taxonomy
+ * @param int    $post_id
+ * @return int|false
+ */
 function get_primary_term_id( $taxonomy, $post_id ) {
 	if ( ! function_exists( 'yoast_get_primary_term_id' ) ) {
 		return false;

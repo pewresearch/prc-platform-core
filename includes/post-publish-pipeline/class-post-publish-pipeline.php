@@ -130,6 +130,9 @@ class Post_Publish_Pipeline {
 			case 'decoded':
 				$label = 'Decoded';
 				break;
+			case 'engineering':
+				$label = 'Engineering';
+				break;
 			case 'collections':
 				$label = 'Collection';
 				break;
@@ -149,6 +152,7 @@ class Post_Publish_Pipeline {
 		$post_id   = (int) ( array_key_exists( 'id', $object ) ? $object['id'] : $object['ID'] );
 		$post_type = get_post_type( $post_id );
 
+		// On the primary site we use the formats taxonomy to generate a label, otherwise default to WP default - category.
 		$taxonomy = PRC_PRIMARY_SITE_ID === get_current_blog_id() ? 'formats' : 'category';
 		$terms    = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'names' ) );
 

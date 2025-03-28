@@ -32,7 +32,6 @@ class Fact_Sheets {
 	public function init( $loader ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 		}
 	}
 
@@ -95,10 +94,5 @@ class Fact_Sheets {
 		);
 
 		register_post_type( self::$post_type, $args );
-	}
-
-	public function enable_gutenberg_ramp( $post_types ) {
-		array_push( $post_types, self::$post_type );
-		return $post_types;
 	}
 }

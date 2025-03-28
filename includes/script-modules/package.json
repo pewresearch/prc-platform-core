@@ -1,0 +1,6 @@
+{
+	"name": "@pewresearch/prc-platform-script-modules",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	}
+}

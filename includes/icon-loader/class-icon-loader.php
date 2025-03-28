@@ -36,7 +36,6 @@ class Icon_Loader {
 	 */
 	public function __construct( $version, $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'icon-render.php';
-		require_once plugin_dir_path( __FILE__ ) . 'class-wp-html-get-element.php';
 		$this->version = $version;
 		$this->init( $loader );
 	}

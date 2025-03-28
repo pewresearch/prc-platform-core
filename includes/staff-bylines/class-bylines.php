@@ -28,6 +28,10 @@ class Bylines {
 	private function get_staff_objects( $bylines = array() ) {
 		$to_return = array();
 		foreach ( $bylines as $byline ) {
+			// If the byline is empty or malformed, skip it.
+			if ( ! array_key_exists( 'termId', $byline ) ) {
+				continue;
+			}
 			$staff = new Staff( false, $byline['termId'] );
 			if ( ! is_wp_error( $staff ) ) {
 				$to_return[ $byline['termId'] ] = get_object_vars( $staff );

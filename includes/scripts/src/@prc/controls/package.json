@@ -1,0 +1,14 @@
+{
+	"name": "@prc/controls",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.13.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build index.js --output-path=../../../build/@prc/controls",
+		"start": "wp-scripts start index.js --output-path=../../../build/@prc/controls"
+	},
+	"dependencies": {
+		"@emotion/styled": "^11.14.0",
+		"react-movable": "^3.0.4"
+	}
+}

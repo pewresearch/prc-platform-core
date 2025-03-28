@@ -8,14 +8,36 @@ use TDS;
 
 /**
  * This class manages the combind staff and bylines data structure and functionality.
+ *
  * @package PRC\Platform
  */
 class Staff_Bylines {
+	/**
+	 * The name of the post object.
+	 *
+	 * @var string
+	 */
 	public static $post_object_name = 'staff';
+
+	/**
+	 * The name of the taxonomy object.
+	 *
+	 * @var string
+	 */
 	public static $taxonomy_object_name = 'bylines';
 
+	/**
+	 * Whether the staff is block-bound.
+	 *
+	 * @var boolean
+	 */
 	private $block_bound_staff = false;
 
+	/**
+	 * The schema for the field.
+	 *
+	 * @var array
+	 */
 	public static $field_schema = array(
 		'items' => array(
 			'type'       => 'object',
@@ -30,6 +52,11 @@ class Staff_Bylines {
 		),
 	);
 
+	/**
+	 * The enabled post types.
+	 *
+	 * @var array
+	 */
 	protected static $enabled_post_types = array(
 		'post',
 		'short-read',
@@ -41,6 +68,11 @@ class Staff_Bylines {
 		'decoded',
 	);
 
+	/**
+	 * The staff post type arguments.
+	 *
+	 * @var array
+	 */
 	public static $staff_post_type_args = array(
 		'labels'             => array(
 			'name'               => 'Staff',
@@ -71,11 +103,16 @@ class Staff_Bylines {
 		'capability_type'    => 'post',
 		'has_archive'        => false,
 		'hierarchical'       => false,
-		'menu_position'      => 30,
+		'menu_position'      => 70,
 		'taxonomies'         => array( 'areas-of-expertise', 'bylines', 'staff-type', 'research-teams' ),
 		'supports'           => array( 'title', 'editor', 'thumbnail', 'revisions', 'author', 'custom-fields', 'excerpt' ),
 	);
 
+	/**
+	 * The staff type taxonomy arguments.
+	 *
+	 * @var array
+	 */
 	public static $staff_type_taxonomy_args = array(
 		'hierarchical'      => true,
 		'labels'            => array(
@@ -100,6 +137,11 @@ class Staff_Bylines {
 		'show_in_rest'      => true,
 	);
 
+	/**
+	 * The expertise taxonomy arguments.
+	 *
+	 * @var array
+	 */
 	public static $expertise_taxonomy_args = array(
 		'hierarchical'      => true,
 		'labels'            => array(
@@ -122,14 +164,18 @@ class Staff_Bylines {
 		'query_var'         => false,
 		'show_in_rest'      => true,
 		'show_admin_column' => true,
-		'show_in_rest'      => true,
-		'rewrite'           => [
+		'rewrite'           => array(
 			'slug'         => 'expertise',
 			'with_front'   => false,
 			'hierarchical' => true,
-		],
+		),
 	);
 
+	/**
+	 * The byline taxonomy arguments.
+	 *
+	 * @var array
+	 */
 	public static $byline_taxonomy_args = array(
 		'hierarchical'      => false,
 		'labels'            => array(
@@ -172,8 +218,8 @@ class Staff_Bylines {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
@@ -184,22 +230,23 @@ class Staff_Bylines {
 		require_once plugin_dir_path( __FILE__ ) . 'staff-info-panel/index.php';
 		require_once plugin_dir_path( __FILE__ ) . 'bylines-acknowledgements-panel/index.php';
 
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$staff_info_panel = new Staff_Info_Panel();
+			$staff_info_panel               = new Staff_Info_Panel();
 			$bylines_acknowledgements_panel = new Bylines_Acknowledgements_Panel();
 
 			// Establish a bi-directional relationship between the "staff" post type and the "byline" taxonomy.
 			$loader->add_action( 'init', $this, 'register_term_data_store' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
-			$loader->add_filter( 'rest_staff_collection_params', $this, 'filter_add_rest_orderby_params', 10, 1);
+			$loader->add_filter( 'rest_staff_collection_params', $this, 'filter_add_rest_orderby_params', 10, 1 );
 			$loader->add_filter( 'posts_orderby', $this, 'orderby_last_name', PHP_INT_MAX, 2 );
 
 			$loader->add_action( 'pre_get_posts', $this, 'hide_former_staff', 10, 1 );
 			$loader->add_filter( 'the_title', $this, 'indicate_former_staff', 10, 1 );
+
+			$loader->add_filter( 'wp_robots', $this, 'modify_staff_robots', 10, 1 );
 
 			$loader->add_filter( 'post_type_link', $this, 'modify_staff_permalink', 20, 2 );
 			$loader->add_action( 'admin_bar_menu', $this, 'modify_admin_bar_edit_link', 100 );
@@ -237,11 +284,12 @@ class Staff_Bylines {
 
 	/**
 	 * Override the term data store for guests, don't try to update it or manage it in the term data store.
+	 *
 	 * @hook tds_balancing_from_term
 	 */
-	public function override_term_data_store_for_guests($allow, $taxonomy, $post_type, $term_id) {
+	public function override_term_data_store_for_guests( $allow, $taxonomy, $post_type, $term_id ) {
 		if ( self::$taxonomy_object_name === $taxonomy ) {
-			$term_meta = get_term_meta($term_id, 'is_guest_author', true);
+			$term_meta = get_term_meta( $term_id, 'is_guest_author', true );
 			if ( $term_meta ) {
 				return true;
 			}
@@ -249,16 +297,11 @@ class Staff_Bylines {
 		return $allow;
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push( $post_types, self::$post_object_name );
-		return $post_types;
-	}
-
 	/**
 	 * Order staff posts by last name
 	 *
 	 * @hook posts_orderby
-	 * @param mixed $orderby
+	 * @param mixed    $orderby
 	 * @param WP_Query $q
 	 * @return mixed
 	 */
@@ -266,8 +309,7 @@ class Staff_Bylines {
 		$order = $q->get( 'order' );
 		global $wpdb;
 		if ( 'last_name' === $q->get( 'orderby' ) && $order ) {
-			if( in_array( strtoupper( $order ), ['ASC', 'DESC'] ) )
-			{
+			if ( in_array( strtoupper( $order ), array( 'ASC', 'DESC' ) ) ) {
 				// Order by last name.
 				$orderby = "RIGHT($wpdb->posts.post_title, LOCATE(' ', REVERSE($wpdb->posts.post_title)) - 1) " . 'ASC';
 			}
@@ -279,6 +321,7 @@ class Staff_Bylines {
 
 	/**
 	 * Add menu_order to the list of permitted orderby values
+	 *
 	 * @hook rest_staff_collection_params
 	 */
 	public function filter_add_rest_orderby_params( $params ) {
@@ -288,11 +331,12 @@ class Staff_Bylines {
 
 	/**
 	 * Hide former staff from the staff archive and staff taxonomy archive
+	 *
 	 * @hook pre_get_posts
 	 * @param mixed $query
 	 */
 	public function hide_former_staff( $query ) {
-		if ( true === $query->get('isPubListingQuery') ) {
+		if ( true === $query->get( 'isPubListingQuery' ) ) {
 			return $query;
 		}
 		if ( $query->is_main_query() && ( is_tax( 'areas-of-expertise' ) || is_tax( 'bylines' ) ) ) {
@@ -311,6 +355,7 @@ class Staff_Bylines {
 
 	/**
 	 * Modifies the staff title to indicate former staff.
+	 *
 	 * @hook the_title
 	 * @param mixed $title
 	 * @return mixed
@@ -372,7 +417,7 @@ class Staff_Bylines {
 				'default'       => false,
 				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
-					//@TODO We should check for producers and up...
+					// @TODO We should check for producers and up...
 				},
 			)
 		);
@@ -386,23 +431,23 @@ class Staff_Bylines {
 			'_maelstrom',
 			array(
 				'description'   => '',
-				'show_in_rest'  => [
-					'schema' => [
-						'properties' => [
-							'enabled' => [
-								'type' => 'boolean',
+				'show_in_rest'  => array(
+					'schema' => array(
+						'properties' => array(
+							'enabled'    => array(
+								'type'    => 'boolean',
 								'default' => false,
-							],
-							'restricted' => [
-								'type' => 'array',
-								'items' => [
-									'type' => 'string',
-									'default' => [],
-								],
-							],
-						],
-					],
-				],
+							),
+							'restricted' => array(
+								'type'  => 'array',
+								'items' => array(
+									'type'    => 'string',
+									'default' => array(),
+								),
+							),
+						),
+					),
+				),
 				'single'        => true,
 				'type'          => 'object',
 				'auth_callback' => function () {
@@ -421,7 +466,7 @@ class Staff_Bylines {
 						'items' => array(
 							'type'       => 'object',
 							'properties' => array(
-								'key'    => array(
+								'key' => array(
 									'type' => 'string',
 								),
 								'url' => array(
@@ -450,7 +495,7 @@ class Staff_Bylines {
 					'show_in_rest'  => array(
 						'schema' => self::$field_schema,
 					),
-					'auth_callback' => function() {
+					'auth_callback' => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
@@ -465,7 +510,7 @@ class Staff_Bylines {
 					'show_in_rest'  => array(
 						'schema' => self::$field_schema,
 					),
-					'auth_callback' => function() {
+					'auth_callback' => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
@@ -482,7 +527,7 @@ class Staff_Bylines {
 					'single'        => true,
 					'type'          => 'boolean',
 					'default'       => true,
-					'auth_callback' => function() {
+					'auth_callback' => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
@@ -494,7 +539,7 @@ class Staff_Bylines {
 	 * Modifies the staff permalink to point to the bylines term archive permalink.
 	 *
 	 * @hook post_link
-	 * @param string $url
+	 * @param string  $url
 	 * @param WP_Post $post
 	 * @return string
 	 */
@@ -503,9 +548,9 @@ class Staff_Bylines {
 			return $url;
 		}
 		if ( self::$post_object_name === $post->post_type ) {
-			$staff = new Staff( $post->ID );
+			$staff       = new Staff( $post->ID );
 			$matched_url = $staff->link;
-			if ( !is_wp_error( $matched_url ) ) {
+			if ( ! is_wp_error( $matched_url ) ) {
 				return $matched_url;
 			}
 		}
@@ -524,12 +569,12 @@ class Staff_Bylines {
 
 		$admin_bar->remove_menu( 'edit' );
 
-		$staff = new Staff(false, get_queried_object()->term_id);
+		$staff = new Staff( false, get_queried_object()->term_id );
 		if ( is_wp_error( $staff ) ) {
 			return;
 		}
 
-		$link     = get_edit_post_link( $staff->ID );
+		$link = get_edit_post_link( $staff->ID );
 		$admin_bar->add_menu(
 			array(
 				'parent' => false,
@@ -544,7 +589,33 @@ class Staff_Bylines {
 	}
 
 	/**
+	 * Modify the robots meta for the staff post.
+	 *
+	 * @hook wp_robots
+	 * @param array $robots_directives
+	 * @return array
+	 */
+	public function modify_staff_robots( $robots_directives ) {
+		// Check if the current staff post has byline link enabled, if not then we should add noindex to the robots meta.
+		if ( is_tax( self::$taxonomy_object_name ) ) {
+			// Check if the current staff post has byline link enabled, if not then we should add noindex to the robots meta.
+			$staff = new Staff( false, get_queried_object()->term_id );
+			if ( is_wp_error( $staff ) ) {
+				return $robots_directives;
+			}
+			if ( $staff->link ) {
+				return $robots_directives;
+			}
+			// If a staff member has no link, then we should disallow all robots.
+			$robots_directives['noindex']  = true;
+			$robots_directives['nofollow'] = true;
+		}
+		return $robots_directives;
+	}
+
+	/**
 	 * Add constructed staff info to the byline term object and staff post object in the rest api.
+	 *
 	 * @hook rest_api_init
 	 * @return void
 	 */
@@ -576,11 +647,12 @@ class Staff_Bylines {
 
 	/**
 	 * Get staff info for the rest api.
+	 *
 	 * @return void
 	 */
 	private function get_staff_info_for_api( $object, $type ) {
 		$byline_term_id = false;
-		$staff_post_id = false;
+		$staff_post_id  = false;
 		if ( $type && self::$post_object_name === $type ) {
 			$staff_post_id = $object['id'];
 		} else {
@@ -593,7 +665,7 @@ class Staff_Bylines {
 		}
 		$staff_data = get_object_vars( $staff );
 
-		$staff_link = $staff_data['link'];
+		$staff_link         = $staff_data['link'];
 		$staff_name_as_link = wp_sprintf(
 			'<a href="%1$s">%2$s</a>&nbsp;',
 			$staff_link,
@@ -601,15 +673,15 @@ class Staff_Bylines {
 		);
 
 		$data = array(
-			'staffName'                 => $staff_data['name'],
-			'staffJobTitle'             => $staff_data['job_title'],
-			'staffImage'                => $staff_data['photo'],
-			'staffTwitter'              => null, // @TODO: Will rethink social after launch.
-			'staffExpertise'            => $staff_data['expertise'],
-			'staffBio'                  => $staff_data['bio'],
-			'staffBioShort'             => $staff_name_as_link . ' is ' . $staff_data['job_title_extended'],
-			'staffJobTitleExtended'     => $staff_data['job_title_extended'],
-			'staffLink'		            => $staff_data['link'],
+			'staffName'             => $staff_data['name'],
+			'staffJobTitle'         => $staff_data['job_title'],
+			'staffImage'            => $staff_data['photo'],
+			'staffTwitter'          => null, // @TODO: Will rethink social after launch.
+			'staffExpertise'        => $staff_data['expertise'],
+			'staffBio'              => $staff_data['bio'],
+			'staffBioShort'         => $staff_name_as_link . ' is ' . $staff_data['job_title_extended'],
+			'staffJobTitleExtended' => $staff_data['job_title_extended'],
+			'staffLink'             => $staff_data['link'],
 		);
 
 		return $data;
@@ -619,14 +691,14 @@ class Staff_Bylines {
 	// @hook wpseo_opengraph_author_facebook
 	public function generate_yoast_author_data( $data, $presentation ) {
 		$post_id = $presentation->model->object_id;
-		$bylines = new Bylines($post_id);
-		if ( is_wp_error($bylines->bylines) ) {
+		$bylines = new Bylines( $post_id );
+		if ( is_wp_error( $bylines->bylines ) ) {
 			return $data; // Exit early and with no output if there are no bylines.
 		}
 
-		$bylines = $bylines->format('string');
+		$bylines = $bylines->format( 'string' );
 
-		if ( !empty($bylines) ) {
+		if ( ! empty( $bylines ) ) {
 			$data = $bylines;
 		}
 
@@ -634,36 +706,37 @@ class Staff_Bylines {
 	}
 
 	/**
-     * Change Enhanced Slack sharing data labels.
-     * @hook wpseo_enhanced_slack_data
-     * @param array                  $data         The Slack labels + data.
-     * @param Indexable_Presentation $presentation The indexable presentation object.
-     *
-     * @return array The Slack labels + data.
-     */
-    public function generate_yoast_slack_data( array $data, $presentation ) {
+	 * Change Enhanced Slack sharing data labels.
+	 *
+	 * @hook wpseo_enhanced_slack_data
+	 * @param array                  $data         The Slack labels + data.
+	 * @param Indexable_Presentation $presentation The indexable presentation object.
+	 *
+	 * @return array The Slack labels + data.
+	 */
+	public function generate_yoast_slack_data( array $data, $presentation ) {
 		$post_id = $presentation->model->object_id;
-		$bylines = new Bylines($post_id);
-		if ( is_wp_error($bylines->bylines) ) {
+		$bylines = new Bylines( $post_id );
+		if ( is_wp_error( $bylines->bylines ) ) {
 			return $data; // Exit early and with no output if there are no bylines.
 		}
 
-		$bylines = $bylines->format('string');
+		$bylines = $bylines->format( 'string' );
 
-		if ( !empty($bylines) ) {
+		if ( ! empty( $bylines ) ) {
 			$data[ __( 'Written by', 'wordpress-seo' ) ] = $bylines;
 		}
 
-        return $data;
-    }
+		return $data;
+	}
 
-	private function is_byline_protected_by_maelstrom($byline_term_id, $regions_countries = []) {
-		$staff_post_id = get_term_meta($byline_term_id, 'tds_post_id', true);
-		if ( empty($staff_post_id) || false === $staff_post_id ) {
+	private function is_byline_protected_by_maelstrom( $byline_term_id, $regions_countries = array() ) {
+		$staff_post_id = get_term_meta( $byline_term_id, 'tds_post_id', true );
+		if ( empty( $staff_post_id ) || false === $staff_post_id ) {
 			return false;
 		}
-		$maelstrom = get_post_meta($staff_post_id, '_maelstrom', true);
-		if ( !$maelstrom || !is_array($maelstrom) ) {
+		$maelstrom = get_post_meta( $staff_post_id, '_maelstrom', true );
+		if ( ! $maelstrom || ! is_array( $maelstrom ) ) {
 			$maelstrom = array(
 				'enabled' => false,
 			);
@@ -671,10 +744,10 @@ class Staff_Bylines {
 		// We're going to reset the enabled flag here.
 		$maelstrom['enabled'] = false;
 		// if it is an array, get the 'restricted' and see if any match $regions_countries if so set $maelstrom['enabled'] to true otherwise false...
-		if ( is_array($maelstrom) && array_key_exists('restricted', $maelstrom) && is_array($maelstrom['restricted'] ) && !empty($maelstrom['restricted'] ) ) {
+		if ( is_array( $maelstrom ) && array_key_exists( 'restricted', $maelstrom ) && is_array( $maelstrom['restricted'] ) && ! empty( $maelstrom['restricted'] ) ) {
 			$restricted = $maelstrom['restricted'];
-			foreach($regions_countries as $r) {
-				if (in_array($r, $restricted)) {
+			foreach ( $regions_countries as $r ) {
+				if ( in_array( $r, $restricted ) ) {
 					$maelstrom['enabled'] = true;
 				}
 			}
@@ -685,47 +758,54 @@ class Staff_Bylines {
 	/**
 	 * @hook prc_platform_on_publish
 	 */
-	public function enforce_maelestrom($post) {
+	public function enforce_maelestrom( $post ) {
 		// Does this post have any bylines?
 		$bylines = get_post_meta( $post->ID, 'bylines', true );
-		if ( !is_array($bylines) ) {
+		if ( ! is_array( $bylines ) ) {
 			return;
 		}
 
 		// Check this post's regions and countries taxonomies...
-		$regions_countries = wp_get_post_terms($post->ID, 'regions-countries', array('fields' => 'names'));
+		$regions_countries = wp_get_post_terms( $post->ID, 'regions-countries', array( 'fields' => 'names' ) );
 
 		// Determine if there are any maestrom enabled bylines.
-		$maelstrom_bylines = array_filter($bylines, function($byline) use ($regions_countries) {
-			$maelstrom = $this->is_byline_protected_by_maelstrom($byline['termId'], $regions_countries);
-			return $maelstrom['enabled'];
-		});
+		$maelstrom_bylines = array_filter(
+			$bylines,
+			function ( $byline ) use ( $regions_countries ) {
+				$maelstrom = $this->is_byline_protected_by_maelstrom( $byline['termId'], $regions_countries );
+				return $maelstrom['enabled'];
+			}
+		);
 
 		// If there are any maelstrom bylines, remove them from the bylines array.
-		if ( !empty($maelstrom_bylines) ) {
-			$bylines = array_filter($bylines, function($byline) use ($maelstrom_bylines) {
-				return !in_array($byline, $maelstrom_bylines);
-			});
-			update_post_meta($post->ID, 'bylines', $bylines);
+		if ( ! empty( $maelstrom_bylines ) ) {
+			$bylines = array_filter(
+				$bylines,
+				function ( $byline ) use ( $maelstrom_bylines ) {
+					return ! in_array( $byline, $maelstrom_bylines );
+				}
+			);
+			update_post_meta( $post->ID, 'bylines', $bylines );
 			// Also remove the given byline terms from the post.
-			wp_remove_object_terms($post->ID, array_column($maelstrom_bylines, 'termId'), 'bylines');
+			wp_remove_object_terms( $post->ID, array_column( $maelstrom_bylines, 'termId' ), 'bylines' );
 		}
 	}
 
 	/**
 	 * Sets byline archives to only show posts with the current byline.
+	 *
 	 * @hook pre_get_posts
 	 * @param mixed $query
 	 * @return mixed
 	 */
-	public function filter_pre_get_posts($query) {
-		if ( true === $query->get('isPubListingQuery') && $query->is_tax( self::$taxonomy_object_name ) ) {
+	public function filter_pre_get_posts( $query ) {
+		if ( true === $query->get( 'isPubListingQuery' ) && $query->is_tax( self::$taxonomy_object_name ) ) {
 			$current_term_slug = $query->get_queried_object()->slug;
 			// check if current_term_slug has maelstrom enabled and if so we need to filter out the regions and countries that are not allowed, an additional precaution.
 
 			// Lets do a quick sanity check and make sure we have a tax_query array, if not we'll set the correct type, if so we'll set the relationship to be AND
-			$tax_query = $query->get('tax_query');
-			if ( !is_array($tax_query) ) {
+			$tax_query = $query->get( 'tax_query' );
+			if ( ! is_array( $tax_query ) ) {
 				$tax_query = array();
 			} else {
 				$tax_query['relation'] = 'AND';

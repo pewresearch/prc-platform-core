@@ -10,8 +10,9 @@
 	"author": "Ben Wormald",
 	"license": "GPL-2.0+",
 	"dependencies": {
-		"@wordpress/interface": "^8.1.0",
-		"@wordpress/scripts": "^30.5.1",
+		"@wordpress/icons": "^10.20.0",
+		"@wordpress/interface": "^9.5.0",
+		"@wordpress/scripts": "^30.13.0",
 		"react-draggable": "^4.4.6"
 	}
 }

@@ -1,18 +1,35 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 /**
  * The "Category" core taxonomy as our "Topic" taxonomy.
+ *
  * @package PRC\Platform
  */
 class Topic_Category extends Taxonomies {
+	/**
+	 * The taxonomy slug.
+	 *
+	 * @var string
+	 */
 	protected static $taxonomy = 'category';
 
+	/**
+	 * The handle for the category taxonomy.
+	 *
+	 * @var string
+	 */
 	public static $handle = 'prc-platform-category-taxonomy';
 
-	public function __construct($loader) {
-		$loader->add_action('init', $this, 'enforce_category_permalink_structure');
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param mixed $loader The loader.
+	 */
+	public function __construct( $loader ) {
+		$loader->add_action( 'init', $this, 'enforce_category_permalink_structure' );
 		$loader->add_filter( 'register_taxonomy_args', $this, 'change_category_labels_to_topic', 10, 2 );
 		$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_category_name_change_script' );
 	}
@@ -27,6 +44,7 @@ class Topic_Category extends Taxonomies {
 
 	/**
 	 * On the primary site we want to change the vernacular of "Categories" to "Topics".
+	 *
 	 * @param mixed $args
 	 * @param mixed $taxonomy
 	 * @return mixed
@@ -36,32 +54,32 @@ class Topic_Category extends Taxonomies {
 			return $args;
 		}
 		if ( $taxonomy === self::$taxonomy ) {
-			$args['labels'] = array();
-			$args['labels']['name'] = 'Topics';
-			$args['labels']['singular_name'] = 'Topic';
-			$args['labels']['menu_name'] = 'Topics';
-			$args['labels']['all_items'] = 'All Topics';
-			$args['labels']['edit_item'] = 'Edit Topic';
-			$args['labels']['view_item'] = 'View Topic';
-			$args['labels']['update_item'] = 'Update Topic';
-			$args['labels']['add_new_item'] = 'Add New Topic';
-			$args['labels']['new_item_name'] = 'New Topic Name';
-			$args['labels']['parent_item'] = 'Parent Topic';
-			$args['labels']['search_items'] = 'Search Topics';
-			$args['labels']['popular_items'] = 'Popular Topics';
+			$args['labels']                               = array();
+			$args['labels']['name']                       = 'Topics';
+			$args['labels']['singular_name']              = 'Topic';
+			$args['labels']['menu_name']                  = 'Topics';
+			$args['labels']['all_items']                  = 'All Topics';
+			$args['labels']['edit_item']                  = 'Edit Topic';
+			$args['labels']['view_item']                  = 'View Topic';
+			$args['labels']['update_item']                = 'Update Topic';
+			$args['labels']['add_new_item']               = 'Add New Topic';
+			$args['labels']['new_item_name']              = 'New Topic Name';
+			$args['labels']['parent_item']                = 'Parent Topic';
+			$args['labels']['search_items']               = 'Search Topics';
+			$args['labels']['popular_items']              = 'Popular Topics';
 			$args['labels']['separate_items_with_commas'] = 'Separate topics with commas';
-			$args['labels']['add_or_remove_items'] = 'Add or remove topics';
-			$args['labels']['choose_from_most_used'] = 'Choose from the most used topics';
-			$args['labels']['not_found'] = 'No topics found';
-			$args['labels']['no_terms'] = 'No topics';
+			$args['labels']['add_or_remove_items']        = 'Add or remove topics';
+			$args['labels']['choose_from_most_used']      = 'Choose from the most used topics';
+			$args['labels']['not_found']                  = 'No topics found';
+			$args['labels']['no_terms']                   = 'No topics';
 		}
 		return $args;
 	}
 
 	public function register_category_name_change_filters() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 
 		$script = wp_register_script(
 			$asset_slug,

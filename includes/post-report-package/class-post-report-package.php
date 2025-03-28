@@ -127,26 +127,13 @@ class Post_Report_Package {
 	);
 
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	/**
 	 * Construct the "report package" class.
 	 *
 	 * @param mixed $version
 	 * @param mixed $loader
 	 * @return void
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		if ( ! class_exists( 'WP_HTML_Heading_Processor' ) ) {
-			require_once plugin_dir_path( __FILE__ ) . 'class-wp-html-heading-processor.php';
-		}
+	public function __construct( $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'class-pagination.php';
 		$this->init( $loader );
 	}

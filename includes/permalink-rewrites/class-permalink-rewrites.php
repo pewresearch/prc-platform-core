@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_REST_Request;
 
@@ -9,32 +10,18 @@ use WP_REST_Request;
  */
 class Permalink_Rewrites {
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	public static $handle = 'prc-platform-permalink-rewrites';
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $loader The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		$this->init($loader);
-		require_once( plugin_dir_path( __FILE__ ) . 'class-url-helper.php' );
+	public function __construct( $loader ) {
+		$this->init( $loader );
+		require_once plugin_dir_path( __FILE__ ) . 'class-url-helper.php';
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$loader->add_filter( 'robots_txt', $this, 'manage_robots_txt', 10, 2 );
 			$loader->add_action( 'init', $this, 'register_rewrites' );
 			$loader->add_action( 'init', $this, 'register_tags' );
 			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
@@ -42,16 +29,9 @@ class Permalink_Rewrites {
 		}
 	}
 
-	function manage_robots_txt( $output, $public ) {
-		// Blocking search pages from googlebot
-		$output .= 'Disallow: /search/' . PHP_EOL;
-		$output .= 'Disallow: /search' . PHP_EOL;
-		$output .= 'Disallow: /?s=' . PHP_EOL;
-		return $output;
-	}
-
 	/**
 	 * Registers the rewrite rules for PRC Platform with WordPress.
+	 *
 	 * @hook init
 	 * @uses prc_platform_rewrite_rules
 	 */
@@ -67,6 +47,7 @@ class Permalink_Rewrites {
 
 	/**
 	 * Registers the rewrite tags for PRC Platform with WordPress.
+	 *
 	 * @hook init
 	 * @uses prc_platform_rewrite_tags
 	 * @return void
@@ -83,12 +64,13 @@ class Permalink_Rewrites {
 
 	/**
 	 * Registers any additional query vars for PRC Platform with WordPress.
+	 *
 	 * @hook query_vars
 	 * @uses prc_platform_rewrite_query_vars
 	 * @param array $query_vars
 	 * @return array $query_vars
 	 */
-	public function register_query_vars($query_vars) {
+	public function register_query_vars( $query_vars ) {
 		if ( 1 === get_current_blog_id() ) {
 			return $query_vars;
 		}
@@ -101,6 +83,7 @@ class Permalink_Rewrites {
 
 	/**
 	 * Gets the post id and post type for a url restfully.
+	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_Error|array
 	 */
@@ -114,37 +97,41 @@ class Permalink_Rewrites {
 			return new WP_Error( 'no-post-found', __( 'No post found', 'my_textdomain' ), array( 'status' => 404 ) );
 		}
 		return array(
-			'postId' => $post_id,
+			'postId'   => $post_id,
 			'postType' => get_post_type( $post_id ),
 		);
 	}
 
 	/**
 	 * Registers the endpoint for getting a post id by url.
+	 *
 	 * @hook prc_api_endpoints
 	 * @param array $endpoints
 	 * @return array
 	 */
-	public function register_endpoint($endpoints) {
-		array_push($endpoints, array(
-			'route' 			  => '/utils/postid-by-url',
-			'methods'             => 'GET',
-			'callback'            => array( $this, 'restfully_get_postid_by_url' ),
-			'args'                => array(
-				'url' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						$url = filter_var( $param, FILTER_VALIDATE_URL );
-						if ( $url === false ) {
-							return false;
-						}
-						return true;
-					},
+	public function register_endpoint( $endpoints ) {
+		array_push(
+			$endpoints,
+			array(
+				'route'               => '/utils/postid-by-url',
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'restfully_get_postid_by_url' ),
+				'args'                => array(
+					'url' => array(
+						'validate_callback' => function ( $param, $request, $key ) {
+							$url = filter_var( $param, FILTER_VALIDATE_URL );
+							if ( $url === false ) {
+								return false;
+							}
+							return true;
+						},
+					),
 				),
-			),
-			'permission_callback' => function () {
-				return user_can( get_current_user_id(), 'edit_posts' );
-			},
-		));
+				'permission_callback' => function () {
+					return user_can( get_current_user_id(), 'edit_posts' );
+				},
+			)
+		);
 		return $endpoints;
 	}
 }

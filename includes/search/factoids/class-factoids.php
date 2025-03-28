@@ -4,27 +4,26 @@ namespace PRC\Platform;
 class Search_Factoids {
 	public static $post_type = 'factoid';
 
-	public function __construct($loader) {
-		$this->init($loader);
+	public function __construct( $loader ) {
+		$this->init( $loader );
 	}
 
 	/**
 	 * @hook init
 	 * @return void
 	 */
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_action( 'init', $this, 'register_tax' );
 			$loader->add_action( 'init', $this, 'block_init' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
-			$loader->add_action( 'save_post_factoid', $this, 'update_index', 10, 3);
+			$loader->add_action( 'save_post_factoid', $this, 'update_index', 10, 3 );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 		}
 	}
 
 	public function register_type() {
-		$labels = array(
+		$labels   = array(
 			'name'                  => _x( 'Factoids', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Factoid', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Factoids', 'text_domain' ),
@@ -68,7 +67,7 @@ class Search_Factoids {
 			'public'              => true,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
-			'menu_position'       => 5,
+			'menu_position'       => 65,
 			'menu_icon'           => 'dashicons-search',
 			'show_in_admin_bar'   => true,
 			'show_in_nav_menus'   => true,
@@ -81,11 +80,6 @@ class Search_Factoids {
 			'capability_type'     => 'post',
 		);
 		register_post_type( self::$post_type, $args );
-	}
-
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
 	}
 
 	public function register_tax() {
@@ -118,41 +112,46 @@ class Search_Factoids {
 
 	/**
 	 * Register the /factoids/search endpoint.
+	 *
 	 * @hook prc_api_endpoints
 	 * @param  array $endpoints
 	 * @return array $endpoints
 	 */
-	public function register_endpoint($endpoints) {
-		array_push($endpoints, array(
-			'route' 			  => '/factoids/search',
-			'methods'             => 'GET',
-			'callback'            => array( $this, 'rest_callback' ),
-			'args'                => array(
-				'search_term' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						return is_string( $param );
-					},
+	public function register_endpoint( $endpoints ) {
+		array_push(
+			$endpoints,
+			array(
+				'route'               => '/factoids/search',
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'rest_callback' ),
+				'args'                => array(
+					'search_term' => array(
+						'validate_callback' => function ( $param, $request, $key ) {
+							return is_string( $param );
+						},
+					),
 				),
-			),
-			'permission_callback' => function () {
-				return true;
-			},
-		));
+				'permission_callback' => function () {
+					return true;
+				},
+			)
+		);
 		return $endpoints;
 	}
 
-	private function sanitize_search_term($search_term) {
+	private function sanitize_search_term( $search_term ) {
 		// remove quotes from $search_term
-		$search_term = str_replace('"', '', $search_term);
+		$search_term = str_replace( '"', '', $search_term );
 		// remove plus signs from $search_term
-		$search_term = str_replace('+', ' ', $search_term);
+		$search_term = str_replace( '+', ' ', $search_term );
 		// remove non-alphanumeric characters except for spaces from $search_term
-		$search_term = preg_replace('/[^\w\s]/', '', $search_term);
+		$search_term = preg_replace( '/[^\w\s]/', '', $search_term );
 		return strtolower( str_replace( ' ', '-', $search_term ) );
 	}
 
 	/**
 	 * Update the index when a factoid is saved.
+	 *
 	 * @TODO: we should probably integrate BerlinDB at some point and use that to build an index.
 	 * @hook save_post_factoid
 	 *
@@ -175,15 +174,15 @@ class Search_Factoids {
 			return;
 		}
 
-		$terms      = wp_get_post_terms( $post_id, 'search_term', array( 'fields' => 'names' ) );
-		$index      = get_option( 'factoid_index', array() );
+		$terms = wp_get_post_terms( $post_id, 'search_term', array( 'fields' => 'names' ) );
+		$index = get_option( 'factoid_index', array() );
 
 		$temp_index = $index;
 
 		// Remove the post id from the indexed term.
 		if ( 'trash' === $post->post_status ) {
 			foreach ( $terms as $term ) {
-				$term   = $this->sanitize_search_term( $term );
+				$term = $this->sanitize_search_term( $term );
 				if ( isset( $temp_index[ $term ] ) && in_array( $post_id, $temp_index[ $term ] ) ) {
 					// Get the index key for the post id.
 					$key = array_search( $post_id, $temp_index[ $term ] );
@@ -191,13 +190,12 @@ class Search_Factoids {
 					unset( $temp_index[ $term ][ $key ] );
 				}
 			}
-
 		} else {
 			foreach ( $terms as $key => $term ) {
-				$term   = $this->sanitize_search_term( $term );
+				$term = $this->sanitize_search_term( $term );
 				// If the key already exists then just push onto the index key.
 				if ( array_key_exists( $term, $index ) ) {
-					if (  !in_array($post_id, $temp_index[$term]) ) {
+					if ( ! in_array( $post_id, $temp_index[ $term ] ) ) {
 						array_push( $temp_index[ $term ], $post_id );
 					}
 				} else {
@@ -249,13 +247,13 @@ class Search_Factoids {
 		return $response;
 	}
 
-	public function render_factoid_callback($attributes, $content, $block) {
+	public function render_factoid_callback( $attributes, $content, $block ) {
 		if ( is_search() ) {
-			$search_term = get_search_query(false);
+			$search_term = get_search_query( false );
 			$post_ids    = $this->get_index( $search_term );
 
 			if ( false !== $post_ids ) {
-				foreach( $post_ids as $key => $post_id ) {
+				foreach ( $post_ids as $key => $post_id ) {
 					$factoid_post = get_post( $post_id );
 					return apply_filters( 'the_content', $factoid_post->post_content );
 				}
@@ -265,12 +263,15 @@ class Search_Factoids {
 
 	/**
 	 * Initializes the factoid block
+	 *
 	 * @hook init
 	 */
 	public function block_init() {
-		register_block_type( __DIR__ . '/build', array(
-			'render_callback' => array( $this, 'render_factoid_callback' ),
-		) );
+		register_block_type(
+			__DIR__ . '/build',
+			array(
+				'render_callback' => array( $this, 'render_factoid_callback' ),
+			)
+		);
 	}
-
 }

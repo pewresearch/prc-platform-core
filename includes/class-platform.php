@@ -152,6 +152,8 @@ class Platform_Bootstrap {
 		$this->include( 'rest-api/class-rest-api.php' );
 		$this->include( 'rss/class-rss.php' );
 		$this->include( 'schema-meta/class-schema-meta.php' );
+		$this->include( 'scripts/class-scripts.php' );
+		$this->include( 'script-modules/class-script-modules.php' );
 		$this->include( 'search/class-search.php' );
 		$this->include( 'short-reads/class-short-reads.php' );
 		$this->include( 'slack-bot/class-slack-bot.php' );
@@ -161,6 +163,7 @@ class Platform_Bootstrap {
 		$this->include( 'taxonomies/class-taxonomies.php' );
 		$this->include( 'user-permissions/class-user-permissions.php' );
 		$this->include( 'wp-admin/class-wp-admin.php' );
+		$this->include( 'wp-html-sub-processors/index.php' );
 		$this->include( 'upgrades/class-upgrades.php' );
 
 		// Initialize the loader.
@@ -178,7 +181,7 @@ class Platform_Bootstrap {
 		new Courses( $this->get_version(), $this->get_loader() );
 		new Collections( $this->get_version(), $this->get_loader() );
 		new Datasets( $this->get_version(), $this->get_loader() );
-		new Embeds( $this->get_version(), $this->get_loader() );
+		new Embeds( $this->get_loader() );
 		new Events( $this->get_version(), $this->get_loader() );
 		new Facets( $this->get_version(), $this->get_loader() );
 		new Fact_Sheets( $this->get_version(), $this->get_loader() );
@@ -203,23 +206,25 @@ class Platform_Bootstrap {
 		);
 		new Newrelic( $this->get_version(), $this->get_loader() );
 		new Newsletter( $this->get_version(), $this->get_loader() );
-		new Permalink_Rewrites( $this->version, $this->get_loader() );
+		new Permalink_Rewrites( $this->get_loader() );
 		new Post_Publish_Pipeline( $this->get_loader() );
-		new Post_Report_Package( $this->get_version(), $this->get_loader() );
+		new Post_Report_Package( $this->get_loader() );
 		new Post_Visibility( $this->get_version(), $this->get_loader() );
 		new Press_Releases( $this->get_version(), $this->get_loader() );
 		new Related_Posts( $this->get_version(), $this->get_loader() );
 		new Rest_API( $this->get_version(), $this->get_loader() );
-		new RSS_Feeds( $this->get_version(), $this->get_loader() );
+		new RSS_Feeds( $this->get_loader() );
 		new Schema_Meta( $this->get_version(), $this->get_loader() );
+		new Scripts( $this->get_loader() );
+		new Script_Modules( $this->get_loader() );
 		new Search( $this->get_version(), $this->get_loader() );
-		new Short_Reads( $this->get_version(), $this->get_loader() );
+		new Short_Reads( $this->get_loader() );
 		new Slack_Bot( $this->get_version(), $this->get_loader() );
-		new Social( $this->get_version(), $this->get_loader() );
+		new Social( $this->get_loader() );
 		new Staff_Bylines( $this->get_version(), $this->get_loader() );
-		new Taxonomies( $this->get_version(), $this->get_loader() );
+		new Taxonomies( $this->get_loader() );
 		new User_Permissions( $this->get_version(), $this->get_loader() );
-		new WP_Admin( $this->get_version(), $this->get_loader() );
+		new WP_Admin( $this->get_loader(), $this->get_version() );
 		new Upgrades( $this->get_loader() );
 	}
 

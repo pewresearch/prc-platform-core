@@ -2,28 +2,28 @@
 namespace PRC\Platform;
 
 class Block_Area_Modules {
-	public static $taxonomy = 'block_area';
+	public static $taxonomy  = 'block_area';
 	public static $post_type = 'block_module';
-	public static $handle = 'prc-platform-block-area-modules';
+	public static $handle    = 'prc-platform-block-area-modules';
 	private $version;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
 		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area/block-area.php';
 		require_once plugin_dir_path( __FILE__ ) . '/blocks/block-area-context-provider/block-area-context-provider.php';
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$block_area = new Block_Area();
+			$block_area                  = new Block_Area();
 			$block_area_context_provider = new Block_Area_Context_Provider();
 
 			// Init Block Area Modules
@@ -31,7 +31,6 @@ class Block_Area_Modules {
 			$loader->add_action( 'init', $this, 'register_block_modules' );
 			$loader->add_action( 'ini', $this, 'register_meta' );
 			$loader->add_action( 'rest_api_init', $this, 'register_rest_fields' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 
 			// When saving block_modules update block area context
 			$loader->add_action(
@@ -70,7 +69,7 @@ class Block_Area_Modules {
 
 			// Init Blocks
 			$loader->add_action( 'init', $block_area, 'block_init' );
-			$loader->add_action( 'init', $block_area_context_provider, 'block_init');
+			$loader->add_action( 'init', $block_area_context_provider, 'block_init' );
 		}
 	}
 
@@ -113,7 +112,7 @@ class Block_Area_Modules {
 	}
 
 	public function register_block_modules() {
-		$labels  = array(
+		$labels = array(
 			'name'                  => _x( 'Block Modules', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Module', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Block Modules', 'text_domain' ),
@@ -148,7 +147,7 @@ class Block_Area_Modules {
 			'feeds'      => true,
 		);
 
-		$args    = array(
+		$args = array(
 			'label'               => __( 'Block Module', 'text_domain' ),
 			'description'         => __( 'A block module goes into a block area', 'text_domain' ),
 			'labels'              => $labels,
@@ -158,7 +157,7 @@ class Block_Area_Modules {
 				'excerpt',
 				'author',
 				'custom-fields',
-				'revisions'
+				'revisions',
 			),
 			'taxonomies'          => array( 'category', 'regions-countries', 'block_area', 'collection' ),
 			'hierarchical'        => false,
@@ -166,7 +165,7 @@ class Block_Area_Modules {
 			'show_ui'             => true,
 			'show_in_menu'        => true,
 			'menu_icon'           => 'dashicons-screenoptions',
-			'menu_position'       => 5,
+			'menu_position'       => 60,
 			'show_in_admin_bar'   => true,
 			'show_in_nav_menus'   => true,
 			'show_in_rest'        => true,
@@ -181,11 +180,6 @@ class Block_Area_Modules {
 		register_post_type( self::$post_type, $args );
 	}
 
-	public function enable_gutenberg_ramp($post_types) {
-		array_push( $post_types, self::$post_type );
-		return $post_types;
-	}
-
 	/**
 	 * @hook init
 	 * @return void
@@ -197,9 +191,9 @@ class Block_Area_Modules {
 			array(
 				'show_in_rest'  => true,
 				'single'        => true,
-				'default' 	    => 'public',
+				'default'       => 'public',
 				'type'          => 'array',
-				'auth_callback' => function() {
+				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
 			)
@@ -218,10 +212,10 @@ class Block_Area_Modules {
 			self::$post_type,
 			'_story_item_ids',
 			array(
-				'get_callback'    => function( $object ) {
+				'get_callback'    => function ( $object ) {
 					return get_post_meta( $object['id'], '_story_item_ids', true );
 				},
-				'update_callback' => function( $value, $object ) {
+				'update_callback' => function ( $value, $object ) {
 					return update_post_meta( $object->ID, '_story_item_ids', $value );
 				},
 				'schema'          => array(
@@ -249,13 +243,13 @@ class Block_Area_Modules {
 			if ( null !== $taxonomy_name ) {
 				if ( 'category' === $taxonomy_name ) {
 					$category_name = $taxonomy_term_slug ?? '';
-					$tax_check = $wp_query->is_category($category_name);
+					$tax_check     = $wp_query->is_category( $category_name );
 				} else {
-					$tax_check = $wp_query->is_tax($taxonomy_name);
+					$tax_check = $wp_query->is_tax( $taxonomy_name );
 				}
 			}
-			if ( $wp_query->is_main_query() && true === $tax_check) {
-				$queried_object = $wp_query->get_queried_object();
+			if ( $wp_query->is_main_query() && true === $tax_check ) {
+				$queried_object     = $wp_query->get_queried_object();
 				$taxonomy_term_slug = $queried_object->slug;
 			}
 		}
@@ -264,32 +258,35 @@ class Block_Area_Modules {
 			'relation' => 'AND',
 			array(
 				'taxonomy' => 'block_area',
-				'field' => 'slug',
-				'terms' => array($block_area_slug),
-			)
+				'field'    => 'slug',
+				'terms'    => array( $block_area_slug ),
+			),
 		);
 
 		if ( null !== $taxonomy_term_slug ) {
-			array_push($tax_query, array(
-				'taxonomy' => $taxonomy_name,
-				'field' => 'slug',
-				'terms' => array($taxonomy_term_slug),
-				'include_children' => false, //
-			));
+			array_push(
+				$tax_query,
+				array(
+					'taxonomy'         => $taxonomy_name,
+					'field'            => 'slug',
+					'terms'            => array( $taxonomy_term_slug ),
+					'include_children' => false,
+				)
+			);
 		}
 
 		$block_module_query_args = array(
-			'post_type' => 'block_module',
+			'post_type'      => 'block_module',
 			'posts_per_page' => 1,
-			'fields' => 'ids',
-			'tax_query' => $tax_query,
+			'fields'         => 'ids',
+			'tax_query'      => $tax_query,
 		);
 
 
 
 		if ( false !== $reference_id ) {
-			$block_module_query_args['post__in'] = array($reference_id);
-			unset($block_module_query_args['tax_query']);
+			$block_module_query_args['post__in'] = array( $reference_id );
+			unset( $block_module_query_args['tax_query'] );
 		}
 
 		return $block_module_query_args;
@@ -303,24 +300,24 @@ class Block_Area_Modules {
 	 * @param mixed $blocks
 	 * @return array
 	 */
-	public function collect_story_item_ids($blocks) {
-		$story_item_post_ids = [];
-		$temp_ids = [];
+	public function collect_story_item_ids( $blocks ) {
+		$story_item_post_ids = array();
+		$temp_ids            = array();
 
-		foreach ($blocks as $block) {
-			if ('prc-block/story-item' === $block['blockName'] && isset($block['attrs']['postId'])) {
+		foreach ( $blocks as $block ) {
+			if ( 'prc-block/story-item' === $block['blockName'] && isset( $block['attrs']['postId'] ) ) {
 				$story_item_post_ids[] = $block['attrs']['postId'];
 			}
-			if (isset($block['innerBlocks'])) {
-				$temp_ids[] = $this->collect_story_item_ids($block['innerBlocks']);
+			if ( isset( $block['innerBlocks'] ) ) {
+				$temp_ids[] = $this->collect_story_item_ids( $block['innerBlocks'] );
 			}
 		}
 
-		foreach ($temp_ids as $ids) {
-			$story_item_post_ids = array_merge($story_item_post_ids, $ids);
+		foreach ( $temp_ids as $ids ) {
+			$story_item_post_ids = array_merge( $story_item_post_ids, $ids );
 		}
 
-		return array_values($story_item_post_ids);
+		return array_values( $story_item_post_ids );
 	}
 
 	/**
@@ -329,14 +326,14 @@ class Block_Area_Modules {
 	 * @param mixed $has_blocks
 	 * @return void
 	 */
-	public function on_block_module_update_store_story_item_ids($post){
+	public function on_block_module_update_store_story_item_ids( $post ) {
 		if ( self::$post_type !== $post->post_type ) {
 			return;
 		}
-		$content = $post->post_content;
-		$block_module_blocks = parse_blocks($content);
+		$content             = $post->post_content;
+		$block_module_blocks = parse_blocks( $content );
 
-		$story_item_ids = $this->collect_story_item_ids($block_module_blocks);
+		$story_item_ids = $this->collect_story_item_ids( $block_module_blocks );
 
 		update_post_meta(
 			$post->ID,
@@ -344,5 +341,4 @@ class Block_Area_Modules {
 			$story_item_ids,
 		);
 	}
-
 }

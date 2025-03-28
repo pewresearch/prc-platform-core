@@ -63,7 +63,7 @@ class Datasets {
 		'capability_type'    => 'post',
 		'has_archive'        => true,
 		'hierarchical'       => false,
-		'menu_position'      => 30,
+		'menu_position'      => 10,
 		'menu_icon'          => 'dashicons-download',
 		'supports'           => array( 'title', 'editor', 'excerpt', 'revisions', 'custom-fields' ),
 	);
@@ -140,7 +140,6 @@ class Datasets {
 			// Establish a bi-directional relationship between the "dataset" post type and the "datasets" taxonomy.
 			$loader->add_action( 'init', $this, 'register_term_data_store' );
 			$loader->add_action( 'init', $this, 'block_init' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_panel' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_dataset_endpoints' );
 			$loader->add_filter( 'prc_platform_rewrite_rules', $this, 'archive_rewrites' );
@@ -168,18 +167,6 @@ class Datasets {
 		register_taxonomy( self::$taxonomy_object_name, self::$enabled_post_types, self::$taxonomy_object_args );
 		$relationship = \TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 		$this->register_dataset_fields();
-	}
-
-	/**
-	 * Enable Gutenberg for the dataset.
-	 *
-	 * @hook prc_load_gutenberg
-	 * @param  array $post_types [description]
-	 * @return array Post types that should have Gutenberg enabled.
-	 */
-	public function enable_gutenberg_ramp( $post_types ) {
-		array_push( $post_types, self::$post_object_name );
-		return $post_types;
 	}
 
 	/**

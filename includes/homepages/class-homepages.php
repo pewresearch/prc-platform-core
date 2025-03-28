@@ -1,5 +1,6 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 use WP_Query;
 use WP_Post;
@@ -20,20 +21,20 @@ class Homepages {
 
 	/**
 	 * Initialize the class and set its properties.
+	 *
 	 * @param mixed $version
 	 * @param mixed $loader
 	 * @return void
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
-		if (null !== $loader) {
+	public function init( $loader = null ) {
+		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register_type' );
 			$loader->add_action( 'init', $this, 'block_init' );
-			$loader->add_filter( 'prc_load_gutenberg', $this, 'enable_gutenberg_ramp' );
 			$loader->add_action( 'admin_bar_menu', $this, 'add_front_page_quick_edit', 999 );
 			$loader->add_filter( 'admin_menu_order', $this, 'admin_menu_order', 999 );
 			$loader->add_filter( 'post_type_link', $this, 'modify_homepage_permalink', 10, 2 );
@@ -41,7 +42,7 @@ class Homepages {
 	}
 
 	public function register_type() {
-		$labels     = array(
+		$labels   = array(
 			'name'                  => _x( 'Homepages', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Homepage', 'Post Type Singular Name', 'text_domain' ),
 			'menu_name'             => __( 'Homepages', 'text_domain' ),
@@ -68,14 +69,14 @@ class Homepages {
 			'items_list_navigation' => __( 'Homepages list navigation', 'text_domain' ),
 			'filter_items_list'     => __( 'Filter Homepage list', 'text_domain' ),
 		);
-		$rewrite    = array(
+		$rewrite  = array(
 			'slug'       => 'homepage',
 			'with_front' => true,
 			'pages'      => false,
 			'feeds'      => false,
 		);
-		$supports   = array( 'title', 'editor', 'revisions', 'custom-fields', 'comments' );
-		$args       = array(
+		$supports = array( 'title', 'editor', 'revisions', 'custom-fields', 'comments' );
+		$args     = array(
 			'label'               => __( 'Homepage', 'text_domain' ),
 			'description'         => __( 'Homepages', 'text_domain' ),
 			'labels'              => $labels,
@@ -84,7 +85,7 @@ class Homepages {
 			'public'              => true,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
-			'menu_position'       => 4,
+			'menu_position'       => 61,
 			'menu_icon'           => 'dashicons-layout',
 			'show_in_admin_bar'   => true,
 			'show_in_nav_menus'   => false,
@@ -96,82 +97,110 @@ class Homepages {
 			'rewrite'             => $rewrite,
 			'capability_type'     => 'post',
 			'template'            => array(
-				array( 'core/group', array(
+				array(
+					'core/group',
+					array(
 						'layout' => array(
-							'type' 		  => 'constrained',
+							'type'        => 'constrained',
 							'contentSize' => '1200px',
-						)
-					), array(
-						array( 'prc-block/grid-controller', array(
-							'dividerColor' => 'gray',
-							'className'    => 'is-pattern__featured-layout',
-						), array(
-							array( 'prc-block/grid-column', array(
-								'gridLayout' => array(
-									'index' 		=> '1',
-									'desktopSpan'   => '3',
-									'tabletSpan'    => '6',
-									'mobileSpan'    => '4',
-								),
-							), array (
-								array( 'prc-block/story-item', array(
-									'imageSize'    => 'A2',
-									'metaTaxonomy' => 'category',
-									'postId'       => 0
-								)),
-								array( 'prc-block/story-item', array(
-									'imageSize'    => 'A2',
-									'metaTaxonomy' => 'category',
-									'postId'       => 0
-								))
-							)),
-							array( 'prc-block/grid-column', array(
-								'gridLayout' => array(
-									'index' 		=> '2',
-									'desktopSpan'   => '6',
-									'tabletSpan'    => '12',
-									'mobileSpan'    => '4',
-								),
-							), array(
-								array( 'prc-block/story-item', array(
-									'imageSize'    => 'A1',
-									'metaTaxonomy' => 'category',
-									'postId'       => 0
-								))
-							)),
-							array( 'prc-block/grid-column', array(
-								'gridLayout' => array(
-									'index' 		=> '3',
-									'desktopSpan'   => '3',
-									'tabletSpan'    => '6',
-									'mobileSpan'    => '4',
-								),
-							), array(
-								array( 'prc-block/story-item', array(
-									'imageSize'    => 'A2',
-									'metaTaxonomy' => 'category',
-									'postId'       => 0
-								)),
-								array( 'prc-block/story-item', array(
-									'imageSize'    => 'A2',
-									'metaTaxonomy' => 'category',
-									'postId'       => 0
-								))
-							)
-
 						),
-						) ),
-					)
+					),
+					array(
+						array(
+							'prc-block/grid-controller',
+							array(
+								'dividerColor' => 'gray',
+								'className'    => 'is-pattern__featured-layout',
+							),
+							array(
+								array(
+									'prc-block/grid-column',
+									array(
+										'gridLayout' => array(
+											'index'       => '1',
+											'desktopSpan' => '3',
+											'tabletSpan'  => '6',
+											'mobileSpan'  => '4',
+										),
+									),
+									array(
+										array(
+											'prc-block/story-item',
+											array(
+												'imageSize' => 'A2',
+												'metaTaxonomy' => 'category',
+												'postId' => 0,
+											),
+										),
+										array(
+											'prc-block/story-item',
+											array(
+												'imageSize' => 'A2',
+												'metaTaxonomy' => 'category',
+												'postId' => 0,
+											),
+										),
+									),
+								),
+								array(
+									'prc-block/grid-column',
+									array(
+										'gridLayout' => array(
+											'index'       => '2',
+											'desktopSpan' => '6',
+											'tabletSpan'  => '12',
+											'mobileSpan'  => '4',
+										),
+									),
+									array(
+										array(
+											'prc-block/story-item',
+											array(
+												'imageSize' => 'A1',
+												'metaTaxonomy' => 'category',
+												'postId' => 0,
+											),
+										),
+									),
+								),
+								array(
+									'prc-block/grid-column',
+									array(
+										'gridLayout' => array(
+											'index'       => '3',
+											'desktopSpan' => '3',
+											'tabletSpan'  => '6',
+											'mobileSpan'  => '4',
+										),
+									),
+									array(
+										array(
+											'prc-block/story-item',
+											array(
+												'imageSize' => 'A2',
+												'metaTaxonomy' => 'category',
+												'postId' => 0,
+											),
+										),
+										array(
+											'prc-block/story-item',
+											array(
+												'imageSize' => 'A2',
+												'metaTaxonomy' => 'category',
+												'postId' => 0,
+											),
+										),
+									),
+
+								),
+							),
+						),
+					),
 				),
 			),
 		);
 
 		register_post_type( self::$post_type, $args );
-	}
-
-	public function enable_gutenberg_ramp($post_types) {
-		array_push($post_types, self::$post_type);
-		return $post_types;
 	}
 
 	/**
@@ -184,13 +213,13 @@ class Homepages {
 			return ''; // Bail early if not the frontpage.
 		}
 		$homepage = false;
-		$args          = array(
-			'posts_per_page'   => 1,
-			'orderby'          => 'date',
-			'order'            => 'DESC',
-			'post_type'        => self::$post_type,
-			'post_status'      => 'publish',
-			'fields'           => 'ids',
+		$args     = array(
+			'posts_per_page' => 1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_type'      => self::$post_type,
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
 		);
 		$homepage = get_posts( $args );
 		if ( ! empty( $homepage ) ) {
@@ -237,9 +266,9 @@ class Homepages {
 	}
 
 	public function register_assets() {
-		$asset_file  = include(  plugin_dir_path( __FILE__ )  . 'build/index.asset.php' );
+		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
-		$script_src  = plugin_dir_url( __FILE__ ) . 'build/index.js';
+		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		// $style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
 
 
@@ -271,44 +300,44 @@ class Homepages {
 	 * Modifies the homepage permalink to point to the bylines term archive permalink.
 	 *
 	 * @hook post_link
-	 * @param string $url
+	 * @param string  $url
 	 * @param WP_Post $post
 	 * @return string
 	 */
 	public function modify_homepage_permalink( $url, $post ) {
 		// if ( 'publish' !== $post->post_status ) {
-		// 	return $url;
+		// return $url;
 		// }
 		// if ( self::$post_type === $post->post_type ) {
-		// 	return home_url();
+		// return home_url();
 		// }
 		return $url;
 	}
 
-	public function render_homepage_block($attributes, $content, $block) {
+	public function render_homepage_block( $attributes, $content, $block ) {
 		$homepage = false;
-		$args          = array(
-			'posts_per_page'   => 1,
-			'orderby'          => 'date',
-			'order'            => 'DESC',
-			'post_type'        => self::$post_type,
-			'post_status'      => 'publish',
-			'fields'           => 'ids',
+		$args     = array(
+			'posts_per_page' => 1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_type'      => self::$post_type,
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
 		);
-		$homepage = new WP_Query($args);
+		$homepage = new WP_Query( $args );
 
 		if ( ! $homepage->have_posts() ) {
 			return ''; // Bail early if no homepage.
 		}
 
-		if ( ! $homepage->have_posts() && is_user_logged_in()) {
-			$content ='<div class="warning">No homepage found. <a href="'. esc_url( admin_url( 'post-new.php?post_type=homepage' ) ) .'">Create a new homepage.</a></div>';
+		if ( ! $homepage->have_posts() && is_user_logged_in() ) {
+			$content = '<div class="warning">No homepage found. <a href="' . esc_url( admin_url( 'post-new.php?post_type=homepage' ) ) . '">Create a new homepage.</a></div>';
 		}
 
 		if ( $homepage->have_posts() ) {
-			$homepage_id = $homepage->posts[0];
-			$homepage_module = get_post($homepage_id);
-			$content = $homepage_module instanceof WP_Post ? apply_filters(
+			$homepage_id     = $homepage->posts[0];
+			$homepage_module = get_post( $homepage_id );
+			$content         = $homepage_module instanceof WP_Post ? apply_filters(
 				'the_content',
 				$homepage_module->post_content,
 			) : $content;
@@ -322,24 +351,30 @@ class Homepages {
 
 	/**
 	 * Initializes the homepage block
+	 *
 	 * @hook init
 	 */
 	public function block_init() {
-		register_block_type( __DIR__ . '/build', array(
-			'render_callback' => array( $this, 'render_homepage_block' ),
-		) );
+		register_block_type(
+			__DIR__ . '/build',
+			array(
+				'render_callback' => array( $this, 'render_homepage_block' ),
+			)
+		);
 	}
 }
 
 function get_latest_homepage_id() {
-	$query = new WP_Query( array(
-		'post_type' => Homepages::$post_type,
-		'posts_per_page' => 1,
-		'orderby' => 'date',
-		'order' => 'DESC',
-		'post_status' => 'publish',
-		'fields' => 'ids',
-	) );
+	$query = new WP_Query(
+		array(
+			'post_type'      => Homepages::$post_type,
+			'posts_per_page' => 1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+		)
+	);
 
 	if ( ! $query->have_posts() ) {
 		return false;

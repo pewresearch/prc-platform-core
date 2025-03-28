@@ -1,0 +1,20 @@
+{
+    "plugins": [],
+    "recurseDepth": 10,
+	"opts": {
+		"destination": ".docs"
+    },
+    "source": {
+		"include": ["/"],
+		"includePattern": ".+\\.js(doc|x)?$"
+    },
+    "sourceType": "module",
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": true
+    }
+}

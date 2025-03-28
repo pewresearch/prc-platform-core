@@ -1,7 +1,9 @@
 <?php
 namespace PRC\Platform;
+
 /**
  * Handle base level configuration of Gutenberg. For block-editor or site-editor specific functionality and configuration, see their respective classes.
+ *
  * @package
  */
 class Gutenberg {
@@ -33,18 +35,22 @@ class Gutenberg {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $version, $loader ) {
 		$this->version = $version;
-		$this->init($loader);
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
-		if ( null !== $loader ){
-			$loader->add_filter( 'use_block_editor_for_post', $this, 'load_gutenberg', 15, 2 );
-			// $loader->add_action( 'init', $this, 'add_revisions_to_reusable_blocks' );
+	/**
+	 * Initialize the module.
+	 *
+	 * @param mixed $loader The loader.
+	 */
+	public function init( $loader = null ) {
+		if ( null !== $loader ) {
+			$loader->add_filter( 'use_block_editor_for_post', $this, 'load_gutenberg' );
 			$loader->add_action( 'menu_order', $this, 'group_admin_menus_together', 101 );
 			// Remove the "Block Directory" from the block inserter.
 			remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets' );
@@ -61,32 +67,21 @@ class Gutenberg {
 	}
 
 	/**
-	 * Initialize the correct core post types and third party post types for Gutenberg.
-	 * Also provides a filter for internal use to enable Gutenberg for other post types; 'prc_load_gutenberg'.
+	 * Enable Gutenberg for ALL post types.
 	 *
 	 * @hook use_block_editor_for_post
 	 *
-	 * @param mixed $can_edit
-	 * @param mixed $post
+	 * @param bool $use_block_editor Whether to use the block editor.
 	 * @return bool
 	 */
-	public function load_gutenberg( $use_block_editor, $post ) {
-		$enable_for_post_types = array_merge( self::$internal_post_types, self::$third_party_post_types );
-		$enable_for_post_types = apply_filters( 'prc_load_gutenberg', $enable_for_post_types );
-		return in_array( $post->post_type, $enable_for_post_types );
-	}
-
-	/**
-	 * Enable revisions for reusable blocks.
-	 * @hook init
-	 * @TODO: Look into this, I'm pretty sure a recent Gutenberg release defaulted to this.
-	 */
-	public function add_revisions_to_reusable_blocks() {
-		add_post_type_support( 'wp_block', 'revisions' );
+	public function load_gutenberg( $use_block_editor ) {
+		$use_block_editor = true;
+		return $use_block_editor;
 	}
 
 	/**
 	 * Group the admin menus for Gutenberg together.
+	 *
 	 * @hook menu_order
 	 * @param array $menu_order
 	 * @return array
@@ -121,7 +116,7 @@ class Gutenberg {
 		if ( $registered_patterns ) {
 			foreach ( $registered_patterns as $pattern_properties ) {
 				// if the registered pattern's name does not include `prc-` in the namespace then unregister it.
-				if ( strpos($pattern_properties['name'], 'prc-') === false ) {
+				if ( strpos( $pattern_properties['name'], 'prc-' ) === false ) {
 					unregister_block_pattern( $pattern_properties['name'] );
 				}
 			}
