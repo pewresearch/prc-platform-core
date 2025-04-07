@@ -1,13 +1,18 @@
 <?php
+/**
+ * WP Admin management class.
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
-use WP_Query;
 use WP_Term;
 
-// For admin notices see https://github.com/Automattic/vip-go-mu-plugins/tree/develop/admin-notice
-// AND https://github.com/Automattic/vip-go-mu-plugins/blob/develop/async-publish-actions.php
-
+/**
+ * WP Admin management class.
+ */
 class WP_Admin {
 	/**
 	 * The version of the platform, used to output in the admin footer.
@@ -35,6 +40,7 @@ class WP_Admin {
 	 *
 	 * @since    1.0.0
 	 * @param      string $loader The loader.
+	 * @param      string $version The version of the platform.
 	 */
 	public function __construct( $loader, $version ) {
 		$this->version = $version;
@@ -82,18 +88,28 @@ class WP_Admin {
 	}
 
 	/**
-	 * Change the default admin color scheme to modern and don't allow users to change it.
+	 * Depending on the environment, set the default admin color scheme to modern or light.
+	 * The user can not change the color scheme, we enforce this for a consistent experience and
+	 * make it easier to provide support.
 	 *
-	 * @param mixed $result
+	 * @param mixed $result The result.
 	 * @return string
 	 */
 	public function default_admin_color_scheme( $result ) {
-		$result = 'modern';
+		if ( 'production' === wp_get_environment_type() ) {
+			$result = 'modern';
+		} else {
+			$result = 'light';
+		}
 		return $result;
 	}
 
 	/**
+	 * Show all post types in the dashboard.
+	 *
 	 * @hook dashboard_recent_posts_query_args
+	 * @param array $query_args The query arguments.
+	 * @return array Modified query arguments.
 	 */
 	public function show_all_post_types_in_dashboard( array $query_args ) {
 		$post_types = array( 'post', 'short-read', 'fact-sheet', 'feature', 'quiz' );
@@ -107,14 +123,14 @@ class WP_Admin {
 
 	/**
 	 * Change the login logo to the Pew Research Center logo.
-
-	 * @return <style> tag with the new logo
+	 *
+	 * @hook login_enqueue_scripts
 	 */
 	public function login_logo() {
 		?>
 		<style type="text/css">
 			#login h1 a, .login h1 a {
-				background-image: url(<?php echo get_bloginfo( 'url' ); ?>/wp-content/images/logo-login.svg);
+				background-image: url(<?php echo esc_url( get_bloginfo( 'url' ) ); ?>/wp-content/images/logo-login.svg);
 				height: 48px;
 				width: 320px;
 				background-size: 320px 48px;
@@ -125,13 +141,19 @@ class WP_Admin {
 		<?php
 	}
 
+	/**
+	 * View on different environments tool.
+	 *
+	 * @return array
+	 */
 	public function view_on_diff_env_tool() {
-		$domain = \PRC\Platform\get_domain();
-		// get the current permalink
+		$domain    = \PRC\Platform\get_domain();
 		$permalink = get_permalink();
-		// remove the domain including the preceeding https:// from the permalink
+		// Remove the domain including the preceeding https:// from the permalink.
 		$permalink = preg_replace( '/https:\/\/[^\/]+\//', '', $permalink );
+		// If the permalink contains /pewresearch-org/ then remove it.
 		$permalink = str_replace( 'pewresearch-org/', '', $permalink );
+		// Remove the domain from the permalink.
 		$permalink = str_replace( $domain, '', $permalink );
 		$urls      = array(
 			'alpha'      => array(
@@ -166,6 +188,11 @@ class WP_Admin {
 		return $urls;
 	}
 
+	/**
+	 * Manage the Tools menu.
+	 *
+	 * @hook wp_before_admin_bar_render
+	 */
 	public function manage_tools_menu() {
 		global $wp_admin_bar;
 
@@ -210,7 +237,6 @@ class WP_Admin {
 			$wp_admin_bar->remove_node( 'duplicate-post' );
 		}
 
-		// Create the new Attachment Report tool
 		$attachments_tool = array(
 			'id'     => 'attachments-report',
 			'title'  => 'Attachments Report',
@@ -221,7 +247,6 @@ class WP_Admin {
 			),
 		);
 
-		// Create the new Print Beta tool, but only for 'post' types...
 		if ( 'post' === get_post_type() ) {
 			$print_tool = array(
 				'id'     => 'print-engine-beta',
@@ -279,6 +304,11 @@ class WP_Admin {
 		}
 	}
 
+	/**
+	 * Manage the Edit menu.
+	 *
+	 * @hook wp_before_admin_bar_render
+	 */
 	public function manage_edit_menu() {
 		global $wp_admin_bar, $wp_query;
 		$edit_id = 'edit';
@@ -351,8 +381,7 @@ class WP_Admin {
 
 		$site_editor = $wp_admin_bar->get_node( 'site-editor' );
 		if ( $site_editor ) {
-			$site_editor->title = 'Edit Template';
-			// now remove the existing node and then add it back again with the updated title
+			$site_editor->title  = 'Edit Template';
 			$site_editor->parent = $edit_node_name;
 			$wp_admin_bar->remove_node( 'site-editor' );
 			$site_editor = apply_filters( 'prc_platform_admin_bar/site_editor', $site_editor, $wp_query );
@@ -360,29 +389,32 @@ class WP_Admin {
 		}
 	}
 
+	/**
+	 * Manage the Admin Bar.
+	 *
+	 * @hook wp_before_admin_bar_render
+	 */
 	public function manage_admin_bar() {
 		global $wp_admin_bar;
 		/**
 		 * Other/Misc
 		 */
 
-		// Get rid of the "Howdy" in the Profile link
+		// Remove the "Howdy" in the Profile link.
 		$my_account = $wp_admin_bar->get_node( 'my-account' );
 		if ( $my_account ) {
-			// I actualy just want to remove the "Howdy" part of the greeting, make it just the username.
 			$my_account->title = str_replace( 'Howdy, ', '', $my_account->title );
-			// now remove the existing node and then add it back again with the updated title
 			$wp_admin_bar->remove_node( 'my-account' );
 			$wp_admin_bar->add_node( $my_account );
 		}
 
-		// Remove Search
+		// Remove Search.
 		$search = $wp_admin_bar->get_node( 'search' );
 		if ( $search ) {
 			$wp_admin_bar->remove_node( 'search' );
 		}
 
-		// Remove fwp cache, comments
+		// Remove fwp cache, comments, notes, vip search dev tools, customize.
 		$wp_admin_bar->remove_menu( 'fwp-cache' );
 		$wp_admin_bar->remove_menu( 'comments' );
 		$wp_admin_bar->remove_menu( 'notes' );
@@ -392,12 +424,16 @@ class WP_Admin {
 		$wp_admin_bar->remove_menu( 'customize' );
 	}
 
+	/**
+	 * Register the assets.
+	 *
+	 * @return WP_Error|void
+	 */
 	public function register_assets() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
 		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
 		$style_src  = plugin_dir_url( __FILE__ ) . 'build/style-index.css';
-
 
 		$script = wp_register_script(
 			$asset_slug,
@@ -421,6 +457,11 @@ class WP_Admin {
 		return true;
 	}
 
+	/**
+	 * Enqueue the assets.
+	 *
+	 * @hook admin_enqueue_scripts
+	 */
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
@@ -433,13 +474,11 @@ class WP_Admin {
 	 * Sometimes you need a quick foolproof way to get the current post type in the admin screen. This is it.
 	 * It's not fancy, it's not clever, but it works.
 	 *
-	 * @return void
+	 * @hook admin_footer
 	 */
 	public function admin_footer() {
-		// get current post type in admin screen
 		global $post_type;
 		if ( isset( $post_type ) && is_string( $post_type ) ) {
-			// add the post type to the javascript global object window.prcEditorPostType
 			echo wp_sprintf( '<script>window.prcEditorPostType = "%s";</script>', esc_js( $post_type ) );
 		}
 	}
@@ -448,6 +487,7 @@ class WP_Admin {
 	 * Disables the cookie banner for logged in users and on non-production environments.
 	 *
 	 * @hook disable_cookiepro
+	 * @param bool $disable Whether to disable the cookie banner.
 	 * @return false|void
 	 */
 	public function disable_cookie_banner_conditions( $disable = false ) {
@@ -455,18 +495,17 @@ class WP_Admin {
 		if ( is_user_logged_in() || 'production' !== $env || is_iframe() ) {
 			return true;
 		}
-		// Check if is iframe and if so disable.
 		return $disable;
 	}
 
 	/**
+	 * Remove the Links menu.
+	 *
 	 * @hook admin_menu
-	 * @param mixed $menu
-	 * @return void
 	 */
 	public function remove_links_menu() {
 		global $menu;
-		unset( $menu[15] ); // 15 = Links menu
+		unset( $menu[15] ); // 15 = Links menu.
 	}
 
 	/**
@@ -483,10 +522,12 @@ class WP_Admin {
 	}
 
 	/**
+	 * Remove the multisite enhancements plugin sites label.
+	 *
 	 * @hook multisite_enhancements_status_label
-	 * @param mixed $blogname
-	 * @param mixed $blog
-	 * @return void
+	 * @param mixed $blogname The blog name.
+	 * @param mixed $blog The blog object.
+	 * @return string The blog name.
 	 */
 	public function multisite_enhancement_plugin_sites_label( $blogname, $blog ) {
 		return $blog->blogname;
@@ -496,7 +537,6 @@ class WP_Admin {
 	 * This is a serious place, no emojis here.
 	 *
 	 * @hook init
-	 * @return void
 	 */
 	public function disable_emojis() {
 		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
@@ -509,8 +549,10 @@ class WP_Admin {
 	}
 
 	/**
+	 * Output the platform version in the admin footer.
+	 *
 	 * @hook update_footer
-	 * @param mixed $content
+	 * @param mixed $content The content of the footer.
 	 * @return string
 	 */
 	public function output_platform_version_in_wp_admin( $content ) {
@@ -535,8 +577,8 @@ class WP_Admin {
 	 * Removes the "Overview" text from the beginning of excerpts.
 	 *
 	 * @hook the_excerpt
-	 * @param mixed $excerpt
-	 * @return string|string[]|null
+	 * @param mixed $excerpt The excerpt.
+	 * @return string|string[]|null The modified excerpt.
 	 */
 	public function remove_overview_from_excerpts( $excerpt ) {
 		$excerpt = preg_replace( '/^<p>(\s+|&nbsp;\s+)?Overview\s/', '<p>', $excerpt );

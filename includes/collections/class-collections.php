@@ -1,8 +1,18 @@
 <?php
+/**
+ * Collections class.
+ *
+ * @package PRC\Platform
+ */
 namespace PRC\Platform;
 
 use WP_Error;
 
+/**
+ * Collections class.
+ *
+ * @package PRC\Platform
+ */
 class Collections {
 	/**
 	 * Editor UI handle for the plugin panel.
@@ -10,24 +20,28 @@ class Collections {
 	 * @var string
 	 */
 	public static $handle = 'prc-collections-panel';
+
 	/**
 	 * Post types that should be associated with collections.
 	 *
 	 * @var array
 	 */
 	protected static $post_types = array( 'post', 'page', 'fact-sheet', 'short-read', 'feature', 'decoded', 'block_module', 'collections' );
+
 	/**
 	 * Post object name for collections.
 	 *
 	 * @var string
 	 */
 	public static $post_object_name = 'collections';
+
 	/**
 	 * Taxonomy object name for collections.
 	 *
 	 * @var string
 	 */
 	public static $taxonomy_object_name = 'collection';
+
 	/**
 	 * Meta key for the kicker bug.
 	 *
@@ -37,6 +51,8 @@ class Collections {
 
 	/**
 	 * Settings for the collection post type.
+	 *
+	 * @var array
 	 */
 	public static $post_object_args = array(
 		'labels'             => array(
@@ -140,7 +156,7 @@ class Collections {
 	public function register_term_data_store() {
 		register_post_type( self::$post_object_name, self::$post_object_args );
 		register_taxonomy( self::$taxonomy_object_name, self::$post_types, self::$taxonomy_object_args );
-		$relationship = \TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
+		\TDS\add_relationship( self::$post_object_name, self::$taxonomy_object_name );
 		$this->register_kicker_meta();
 	}
 
@@ -155,10 +171,10 @@ class Collections {
 	public function kicker_template_areas( array $areas ) {
 		$areas[] = array(
 			'area'        => 'kicker',
-			'area_tag'    => 'div',
+			'label'       => 'Kicker',
 			'description' => 'A "kicker" is a small label and/or icon that denotes a post is part of a collection.',
 			'icon'        => 'layout',
-			'label'       => 'Kicker',
+			'area_tag'    => 'div',
 		);
 		return $areas;
 	}
@@ -183,6 +199,8 @@ class Collections {
 
 	/**
 	 * Helper function to get the current post type in the WordPress admin.
+	 *
+	 * @return string|null The current post type.
 	 */
 	public function get_wp_admin_current_post_type() {
 		if ( ! is_admin() ) {
@@ -205,6 +223,8 @@ class Collections {
 
 	/**
 	 * Register the plugin panel assets.
+	 *
+	 * @return bool|WP_Error True if the assets are registered, false if not.
 	 */
 	public function register_assets() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
@@ -245,6 +265,8 @@ class Collections {
 	 * collection term.
 	 *
 	 * @hook pre_get_posts
+	 *
+	 * @param WP_Query $query The query object.
 	 */
 	public function filter_posts_on_collection_pages( $query ) {
 		if ( is_admin() ) {
@@ -256,7 +278,6 @@ class Collections {
 		}
 		// Basically, on collection pages we want to get the term id and assign a tax_query to the block query so that we're filtering by only the posts in that collection.
 		$queried_object = get_queried_object();
-		// Check that the queried object is a post_type of self::$post_object_name
 		if ( ! is_a( $queried_object, 'WP_Post' ) || $queried_object->post_type !== self::$post_object_name ) {
 			return;
 		}
@@ -264,7 +285,6 @@ class Collections {
 		if ( ! $collection_term ) {
 			return;
 		}
-		// Exclude the queried_object id
 		$query->set( 'post__not_in', array( $queried_object->ID ) );
 		$query->set(
 			'tax_query',

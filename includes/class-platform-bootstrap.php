@@ -1,15 +1,17 @@
 <?php
-namespace PRC\Platform;
-
 /**
+ * PRC Platform Core Bootstrap
+ *
+ * @package    PRC_Platform
+ * @subpackage PRC_Platform/includes
+ *
  * Loads the plugin's dependencies.
  *
  * @link       https://github.com/pewresearch/prc-platform-core
  * @since      1.0.0
- *
- * @package    PRC_Platform
- * @subpackage PRC_Platform/includes
  */
+
+namespace PRC\Platform;
 
 use WP_Error;
 
@@ -81,7 +83,7 @@ class Platform_Bootstrap {
 	/**
 	 * Include a file from the plugin's includes directory.
 	 *
-	 * @param mixed $file_path
+	 * @param string $file_path The path to the file to include.
 	 * @return WP_Error|void
 	 */
 	public function include( $file_path ) {
@@ -170,6 +172,12 @@ class Platform_Bootstrap {
 		$this->loader = new Loader();
 	}
 
+	/**
+	 * Register the modules.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
 	private function register_modules() {
 		new Action_Scheduler( $this->get_version(), $this->get_loader() );
 		new Apple_News( $this->get_version(), $this->get_loader() );
@@ -190,7 +198,7 @@ class Platform_Bootstrap {
 		new Gutenberg( $this->get_version(), $this->get_loader() );
 		new Help_Center( $this->get_version(), $this->get_loader() );
 		new Homepages( $this->get_version(), $this->get_loader() );
-		new Housekeeping( $this->get_version(), $this->get_loader() );
+		new Housekeeping( $this->get_loader() );
 		new Icon_Loader( $this->get_version(), $this->get_loader() );
 		new Features( $this->get_version(), $this->get_loader() );
 		new Firebase( $this->get_loader() );
@@ -219,11 +227,11 @@ class Platform_Bootstrap {
 		new Script_Modules( $this->get_loader() );
 		new Search( $this->get_version(), $this->get_loader() );
 		new Short_Reads( $this->get_loader() );
-		new Slack_Bot( $this->get_version(), $this->get_loader() );
+		new Slack_Bot( $this->get_loader() );
 		new Social( $this->get_loader() );
 		new Staff_Bylines( $this->get_version(), $this->get_loader() );
 		new Taxonomies( $this->get_loader() );
-		new User_Permissions( $this->get_version(), $this->get_loader() );
+		new User_Permissions( $this->get_loader() );
 		new WP_Admin( $this->get_loader(), $this->get_version() );
 		new Upgrades( $this->get_loader() );
 	}

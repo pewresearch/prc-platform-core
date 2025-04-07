@@ -1,12 +1,11 @@
 {
 	"name": "pewresearch/prc-platform-core",
-	"description": "Required PHP dependencies for the Pew Research Center's digital experience platform.",
+	"description": "Core functionality and integrations for the Pew Research Center's digital publishing platform, providing essential content management, distribution, and infrastructure features for a block-first publishing workflow.",
 	"license": "GPL-2.0-or-later",
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0"
     },
     "require": {
-		"berlindb/core": "@dev",
 		"drewm/mailchimp-api": "^2.5",
 		"kreait/firebase-php": "^7.0",
 		"landrok/language-detector": "^1.3",

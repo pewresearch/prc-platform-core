@@ -1,12 +1,21 @@
 <?php
+/**
+ * Permalink Rewrites class for managing permalink structure and query variables.
+ *
+ * @package PRC\Platform
+ * @since   1.0.0
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
 use WP_REST_Request;
 
 /**
- * @NOTE: This class is used to filter and structure rewrite rules, tags, and query vars for the PRC Platform.
- * You will find most of the rewrite rules in taxonomies/research-teams, as this taxonomy drives most of the custom permalink structure for objects on PRC-Platform.
+ * Permalink Rewrites class for managing permalink structure and query variables.
+ *
+ * @package PRC\Platform
+ * @since   1.0.0
  */
 class Permalink_Rewrites {
 	/**
@@ -20,13 +29,35 @@ class Permalink_Rewrites {
 		require_once plugin_dir_path( __FILE__ ) . 'class-url-helper.php';
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
+			$loader->add_filter( 'wp_speculation_rules_configuration', $this, 'manage_speculative_loading' );
 			$loader->add_action( 'init', $this, 'register_rewrites' );
 			$loader->add_action( 'init', $this, 'register_tags' );
 			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
 			$loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
 		}
+	}
+
+	/**
+	 * Manage speculative loading configuration.
+	 *
+	 * @hook wp_speculation_rules_configuration
+	 *
+	 * @param array $config The configuration array.
+	 * @return array The modified configuration array.
+	 */
+	public function manage_speculative_loading( $config ) {
+		if ( is_array( $config ) ) {
+			$config['eagerness'] = 'moderate';
+		}
+		return $config;
 	}
 
 	/**
@@ -50,7 +81,6 @@ class Permalink_Rewrites {
 	 *
 	 * @hook init
 	 * @uses prc_platform_rewrite_tags
-	 * @return void
 	 */
 	public function register_tags() {
 		if ( 1 === get_current_blog_id() ) {
@@ -67,8 +97,9 @@ class Permalink_Rewrites {
 	 *
 	 * @hook query_vars
 	 * @uses prc_platform_rewrite_query_vars
-	 * @param array $query_vars
-	 * @return array $query_vars
+	 *
+	 * @param array $query_vars The query vars.
+	 * @return array $query_vars The modified query vars.
 	 */
 	public function register_query_vars( $query_vars ) {
 		if ( 1 === get_current_blog_id() ) {
@@ -84,10 +115,10 @@ class Permalink_Rewrites {
 	/**
 	 * Gets the post id and post type for a url restfully.
 	 *
-	 * @param WP_REST_Request $request
-	 * @return WP_Error|array
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_Error|array The post id and post type.
 	 */
-	public function restfully_get_postid_by_url( \WP_REST_Request $request ) {
+	public function restfully_get_postid_by_url( WP_REST_Request $request ) {
 		$url = $request->get_param( 'url' );
 		if ( empty( $url ) ) {
 			return new WP_Error( 'no-url-provided', __( 'No url provided', 'my_textdomain' ), array( 'status' => 400 ) );
@@ -106,8 +137,9 @@ class Permalink_Rewrites {
 	 * Registers the endpoint for getting a post id by url.
 	 *
 	 * @hook prc_api_endpoints
-	 * @param array $endpoints
-	 * @return array
+	 *
+	 * @param array $endpoints The endpoints.
+	 * @return array The modified endpoints.
 	 */
 	public function register_endpoint( $endpoints ) {
 		array_push(
@@ -120,7 +152,7 @@ class Permalink_Rewrites {
 					'url' => array(
 						'validate_callback' => function ( $param, $request, $key ) {
 							$url = filter_var( $param, FILTER_VALIDATE_URL );
-							if ( $url === false ) {
+							if ( false === $url ) {
 								return false;
 							}
 							return true;

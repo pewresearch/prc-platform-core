@@ -32,18 +32,19 @@ class Schema_Meta {
 
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
+			add_filter( 'yoast_seo_development_mode', '__return_true' );
 			$loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
 			$loader->add_action( 'wp_head', $this, 'force_search_engines_to_use_meta' );
-			// $loader->add_filter( 'wpseo_title', $this, 'yoast_seo_legacy_title_fix', 10, 1 ); // I don't think we need this anymore.
+
 			$loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
 			$loader->add_filter( 'wpseo_opengraph_image', $this, 'get_chart_image', 100, 1 );
 			$loader->add_filter( 'wpseo_metadesc', $this, 'get_chart_description', 100, 1 );
 			$loader->add_filter( 'wpseo_title', $this, 'get_chart_title', 100, 1 );
 
-			$loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
-			$loader->add_filter( 'wp_parsely_metadata', $this, 'disable_parsely_json_ld', 10, 3 );
-
 			$loader->add_filter( 'wpvip_parsely_load_mu', $this, 'enable_parsely_mu_on_vip' );
+			$loader->add_filter( 'wp_parsely_metadata', $this, 'disable_parsely_json_ld', 10, 3 );
+			$loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
+
 			$loader->add_action( 'wp_head', $this, 'ascii', 1 );
 			$loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
 			$loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
@@ -92,14 +93,6 @@ class Schema_Meta {
 		echo "<meta name='robots' content='NOODP' />\n";
 	}
 
-	public function yoast_seo_legacy_title_fix( $title ) {
-		// If the title does not contain | Pew Research Center then it should have that appended to it:
-		if ( is_singular() && strpos( $title, '| Pew Research Center' ) === false ) {
-			$title = $title . ' | Pew Research Center';
-		}
-		return $title;
-	}
-
 	/**
 	 * Remove the Yoast SEO version number from the head.
 	 *
@@ -126,12 +119,8 @@ class Schema_Meta {
 		return $title;
 	}
 
-	public function enable_yoast_dev_mode() {
-		add_filter( 'yoast_seo_development_mode', '__return_true' );
-	}
-
 	public function disable_parsely_json_ld( $parsely_metadata, $post, $parsely_options ) {
-		return $parsely_metadata; // disable the default metadata
+		return $parsely_metadata;
 	}
 
 	public function get_chart_attribute( $post_id, $attribute ) {
@@ -240,7 +229,7 @@ class Schema_Meta {
 			$presenters[] = new Parsely_Pub_Date();
 			$presenters[] = new Parsely_Authors();
 		}
-		do_action( 'qm/debug', print_r( $presenters, true ) );
+
 		return $presenters;
 	}
 

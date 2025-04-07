@@ -1,4 +1,10 @@
 <?php
+/**
+ * Slack Bot
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
@@ -18,42 +24,51 @@ use PRC_PLATFORM_SLACK_WEBHOOK;
  */
 class Slack_Bot {
 	/**
-	 * The version of this plugin.
+	 * Slack Webhook URLs
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var string
 	 */
-	private $version;
-
-	private static $username = 'prc_platform';
-
 	protected $webhook;
-	protected $decoded_webhook;
-	protected $token;
-	public $env_type;
 
+	/**
+	 * Slack Webhook URL for Decoded
+	 *
+	 * @var string
+	 */
+	protected $decoded_webhook;
+
+	/**
+	 * Slack Bot Token
+	 *
+	 * @var string
+	 */
+	protected $token;
+
+	/**
+	 * Slack Bot Script Handle
+	 *
+	 * @var string
+	 */
 	public static $handle = 'prc-platform-slack-bot';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param    string $loader    The loader instance.
+	 * @throws   WP_Error When required Slack configuration constants are not defined.
 	 */
-	public function __construct( $version, $loader ) {
+	public function __construct( $loader ) {
 		if ( ! defined( 'PRC_PLATFORM_SLACK_WEBHOOK' ) ) {
-			return new WP_Error( 'slack_webhook', 'PRC_PLATFORM_SLACK_WEBHOOK is not defined.' );
+			throw new WP_Error( 'slack_webhook', 'PRC_PLATFORM_SLACK_WEBHOOK is not defined.' );
 		}
 		if ( ! defined( 'PRC_PLATFORM_SLACK_DECODED_WEBHOOK' ) ) {
-			return new WP_Error( 'slack_decoded_webhook', 'PRC_PLATFORM_SLACK_DECODED_WEBHOOK is not defined.' );
+			throw new WP_Error( 'slack_decoded_webhook', 'PRC_PLATFORM_SLACK_DECODED_WEBHOOK is not defined.' );
 		}
 		if ( ! defined( 'PRC_PLATFORM_SLACK_TOKEN' ) ) {
-			return new WP_Error( 'slack_token', 'PRC_PLATFORM_SLACK_TOKEN is not defined.' );
+			throw new WP_Error( 'slack_token', 'PRC_PLATFORM_SLACK_TOKEN is not defined.' );
 		}
 
-		$this->version         = $version;
 		$this->webhook         = PRC_PLATFORM_SLACK_WEBHOOK;
 		$this->decoded_webhook = PRC_PLATFORM_SLACK_DECODED_WEBHOOK;
 		$this->token           = PRC_PLATFORM_SLACK_TOKEN;
@@ -63,12 +78,14 @@ class Slack_Bot {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string $loader    The loader instance.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$this->env_type = wp_get_environment_type();
-
-			// $loader->add_filter( 'prc_api_endpoints', $this, 'register_endpoint' );
-
 			$loader->add_action(
 				'prc_slack_bot_send_notification',
 				$this,
@@ -81,6 +98,13 @@ class Slack_Bot {
 		}
 	}
 
+	/**
+	 * Handoff to action scheduler
+	 *
+	 * @since    1.0.0
+	 * @param      array $args    The arguments.
+	 * @param      int   $post_id    The post ID.
+	 */
 	public function handoff_to_action_scheduler( $args, $post_id ) {
 		$args = array(
 			'data' => wp_json_encode( $args ),
@@ -88,6 +112,12 @@ class Slack_Bot {
 		as_enqueue_async_action( 'prc_slack_bot_send_notification', $args, $post_id, true, 5 );
 	}
 
+	/**
+	 * Handle scheduled notification
+	 *
+	 * @since    1.0.0
+	 * @param      array $args    The arguments.
+	 */
 	public function handle_scheduled_notification( $args ) {
 		$args = json_decode( $args, true );
 		return $this->send_notification( $args );
@@ -97,8 +127,9 @@ class Slack_Bot {
 	 * Register slackbot endpoint
 	 *
 	 * @hook prc_api_endpoints
-	 * @param mixed $endpoints
-	 * @return void
+	 *
+	 * @param mixed $endpoints The endpoints.
+	 * @return array The endpoints.
 	 */
 	public function register_endpoint( $endpoints ) {
 		array_push(
@@ -109,7 +140,7 @@ class Slack_Bot {
 				'callback'            => array( $this, 'restfully_receive_interact_request' ),
 				'args'                => array(
 					'color' => array(
-						'validate_callback' => function ( $param, $request, $key ) {
+						'validate_callback' => function ( $param ) {
 							return is_string( $param );
 						},
 					),
@@ -122,6 +153,11 @@ class Slack_Bot {
 		return $endpoints;
 	}
 
+	/**
+	 * Restfully receive interact request
+	 *
+	 * @return void
+	 */
 	public function restfully_receive_interact_request() {
 		$valid_callbacks = array(
 			'view_parsely',
@@ -129,8 +165,14 @@ class Slack_Bot {
 		);
 	}
 
+	/**
+	 * Send notification
+	 *
+	 * @param array $args The arguments.
+	 * @return WP_Error|void
+	 */
 	public function send_notification( $args = array() ) {
-		if ( 'production' !== $this->env_type ) {
+		if ( 'production' !== wp_get_environment_type() ) {
 			return;
 		}
 
@@ -153,7 +195,7 @@ class Slack_Bot {
 			return new WP_Error( '400', 'No text provided!' );
 		}
 
-		$webhook = $args['channel'] === '#decoded' ? $this->decoded_webhook : $this->webhook;
+		$webhook = ( '#decoded' === $args['channel'] ) ? $this->decoded_webhook : $this->webhook;
 
 		$bot = new SlackBot(
 			$webhook,
@@ -183,24 +225,23 @@ class Slack_Bot {
 		return $notfication;
 	}
 
+	/**
+	 * Construct notification args for post
+	 *
+	 * @param int $post_id The post ID.
+	 * @return array
+	 */
 	private function construct_notification_args_for_post( $post_id ) {
-		// If this post type is not set to public then bail
 		$post_type = get_post_type( $post_id );
-		$channel   = $post_type === 'decoded' ? '#decoded' : '#publish';
+		$channel   = ( 'decoded' === $post_type ) ? '#decoded' : '#publish';
 		$post_type = get_post_type_object( $post_type );
 		if ( ! $post_type || ! $post_type->public ) {
 			return;
 		}
 
-		$permalink         = get_permalink( $post_id );
-		$title             = get_the_title( $post_id );
-		$excerpt           = get_the_excerpt( $post_id );
-		$topics            = get_the_terms( $post_id, 'category' );
-		$research_teams    = get_the_terms( $post_id, 'research-teams' );
-		$regions_countries = get_the_terms( $post_id, 'regions-countries' );
-		$formats           = get_the_terms( $post_id, 'formats' );
-		$bylines           = get_the_terms( $post_id, 'bylines' );
-		$bitly             = get_post_meta( $post_id, 'bitly', true );
+		$permalink = get_permalink( $post_id );
+		$title     = get_the_title( $post_id );
+		$bitly     = get_post_meta( $post_id, 'bitly', true );
 
 		$overview_attachment = array(
 			'*URL:* <' . $permalink . ' | ' . $permalink . ' >',
@@ -208,26 +249,8 @@ class Slack_Bot {
 		if ( ! empty( $bitly ) ) {
 			$overview_attachment[] = '*Bit.ly:* <' . $bitly . ' | ' . $bitly . ' >';
 		}
-		// if ( $excerpt ) {
-		// $overview_attachment[] = '*Excerpt:* ' . $excerpt;
-		// }
 
 		$extras_attachment = array();
-		// if ( $bylines ) {
-		// $extras_attachment[] = '*Bylines:* ' . implode( ', ', wp_list_pluck( $bylines, 'name' ) );
-		// }
-		// if ( $formats ) {
-		// $extras_attachment[] = '*Formats:* ' . implode( ', ', wp_list_pluck( $formats, 'name' ) );
-		// }
-		// if ( $topics ) {
-		// $extras_attachment[] = '*Topics:* ' . implode( ', ', wp_list_pluck( $topics, 'name' ) );
-		// }
-		// if ( $research_teams ) {
-		// $extras_attachment[] = '*Research Teams:* ' . implode( ', ', wp_list_pluck( $research_teams, 'name' ) );
-		// }
-		// if ( $regions_countries ) {
-		// $extras_attachment[] = '*Regions/Countries:* ' . implode( ', ', wp_list_pluck( $regions_countries, 'name' ) );
-		// }
 
 		$notification_text        = wp_sprintf(
 			'*%s:* <%s | %s> is now live.',
@@ -249,22 +272,19 @@ class Slack_Bot {
 			'attachments' => $notification_attachments,
 		);
 
-		error_log( 'Slack Bot Args: ' . print_r( $args, true ) );
-
 		return $args;
 	}
 
 	/**
+	 * Schedule post published notification
+	 *
 	 * @hook prc_platform_on_publish
-	 * @param mixed $post
+	 *
+	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
 	public function schedule_post_published_notification( $post ) {
 		$args = $this->construct_notification_args_for_post( $post->ID );
 		$this->handoff_to_action_scheduler( $args, $post->ID );
 	}
-}
-
-function send_slack_notification( $post_id, $args = array() ) {
-	as_enqueue_async_action( 'prc_slack_bot_send_notification', $args, $post_id, true, 5 );
 }

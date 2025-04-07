@@ -1,34 +1,16 @@
 <?php
-namespace PRC\Platform;
-
-use Automattic\VIP\Cache\Vary_Cache;
-use WP_Error;
-
 /**
  * Manage user permissions within the PRC Platform on WordPress VIP.
  *
- * @package
+ * @package PRC\Platform
+ */
+
+namespace PRC\Platform;
+
+/**
+ * Manage user permissions within the PRC Platform on WordPress VIP.
  */
 class User_Permissions {
-	/**
-	 * The name for internal users cache group.
-	 */
-	public $internal_users_group;
-
-	/**
-	 * Whether the internal users cache group has been registered.
-	 */
-	protected $group_registered = false;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
 	/**
 	 * The ID of the PRC WP Bot user
 	 *
@@ -40,22 +22,23 @@ class User_Permissions {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version              = $version;
-		$this->internal_users_group = PRC_INTERNAL_USERS_GROUP;
+	public function __construct( $loader ) {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param      string $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
-			$loader->add_action( 'init', $this, 'register_group' );
 			$loader->add_action( 'init', $this, 'generate_wp_bot_user' );
+			$loader->add_action( 'init', $this, 'register_common_user_meta' );
 			$loader->add_filter( 'wpcom_vip_enable_two_factor', $this, 'enforce_two_factor', 10, 1 );
 			$loader->add_action( 'admin_init', $this, 'autoload_user_roles' );
-			$loader->add_action( 'init', $this, 'register_common_user_meta' );
 			$loader->add_action( 'register_new_user', $this, 'set_default_meta_on_new_user_creation', 10, 1 );
 		}
 	}
@@ -69,12 +52,8 @@ class User_Permissions {
 		if ( ! function_exists( 'wpcom_vip_add_role' ) ) {
 			return;
 		}
-		// get the user-roles.json file as a php multidimensional array
 		$user_roles = json_decode( file_get_contents( plugin_dir_path( __FILE__ ) . 'user-roles.json' ), true );
-
-		// get the "version" property from the json file
-		$ver = $user_roles['version'];
-
+		$ver        = $user_roles['version'];
 		// Check if this has been run already.
 		if ( $ver <= get_option( 'prc_platform_user_permissions' ) ) {
 			return;
@@ -100,16 +79,17 @@ class User_Permissions {
 	 * Force two factor authentication on production.
 	 *
 	 * @hook wpcom_vip_enable_two_factor
-	 * @param bool $value
-	 * @return bool
+	 * @param bool $value Whether two factor authentication is enabled.
+	 * @return bool Whether two factor authentication is enabled.
 	 */
 	public function enforce_two_factor( $value ) {
 		return defined( 'VIP_GO_APP_ENVIRONMENT' ) && 'production' === \VIP_GO_APP_ENVIRONMENT;
 	}
 
 	/**
+	 * Register common user meta.
+	 *
 	 * @hook init
-	 * @return void
 	 */
 	public function register_common_user_meta() {
 		register_meta(
@@ -149,7 +129,7 @@ class User_Permissions {
 	 * sets accordingly.
 	 *
 	 * @hook register_new_user
-	 * @return void
+	 * @param int $user_id The user ID.
 	 */
 	public function set_default_meta_on_new_user_creation( $user_id ) {
 		if ( ! $user_id ) {
@@ -159,9 +139,9 @@ class User_Permissions {
 			'allowed'     => true,
 			'tokenBudget' => 1000,
 			'allowances'  => array(
-				'excerpt' => true, // Do we allow the user to use the copilot excerpt generation function
-				'title'   => true, // Do we allow the user to use the copilot title generation function
-				'content' => false, // Do we allow the user to use the copilot content generation function
+				'excerpt' => true,
+				'title'   => true,
+				'content' => false,
 			),
 		);
 		if ( ! get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
@@ -173,14 +153,11 @@ class User_Permissions {
 	 * Generate PRC WP BOT user, who will have editor capabilities. This bot will generate documentation, etc.
 	 * This function is called on plugin activation.
 	 *
-	 * @return void
+	 * @hook init
 	 */
 	public function generate_wp_bot_user() {
-		// get all users
 		$bot_user = get_site_option( 'prc_wp_bot_user_id' );
-		// set the user role to editor
 		if ( ! $bot_user ) {
-			// check if the user exists
 			$existing_user = get_user_by( 'login', 'prc_wp_bot' );
 			if ( ! $existing_user ) {
 				$bot_user_id = wp_insert_user(
@@ -197,6 +174,7 @@ class User_Permissions {
 					$this->bot_user_id = $bot_user->ID;
 					update_site_option( 'prc_wp_bot_user_id', $this->bot_user_id );
 				} else {
+					// phpcs:ignore
 					do_action( 'qm/debug', 'Failed to create bot user' );
 				}
 			} else {
@@ -214,16 +192,5 @@ class User_Permissions {
 	 */
 	public function get_bot_user_id() {
 		return $this->bot_user_id;
-	}
-
-	/**
-	 * @hook init
-	 */
-	public function register_group() {
-		// Check if Vary_Cache class exists
-		if ( ! class_exists( 'Automattic\VIP\Cache\Vary_Cache' ) ) {
-			return;
-		}
-		$this->group_registered = Vary_Cache::register_group( $this->internal_users_group );
 	}
 }

@@ -4,7 +4,7 @@ namespace PRC\Platform;
 class Regions_Countries extends Taxonomies {
 	protected static $taxonomy = 'regions-countries';
 
-	public function __construct($loader) {
+	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register' );
 	}
 
@@ -32,8 +32,8 @@ class Regions_Countries extends Taxonomies {
 			'no_terms'                   => __( 'No Regions & Countries', 'text_domain' ),
 			'items_list'                 => __( 'Regions & Countries list', 'text_domain' ),
 			'items_list_navigation'      => __( 'Regions & Countries list navigation', 'text_domain' ),
-			'item_link' 				 => __( 'Region/Country Link', 'text_domain' ),
-			'item_link_description' 	 => __( 'The link to the region/country page.', 'text_domain' ),
+			'item_link'                  => __( 'Region/Country Link', 'text_domain' ),
+			'item_link_description'      => __( 'The link to the region/country page.', 'text_domain' ),
 		);
 
 		$args = array(
@@ -47,18 +47,20 @@ class Regions_Countries extends Taxonomies {
 			'show_in_rest'      => true,
 		);
 
-		$post_types = apply_filters( "prc_taxonomy_{$taxonomy_name}_post_types", array(
-			'post',
-			'feature',
-			'fact-sheet',
-			'short-read',
-			'quiz',
-			'stub',
-			'decoded',
-			'block_module'
-		) );
+		$post_types = apply_filters(
+			"prc_taxonomy_{$taxonomy_name}_post_types",
+			array(
+				'post',
+				'feature',
+				'fact-sheet',
+				'short-read',
+				'quiz',
+				'stub',
+				'decoded',
+				'block_module',
+			) 
+		);
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );
 	}
-
 }

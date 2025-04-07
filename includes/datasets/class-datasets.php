@@ -605,6 +605,7 @@ class Datasets {
 
 	/**
 	 * @hook wp_head
+	 * @TODO: hook into yoast json ld filter.
 	 */
 	public function schema_ld_json() {
 		$schema_json  = null;

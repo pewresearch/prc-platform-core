@@ -1,5 +1,7 @@
 <?php
 /**
+ * PRC Platform Core
+ *
  * @wordpress-plugin
  * Plugin Name:       PRC Platform: Core
  * Plugin URI:        https://github.com/pewresearch/prc-platform-core
@@ -10,7 +12,8 @@
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       prc-platform-core
-
+ *
+ * @package PRC_Platform
  */
 
 // If this file is called directly, abort.
@@ -42,7 +45,7 @@ register_deactivation_hook( __FILE__, 'deactivate_prc_platform' );
 /**
  * The core plugin class that is used to define the hooks that initialize the various platform components.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-platform.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-platform-bootstrap.php';
 
 /**
  * Begins execution of the plugin.
@@ -58,4 +61,3 @@ function run_prc_platform() {
 	$plugin->run();
 }
 run_prc_platform();
-

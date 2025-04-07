@@ -27,7 +27,7 @@ class Parsely_Title extends Abstract_Indexable_Tag_Presenter {
 			$object_sub_type = $this->presentation->model->object_sub_type;
 			$object_id       = $this->presentation->model->object_id;
 		if ( is_front_page() ) {
-			return get_latest_homepage_title();
+			return 'Pew Research Center';
 		}
 		if ( 'post' === $object_type ) {
 			return get_the_title( $object_id );
@@ -58,7 +58,7 @@ class Parsely_Link extends Abstract_Indexable_Tag_Presenter {
 			$object_sub_type = $this->presentation->model->object_sub_type;
 			$object_id       = $this->presentation->model->object_id;
 		if ( is_front_page() ) {
-			return get_latest_homepage_permalink();
+			return get_bloginfo( 'url' );
 		}
 			return $this->presentation->generate_canonical();
 	}
@@ -84,6 +84,9 @@ class Parsely_Type extends Abstract_Indexable_Tag_Presenter {
 	public function get() {
 			$object_type     = $this->presentation->model->object_type;
 			$object_sub_type = $this->presentation->model->object_sub_type;
+		if ( is_front_page() ) {
+			return 'index';
+		}
 		if ( 'post' === $object_type ) {
 			if ( 'page' === $object_sub_type ) {
 				return 'page';
@@ -126,7 +129,7 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 				function ( $category ) {
 					return $category->name;
 				},
-				$category_tags 
+				$category_tags
 			);
 
 			return implode( ',', $category_tags );
@@ -181,7 +184,7 @@ class Parsely_Pub_Date extends Abstract_Indexable_Tag_Presenter {
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id       = $this->presentation->model->object_id;
 		if ( is_front_page() ) {
-			$object_id = get_latest_homepage_id();
+			return;
 		}
 		if ( 'post' === $object_type ) {
 			return get_the_date( 'c', $object_id );

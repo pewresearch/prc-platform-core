@@ -23,3 +23,5 @@ loadScript(
 	'interactivesDb',
 	firebase.initializeApp(prcFirebaseInteractivesConfig, 'interactivesDb')
 );
+
+window.interactivesDB = window.interactivesDb;
