@@ -200,14 +200,14 @@ class Platform_Bootstrap {
 		$version      = defined( 'PRC_PLATFORM_VERSION' ) ? PRC_PLATFORM_VERSION : 'Unknown';
 		$release_name = defined( 'PRC_PLATFORM_RELEASE_NAME' ) ? PRC_PLATFORM_RELEASE_NAME : 'Unknown';
 		?>
-	<!--
-	#   Pew Research Center Digital Publishing Platform (PRC-Platform)
-	#   Github: https://github.com/pewresearch/prc-platform-core
-	#   Current Version: <?php echo esc_html( $version ); ?> "<?php echo esc_html( $release_name ); ?>"
-	#
-	#   Powered by WordPress VIP
-	#
-	-->
+<!--
+#   Pew Research Center Digital Publishing Platform (PRC-Platform)
+#   Github: https://github.com/orgs/pewresearch/repositories?q=visibility:public+archived:false+prc-
+#   Current Version: <?php echo esc_html( $version ); ?> "<?php echo esc_html( $release_name ); ?>"
+#
+#   Powered by WordPress VIP
+#
+-->
 		<?php
 	}
 

@@ -30,7 +30,6 @@ class Publication_Listing {
 	 * @param      Loader $loader    The loader instance.
 	 */
 	public function __construct( $loader ) {
-		require_once plugin_dir_path( __FILE__ ) . '/class-post-visibility-upgrade.php';
 		$this->init( $loader );
 	}
 
@@ -52,8 +51,6 @@ class Publication_Listing {
 			$loader->add_filter( 'pre_render_block', $this, 'hook_pub_listing_args_into__core_query', 11, 3 );
 			$loader->add_filter( 'rest_post_query', $this, 'hook_pub_listing_args_into__rest_query', 11, 2 );
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_post_visibility_inspector_panel', 11, 1 );
-
-			new Post_Visibility_Upgrade( $loader );
 		}
 	}
 
@@ -147,9 +144,9 @@ class Publication_Listing {
 		$query_args['post_type']           = array_merge( $post_types, array( 'post' ) );
 		$query_args['ignore_sticky_posts'] = true;
 
-		$post_visibility = array( 'hidden-on-search' );
+		$post_visibility = array( 'hidden-on-index' );
 		if ( $is_searching ) {
-			$post_visibility = array( 'hidden-on-index' );
+			$post_visibility = array( 'hidden-on-search' );
 		}
 
 		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
@@ -160,16 +157,16 @@ class Publication_Listing {
 					'relation' => 'OR',
 					array(
 						'taxonomy' => '_post_visibility',
-						'operator' => 'NOT EXISTS',
-					),
-					array(
-						'taxonomy' => '_post_visibility',
 						'field'    => 'slug',
 						'terms'    => $post_visibility,
+						'operator' => 'NOT IN',
 					),
 				),
 			)
 		);
+
+		// Enforce only published posts, this also helps enhance query performance.
+		$query_args['post_status'] = 'publish';
 
 		$query_args = apply_filters(
 			'prc_platform_pub_listing_default_args',
@@ -179,7 +176,6 @@ class Publication_Listing {
 
 		// On post type archives we want to respect the post type.
 		if ( is_post_type_archive() ) {
-			do_action( 'qm/debug', 'is_post_type_archive' );
 			$post_type               = get_post_type();
 			$query_args['post_type'] = array( $post_type );
 		}
@@ -202,21 +198,23 @@ class Publication_Listing {
 	 * Register post visibility taxonomy.
 	 */
 	public function register_post_visibility_taxonomy() {
-		register_taxonomy(
-			'_post_visibility',
-			'post',
-			array(
-				'public'             => true,
-				'publicly_queryable' => true,
-				'label'              => 'Post Visibility',
-				'hierarchical'       => true,
-				'show_ui'            => false,
-				'show_in_menu'       => false,
-				'show_in_nav_menus'  => false,
-				'show_admin_column'  => false,
-				'show_in_rest'       => true,
-			)
-		);
+		foreach ( self::get_enabled_post_types() as $post_type ) {
+			register_taxonomy(
+				'_post_visibility',
+				$post_type,
+				array(
+					'public'             => true,
+					'publicly_queryable' => true,
+					'label'              => 'Post Visibility',
+					'hierarchical'       => true,
+					'show_ui'            => true,
+					'show_in_menu'       => true,
+					'show_in_nav_menus'  => false,
+					'show_admin_column'  => true,
+					'show_in_rest'       => true,
+				)
+			);
+		}
 	}
 
 	/**
@@ -249,7 +247,7 @@ class Publication_Listing {
 	 */
 	public function enqueue_post_visibility_inspector_panel() {
 		$registered = $this->register_assets();
-		if ( ! in_array( get_wp_admin_current_post_type(), $this->get_enabled_post_types(), true ) ) {
+		if ( ! in_array( get_wp_admin_current_post_type(), self::get_enabled_post_types(), true ) ) {
 			return;
 		}
 		if ( is_admin() && ! is_wp_error( $registered ) ) {

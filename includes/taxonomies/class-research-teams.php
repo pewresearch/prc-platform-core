@@ -236,7 +236,7 @@ class Research_Teams extends Taxonomies {
 			return $permalink;
 		}
 		// Check if the post belongs to the "research-teams" taxonomy.
-		if ( in_array( 'research-teams', get_object_taxonomies( $post ) ) && in_array( $post->post_status, array( 'publish', 'hidden_from_index', 'hidden_from_search' ) ) && in_array( $post->post_type, self::$rewrite_enabled_post_types ) ) {
+		if ( in_array( 'research-teams', get_object_taxonomies( $post ) ) && in_array( $post->post_status, array( 'publish' ) ) && in_array( $post->post_type, self::$rewrite_enabled_post_types ) ) {
 			// Get the terms associated with the post.
 			$terms = get_the_terms( $post, self::$taxonomy );
 			if ( $terms && ! is_wp_error( $terms ) ) {
