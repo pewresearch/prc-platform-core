@@ -24,6 +24,22 @@ class Scripts {
 	 * Localize the firebase script, include apiKey, authDomain, etc..
 	 */
 	public function localize_firebase( $script_slug ) {
+		// Sanity checks to ensure that the constants are defined.
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_KEY' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_AUTH_DOMAIN' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_AUTH_DB' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_INTERACTIVES_DB' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_PROJECT_ID' ) ) {
+			return;
+		}
 		$api_key         = \PRC_PLATFORM_FIREBASE_KEY;
 		$auth_domain     = \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN;
 		$auth_db         = \PRC_PLATFORM_FIREBASE_AUTH_DB;

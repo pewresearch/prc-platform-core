@@ -1,34 +1,29 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
 
 /**
  * Handles the /download attachment URL rewrite. When a user visits an attachment page URL with /download/ at the end, the attachment will be downloaded.
+ *
  * @package
  */
 class Attachment_Downloader {
 	/**
-	 * The version of this plugin.
+	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @param      object $loader The loader object.
 	 */
-	private $version;
+	public function __construct( $loader ) {
+		$this->init( $loader );
+	}
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      object $loader The loader object.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		$this->init($loader);
-	}
-
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'prc_platform_rewrite_query_vars', $this, 'register_query_var' );
 			$loader->add_filter( 'template_include', $this, 'download_attachment_template' );
@@ -37,6 +32,7 @@ class Attachment_Downloader {
 
 	/**
 	 * Add a query var to enable attachment download.
+	 *
 	 * @hook prc_platform_rewrite_query_vars
 	 * @param array $query_vars Query vars.
 	 * @return array
@@ -65,7 +61,6 @@ class Attachment_Downloader {
 	 * @param string $template The path to the current template.
 	 * @return string $template The path to the current template.
 	 */
-
 	public function download_attachment_template( $template ) {
 		global $post, $wp_query;
 		// If the 'attachment-download' query var hasn't been set then we're not interested....

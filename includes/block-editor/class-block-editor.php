@@ -1,32 +1,41 @@
 <?php
+/**
+ * The block editor class.
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
 
+/**
+ * The block editor class.
+ */
 class Block_Editor {
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
 
+	/**
+	 * The handle for the block editor.
+	 *
+	 * @var string
+	 */
 	public static $handle = 'prc-platform-block-editor';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader       The loader object.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader ) {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @param object $loader The loader object.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_assets' );
@@ -35,14 +44,18 @@ class Block_Editor {
 	}
 
 	/**
+	 * Enforce the block categories.
+	 *
 	 * @hook block_categories_all
-	 * @param array $categories
+	 * @param array $block_categories The block categories.
+	 * @param array $block_editor_context The block editor context.
 	 * @return array
 	 */
 	public function enforce_block_categories( $block_categories, $block_editor_context ) {
 		$post_type = get_post_type( $block_editor_context->post );
+		
 		// Newsletter Glue is spilling over into other post types. We need to filter it out.
-		if ( $post_type !== 'newsletterglue' ) {
+		if ( 'newsletterglue' !== $post_type ) {
 			$updated = array_filter(
 				$block_categories,
 				function ( $category ) {
@@ -55,6 +68,11 @@ class Block_Editor {
 	}
 
 
+	/**
+	 * Register the assets.
+	 *
+	 * @return bool|WP_Error
+	 */
 	public function register_assets() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$script_src = plugin_dir_url( __FILE__ ) . 'build/index.js';
@@ -77,7 +95,7 @@ class Block_Editor {
 	/**
 	 * Rather than disabling variations one by one we're going to assume ALL should be disabled and instead these should be whitelisted.
 	 *
-	 * @return void
+	 * @return array
 	 */
 	public function allowed_embed_variations() {
 		$allowed_embed_variations = array(
@@ -108,6 +126,11 @@ class Block_Editor {
 		return apply_filters( 'prc_platform_block_editor_allowed_embed_variations', $allowed_embed_variations );
 	}
 
+	/**
+	 * Enqueue the assets.
+	 *
+	 * @return void
+	 */
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {

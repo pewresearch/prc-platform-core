@@ -4,7 +4,7 @@
 		"@wordpress/scripts": "^30.13.0"
 	},
 	"scripts": {
-		"build": "bash .scripts/build.sh",
-		"clean": "bash .scripts/clean.sh"
+		"build": "bash bin/build.sh",
+		"clean": "bash bin/clean.sh"
 	}
 }

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Topic Category Taxonomy
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
@@ -35,6 +41,8 @@ class Topic_Category extends Taxonomies {
 	}
 
 	/**
+	 * Enforce the category permalink structure.
+	 *
 	 * @TODO: add this to the plugin activation hook, when we get around to building that.
 	 * @return void
 	 */
@@ -45,9 +53,9 @@ class Topic_Category extends Taxonomies {
 	/**
 	 * On the primary site we want to change the vernacular of "Categories" to "Topics".
 	 *
-	 * @param mixed $args
-	 * @param mixed $taxonomy
-	 * @return mixed
+	 * @param mixed $args The arguments.
+	 * @param mixed $taxonomy The taxonomy.
+	 * @return mixed The arguments.
 	 */
 	public function change_category_labels_to_topic( $args, $taxonomy ) {
 		if ( 1 === get_current_blog_id() ) {
@@ -76,6 +84,11 @@ class Topic_Category extends Taxonomies {
 		return $args;
 	}
 
+	/**
+	 * Register the category name change filters.
+	 *
+	 * @return mixed The arguments.
+	 */
 	public function register_category_name_change_filters() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
 		$asset_slug = self::$handle;
@@ -96,6 +109,11 @@ class Topic_Category extends Taxonomies {
 		return true;
 	}
 
+	/**
+	 * Enqueue the category name change script.
+	 *
+	 * @hook enqueue_block_editor_assets
+	 */
 	public function enqueue_category_name_change_script() {
 		if ( 1 === get_current_blog_id() ) {
 			return null;

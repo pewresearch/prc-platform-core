@@ -1,8 +1,32 @@
 <?php
+/**
+ * Formats Taxonomy
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
+/**
+ * Formats Taxonomy
+ *
+ * @package PRC\Platform
+ */
 class Formats extends Taxonomies {
-	protected static $taxonomy                 = 'formats';
+	/**
+	 * Taxonomy name.
+	 *
+	 * @var string
+	 */
+	protected static $taxonomy = 'formats';
+
+	/**
+	 * Enforced post type pairs.
+	 *
+	 * @TODO: build filter for this
+	 *
+	 * @var array
+	 */
 	protected static $enforced_post_type_pairs = array(
 		'short-read'     => 'short-read',
 		'feature'        => 'feature',
@@ -15,10 +39,20 @@ class Formats extends Taxonomies {
 		'collections'    => 'collection',
 	);
 
+	/**
+	 * Constructor.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function __construct( $loader ) {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the taxonomy.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register' );
@@ -26,6 +60,11 @@ class Formats extends Taxonomies {
 		}
 	}
 
+	/**
+	 * Register the taxonomy.
+	 *
+	 * @hook init
+	 */
 	public function register() {
 		$taxonomy_name = self::$taxonomy;
 
@@ -63,6 +102,7 @@ class Formats extends Taxonomies {
 			'show_in_rest'      => true,
 		);
 
+		// @TODO: Add filters into modules to signal support for format taxonomy.
 		$post_types = apply_filters(
 			"prc_taxonomy_{$taxonomy_name}_post_types",
 			array(
@@ -83,15 +123,11 @@ class Formats extends Taxonomies {
 	}
 
 	/**
-	 * @hook prc_platform_on_incremental_save
-	 * @param mixed $post_types
-	 * @return array
-	 */
-	/**
-	 * Whenever a short-read post is updated it should have the short-read format enforced. This function will enforce that.
+	 * Enforce the format of the post.
 	 *
 	 * @hook prc_platform_on_incremental_save
-	 * @return void
+	 *
+	 * @param \WP_Post $post The post.
 	 */
 	public function enforce_post_type_formats( $post ) {
 		$post_types = array_keys( self::$enforced_post_type_pairs );

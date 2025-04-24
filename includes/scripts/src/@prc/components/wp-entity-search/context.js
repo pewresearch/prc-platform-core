@@ -28,6 +28,7 @@ const useWPEntitySearchContext = ({
 	entityId,
 	entityType,
 	entitySubType,
+	entityStatus = ['publish'],
 	perPage,
 	hideChildren,
 	searchInput,
@@ -69,7 +70,8 @@ const useWPEntitySearchContext = ({
 				'Starting search...',
 				searchString,
 				entityType,
-				entitySubType
+				entitySubType,
+				entityStatus
 			);
 			setIsLoading(true);
 			apiFetch({
@@ -77,6 +79,7 @@ const useWPEntitySearchContext = ({
 					entity_type: entityType,
 					entity_sub_type: entitySubType,
 					search: searchString,
+					entity_status: entityStatus,
 				}),
 				method: 'GET',
 			})
@@ -95,7 +98,7 @@ const useWPEntitySearchContext = ({
 	// Once there is a selectedId and records...
 	// This then handles the onSelect callback to pass the selected entity up to the parent component.
 	useEffect(() => {
-		console.log("update selectedId and records", selectedId, records);
+		console.log('update selectedId and records', selectedId, records);
 		if (selectedId && records) {
 			const entity = records.find(
 				(record) => record.entityId === selectedId
@@ -153,6 +156,7 @@ function ProvideWPEntitySearch({
 	entityId,
 	entityType,
 	entitySubType,
+	entityStatus,
 	perPage,
 	hideChildren,
 	searchInput,
@@ -169,6 +173,7 @@ function ProvideWPEntitySearch({
 		entityId,
 		entityType,
 		entitySubType,
+		entityStatus,
 		perPage,
 		hideChildren,
 		searchInput,

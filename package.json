@@ -3,14 +3,17 @@
 	"description": "PRC Platform Core",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"@wordpress/scripts": "^27.1.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"taffydb": "^2.7.3",
 		"uuid": "^9.0.1",
-		"wp-hookdoc": "^0.2.0"
+		"@playwright/test": "^1.51.1",
+        "@wordpress/e2e-test-utils-playwright": "^1.22.0",
+        "@wordpress/env": "^10.22.0",
+        "@wordpress/scripts": "^30.15.0"
 	},
 	"scripts": {
-		"docs:build": "node ./.docs/pre-build.js; jsdoc -c ./.docs/config.json -r ./includes"
+		"docs:build": "node ./.docs/pre-build.js; jsdoc -c ./.docs/config.json -r ./includes",
+		"composer": "wp-env run cli --env-cwd=wp-content/plugins/prc-platform-core composer"
 	}
 }

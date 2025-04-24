@@ -7,9 +7,6 @@
 
 namespace PRC\Platform;
 
-use WP_Error;
-use PRC_PLATFORM_FACEBOOK_APP_ID;
-
 /**
  * The Social class.
  *
@@ -46,6 +43,10 @@ class Social {
 	 * @return void
 	 */
 	public function place_facebook_app_id_in_head() {
+		// Sanity checks to ensure that the constants are defined.
+		if ( ! defined( 'PRC_PLATFORM_FACEBOOK_APP_ID' ) ) {
+			return;
+		}
 		$fb_key = PRC_PLATFORM_FACEBOOK_APP_ID;
 		// If on a dev server then override the site selection and use test ID.
 		if ( 'production' !== wp_get_environment_type() ) {

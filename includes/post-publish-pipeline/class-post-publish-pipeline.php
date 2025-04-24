@@ -1,4 +1,10 @@
 <?php
+/**
+ * Post Publish Pipeline
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
@@ -21,24 +27,22 @@ use WP_Term;
 class Post_Publish_Pipeline {
 	/**
 	 * Is this a WP CLI request
+	 *
+	 * @var bool
 	 */
 	public $is_cli = false;
 
 	/**
 	 * Is this a REST API request
+	 *
+	 * @var bool
 	 */
 	public $is_rest = false;
 
 	/**
-	 * Enabled Statuses
-	 *
-	 * @var array
-	 */
-	protected $published_statuses = array( 'publish', 'hidden_from_search', 'hidden_from_index' );
-
-	/**
 	 * Post tpyes that are allowed to be tracked by the pipeline.
 	 *
+	 * @TODO: Deprecate this and use the allowed_post_types filter instead.
 	 * @var string[]
 	 */
 	protected $allowed_post_types = array(
@@ -56,14 +60,15 @@ class Post_Publish_Pipeline {
 
 	/**
 	 * The handle for the JS version of the pipeline.
+	 *
+	 * @var string
 	 */
 	public static $handle = 'prc-platform-post-publish-pipeline';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @param mixed $version
-	 * @param mixed $loader
+	 * @param mixed $loader The loader that will be used to register hooks.
 	 */
 	public function __construct( $loader ) {
 		$this->is_cli  = defined( 'WP_CLI' ) && \WP_CLI;
@@ -75,6 +80,11 @@ class Post_Publish_Pipeline {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Get the allowed post types.
+	 *
+	 * @return string[]
+	 */
 	public function get_allowed_post_types() {
 		$allowed_post_types = apply_filters( 'prc_platform_post_publish_pipeline_post_types', $this->allowed_post_types );
 		return $allowed_post_types;
@@ -97,7 +107,7 @@ class Post_Publish_Pipeline {
 	/**
 	 * Fallbacks for post types that don't have a category or format.
 	 *
-	 * @param string $post_type
+	 * @param string $post_type The post type.
 	 * @return string|false $label
 	 */
 	protected function label_fallbacks( $post_type = 'post' ) {
@@ -143,8 +153,8 @@ class Post_Publish_Pipeline {
 	/**
 	 * Add a label to rest objects.
 	 *
-	 * @param mixed $object
-	 * @return string $label
+	 * @param mixed $object The object to get the label for.
+	 * @return string $label The label.
 	 */
 	public function restfully_get_label( $object ) {
 		$label = 'Report';
@@ -172,8 +182,8 @@ class Post_Publish_Pipeline {
 	/**
 	 * Add post_parent to rest objects.
 	 *
-	 * @param mixed $object
-	 * @return int|false
+	 * @param mixed $object The object to get the post parent for.
+	 * @return int|false The post parent ID.
 	 */
 	public function restfully_get_post_parent( $object ) {
 		$post_id = (int) ( array_key_exists( 'id', $object ) ? $object['id'] : $object['ID'] );
@@ -184,9 +194,10 @@ class Post_Publish_Pipeline {
 	 * Supports querying by post_parent for "post" types in the rest api.
 	 *
 	 * @hook rest_post_query
-	 * @param mixed $args
-	 * @param mixed $request
-	 * @return mixed
+	 *
+	 * @param mixed $args The arguments.
+	 * @param mixed $request The request.
+	 * @return mixed The arguments.
 	 */
 	public function add_post_parent_request_to_rest_api( $args, $request ) {
 		if ( $request->get_param( 'post_parent' ) ) {
@@ -198,8 +209,8 @@ class Post_Publish_Pipeline {
 	/**
 	 * Get the word count for a post.
 	 *
-	 * @param mixed $object
-	 * @return string[]|int
+	 * @param mixed $object The post object.
+	 * @return string[]|int The word count.
 	 */
 	public function restfully_get_word_count( $object ) {
 		$content = $object['content']['rendered'];
@@ -275,7 +286,9 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
-	 * Register the JS assets for the post publish pipeline:
+	 * Register the client side assets for the post publish pipeline.
+	 *
+	 * @return true|WP_Error
 	 */
 	public function register_assets() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/index.asset.php';
@@ -297,6 +310,8 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
+	 * Enqueue the assets for the client side post publish pipeline.
+	 *
 	 * @hook enqueue_block_editor_assets
 	 */
 	public function enqueue_assets() {
@@ -311,7 +326,7 @@ class Post_Publish_Pipeline {
 	 * Sometimes its best to do it (whatever that thing is) server side, this allows you the same functionality
 	 * as client side operations but with the added benefit of not having to make a request to the API.
 	 *
-	 * @param mixed $post_object
+	 * @param mixed $post_object The post object.
 	 * @return object $ref_post WP_Post modified with extra fields to match the rest fields above.
 	 */
 	public function setup_extra_wp_post_object_fields( $post_object ) {
@@ -326,7 +341,7 @@ class Post_Publish_Pipeline {
 		$ref_post['canonical_url'] = false;
 		$ref_post['label']         = null;
 		$ref_post['visibility']    = false;
-		// Data is actually loaded here with the opportunity for other platform plugins to hook in and add their own data. @see post-report-package
+		// Data is actually loaded here with the opportunity for other platform plugins to hook in and add their own data. @see post-report-package.
 		$ref_post = apply_filters( 'prc_platform_wp_post_object', $ref_post );
 
 		if ( is_wp_error( $ref_post ) ) {
@@ -344,8 +359,8 @@ class Post_Publish_Pipeline {
 	/**
 	 * Apply the extra fields to the WP_Post object for server side implementations.
 	 *
-	 * @param mixed $ref_post
-	 * @return mixed $ref_post
+	 * @param mixed $ref_post The post object.
+	 * @return mixed $ref_post The post object with extra fields.
 	 */
 	public function apply_extra_wp_post_object_fields( $ref_post ) {
 		$ref_post['canonical_url'] = $this->restfully_get_canonical_url( $ref_post );
@@ -358,7 +373,14 @@ class Post_Publish_Pipeline {
 	}
 
 	/**
+	 * Process the post publish pipeline.
+	 *
 	 * @hook wp_after_insert_post
+	 *
+	 * @param int     $post_id The post ID.
+	 * @param WP_Post $post_obj_now The post object.
+	 * @param bool    $is_update Whether the post is an update.
+	 * @param WP_Post $post_obj_before The post object before the update.
 	 */
 	public function process_post_publish_pipeline( $post_id, $post_obj_now, $is_update, $post_obj_before ) {
 		// Some sanity checks, we're going to make sure we're not doing an autosave, an ajax request (we don't do those), or that this post itself is an autosave, a revision, or not in the allowed post types.
@@ -368,6 +390,7 @@ class Post_Publish_Pipeline {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			return;
 		}
+
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) || ! in_array( $post_obj_now->post_type, $this->get_allowed_post_types() ) ) {
 			return;
 		}

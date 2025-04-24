@@ -15,13 +15,6 @@ use WP_Term;
  */
 class WP_Admin {
 	/**
-	 * The version of the platform, used to output in the admin footer.
-	 *
-	 * @var string
-	 */
-	public $version = '1.0.0';
-
-	/**
 	 * The handle for the wp-admin script.
 	 *
 	 * @var string
@@ -40,10 +33,8 @@ class WP_Admin {
 	 *
 	 * @since    1.0.0
 	 * @param      string $loader The loader.
-	 * @param      string $version The version of the platform.
 	 */
-	public function __construct( $loader, $version ) {
-		$this->version = $version;
+	public function __construct( $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'admin-columns/class-admin-columns.php';
 		$this->init( $loader );
 	}
@@ -58,10 +49,6 @@ class WP_Admin {
 			// This removes the "Public Preview" next to the draft label in the WordPress admin.
 
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
-			// This disables the VIP restriction for usernames when on local environments. Good for testing and automation.
-			if ( defined( 'PRC_PLATFORM_TESTING_MODE' ) && true === PRC_PLATFORM_TESTING_MODE ) {
-				remove_filter( 'authenticate', 'wpcom_vip_limit_logins_for_restricted_usernames', 30 );
-			}
 
 			// Actions.
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
@@ -83,7 +70,7 @@ class WP_Admin {
 			$loader->add_filter( 'dashboard_recent_posts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 			$loader->add_filter( 'dashboard_recent_drafts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 
-			new Admin_Columns_Pro( $loader );
+			new Admin_Columns( $loader );
 		}
 	}
 
@@ -112,7 +99,7 @@ class WP_Admin {
 	 * @return array Modified query arguments.
 	 */
 	public function show_all_post_types_in_dashboard( array $query_args ) {
-		$post_types = array( 'post', 'short-read', 'fact-sheet', 'feature', 'quiz' );
+		$post_types = Publication_Listing::get_enabled_post_types();
 
 		if ( is_array( $post_types ) ) {
 			$query_args['post_type'] = $post_types;
@@ -381,11 +368,7 @@ class WP_Admin {
 
 		$site_editor = $wp_admin_bar->get_node( 'site-editor' );
 		if ( $site_editor ) {
-			$site_editor->title  = 'Edit Template';
-			$site_editor->parent = $edit_node_name;
 			$wp_admin_bar->remove_node( 'site-editor' );
-			$site_editor = apply_filters( 'prc_platform_admin_bar/site_editor', $site_editor, $wp_query );
-			$wp_admin_bar->add_node( $site_editor );
 		}
 	}
 
@@ -556,11 +539,13 @@ class WP_Admin {
 	 * @return string
 	 */
 	public function output_platform_version_in_wp_admin( $content ) {
-		$environment = '<span style="color:red;">Production</span>';
+		$version      = defined( 'PRC_PLATFORM_VERSION' ) ? PRC_PLATFORM_VERSION : 'Unknown';
+		$release_name = defined( 'PRC_PLATFORM_RELEASE_NAME' ) ? PRC_PLATFORM_RELEASE_NAME : 'Unknown';
+		$environment  = '<span style="color:red;">Production</span>';
 		if ( 'production' !== wp_get_environment_type() ) {
 			$environment = '<span style="color:green;">Development</span>';
 		}
-		return '<strong>' . $environment . ' | PRC Platform Core: ' . $this->version . '</strong>';
+		return '<strong>' . $environment . ' | PRC Platform Core: ' . $version . ' "' . $release_name . '"</strong>';
 	}
 
 	/**

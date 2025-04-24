@@ -1,12 +1,34 @@
 <?php
+/**
+ * Jetpack
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use Jetpack_Gutenberg;
 
+/**
+ * Jetpack
+ *
+ * @package PRC\Platform
+ */
 class Jetpack {
-	public static $disallowed_modules    = array(
+	/**
+	 * Disallowed Jetpack modules.
+	 *
+	 * @var array
+	 */
+	public static $disallowed_modules = array(
 		'sso',
 	);
+
+	/**
+	 * Disallowed Jetpack extensions.
+	 *
+	 * @var array
+	 */
 	public static $disallowed_extensions = array(
 		'blogging-prompt',
 		'business-hours',
@@ -46,7 +68,13 @@ class Jetpack {
 		'payments-intro',
 		'payment-buttons',
 	);
-	public static $disallowed_blocks     = array(
+
+	/**
+	 * Disallowed Jetpack blocks.
+	 *
+	 * @var array
+	 */
+	public static $disallowed_blocks = array(
 		'jetpack/donations',
 		'jetpack/podcast-player',
 		'jetpack/payment-buttons',
@@ -67,28 +95,20 @@ class Jetpack {
 	);
 
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	public static $handle = 'prc-platform-jetpack';
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader       The loader object.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader ) {
 		$this->init( $loader );
 	}
 
+	/**
+	 * Initialize the Jetpack class.
+	 *
+	 * @param      string $loader       The loader object.
+	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_action( 'jetpack_set_available_extensions', $this, 'set_available_jetpack_extensions' );
@@ -114,7 +134,7 @@ class Jetpack {
 				$disallowed = self::$disallowed_extensions;
 				return ! in_array(
 					$extension,
-					self::$disallowed_extensions
+					$disallowed
 				);
 			}
 		);
@@ -125,6 +145,9 @@ class Jetpack {
 	 * Disable Jetpack modules
 	 *
 	 * @hook option_jetpack_active_modules
+	 *
+	 * @param array $modules Jetpack modules array.
+	 * @return array updated modules array.
 	 */
 	public function set_available_jetpack_modules( $modules ) {
 		return array_filter(
@@ -143,7 +166,7 @@ class Jetpack {
 	 *
 	 * @hook jetpack_register_gutenberg_extensions
 	 */
-	function set_available_jetpack_blocks() {
+	public function set_available_jetpack_blocks() {
 		if ( ! class_exists( 'Jetpack_Gutenberg' ) ) {
 			return;
 		}

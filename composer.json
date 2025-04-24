@@ -14,7 +14,7 @@
 		"chapter-three/apple-news-api": "^0.3.11"
     },
     "config": {
-		"vendor-dir": "client-mu-plugins/vendor",
+		"vendor-dir": "./vendor",
         "allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true,
 			"composer/installers": true,

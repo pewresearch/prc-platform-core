@@ -35,6 +35,12 @@ class Firebase {
 	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $loader ) {
+		// Check if the Kreait Firebase library exists
+		if ( ! class_exists( 'Kreait\Firebase\Factory' ) ) {
+			do_action( 'qm/critical', 'Kreait Firebase library not found. Firebase functionality will be disabled.' );
+			return;
+		}
+
 		$credentials = $this->localize_server_side_credentials();
 		if ( ! is_wp_error( $credentials ) ) {
 			$this->instance = ( new Factory() )->withServiceAccount( $credentials );
@@ -82,6 +88,22 @@ class Firebase {
 	}
 
 	public function localize_client_side_credentials( $data ) {
+		// Sanity checks to ensure that the constants are defined.
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_KEY' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_AUTH_DOMAIN' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_AUTH_DB' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_INTERACTIVES_DB' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_PROJECT_ID' ) ) {
+			return;
+		}
 		$api_key             = \PRC_PLATFORM_FIREBASE_KEY;
 		$auth_domain         = \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN;
 		$auth_db             = \PRC_PLATFORM_FIREBASE_AUTH_DB;

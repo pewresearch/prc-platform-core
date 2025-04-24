@@ -1,10 +1,24 @@
 <?php
+/**
+ * Parent Post Column
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use ACP;
 
+/**
+ * Parent Post Column
+ *
+ * @package PRC\Platform
+ */
 class Parent_Post_Column extends \AC\Column implements ACP\Filtering\Filterable {
 
+	/**
+	 * Constructor
+	 */
 	public function __construct() {
 		// Identifier, pick an unique name. Single word, no spaces. Underscores allowed.
 		$this->set_type( 'column-Parent_Post_Column' );
@@ -17,7 +31,7 @@ class Parent_Post_Column extends \AC\Column implements ACP\Filtering\Filterable 
 	 * Not suitable for direct display, use get_value() for that
 	 * This value will be used by 'inline-edit' and get_value().
 	 *
-	 * @param int $id ID
+	 * @param int $post_id The post ID.
 	 *
 	 * @return mixed Value
 	 */
@@ -28,7 +42,7 @@ class Parent_Post_Column extends \AC\Column implements ACP\Filtering\Filterable 
 	/**
 	 * Returns the display value for the column.
 	 *
-	 * @param int $id ID
+	 * @param int $post_id The post ID.
 	 *
 	 * @return string Value
 	 */
@@ -43,19 +57,12 @@ class Parent_Post_Column extends \AC\Column implements ACP\Filtering\Filterable 
 		return '';
 	}
 
-	/*
-	 * (Optional) Enqueue CSS + JavaScript on the admin listings screen. You can remove this function is you do not use it!
+	/**
+	 * Get the filtering class
 	 *
-	 * This action is called in the admin_head action on the listings screen where your column values are displayed.
-	 * Use this action to add CSS + JavaScript
+	 * @return ACP\Filtering\Filterable
 	 */
-	public function scripts() {
-		// wp_enqueue_script( 'prc-platform-attachment-report' );
-		// wp_enqueue_style( 'wp-components' );
-	}
-
 	public function filtering() {
 		return new Parent_Post_Filtering( $this );
 	}
-
 }

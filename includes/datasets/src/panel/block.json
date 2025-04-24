@@ -1,6 +1,0 @@
-{
-	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"name": "prc-platform/dataset-options-panel",
-	"version": "0.1.0",
-	"editorScript": "file:./index.js"
-}

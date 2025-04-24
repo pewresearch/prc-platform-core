@@ -1,4 +1,10 @@
 <?php
+/**
+ * Schema Meta class.
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WPSEO_Options;
@@ -10,50 +16,47 @@ use WPSEO_Options;
  */
 class Schema_Meta {
 	/**
-	 * The version of this plugin.
+	 * The loader.
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var Loader
 	 */
-	private $version;
+	protected $loader = null;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param      string $loader    The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		$this->init( $loader );
-	}
-
-	public function init( $loader = null ) {
-		if ( null !== $loader ) {
+	public function __construct( $loader ) {
+		$this->loader = $loader;
+		$this->init();
+		if ( WP_DEBUG ) {
 			add_filter( 'yoast_seo_development_mode', '__return_true' );
-			$loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
-			$loader->add_action( 'wp_head', $this, 'force_search_engines_to_use_meta' );
-
-			$loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
-			$loader->add_filter( 'wpseo_opengraph_image', $this, 'get_chart_image', 100, 1 );
-			$loader->add_filter( 'wpseo_metadesc', $this, 'get_chart_description', 100, 1 );
-			$loader->add_filter( 'wpseo_title', $this, 'get_chart_title', 100, 1 );
-
-			$loader->add_filter( 'wpvip_parsely_load_mu', $this, 'enable_parsely_mu_on_vip' );
-			$loader->add_filter( 'wp_parsely_metadata', $this, 'disable_parsely_json_ld', 10, 3 );
-			$loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
-
-			$loader->add_action( 'wp_head', $this, 'ascii', 1 );
-			$loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
-			$loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
-			$loader->add_filter( 'wpseo_canonical', $this, 'yoast_attachment_page_canonical_link' );
-			$loader->add_filter( 'wpseo_schema_graph', $this, 'correct_schema_graph_searchaction' );
 		}
 	}
 
 	/**
+	 * Initialize the hooks.
+	 */
+	public function init() {
+		if ( null !== $this->loader ) {
+			$this->loader->add_filter( 'wpseo_robots', $this, 'yoast_seo_no_index' );
+
+			$this->loader->add_filter( 'wpvip_parsely_load_mu', $this, 'enable_parsely_mu_on_vip' );
+			$this->loader->add_filter( 'wp_parsely_metadata', $this, 'disable_parsely_json_ld', 10, 3 );
+			$this->loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
+
+			$this->loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
+			$this->loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
+			$this->loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
+			$this->loader->add_filter( 'wpseo_canonical', $this, 'get_attachment_canonical_link_back_to_parent' );
+			$this->loader->add_filter( 'wpseo_schema_graph', $this, 'correct_schema_graph_searchaction' );
+		}
+	}
+
+	/**
+	 * Enable VIP's WP Parsely integration.
+	 *
 	 * @hook wpvip_parsely_load_mu
 	 * @return true
 	 */
@@ -61,6 +64,19 @@ class Schema_Meta {
 		return true;
 	}
 
+	/**
+	 * Disable indexing on specific page combinations.
+	 * - Publication pages AND search pages (unless it's the first page)
+	 * - Facets: Formats, research areas, regions/countries, days, year range
+	 * - Attachment pages that are attached to a post, if they are on their own then they should be indexed
+	 *
+	 * @hook wpseo_robots
+	 *
+	 * @TODO: Change this to work with wp core robots hooks (YOAST-MIGRATION)
+	 *
+	 * @param string $robots The robots string.
+	 * @return string The robots string.
+	 */
 	public function yoast_seo_no_index( $robots ) {
 		global $paged;
 
@@ -89,10 +105,6 @@ class Schema_Meta {
 		return $robots;
 	}
 
-	public function force_search_engines_to_use_meta() {
-		echo "<meta name='robots' content='NOODP' />\n";
-	}
-
 	/**
 	 * Remove the Yoast SEO version number from the head.
 	 *
@@ -106,93 +118,39 @@ class Schema_Meta {
 	 * Default Twitter to the site's twitter handle rather than personal twitter handles.
 	 *
 	 * @hook wpseo_twitter_creator_account
-	 * @param mixed $twitter
-	 * @return mixed
+	 * @param mixed $twitter The Twitter handle.
+	 * @return mixed The Twitter handle.
 	 */
 	public function yoast_seo_default_twitter( $twitter ) {
 		$twitter = WPSEO_Options::get( 'twitter_site' );
 		return $twitter;
 	}
 
+	/**
+	 * Remove the pipe and Pew Research Center from the social titles.
+	 *
+	 * @hook wpseo_opengraph_title
+	 * @param string $title The title.
+	 * @return string The title.
+	 */
 	public function remove_pipe_from_social_titles( $title ) {
 		$title = str_replace( '| Pew Research Center', '', $title );
 		return $title;
 	}
 
+	/**
+	 * Disable Parsely JSON-LD.
+	 *
+	 * @hook wp_parsely_metadata
+	 * @param array  $parsely_metadata The Parsely metadata.
+	 * @param object $post The post object.
+	 * @param array  $parsely_options The Parsely options.
+	 * @return array The Parsely metadata.
+	 */
 	public function disable_parsely_json_ld( $parsely_metadata, $post, $parsely_options ) {
 		return $parsely_metadata;
 	}
 
-	public function get_chart_attribute( $post_id, $attribute ) {
-		if ( ! is_singular( 'chart' ) ) {
-			return;
-		}
-
-		$post_content = get_post_field( 'post_content', $post_id );
-		// get all of the blocks on the page with the name 'prc-block/chart-builder-controller'
-		$blocks            = parse_blocks( $post_content );
-		$controller_blocks = array_filter(
-			$blocks,
-			function ( $block ) {
-				return $block['blockName'] === 'prc-block/chart-builder-controller';
-			}
-		);
-		// if there are no chart controller blocks, return
-		if ( empty( $controller_blocks ) ) {
-			return;
-		}
-		$chart_blocks = array_map(
-			function ( $block ) {
-				// return inner blocks with the block name 'prc-block/chart-builder'
-				return array_filter(
-					$block['innerBlocks'],
-					function ( $inner_block ) {
-						return $inner_block['blockName'] === 'prc-block/chart-builder';
-					}
-				);
-			},
-			$controller_blocks
-		);
-		// get the first chart block
-		$chart_block = reset( $chart_blocks );
-		$attributes  = $chart_block[1]['attrs'];
-
-		$block_attribute = array_key_exists( $attribute, $attributes ) ? $attributes[ $attribute ] : false;
-
-		return $block_attribute;
-	}
-
-	public function get_chart_title( $title ) {
-		global $post;
-		if ( ! is_singular( 'chart' ) ) {
-			return $title;
-		}
-		$id    = $post->ID;
-		$title = $this->get_chart_attribute( $id, 'metaTitle' );
-		return $title;
-	}
-
-	public function get_chart_image( $image ) {
-		global $post;
-		if ( ! is_singular( 'chart' ) ) {
-			return $image;
-		}
-		$id     = $post->ID;
-		$png_id = $this->get_chart_attribute( $id, 'pngId' );
-		$image  = wp_get_attachment_url( $png_id );
-
-		return $image;
-	}
-
-	public function get_chart_description( $description ) {
-		global $post;
-		if ( ! is_singular( 'chart' ) ) {
-			return $description;
-		}
-		$id          = $post->ID;
-		$description = $this->get_chart_attribute( $id, 'metaSource' );
-		return $description;
-	}
 
 	/**
 	 * Adds our custom presenter to the array of presenters.
@@ -234,27 +192,13 @@ class Schema_Meta {
 	}
 
 	/**
-	 * Add a ASCII logo to the head of the site.
+	 * Get the canonical link for attachment pages.
 	 *
-	 * @return void
-	 */
-	public function ascii() {
-		?>
-	<!--
-	#   Pew Research Center Digital Publishing Platform (PRC-Platform)
-	#   Github: https://github.com/pewresearch/prc-platform-core
-	#   Version: <?php echo esc_html( $this->version ); ?>
-	#
-	#   Powered by WordPress VIP
-	#
-	-->
-		<?php
-	}
-
-	/**
 	 * @hook wpseo_canonical
+	 * @param string $canonical The canonical link.
+	 * @return string The canonical link.
 	 */
-	public function yoast_attachment_page_canonical_link( $canonical ) {
+	public function get_attachment_canonical_link_back_to_parent( $canonical ) {
 		if ( is_attachment() ) {
 			$canonical = get_permalink( wp_get_post_parent_id( get_the_ID() ) );
 		}
@@ -262,7 +206,11 @@ class Schema_Meta {
 	}
 
 	/**
+	 * Correct the schema graph searchaction.
+	 *
 	 * @hook wpseo_schema_graph
+	 * @param array $graph The schema graph.
+	 * @return array The schema graph.
 	 */
 	public function correct_schema_graph_searchaction( $graph ) {
 		$graph = array_map(

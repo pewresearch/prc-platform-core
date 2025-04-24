@@ -1,5 +1,5 @@
 <?php
-namespace PRC\Platform;
+namespace PRC\Platform\Upgrades;
 
 use WPCOM_VIP_CLI_Command;
 use WP_CLI;
@@ -10,10 +10,12 @@ if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WPCOM_VIP_CLI_Command' ) ) 
 	/**
 	 * Manage the migration of posts from one site to the new pewresearch-org.
 	 */
-	class Upgrades_Commands extends WPCOM_VIP_CLI_Command {
+	class CLI extends WPCOM_VIP_CLI_Command {
+		/**
+		 * Constructor
+		 */
 		public function __construct() {
-			// Require the class-1-1-0.php file in /1.1.0 directory relative to this
-			require_once __DIR__ . '/1.1.0/class-1-1-0-upgrade.php';
+			require_once __DIR__ . '/1.2.0/class-upgrade-to-1-2-0.php';
 		}
 
 		/**
@@ -50,7 +52,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WPCOM_VIP_CLI_Command' ) ) 
 				$this->start_bulk_operation();
 
 				// Do Upgrades...
-				$new_upgrades = new Upgrade_To_1_1_0();
+				$new_upgrades = new Upgrade_To_1_2_0();
 				// Free up memory.
 				$this->vip_inmemory_cleanup();
 
@@ -60,5 +62,5 @@ if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WPCOM_VIP_CLI_Command' ) ) 
 		}
 	}
 
-	WP_CLI::add_command( 'prc upgrades', '\PRC\Platform\Upgrades_Commands' );
+	WP_CLI::add_command( 'prc upgrades', '\PRC\Platform\Upgrades\CLI' );
 }

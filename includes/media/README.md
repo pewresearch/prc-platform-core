@@ -1,11 +1,8 @@
-## Media
+## Media Utilities and Configuration
 
+This manages the overall media library configuration for PRC Platform and some small helper functions.
 
-... We're a media organization, theres a lot of rules and settings that need to be explained here... TKTK.
+### Attachment Downloader
 
-### Art Direction
-A directed approach to featured images
+This handles the `/download` url schema for attachments.
 
-### Attachments Report
-
-### Attachments Downloader

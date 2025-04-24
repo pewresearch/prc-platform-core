@@ -1,34 +1,45 @@
 <?php
+/**
+ * Rest API class.
+ *
+ * @package PRC\Platform
+ */
 namespace PRC\Platform;
+
 use WP_Error;
 
+/**
+ * Rest API class.
+ *
+ * @package PRC\Platform
+ */
 class Rest_API {
-	public static $namespace = 'prc-api/v3';
-
 	/**
-	 * The version of this plugin.
+	 * The PRC APInamespace.
 	 *
 	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @access   public
+	 * @var      string    $namespace    The namespace.
 	 */
-	private $version;
-
-	public static $handle = 'prc-platform-rest-api';
+	public static $namespace = 'prc-api/v3';
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $loader    The loader.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-		$this->init($loader);
+	public function __construct( $loader ) {
+		$this->init( $loader );
 	}
 
-	public function init($loader = null) {
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string $loader    The loader.
+	 */
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			// A centralized filter to validate and register /prc-api/v3/ endpoints. `prc_api_endpoints` is the filter name.
 			$loader->add_action( 'rest_api_init', $this, 'register_endpoints' );
@@ -37,6 +48,7 @@ class Rest_API {
 
 	/**
 	 * Registers the prc-api endpoints with WordPress.
+	 *
 	 * @hook rest_api_init
 	 * @uses prc_api_endpoints
 	 */
@@ -47,13 +59,19 @@ class Rest_API {
 		}
 	}
 
-	public function validate_endpoint($opts = array()) {
+	/**
+	 * Validate the endpoint.
+	 *
+	 * @param array $opts The options.
+	 * @return array The validated options.
+	 */
+	public function validate_endpoint( $opts = array() ) {
 		$defaults = array(
-			'route' => '',
-			'methods' => 'GET',
-			'callback' => '',
-			'args' => array(),
-			'permission_callback' => function() {
+			'route'               => '',
+			'methods'             => 'GET',
+			'callback'            => '',
+			'args'                => array(),
+			'permission_callback' => function () {
 				return true;
 			},
 		);
@@ -62,32 +80,21 @@ class Rest_API {
 
 	/**
 	 * Register a singular endpoint
-	 * @param array $opts
-	 * @return void
+	 *
+	 * @param array $opts The options.
 	 */
-	public function register_endpoint($opts = array()) {
-		$opts = $this->validate_endpoint($opts);
+	public function register_endpoint( $opts = array() ) {
+		$opts = $this->validate_endpoint( $opts );
 
-		register_rest_route( self::$namespace, $opts['route'], array(
-			'methods' => $opts['methods'],
-			'callback' => $opts['callback'],
-			'permission_callback' => $opts['permission_callback'],
-			'args' => $opts['args'],
-		) );
-	}
-
-
-	public function define_nonce() {
-
-	}
-
-	public function verify_nonce() {
-
+		register_rest_route(
+			self::$namespace,
+			$opts['route'],
+			array(
+				'methods'             => $opts['methods'],
+				'callback'            => $opts['callback'],
+				'permission_callback' => $opts['permission_callback'],
+				'args'                => $opts['args'],
+			)
+		);
 	}
 }
-
-// for the /prc-api/v3/ rest api and some helper functions around nonces,validation,sanitization, etc...
-// apply_filters( 'prc_api_v3_endpoints', array() );
-
-// Rest_API->define_nonce();
-// Rest_API->verify_nonce();

@@ -5,6 +5,24 @@ use DougSisk\CountryState\CountryState;
 use Automattic\Jetpack\Device_Detection;
 
 /**
+ * Check if a PRC- module is active
+ *
+ * @param string $module The module to check.
+ * @return bool True if the module is active, false otherwise.
+ */
+function is_module_active( $module ) {
+	// If module is not prefixed with prc- then error out.
+	if ( strpos( $module, 'prc-' ) !== 0 ) {
+		return new \WP_Error( 'module_not_prefixed', 'Module ' . $module . ' is not prefixed with prc-' );
+	}
+	$plugin_file = $module . '/' . $module . '.php';
+	if ( in_array( $plugin_file, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+		return true;
+	}
+	return false;
+}
+
+/**
  * Get the domain for the server
  */
 function get_domain() {
@@ -322,7 +340,17 @@ function get_list_of( $list_of = null ) {
  * );
  */
 function get_devices() {
-	return Device_Detection::get_info();
+	if ( class_exists( 'Device_Detection' ) ) {
+		return Device_Detection::get_info();
+	} else {
+		return array(
+			'is_phone'      => false,
+			'is_smartphone' => false,
+			'is_tablet'     => false,
+			'is_handheld'   => false,
+			'is_desktop'    => true,
+		);
+	}
 }
 
 /**

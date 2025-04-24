@@ -183,6 +183,9 @@ class Shortlinks {
 	 * @return string|WP_Error
 	 */
 	public function query_bitly( $url, $post_id = null ) {
+		if ( ! defined( 'PRC_PLATFORM_BITLY_KEY' ) ) {
+			return new WP_Error( 'bitly_error', 'PRC_PLATFORM_BITLY_KEY is not defined.' );
+		}
 		$rest_url = 'https://api-ssl.bitly.com/v4/shorten';
 
 		$headers = array(

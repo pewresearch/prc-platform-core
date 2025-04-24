@@ -33,3 +33,7 @@ yarn-error.log*
 
 # Testing
 artifacts/
+
+# Composer
+composer.lock
+vendor/

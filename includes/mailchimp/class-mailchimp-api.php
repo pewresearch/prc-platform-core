@@ -1,10 +1,12 @@
 <?php
 namespace PRC\Platform;
+
 use WP_Error;
-use \DrewM\MailChimp\MailChimp;
+use DrewM\MailChimp\MailChimp;
 
 /**
  * We send all mail through Mailchimp's Mandrill service and we use Mailchimp to register newsletter subscriptions. This class handles both.
+ *
  * @package PRC\Platform
  */
 class Mailchimp_API {
@@ -12,7 +14,17 @@ class Mailchimp_API {
 	private $api_key;
 	private $list_id;
 
-	protected function get_matching_api_key($key) {
+	protected function get_matching_api_key( $key ) {
+		if ( ! defined( 'PRC_PLATFORM_MAILCHIMP_KEY' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_MAILCHIMP_FORM_BLOCK_KEY' ) ) {
+			return;
+		}
+		if ( ! defined( 'PRC_PLATFORM_MAILCHIMP_SELECT_BLOCK_KEY' ) ) {
+			return;
+		}
+
 		if ( 'mailchimp-form' === $key ) {
 			return PRC_PLATFORM_MAILCHIMP_FORM_BLOCK_KEY;
 		}
@@ -29,8 +41,8 @@ class Mailchimp_API {
 		if ( ! class_exists( 'DrewM\MailChimp\MailChimp' ) ) {
 			return new WP_Error( 'no-mailchimp-class', __( 'No Mailchimp class found', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
-		$this->email   = is_email($email_address);
-		$this->api_key = $this->get_matching_api_key($args['api_key']);
+		$this->email   = is_email( $email_address );
+		$this->api_key = $this->get_matching_api_key( $args['api_key'] );
 		$this->list_id = $args['list_id'];
 	}
 
@@ -52,39 +64,42 @@ class Mailchimp_API {
 
 		$response = $mailchimp->get(
 			"lists/$list_id/segments",
-			array('count' => 30)
+			array( 'count' => 30 )
 		);
 
-		$tmp = print_r($response, true);
+		$tmp = print_r( $response, true );
 
-		if ($mailchimp->success()) {
+		if ( $mailchimp->success() ) {
 			$segments = $response['segments'];
-			$segments = array_map(function($segment) {
-				if (isset($segment['options']['conditions'][0]['value'][0])) {
-					$interest_id = $segment['options']['conditions'][0]['value'][0];
-				} else {
-					// Handle the case where the value does not exist
-					$interest_id = null; // or any default value
-				}
-				if (null === $interest_id || strlen($interest_id) < 2) {
-					return null;
-				}
-				return array(
-					'id' => $segment['id'],
-					'name' => str_replace('Receives ', '', $segment['name']),
-					'member_count' => $segment['member_count'],
-					'interest_id' => $interest_id,
-				);
-			}, $segments);
+			$segments = array_map(
+				function ( $segment ) {
+					if ( isset( $segment['options']['conditions'][0]['value'][0] ) ) {
+						$interest_id = $segment['options']['conditions'][0]['value'][0];
+					} else {
+						// Handle the case where the value does not exist
+						$interest_id = null; // or any default value
+					}
+					if ( null === $interest_id || strlen( $interest_id ) < 2 ) {
+						return null;
+					}
+					return array(
+						'id'           => $segment['id'],
+						'name'         => str_replace( 'Receives ', '', $segment['name'] ),
+						'member_count' => $segment['member_count'],
+						'interest_id'  => $interest_id,
+					);
+				},
+				$segments
+			);
 			// clean segments of any null values
-			$segments = array_filter($segments);
+			$segments = array_filter( $segments );
 
-			wp_cache_set( $cache_key, $segments, '', 1 * DAY_IN_SECONDS);
+			wp_cache_set( $cache_key, $segments, '', 1 * DAY_IN_SECONDS );
 
-			return rest_ensure_response($segments);
+			return rest_ensure_response( $segments );
 		} else {
 			$error = new WP_Error( 'get-segments-error', __( $list_id . ' - segments - ' . $api_key, 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
-			return rest_ensure_response($error);
+			return rest_ensure_response( $error );
 		}
 	}
 
@@ -113,7 +128,7 @@ class Mailchimp_API {
 		$list_id = $this->list_id;
 
 		$email = $this->email;
-		if ( !$email ) {
+		if ( ! $email ) {
 			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
@@ -133,7 +148,7 @@ class Mailchimp_API {
 				'id'        => $result['id'],
 			);
 		} else {
-			return new WP_Error( 'add-interest-to-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'add-interest-to-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
 		}
 	}
 
@@ -146,12 +161,12 @@ class Mailchimp_API {
 
 		$list_id = $this->list_id;
 
-		if ( empty($interests) ) {
+		if ( empty( $interests ) ) {
 			return new WP_Error( 'no-interests-provided', __( 'No interests provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
 		$email = $this->email;
-		if ( !$email ) {
+		if ( ! $email ) {
 			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
@@ -171,9 +186,8 @@ class Mailchimp_API {
 				'id'        => $result['id'],
 			);
 		} else {
-			return new WP_Error( 'update-newsletter-preferences', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'update-newsletter-preferences', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
 		}
-
 	}
 
 	/**
@@ -194,7 +208,7 @@ class Mailchimp_API {
 		$list_id = $this->list_id;
 
 		$email = $this->email;
-		if ( !$email ) {
+		if ( ! $email ) {
 			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
@@ -216,8 +230,8 @@ class Mailchimp_API {
 			);
 		}
 		// If origin url is not empty and is a valid url then add it to the payload.
-		if ( !empty($origin_url) && !filter_var($origin_url, FILTER_VALIDATE_URL) === false) {
-			$payload['merge_fields']['ORIGINURL'] = esc_url($origin_url);
+		if ( ! empty( $origin_url ) && ! filter_var( $origin_url, FILTER_VALIDATE_URL ) === false ) {
+			$payload['merge_fields']['ORIGINURL'] = esc_url( $origin_url );
 		}
 
 		$result = $mailchimp->post( "lists/$list_id/members", $payload );
@@ -229,8 +243,7 @@ class Mailchimp_API {
 				'interests' => $result['interests'],
 				'id'        => $result['id'],
 			);
-		} else {
-			if ( 'Member Exists' === $result['title'] ) {
+		} elseif ( 'Member Exists' === $result['title'] ) {
 				// Check if the member's status on the list is subscribed or not. If not, then re-add them.
 				$subscriber_hash = $mailchimp->subscriberHash( $email );
 
@@ -242,10 +255,9 @@ class Mailchimp_API {
 				);
 				// If member is already part of list then proceed to add interest to member, just a patch.
 				return $this->add_interest( $this->construct_interests( $interests ), $api_key );
-			} else {
+		} else {
 				$subscriber_hash = $mailchimp->subscriberHash( $email );
-				return new WP_Error( 'add-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
-			}
+				return new WP_Error( 'add-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
 		}
 	}
 
@@ -266,7 +278,7 @@ class Mailchimp_API {
 		$list_id = $this->list_id;
 
 		$email = $this->email;
-		if ( !$email ) {
+		if ( ! $email ) {
 			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
@@ -277,7 +289,7 @@ class Mailchimp_API {
 		if ( $mailchimp->success() ) {
 			return $result;
 		} else {
-			return new WP_Error( 'remover-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'remover-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
 		}
 	}
 
@@ -297,7 +309,7 @@ class Mailchimp_API {
 		$list_id = $this->list_id;
 
 		$email = $this->email;
-		if ( !$email ) {
+		if ( ! $email ) {
 			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
 		}
 
@@ -308,35 +320,35 @@ class Mailchimp_API {
 		if ( $mailchimp->success() ) {
 			return $result;
 		} else {
-			return new WP_Error( 'get-member-error', esc_textarea($result['detail']), array( 'status' => $result['status'] ) );
+			return new WP_Error( 'get-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
 		}
 	}
 }
 
 
 // $test = new Mailchimp_API(
-// 	'smrubenstein@gmail.com',
-// 	array(
-// 		'api_key' => 'xyz',
-// 		'list_id' => 'b0b0b0b0b0',
-// 	)
+// 'smrubenstein@gmail.com',
+// array(
+// 'api_key' => 'xyz',
+// 'list_id' => 'b0b0b0b0b0',
+// )
 // );
 
 // $test->update_interests(
-// 	array(
-// 		'xyz',
-// 		'abce',
-// 	)
+// array(
+// 'xyz',
+// 'abce',
+// )
 // );
 
 // $test->subscribe_to_list(
-// 	array(
-// 		'fname' => 'Sam',
-// 		'lname' => 'Rubenstein',
-// 	),
-// 	array(
-// 		'xyz',
-// 		'abce',
-// 	),
-// 	'https://www.pewresearch.org/article-page-url'
+// array(
+// 'fname' => 'Sam',
+// 'lname' => 'Rubenstein',
+// ),
+// array(
+// 'xyz',
+// 'abce',
+// ),
+// 'https://www.pewresearch.org/article-page-url'
 // );

@@ -1,13 +1,37 @@
 <?php
+/**
+ * Research Teams Taxonomy
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Taxonomy;
 use WP_Error;
 
+/**
+ * Research Teams Taxonomy
+ *
+ * @package PRC\Platform
+ */
 class Research_Teams extends Taxonomies {
+	/**
+	 * Taxonomy name.
+	 *
+	 * @var string
+	 */
 	protected static $taxonomy = 'research-teams';
 
-	protected static $post_types = array(
+	/**
+	 * Post types that support the research teams taxonomy.
+	 *
+	 * @TODO: make into a filter for post types to signal support for research teams taxonomy
+	 * to take over their rewrites and permalinks.
+	 *
+	 * @var array
+	 */
+	protected static $rewrite_enabled_post_types = array(
 		'post',
 		'fact-sheet',
 		'dataset',
@@ -15,6 +39,11 @@ class Research_Teams extends Taxonomies {
 		'quiz',
 	);
 
+	/**
+	 * Constructor.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register' );
 		$loader->add_filter( 'post_link', $this, 'modify_post_permalinks', 10, 2 );
@@ -66,6 +95,7 @@ class Research_Teams extends Taxonomies {
 			'show_in_rest'      => true,
 		);
 
+		// @TODO: Add filters into modules to signal support for research teams taxonomy.
 		$post_types = apply_filters(
 			"prc_taxonomy_{$taxonomy_name}_post_types",
 			array(
@@ -87,7 +117,14 @@ class Research_Teams extends Taxonomies {
 		return register_taxonomy( self::$taxonomy, $post_types, $args );
 	}
 
-	// Adds a rewrite rule for each research term for the approved post types.
+	/**
+	 * Adds a rewrite rule for each research term for the approved post types.
+	 *
+	 * @hook rewrite_rules_array
+	 *
+	 * @param array $rules The rewrite rules.
+	 * @return array
+	 */
 	public function add_rewrite_rules( $rules ) {
 		if ( 1 === get_current_blog_id() ) {
 			return $rules;
@@ -107,46 +144,42 @@ class Research_Teams extends Taxonomies {
 			$terms
 		);
 		foreach ( $term_names as $term_name ) {
-			// Skip Decoded and Pew Research Center
+			// Skip Decoded and Pew Research Center.
 			if ( 'decoded' === $term_name || 'pew-research-center' === $term_name ) {
 				continue;
 			}
-			foreach ( self::$post_types as $post_type ) {
+			foreach ( self::$rewrite_enabled_post_types as $post_type ) {
 				if ( 'post' === $post_type ) {
 					$new_rules[ $term_name . '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/?$' ] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]';
-					// Add iframe rule:
+					// Add iframe rule.
 					$new_rules[ $term_name . '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/embed/?$' ]  = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&iframe=true';
 					$new_rules[ $term_name . '/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(?:/([0-9]+))?/iframe/?$' ] = 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&iframe=true';
-					// Add attachment rule:
+					// Add attachment rule.
 					$new_rules[ $term_name . '/[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'fact-sheet' === $post_type ) {
 					$new_rules[ $term_name . '/fact-sheet/([^/]+)/?$' ] = 'index.php?post_type=fact-sheet&name=$matches[1]';
-					// Add attachment rule:
+					// Add attachment rule.
 					$new_rules[ $term_name . '/fact-sheet/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'quiz' === $post_type ) {
-					// Add /quiz rules:
+					// Add /quiz rules.
 					$new_rules[ $term_name . '/quiz/([^/]+)/?$' ] = 'index.php?post_type=quiz&name=$matches[1]';
-					// Add /results rules:
+					// Add /results rules.
 					$new_rules[ $term_name . '/quiz/([^/]+)/results/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
 					// A new, cacheable, results archetype rule.
 					$new_rules[ $term_name . '/quiz/([^/]+)/results/([^/]+)/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
-					// Add iframe and embed rules:
+					// Add iframe and embed rules.
 					$new_rules[ $term_name . '/quiz/([^/]+)/embed/?$' ]  = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
 					$new_rules[ $term_name . '/quiz/([^/]+)/iframe/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
-					// Add attachment rule:
+					// Add attachment rule.
 					$new_rules[ $term_name . '/quiz/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'feature' === $post_type ) {
 					$new_rules[ $term_name . '/feature/([^/]+)/?$' ] = 'index.php?post_type=feature&name=$matches[1]';
 					// Add attachment rule, very, very specific. This will only hit for attachment names that are 5 or more characters long.
-					// This rule allows for the possibilitiy of other interactive rewrites
-					// example url: https://orange-goggles-p7vp96jxg27xvw-80.app.github.dev/pewresearch-org/global/feature/testing-feature-loader/cleanshot-2024-03-23-at-00-19-002x/
-					// make a regex using the example url where it would capture the attachment name but only so long as its longer than 4 characters
 					$new_rules[ $term_name . '/feature/[^/]+/([^/]{5,})/?$' ] = 'index.php?attachment=$matches[1]';
-					// $new_rules[$term_name . '/feature/([^/]+)/([^/]{5,})/?$'] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'dataset' === $post_type ) {
 					$new_rules[ $term_name . '/datasets' ]           = 'index.php?post_type=dataset';
 					$new_rules[ $term_name . '/dataset/([^/]+)/?$' ] = 'index.php?datasets=$matches[1]';
-					// Add attachment rule:
+					// Add attachment rule.
 					$new_rules[ $term_name . '/dataset/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				}
 			}
@@ -158,6 +191,8 @@ class Research_Teams extends Taxonomies {
 	 * Rewrites pewresearch.org/{research-team-name}/datasets to preload the selected facet
 	 *
 	 * @hook facetwp_preload_url_vars
+	 * @param array $url_vars The URL variables.
+	 * @return array
 	 */
 	public function rewrite_datasets_archives( $url_vars ) {
 		$current_url = FWP()->helper->get_uri();
@@ -188,27 +223,26 @@ class Research_Teams extends Taxonomies {
 	 * Add rewrite tag to post permalinks.
 	 *
 	 * @hook post_link
-	 * @param mixed $permalink
-	 * @param mixed $post
-	 * @param mixed $leavename
+	 * @param mixed $permalink The permalink.
+	 * @param mixed $post The post.
 	 * @return mixed
 	 */
 	public function modify_post_permalinks( $permalink, $post ) {
 		if ( 1 === get_current_blog_id() ) {
 			return $permalink;
 		}
-		// Check if post has the "disable_research_team_permalink" meta key
+		// Check if post has the "disable_research_team_permalink" meta key.
 		if ( get_post_meta( $post->ID, 'disable_research_team_permalink', true ) ) {
 			return $permalink;
 		}
-		// Check if the post belongs to the "research-teams" taxonomy
-		if ( in_array( 'research-teams', get_object_taxonomies( $post ) ) && in_array( $post->post_status, array( 'publish', 'hidden_from_index', 'hidden_from_search' ) ) && in_array( $post->post_type, self::$post_types ) ) {
-			// Get the terms associated with the post
+		// Check if the post belongs to the "research-teams" taxonomy.
+		if ( in_array( 'research-teams', get_object_taxonomies( $post ) ) && in_array( $post->post_status, array( 'publish', 'hidden_from_index', 'hidden_from_search' ) ) && in_array( $post->post_type, self::$rewrite_enabled_post_types ) ) {
+			// Get the terms associated with the post.
 			$terms = get_the_terms( $post, self::$taxonomy );
 			if ( $terms && ! is_wp_error( $terms ) ) {
-				// Get the primary term
+				// Get the primary term.
 				$primary_term_id = get_primary_term_id( self::$taxonomy, $post->ID );
-				// search through $terms from a term object with term_id of $primary_term_id
+				// search through $terms from a term object with term_id of $primary_term_id.
 				$primary_term = array_filter(
 					$terms,
 					function ( $term ) use ( $primary_term_id ) {

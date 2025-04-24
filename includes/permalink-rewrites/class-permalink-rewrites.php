@@ -10,7 +10,7 @@ namespace PRC\Platform;
 
 use WP_Error;
 use WP_REST_Request;
-
+use WP_Speculation_Rules;
 /**
  * Permalink Rewrites class for managing permalink structure and query variables.
  *
@@ -38,6 +38,7 @@ class Permalink_Rewrites {
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'wp_speculation_rules_configuration', $this, 'manage_speculative_loading' );
+			$loader->add_action( 'wp_load_speculation_rules', $this, 'define_additional_speculation_rules' );
 			$loader->add_action( 'init', $this, 'register_rewrites' );
 			$loader->add_action( 'init', $this, 'register_tags' );
 			$loader->add_filter( 'query_vars', $this, 'register_query_vars' );
@@ -47,6 +48,9 @@ class Permalink_Rewrites {
 
 	/**
 	 * Manage speculative loading configuration.
+	 * We prefetch "moderate" eageasrness for the PRC Platform.
+	 * This means as users hover over links we will prefetch, rather than prerender
+	 * the link for them. This gets all the assets on the page loaded and ready to go.
 	 *
 	 * @hook wp_speculation_rules_configuration
 	 *
@@ -55,9 +59,46 @@ class Permalink_Rewrites {
 	 */
 	public function manage_speculative_loading( $config ) {
 		if ( is_array( $config ) ) {
+			$config['mode']      = 'prefetch';
 			$config['eagerness'] = 'moderate';
 		}
 		return $config;
+	}
+
+	/**
+	 * Define additional speculation rules.
+	 *
+	 * We want to eagerly prefetch the following urls:
+	 * - /publications/
+	 * - /topics/
+	 * - /topics-categorized/
+	 * - /topics-condensed/
+	 * - /tools-and-resources/
+	 *
+	 * This means as users hit page with links to these urls present on the page,
+	 * we will automatically prefetch the assets for these pages without requiring
+	 * them to hover or interact with the links in question.
+	 *
+	 * @hook wp_load_speculation_rules
+	 *
+	 * @param \WP_Speculation_Rules $speculation_rules The speculation rules.
+	 */
+	public function define_additional_speculation_rules( \WP_Speculation_Rules $speculation_rules ) {
+		$speculation_rules->add_rule(
+			'prefetch',
+			'prc-platform-eager-prefetch-rule',
+			array(
+				'source'    => 'list',
+				'urls'      => array(
+					'/publications/',
+					'/topics/',
+					'/topics-categorized/',
+					'/topics-condensed/',
+					'/tools-and-resources/',
+				),
+				'eagerness' => 'eager',
+			)
+		);
 	}
 
 	/**

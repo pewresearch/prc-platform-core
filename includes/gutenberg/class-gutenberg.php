@@ -1,45 +1,23 @@
 <?php
+/**
+ * Gutenberg Configuration
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 /**
- * Handle base level configuration of Gutenberg. For block-editor or site-editor specific functionality and configuration, see their respective classes.
- *
- * @package
+ * Handle base level configuration of Gutenberg. For block-editor or site-editor
+ * specific functionality and configuration, see their respective classes in class-block-editor.php and class-site-editor.php.
  */
 class Gutenberg {
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-
-	protected static $internal_post_types = array(
-		'post',
-		'page',
-		'wp_block',
-	);
-
-	protected static $third_party_post_types = array(
-		'block_pattern',
-		'blockmeister_pattern',
-		'newsletterglue',
-		'ngl_template',
-		'ngl_pattern',
-		'ngl_automation',
-	);
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param object $loader The loader object.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
+	public function __construct( $loader ) {
 		$this->init( $loader );
 	}
 
@@ -83,8 +61,9 @@ class Gutenberg {
 	 * Group the admin menus for Gutenberg together.
 	 *
 	 * @hook menu_order
-	 * @param array $menu_order
-	 * @return array
+	 *
+	 * @param array $menu_order The menu order.
+	 * @return array The menu order.
 	 */
 	public function group_admin_menus_together( $menu_order ) {
 		$new_menu_order = array();
@@ -109,6 +88,8 @@ class Gutenberg {
 
 	/**
 	 * Unregister all core and third-party block patterns.
+	 *
+	 * @hook after_setup_theme
 	 */
 	public function unregister_core_block_patterns() {
 		remove_theme_support( 'core-block-patterns' );

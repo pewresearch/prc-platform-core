@@ -160,10 +160,14 @@ class User_Permissions {
 		if ( ! $bot_user ) {
 			$existing_user = get_user_by( 'login', 'prc_wp_bot' );
 			if ( ! $existing_user ) {
+				$bot_password = wp_generate_password();
+				if ( defined( 'PRC_PLATFORM_TESTING_MODE' ) && true === PRC_PLATFORM_TESTING_MODE ) {
+					$bot_password = 'password';
+				}
 				$bot_user_id = wp_insert_user(
 					array(
 						'user_login'   => 'prc_wp_bot',
-						'user_pass'    => wp_generate_password(),
+						'user_pass'    => $bot_password,
 						'user_email'   => 'bot@pewresearch.org',
 						'display_name' => 'PRC WP Bot',
 						'role'         => 'editor',

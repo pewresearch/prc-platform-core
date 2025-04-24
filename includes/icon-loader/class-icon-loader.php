@@ -12,13 +12,6 @@ namespace PRC\Platform;
  * Icon Loader
  */
 class Icon_Loader {
-	/**
-	 * The version of this plugin.
-	 *
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
 
 	/**
 	 * The handle for this plugin's assets.
@@ -31,12 +24,10 @@ class Icon_Loader {
 	/**
 	 * Constructor
 	 *
-	 * @param string $version The version of this plugin.
 	 * @param object $loader The loader object.
 	 */
-	public function __construct( $version, $loader ) {
+	public function __construct( $loader ) {
 		require_once plugin_dir_path( __FILE__ ) . 'icon-render.php';
-		$this->version = $version;
 		$this->init( $loader );
 	}
 

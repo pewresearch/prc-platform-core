@@ -1,14 +1,15 @@
 <?php
 /**
  * WP_HTML_Heading_Processor
+ *
  * @author Seth Rubenstein
+ * @package prc-platform-core
  */
 
 /**
  * Pass in a document and get back an array of all the h1, h2, h3 elements and their contents.
  *
  * The WP_HTML_Tag_Processor bookmark tree navigation is heavily cribbed from WP_Directive_Processor class https://github.com/WordPress/block-interactivity-experiments/pull/169/files#diff-ad36045951e27010af027ae380350ae4b07b56a659a3127b40b7967b2308d5bc
- * @package
  */
 class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 	/**
@@ -34,7 +35,7 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 			)
 		) ) {
 			if ( ! $this->is_tag_closer() ) {
-				$depth++;
+				++$depth;
 				continue;
 			}
 
@@ -42,7 +43,7 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 				return true;
 			}
 
-			$depth--;
+			--$depth;
 		}
 
 		return false;
@@ -102,33 +103,36 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 	 *
 	 * @return array
 	 */
-	public function process($update_content = false) {
+	public function process( $update_content = false ) {
 		$headings = array();
 
 		while ( $this->next_tag() ) {
-			if ( array_key_exists($this->get_tag(), array(
-				'H2' => true,
-				'H3' => true,
-			) ) ) {
+			if ( array_key_exists(
+				$this->get_tag(),
+				array(
+					'H2' => true,
+					'H3' => true,
+				)
+			) ) {
 				$tag = $this->get_tag();
-				if ( $this->get_attribute('no-toc') ) {
+				if ( $this->get_attribute( 'no-toc' ) ) {
 					continue;
 				}
-				$id = $this->get_attribute('id');
-				$content = $this->get_attribute('toc-title'); // Alt text
-				if ( empty($content) ) {
+				$id      = $this->get_attribute( 'id' );
+				$content = $this->get_attribute( 'toc-title' ); // Alt text
+				if ( empty( $content ) ) {
 					$content = $this->get_inner_html();
 				}
-				if ( empty($id) ) {
-					$id = sanitize_title($content);
+				if ( empty( $id ) ) {
+					$id = sanitize_title( $content );
 				}
 				if ( true === $update_content ) {
-					$this->set_attribute('id', $id);
+					$this->set_attribute( 'id', $id );
 				} else {
 					$headings[] = array(
-						'level' => str_replace('H', '', $tag),
+						'level'   => str_replace( 'H', '', $tag ),
 						'content' => $content,
-						'id' => $id,
+						'id'      => $id,
 					);
 				}
 			}
@@ -138,7 +142,7 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 			return $this->get_updated_html();
 		}
 
-		if ( empty($headings) ) {
+		if ( empty( $headings ) ) {
 			return array();
 		}
 
@@ -155,11 +159,11 @@ class WP_HTML_Heading_Processor extends WP_HTML_Tag_Processor {
 function parse_document_for_headings( $document_content ) {
 	// strip $document_content of any <!-- comments -->, which can interfer with the parser below
 	$document_content = preg_replace( '/<!--(.|\s)*?-->/', '', $document_content );
-	$processor = new WP_HTML_Heading_Processor( $document_content );
+	$processor        = new WP_HTML_Heading_Processor( $document_content );
 	return $processor->process();
 }
 
 function update_document_headings_with_ids( $document_content ) {
 	$processor = new WP_HTML_Heading_Processor( $document_content );
-	return $processor->process(true);
+	return $processor->process( true );
 }

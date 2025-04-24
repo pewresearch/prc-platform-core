@@ -1,15 +1,22 @@
 <?php
+/**
+ * Admin Columns
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
-class Admin_Columns_Pro {
-	public static $handle = 'prc-platform-admin-columns';
-
+/**
+ * Admin Columns
+ *
+ * @package PRC\Platform
+ */
+class Admin_Columns {
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param      string $plugin_name       The name of this plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param mixed $loader The loader.
 	 */
 	public function __construct( $loader ) {
 		if ( PRC_PRIMARY_SITE_ID === get_current_blog_id() ) {
@@ -28,11 +35,13 @@ class Admin_Columns_Pro {
 		return $dir . '/config';
 	}
 
+	/**
+	 * Register the custom columns
+	 */
 	public function register_columns() {
 		add_action(
 			'ac/column_types',
 			function ( \AC\ListScreen $list_screen ) {
-				// require the acp-column.php file in this directory
 				require_once plugin_dir_path( __FILE__ ) . 'parent-post-filter/class-column.php';
 				require_once plugin_dir_path( __FILE__ ) . 'parent-post-filter/class-filter.php';
 				if ( 'post' === $list_screen->get_key() ) {

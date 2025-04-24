@@ -15,11 +15,11 @@ class Upgrades {
 		require_once plugin_dir_path( __FILE__ ) . 'class-cli.php';
 		// We're not doing auto-upgrades until we have a better handle on the process.
 		// For now, create, and run CLI comamnds to run upgrade process manually.
-		// $loader->add_action( 'init', $this, 'check_current_version' );
-		// $loader->add_action( 'init', $this, 'run_upgrades' );
-		// $loader->add_action( 'init', $this, 'register_meta' );
 	}
 
+	/**
+	 * Register the meta for general upgrades.
+	 */
 	public function register_meta() {
 		register_post_meta(
 			'',
@@ -67,8 +67,10 @@ class Upgrades {
 	 */
 	public function run_upgrades() {
 		$current_version = get_option( 'prc_platform_version' );
-		if ( version_compare( $current_version, '1.1.0', '<' ) ) {
-			// new Upgrade_To_1_1_0();
+		// phpcs:ignore
+		if ( version_compare( $current_version, '1.2.0', '<' ) ) {
+			// phpcs:ignore
+			// new Upgrade_To_1_2_0();
 		}
 	}
 }

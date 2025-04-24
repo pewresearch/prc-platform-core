@@ -30,6 +30,7 @@ export default function WPEntitySearch({
 	entityId,
 	entityType = 'postType', // taxonomy, user
 	entitySubType = 'post', // ['post', 'page', 'staff'] || ['category', 'tag'] || 'user'
+	entityStatus = ['publish'],
 	perPage = 10,
 	hideChildren = true,
 	onUpdateURL = false,
@@ -80,6 +81,7 @@ export default function WPEntitySearch({
 						entityId,
 						entityType,
 						entitySubType,
+						entityStatus,
 						perPage,
 						hideChildren,
 						searchInput,

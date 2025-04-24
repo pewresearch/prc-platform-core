@@ -1,6 +1,17 @@
 <?php
+/**
+ * Decoded Category Taxonomy
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
+/**
+ * Decoded Category Taxonomy
+ *
+ * @package PRC\Platform
+ */
 class Decoded_Category extends Taxonomies {
 	/**
 	 * The taxonomy slug.
@@ -18,6 +29,11 @@ class Decoded_Category extends Taxonomies {
 		$loader->add_action( 'init', $this, 'register' );
 	}
 
+	/**
+	 * Register the taxonomy.
+	 *
+	 * @hook init
+	 */
 	public function register() {
 		$labels = array(
 			'name'                       => _x( 'Decoded Category', 'Taxonomy General Name', 'text_domain' ),

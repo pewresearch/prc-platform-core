@@ -3,53 +3,41 @@ namespace PRC\Platform;
 
 /**
  * The media "manager" for the PRC Platform. Manages image sizes, art direction, attachment downloads, and more.
+ *
  * @package
  */
 class Media {
 	/**
 	 * The media sizes defined in media-sizes.json
+	 *
 	 * @var mixed
 	 */
 	public $media_sizes = array();
 
 	/**
-	 * The version of this plugin.
+	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @param      object $loader The loader object.
 	 */
-	private $version;
+	public function __construct( $loader ) {
+		// load the media-sizes.json file into the $media_sizes array.
+		$this->media_sizes = \wp_json_file_decode(
+			plugin_dir_path( __DIR__ ) . 'media/media-sizes.json',
+			array( 'associative' => true )
+		);
+
+		// Load attachment downloader. /{attachment}/download url schema.
+		require_once plugin_dir_path( __FILE__ ) . 'class-attachment-downloader.php';
+
+		$this->init( $loader );
+	}
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      object $loader The loader object.
 	 */
-	public function __construct( $version, $loader ) {
-		$this->version = $version;
-
-		// load the media-sizes.json file into the $media_sizes array.
-		$this->media_sizes = \wp_json_file_decode(
-			plugin_dir_path( dirname( __FILE__ ) ) . 'media/media-sizes.json',
-			array( 'associative' => true)
-		);
-
-		// Load attachment downloader. /{attachment}/download url schema
-		require_once plugin_dir_path( __FILE__ ) . 'class-attachment-downloader.php';
-		// Load art direction system (replaces featured images).
-		require_once plugin_dir_path( __FILE__ ) . 'art-direction/class-art-direction.php';
-		// Load the attachment report functionality.
-		require_once plugin_dir_path( __FILE__ ) . 'attachment-report/class-attachment-report.php';
-		// Load the attachment panel functionality.
-		require_once plugin_dir_path( __FILE__ ) . 'attachments-panel/class-attachments-panel.php';
-
-		$this->init($loader);
-	}
-
-	public function init($loader = null) {
+	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'upload_size_limit', $this, 'enforce_maximum_file_size_limit' );
 			$loader->add_action( 'admin_init', $this, 'enforce_image_defaults' );
@@ -58,35 +46,40 @@ class Media {
 			$loader->add_filter( 'image_size_names_choose', $this, 'filter_image_sizes_dropdown' );
 			$loader->add_filter( 'vip_go_srcset_enabled', $this, 'enable_srcset' );
 			$loader->add_filter(
-				'default_site_option_ms_files_rewriting', $this,'handle_legacy_multisite_files_rewrites', 1000
+				'default_site_option_ms_files_rewriting',
+				$this,
+				'handle_legacy_multisite_files_rewrites',
+				1000
 			);
 			$loader->add_filter( 'oembed_dataparse', $this, 'youtube_remove_related', 10, 3 );
 			$loader->add_filter( 'upload_mimes', $this, 'allow_json_uploads' );
 			$loader->add_filter( 'wp_get_attachment_image_src', $this, 'legacy_webp_handler', 100, 1 );
 
-			new Attachment_Downloader( $this->version, $loader );
-			new Art_Direction( $this->version, $loader );
-			new Attachment_Report( $this->version, $loader );
-			new Attachments_Panel( $this->version, $loader );
+			new Attachment_Downloader( $loader );
 		}
 	}
 
 	/**
 	 * Modifies the default image link to use the raw ?attachment_id url.
+	 *
 	 * @hook attachment_link
 	 * @param string $link
-	 * @param int $post_id
+	 * @param int    $post_id
 	 * @return string
 	 */
-	public function default_image_link(string $link, int $post_id) {
+	public function default_image_link( string $link, int $post_id ) {
 		return \wp_get_attachment_url( $post_id );
 	}
 
 	/**
+	 * Handle legacy webp images.
+	 *
 	 * @hook wp_get_attachment_image_src
+	 * @param mixed $image
+	 * @return mixed
 	 */
-	public function legacy_webp_handler($image) {
-		// check that $image is an array and has a key of 0
+	public function legacy_webp_handler( $image ) {
+		// Check that $image is an array and has a key of 0.
 		if ( ! is_array( $image ) || ! isset( $image[0] ) ) {
 			return $image;
 		}
@@ -94,8 +87,16 @@ class Media {
 		return $image;
 	}
 
-	public function enforce_maximum_file_size_limit($limit) {
-		return 15 * 1024 * 1024; // 15MB in bytes
+	/**
+	 * Enforce a maximum file size limit.
+	 *
+	 * @hook upload_size_limit
+	 * @param int $limit The current limit.
+	 * @return int The new limit.
+	 */
+	public function enforce_maximum_file_size_limit( $limit ) {
+		$limit = 15 * 1024 * 1024; // 15MB in bytes
+		return $limit;
 	}
 
 	/**
@@ -119,14 +120,21 @@ class Media {
 		}
 
 		add_theme_support( 'post-thumbnails' );
-		foreach( $this->media_sizes as $name => $size ) {
+		foreach ( $this->media_sizes as $name => $size ) {
 			add_image_size( $name, $size['width'], $size['height'], $size['crop'] );
 		}
 	}
 
+	/**
+	 * Filter the image sizes dropdown.
+	 *
+	 * @hook image_size_names_choose
+	 * @param mixed $sizes
+	 * @return mixed
+	 */
 	public function filter_image_sizes_dropdown( $sizes ) {
 		foreach ( $this->media_sizes as $name => $size ) {
-			$sizes[$name] = $size['label'];
+			$sizes[ $name ] = $size['label'];
 		}
 		return $sizes;
 	}
@@ -147,6 +155,8 @@ class Media {
 	}
 
 	/**
+	 * Enable srcset.
+	 *
 	 * @hook vip_go_srcset_enabled
 	 * @return true
 	 */
@@ -154,12 +164,19 @@ class Media {
 		return true;
 	}
 
+	/**
+	 * Handle legacy multisite files rewrites.
+	 *
+	 * @hook handle_legacy_multisite_files_rewrites
+	 * @return false
+	 */
 	public function handle_legacy_multisite_files_rewrites() {
 		return false;
 	}
 
 	/**
 	 * Remove "related" from Youtube embeds
+	 *
 	 * @hook oembed_dataparse
 	 * @param mixed $return
 	 * @param mixed $data
@@ -176,11 +193,10 @@ class Media {
 
 	/**
 	 * We do not want images without captions to have <p> tags so we're going to be stripping those.
-	 * @hook the_content
 	 *
-	 * @param  $content = post content search for img tags.
-	 * @return filtered content with <p><img changed to <img> we'll manually be wrapping in a <figure> tag w JS.
-	 * @author Seth
+	 * @hook the_content
+	 * @param string $content
+	 * @return string
 	 */
 	public function remove_p_around_img( $content ) {
 		$content = preg_replace( '/<p>\s*(<a .*>)?\s*(<img .* \/>)\s*(<\/a>)?\s*<\/p>/iU', '\1\2\3', $content );
@@ -188,11 +204,13 @@ class Media {
 	}
 
 	/**
+	 * Allow JSON uploads.
+	 * 
 	 * @hook upload_mimes
-	 * @param mixed $existing_mimes
-	 * @return mixed
+	 * @param mixed $existing_mimes Existing mimes.
+	 * @return mixed Mimes.
 	 */
-	public function allow_json_uploads($existing_mimes) {
+	public function allow_json_uploads( $existing_mimes ) {
 		$existing_mimes['json'] = 'application/json';
 		return $existing_mimes;
 	}

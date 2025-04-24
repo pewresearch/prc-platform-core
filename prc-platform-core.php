@@ -3,11 +3,11 @@
  * PRC Platform Core
  *
  * @wordpress-plugin
- * Plugin Name:       PRC Platform: Core
+ * Plugin Name:       PRC Platform Core
  * Plugin URI:        https://github.com/pewresearch/prc-platform-core
- * Description:       This is the foundation for all other PRC Platform plugins. It contains core functionality and hooks that are used by all other PRC plugins.
+ * Description:       The foundational core for all PRC Platform plugins. This plugin contains helper functions, hooks, utilities, cross-platform shared taxonomies and content types (like Staff Bylines), and high-level WordPress VIP configuration.
  * Version:           1.0.0
- * Author:            Seth Rubenstein and Ben Wormald
+ * Author:            Pew Research Center
  * Author URI:        https://pewresearch.org
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -20,6 +20,8 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
+
+define( 'PRC_PLATFORM_CORE_DIR', plugin_dir_path( __DIR__ ) );
 
 /**
  * The code that runs during plugin activation.

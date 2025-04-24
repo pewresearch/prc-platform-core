@@ -1,13 +1,39 @@
 <?php
+/**
+ * Regions & Countries Taxonomy
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
+/**
+ * Regions & Countries Taxonomy
+ *
+ * @package PRC\Platform
+ */
 class Regions_Countries extends Taxonomies {
+	/**
+	 * Taxonomy name.
+	 *
+	 * @var string
+	 */
 	protected static $taxonomy = 'regions-countries';
 
+	/**
+	 * Constructor.
+	 *
+	 * @param mixed $loader The loader.
+	 */
 	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register' );
 	}
 
+	/**
+	 * Register the taxonomy.
+	 *
+	 * @hook init
+	 */
 	public function register() {
 		$taxonomy_name = self::$taxonomy;
 
@@ -47,6 +73,7 @@ class Regions_Countries extends Taxonomies {
 			'show_in_rest'      => true,
 		);
 
+		// @TODO: Add filters into modules to signal support for regions & countries taxonomy.
 		$post_types = apply_filters(
 			"prc_taxonomy_{$taxonomy_name}_post_types",
 			array(
@@ -58,7 +85,7 @@ class Regions_Countries extends Taxonomies {
 				'stub',
 				'decoded',
 				'block_module',
-			) 
+			)
 		);
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );
