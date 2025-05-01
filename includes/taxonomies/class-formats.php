@@ -57,6 +57,7 @@ class Formats extends Taxonomies {
 		if ( null !== $loader ) {
 			$loader->add_action( 'init', $this, 'register' );
 			$loader->add_action( 'prc_platform_on_incremental_save', $this, 'enforce_post_type_formats', 10, 1 );
+			$loader->add_filter( 'prc_sitemap_supported_taxonomies', $this, 'opt_into_sitemap', 10, 1 );
 		}
 	}
 
@@ -146,5 +147,18 @@ class Formats extends Taxonomies {
 				wp_set_object_terms( $post->ID, $format_term_slug, 'formats', true );
 			}
 		}
+	}
+
+	/**
+	 * Opt into sitemap.
+	 *
+	 * @hook prc_sitemap_supported_taxonomies
+	 *
+	 * @param array $taxonomy_types The taxonomy types.
+	 * @return array The taxonomy types.
+	 */
+	public function opt_into_sitemap( $taxonomy_types ) {
+		$taxonomy_types[] = self::$taxonomy;
+		return $taxonomy_types;
 	}
 }

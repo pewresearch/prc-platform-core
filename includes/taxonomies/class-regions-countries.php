@@ -27,6 +27,7 @@ class Regions_Countries extends Taxonomies {
 	 */
 	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register' );
+		$loader->add_filter( 'prc_sitemap_supported_taxonomies', $this, 'opt_into_sitemap', 10, 1 );
 	}
 
 	/**
@@ -89,5 +90,18 @@ class Regions_Countries extends Taxonomies {
 		);
 
 		register_taxonomy( self::$taxonomy, $post_types, $args );
+	}
+
+	/**
+	 * Opt into sitemap.
+	 *
+	 * @hook prc_sitemap_supported_taxonomies
+	 *
+	 * @param array $taxonomy_types The taxonomy types.
+	 * @return array The taxonomy types.
+	 */
+	public function opt_into_sitemap( $taxonomy_types ) {
+		$taxonomy_types[] = self::$taxonomy;
+		return $taxonomy_types;
 	}
 }

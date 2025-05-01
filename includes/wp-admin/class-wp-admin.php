@@ -487,8 +487,10 @@ class WP_Admin {
 	 * @hook admin_menu
 	 */
 	public function remove_links_menu() {
-		global $menu;
-		unset( $menu[15] ); // 15 = Links menu.
+		if ( PRC_PRIMARY_SITE_ID === get_current_blog_id() ) {
+			global $menu;
+			unset( $menu[15] ); // 15 = Links menu.
+		}
 	}
 
 	/**
