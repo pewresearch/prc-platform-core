@@ -20,9 +20,9 @@ define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
  * Render an icon from the library of your choice.
  * This function will never error out, but will log errors to the PHP error log. This should always gracefully fail and never stop the page from rendering.
  *
- * @param string $icon_library The library to use. Defaults to 'solid'.
- * @param string $icon_name The name of the icon to render.
- * @param float  $size The size of the icon in em units.
+ * @param string       $icon_library The library to use. Defaults to 'solid'.
+ * @param string       $icon_name The name of the icon to render.
+ * @param float|string $size The size of the icon in em units.
  * @return string|void The rendered icon.
  */
 function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
@@ -63,8 +63,14 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 		return $icon;
 	}
 
-	$icon        = get_icon_as_url( $icon_library, $icon_name );
-	$size        = (float) $size;
+	$icon = get_icon_as_url( $icon_library, $icon_name );
+	$size = (float) $size;
+	if ( is_string( $size ) ) {
+		return $size;
+	}
+	if ( is_numeric( $size ) ) {
+		$size = $size . 'em';
+	}
 	$icon_markup = wp_sprintf(
 		'<i class="%1$s"><svg style="width: %2$s; height: %2$s;"><use xlink:href="%3$s"></use></svg></i>',
 		\PRC\Platform\Block_Utils\classNames(
@@ -74,7 +80,7 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 				'icon__' . $icon_name,
 			)
 		),
-		esc_attr( $size . 'em' ),
+		esc_attr( $size ),
 		esc_url( $icon ),
 	);
 

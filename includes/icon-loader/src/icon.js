@@ -42,13 +42,22 @@ const Icon = memo(({ library = 'solid', icon, size = 1 }) => {
 		return iconSourceCache.get(cacheKey);
 	}, [validLibrary, icon]);
 
+	const sizeUnit = useMemo(() => {
+		if (typeof size === 'string') {
+			return size;
+		}
+		if (typeof size === 'number') {
+			return `${size}em`;
+		}
+	}, [size]);
+
 	if (!icon || typeof icon !== 'string') {
 		return null;
 	}
 
 	return (
 		<i className="icon">
-			<svg style={{ width: `${size}em`, height: `${size}em` }}>
+			<svg style={{ width: sizeUnit, height: sizeUnit }}>
 				<use xlinkHref={xlinkHref}></use>
 			</svg>
 		</i>
