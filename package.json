@@ -1,16 +1,16 @@
 {
-	"name": "@pewresearch/prc-platform-core",
+	"name": "@prc/platform-core",
 	"description": "PRC Platform Core",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
 		"taffydb": "^2.7.3",
-		"uuid": "^9.0.1",
-		"@playwright/test": "^1.51.1",
-        "@wordpress/e2e-test-utils-playwright": "^1.22.0",
-        "@wordpress/env": "^10.22.0",
-        "@wordpress/scripts": "^30.15.0"
+		"uuid": "^11.1.0",
+		"@playwright/test": "^1.52.0",
+        "@wordpress/e2e-test-utils-playwright": "^1.23.0",
+        "@wordpress/env": "^10.23.0",
+        "@wordpress/scripts": "^30.16.0"
 	},
 	"scripts": {
 		"docs:build": "node ./.docs/pre-build.js; jsdoc -c ./.docs/config.json -r ./includes",

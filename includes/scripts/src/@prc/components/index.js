@@ -1,75 +1,84 @@
-import Autocomplete from './autocomplete';
+// UI Components
+import DetachBlocksToolbarControl from './detach-blocks-toolbar-control';
+import EntityCreateNewModal from './entity-create-new-modal';
+import EntityPatternModal from './entity-pattern-modal';
 import HeadingLevelToolbar from './heading-level-toolbar';
-import {
-	InnerBlocksAsContextTemplate,
-	getInnerBlocksContextAsQuery,
-	InnerBlocksAsSyncedContent,
-} from './innerblocks';
 import InspectorPopoutPanel from './inspector-popout-panel';
+import LoadingIndicator from './loading-indicator';
+import MailchimpSegmentList from './mailchimp-segment-list';
+import MailchimpSegmentSelect from './mailchimp-segment-select';
+import MarkedRangeControl from './marked-range-control';
+import MediaDropZone from './media-dropzone';
+import MediaImageSlot from './media-image-slot';
+import Placeholder from './placeholder';
+import ResponsiveImage from './responsive-image';
+import StyledComponentContext from './styled-component-context';
+import TaxonomySelect from './taxonomy-select';
+import TermSelect from './term-select';
+import Transition from './transition';
+import WPEntitySearch from './wp-entity-search';
+
+// Store-related
 import {
 	registerListStore,
 	ListStoreItem,
 	actions,
 	reducer,
 } from './list-store';
-import MarkedRangeControl from './marked-range-control';
-import MediaDropZone from './media-dropzone';
-import MediaImageSlot from './media-image-slot';
-import Placeholder from './placeholder';
-import Select from './select';
-import Slider from './slider';
-import TaxonomySelect from './taxonomy-select';
-import TermSelect from './term-select';
-import Transition from './transition';
-import { URLSearchField, URLSearchToolbar } from './url-search';
-import WPEntitySearch from './wp-entity-search';
-import MailchimpSegmentSelect from './mailchimp-segment-select';
-import MailchimpSegmentList from './mailchimp-segment-list';
-import EntityPatternModal from './entity-pattern-modal';
-import EntityCreateNewModal from './entity-create-new-modal';
-import LoadingIndicator from './loading-indicator';
-import DetachBlocksToolbarControl from './detach-blocks-toolbar-control';
-import StyledComponentContext from './styled-component-context';
 
+// InnerBlocks utilities
+import {
+	InnerBlocksAsContextTemplate,
+	getInnerBlocksContextAsQuery,
+	InnerBlocksAsSyncedContent,
+} from './innerblocks';
+
+// URL Search
+import { URLSearchField, URLSearchToolbar } from './url-search';
+
+// Initialize global namespace
+window.prcComponents = {};
+
+// Helper to register components/scripts
 function loadScript(slug, script) {
 	if (!window.prcComponents[slug]) {
 		window.prcComponents[slug] = script;
 	}
 }
 
-window.prcComponents = {};
-
-loadScript('Autocomplete', Autocomplete);
+// UI Components
+loadScript('DetachBlocksToolbarControl', DetachBlocksToolbarControl);
+loadScript('EntityCreateNewModal', EntityCreateNewModal);
+loadScript('EntityPatternModal', EntityPatternModal);
 loadScript('HeadingLevelToolbar', HeadingLevelToolbar);
-loadScript('InnerBlocksAsContextTemplate', InnerBlocksAsContextTemplate);
-loadScript('getInnerBlocksContextAsQuery', getInnerBlocksContextAsQuery);
-loadScript('InnerBlocksAsSyncedContent', InnerBlocksAsSyncedContent);
 loadScript('InspectorPopoutPanel', InspectorPopoutPanel);
-loadScript('registerListStore', registerListStore);
-loadScript('ListStoreItem', ListStoreItem);
-loadScript('listStoreActions', actions);
-loadScript('listStoreReducer', reducer);
+loadScript('LoadingIndicator', LoadingIndicator);
+loadScript('MailchimpSegmentList', MailchimpSegmentList);
+loadScript('MailchimpSegmentSelect', MailchimpSegmentSelect);
 loadScript('MarkedRangeControl', MarkedRangeControl);
 loadScript('MediaDropZone', MediaDropZone);
 loadScript('MediaImageSlot', MediaImageSlot);
 loadScript('Placeholder', Placeholder);
-loadScript('Select', Select);
-loadScript('Slider', Slider);
-loadScript('TermSelect', TermSelect);
+loadScript('ResponsiveImage', ResponsiveImage);
+loadScript('StyledComponentContext', StyledComponentContext);
 loadScript('TaxonomySelect', TaxonomySelect);
+loadScript('TermSelect', TermSelect);
 loadScript('Transition', Transition);
-loadScript('URLSearchField', URLSearchField);
-loadScript('URLSearchToolbar', URLSearchToolbar);
 loadScript('WPEntitySearch', WPEntitySearch);
+
+// Store-related
+loadScript('registerListStore', registerListStore);
+loadScript('ListStoreItem', ListStoreItem);
+loadScript('listStoreActions', actions);
+loadScript('listStoreReducer', reducer);
+
+// InnerBlocks utilities
 loadScript('InnerBlocksAsContextTemplate', InnerBlocksAsContextTemplate);
 loadScript('getInnerBlocksContextAsQuery', getInnerBlocksContextAsQuery);
 loadScript('InnerBlocksAsSyncedContent', InnerBlocksAsSyncedContent);
-loadScript('MailchimpSegmentSelect', MailchimpSegmentSelect);
-loadScript('MailchimpSegmentList', MailchimpSegmentList);
-loadScript('EntityPatternModal', EntityPatternModal);
-loadScript('EntityCreateNewModal', EntityCreateNewModal);
-loadScript('LoadingIndicator', LoadingIndicator);
-loadScript('DetachBlocksToolbarControl', DetachBlocksToolbarControl);
-loadScript('StyledComponentContext', StyledComponentContext);
+
+// URL Search
+loadScript('URLSearchField', URLSearchField);
+loadScript('URLSearchToolbar', URLSearchToolbar);
 
 console.log('Loading @prc/components...', window.prcComponents);

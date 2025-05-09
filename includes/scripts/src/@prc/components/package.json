@@ -1,20 +1,23 @@
 {
 	"name": "@prc/components",
 	"devDependencies": {
-		"@wordpress/scripts": "^30.13.0"
+		"@wordpress/scripts": "^30.15.0",
+		"react": "^18.3.1"
 	},
+	"main": "exports.js",
 	"scripts": {
 		"build": "wp-scripts build index.js --output-path=../../../build/@prc/components",
 		"start": "wp-scripts start index.js --output-path=../../../build/@prc/components"
 	},
 	"dependencies": {
-		"@codeamp/block-components": "^0.0.1-beta.9",
-		"@emotion/react": "^11.11.3",
-		"@emotion/styled": "^11.11.0",
-		"@mui/base": "^5.0.0-beta.33",
+		"@codeamp/block-components": "^0.0.1-beta.13",
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.0",
+		"can-use-dom": "^0.1.0",
 		"classnames": "^2.5.1",
 		"framer-motion": "^11.0.3",
 		"md5": "^2.3.0",
+		"picturefill": "^3.0.3",
 		"prop-types": "^15.8.1"
 	}
 }

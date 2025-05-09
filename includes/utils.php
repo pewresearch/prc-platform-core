@@ -30,6 +30,17 @@ function get_domain() {
 }
 
 /**
+ * Get the current URL. Accounts for if off production.
+ */
+function get_current_url() {
+	if ( 'production' !== wp_get_environment_type() ) {
+		$request_uri = str_replace( '/pewresearch-org/', '/', $_SERVER['REQUEST_URI'] );
+		return 'https://' . get_domain() . $request_uri;
+	}
+	return 'https://' . get_domain() . $_SERVER['REQUEST_URI'];
+}
+
+/**
  * Quick helper function for wp-admin to determine the current post type.
  *
  * @return string|null The current post type or null if not found.
@@ -340,8 +351,8 @@ function get_list_of( $list_of = null ) {
  * );
  */
 function get_devices() {
-	if ( class_exists( 'Device_Detection' ) ) {
-		return Device_Detection::get_info();
+	if ( class_exists( '\Automattic\Jetpack\Device_Detection' ) ) {
+		return \Automattic\Jetpack\Device_Detection::get_info();
 	} else {
 		return array(
 			'is_phone'      => false,

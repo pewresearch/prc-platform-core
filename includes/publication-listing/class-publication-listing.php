@@ -198,23 +198,21 @@ class Publication_Listing {
 	 * Register post visibility taxonomy.
 	 */
 	public function register_post_visibility_taxonomy() {
-		foreach ( self::get_enabled_post_types() as $post_type ) {
-			register_taxonomy(
-				'_post_visibility',
-				$post_type,
-				array(
-					'public'             => true,
-					'publicly_queryable' => true,
-					'label'              => 'Post Visibility',
-					'hierarchical'       => true,
-					'show_ui'            => true,
-					'show_in_menu'       => true,
-					'show_in_nav_menus'  => false,
-					'show_admin_column'  => true,
-					'show_in_rest'       => true,
-				)
-			);
-		}
+		register_taxonomy(
+			'_post_visibility',
+			self::get_enabled_post_types(),
+			array(
+				'public'             => true,
+				'publicly_queryable' => true,
+				'label'              => 'Post Visibility',
+				'hierarchical'       => true,
+				'show_ui'            => true,
+				'show_in_menu'       => true,
+				'show_in_nav_menus'  => false,
+				'show_admin_column'  => true,
+				'show_in_rest'       => true,
+			)
+		);
 	}
 
 	/**

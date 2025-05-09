@@ -133,40 +133,43 @@ class Housekeeping {
 			},
 			$posts_cleaned
 		);
-		$success_list = implode( '<br>', $success_list );
 
-		$failure_list = array_map(
-			function ( $post_id ) {
-				return wp_sprintf(
-					'<span>%s (%s)</span>',
-					get_the_title( $post_id ),
-					$post_id
+		if ( function_exists( '\PRC\Platform\Slack\send_notification' ) ) {
+			$attachments = array();
+			if ( ! empty( $posts_cleaned ) ) {
+				$markdown_formatted_success_list = implode(
+					"\n",
+					array_map(
+						fn( $item ) => ' - ' . $item,
+						$success_list
+					)
 				);
-			},
-			$posts_not_cleaned
-		);
-		$failure_list = implode( '<br>', $failure_list );
-
-		// @TODO: Change this to Slack notification
-		wp_mail(
-			$this->email_contact,
-			'🧹 PRC Platform System Notice: Monthly Draft Cleanup Results for: ' . $sitename,
-			! empty( $posts_cleaned ) ? 'The following posts were trashed 🗑️: ' . $success_list : 'No posts were found to be trashed 🙂. This is a good thing everyone is doing their part!'
-		);
-
-		if ( ! empty( $posts_not_cleaned ) ) {
-			$posts_not_cleaned_mesage = array_map(
-				function ( $post_id ) {
-					return wp_sprintf( '<a href="%s">%s (%s)</a>', get_permalink( $post_id ), get_the_title( $post_id ), (string) $post_id );
-				},
-				$posts_not_cleaned
-			);
-			$posts_not_cleaned_mesage = implode( ', ', $posts_not_cleaned_mesage );
-			// @TODO: Change this to Slack notification
-			wp_mail(
-				$this->email_contact,
-				'🧹 PRC Platform System Notice: Weekly Draft Cleanup Failures for: ' . $sitename,
-				'The following posts were NOT trashed and require further inspection: ' . $failure_list
+				$attachments[]                   = '🗑️ The following posts were trashed: \n' . $markdown_formatted_success_list;
+			}
+			if ( ! empty( $posts_not_cleaned ) ) {
+				$posts_not_cleaned_mesage = array_map(
+					function ( $post_id ) {
+						return wp_sprintf( '<a href="%s">%s (%s)</a>', get_permalink( $post_id ), get_the_title( $post_id ), (string) $post_id );
+					},
+					$posts_not_cleaned
+				);
+				$posts_not_cleaned_mesage = implode(
+					"\n",
+					array_map(
+						fn( $item ) => ' - ' . $item,
+						$posts_not_cleaned_mesage
+					)
+				);
+				$attachments[]            = '🗑️ Failed to trash the following posts: \n' . $posts_not_cleaned_mesage;
+			}
+			if ( empty( $posts_cleaned ) && empty( $posts_not_cleaned ) ) {
+				$attachments[] = '👍 No posts were found to be trashed 🙂. This is a good thing everyone is doing their part to keep the platform clean!';
+			}
+			\PRC\Platform\Slack\send_notification(
+				array(
+					'text'        => '🧹 PRC Platform System Notice: Monthly Draft Cleanup Results:',
+					'attachments' => $attachments,
+				)
 			);
 		}
 

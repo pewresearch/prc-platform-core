@@ -24,7 +24,29 @@ const getBaseIconPath = (() => {
 	return (library) => `${basePath}/${library}.svg`;
 })();
 
-const Icon = memo(({ library = 'solid', icon, size = 1 }) => {
+const VALID_UNITS = [
+	'px',
+	'em',
+	'rem',
+	'%',
+	'vw',
+	'vh',
+	'vmin',
+	'vmax',
+	'ex',
+	'ch',
+	'cm',
+	'mm',
+	'in',
+	'pt',
+	'pc',
+];
+
+function hasUnit(value) {
+	return VALID_UNITS.some((unit) => value.endsWith(unit));
+}
+
+const Icon = memo(({ library = 'solid', icon, size = 1, color = null }) => {
 	// Validate library first
 	const validLibrary = AVAILABLE_LIBRARIES.includes(library)
 		? library
@@ -43,13 +65,29 @@ const Icon = memo(({ library = 'solid', icon, size = 1 }) => {
 	}, [validLibrary, icon]);
 
 	const sizeUnit = useMemo(() => {
-		if (typeof size === 'string') {
-			return size;
-		}
 		if (typeof size === 'number') {
 			return `${size}em`;
 		}
+		if (typeof size === 'string') {
+			return hasUnit(size) ? size : `${size}em`;
+		}
+		return undefined;
 	}, [size]);
+
+	const colorStyle = useMemo(() => {
+		if (color) {
+			return { color: `${color} !important` };
+		}
+		return {};
+	}, [color]);
+
+	const style = useMemo(() => {
+		return {
+			width: sizeUnit,
+			height: sizeUnit,
+			...colorStyle,
+		};
+	}, [sizeUnit, colorStyle]);
 
 	if (!icon || typeof icon !== 'string') {
 		return null;
@@ -57,7 +95,7 @@ const Icon = memo(({ library = 'solid', icon, size = 1 }) => {
 
 	return (
 		<i className="icon">
-			<svg style={{ width: sizeUnit, height: sizeUnit }}>
+			<svg style={style}>
 				<use xlinkHref={xlinkHref}></use>
 			</svg>
 		</i>

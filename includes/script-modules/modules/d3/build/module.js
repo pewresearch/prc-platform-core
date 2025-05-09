@@ -24,12 +24,22 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  l7: () => (/* binding */ _axisBottom),
+  V4: () => (/* binding */ _axisLeft),
   vt: () => (/* binding */ _create),
+  Od: () => (/* binding */ _discontinuityRange),
+  oR: () => (/* binding */ _easeCubicInOut),
   GP: () => (/* binding */ _format),
   Ut: () => (/* binding */ _geoAlbersUsa),
   zF: () => (/* binding */ _geoPath),
+  T9: () => (/* binding */ _max),
+  WH: () => (/* binding */ _scaleBand),
+  op: () => (/* binding */ _scaleDiscontinuous),
+  m4: () => (/* binding */ _scaleLinear),
+  UM: () => (/* binding */ _scaleOrdinal),
   Lt: () => (/* binding */ _select),
   Ub: () => (/* binding */ _selectAll),
+  di: () => (/* binding */ _sort),
   s_: () => (/* binding */ _zoom),
   GS: () => (/* binding */ _zoomIdentity)
 });
@@ -381,6 +391,2206 @@ function defaultLocale(definition) {
   return defaultLocale_locale;
 }
 
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/ticks.js
+const e10 = Math.sqrt(50),
+    e5 = Math.sqrt(10),
+    e2 = Math.sqrt(2);
+
+function tickSpec(start, stop, count) {
+  const step = (stop - start) / Math.max(0, count),
+      power = Math.floor(Math.log10(step)),
+      error = step / Math.pow(10, power),
+      factor = error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1;
+  let i1, i2, inc;
+  if (power < 0) {
+    inc = Math.pow(10, -power) / factor;
+    i1 = Math.round(start * inc);
+    i2 = Math.round(stop * inc);
+    if (i1 / inc < start) ++i1;
+    if (i2 / inc > stop) --i2;
+    inc = -inc;
+  } else {
+    inc = Math.pow(10, power) * factor;
+    i1 = Math.round(start / inc);
+    i2 = Math.round(stop / inc);
+    if (i1 * inc < start) ++i1;
+    if (i2 * inc > stop) --i2;
+  }
+  if (i2 < i1 && 0.5 <= count && count < 2) return tickSpec(start, stop, count * 2);
+  return [i1, i2, inc];
+}
+
+function ticks(start, stop, count) {
+  stop = +stop, start = +start, count = +count;
+  if (!(count > 0)) return [];
+  if (start === stop) return [start];
+  const reverse = stop < start, [i1, i2, inc] = reverse ? tickSpec(stop, start, count) : tickSpec(start, stop, count);
+  if (!(i2 >= i1)) return [];
+  const n = i2 - i1 + 1, ticks = new Array(n);
+  if (reverse) {
+    if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) / -inc;
+    else for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) * inc;
+  } else {
+    if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) / -inc;
+    else for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) * inc;
+  }
+  return ticks;
+}
+
+function tickIncrement(start, stop, count) {
+  stop = +stop, start = +start, count = +count;
+  return tickSpec(start, stop, count)[2];
+}
+
+function tickStep(start, stop, count) {
+  stop = +stop, start = +start, count = +count;
+  const reverse = stop < start, inc = reverse ? tickIncrement(stop, start, count) : tickIncrement(start, stop, count);
+  return (reverse ? -1 : 1) * (inc < 0 ? 1 / -inc : inc);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/ascending.js
+function ascending(a, b) {
+  return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/descending.js
+function descending(a, b) {
+  return a == null || b == null ? NaN
+    : b < a ? -1
+    : b > a ? 1
+    : b >= a ? 0
+    : NaN;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/bisector.js
+
+
+
+function bisector(f) {
+  let compare1, compare2, delta;
+
+  // If an accessor is specified, promote it to a comparator. In this case we
+  // can test whether the search value is (self-) comparable. We can’t do this
+  // for a comparator (except for specific, known comparators) because we can’t
+  // tell if the comparator is symmetric, and an asymmetric comparator can’t be
+  // used to test whether a single value is comparable.
+  if (f.length !== 2) {
+    compare1 = ascending;
+    compare2 = (d, x) => ascending(f(d), x);
+    delta = (d, x) => f(d) - x;
+  } else {
+    compare1 = f === ascending || f === descending ? f : zero;
+    compare2 = f;
+    delta = f;
+  }
+
+  function left(a, x, lo = 0, hi = a.length) {
+    if (lo < hi) {
+      if (compare1(x, x) !== 0) return hi;
+      do {
+        const mid = (lo + hi) >>> 1;
+        if (compare2(a[mid], x) < 0) lo = mid + 1;
+        else hi = mid;
+      } while (lo < hi);
+    }
+    return lo;
+  }
+
+  function right(a, x, lo = 0, hi = a.length) {
+    if (lo < hi) {
+      if (compare1(x, x) !== 0) return hi;
+      do {
+        const mid = (lo + hi) >>> 1;
+        if (compare2(a[mid], x) <= 0) lo = mid + 1;
+        else hi = mid;
+      } while (lo < hi);
+    }
+    return lo;
+  }
+
+  function center(a, x, lo = 0, hi = a.length) {
+    const i = left(a, x, lo, hi - 1);
+    return i > lo && delta(a[i - 1], x) > -delta(a[i], x) ? i - 1 : i;
+  }
+
+  return {left, center, right};
+}
+
+function zero() {
+  return 0;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/number.js
+function number(x) {
+  return x === null ? NaN : +x;
+}
+
+function* numbers(values, valueof) {
+  if (valueof === undefined) {
+    for (let value of values) {
+      if (value != null && (value = +value) >= value) {
+        yield value;
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+        yield value;
+      }
+    }
+  }
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/bisect.js
+
+
+
+
+const ascendingBisect = bisector(ascending);
+const bisectRight = ascendingBisect.right;
+const bisectLeft = ascendingBisect.left;
+const bisectCenter = bisector(number).center;
+/* harmony default export */ const bisect = (bisectRight);
+
+;// CONCATENATED MODULE: ./node_modules/d3-color/src/define.js
+/* harmony default export */ function src_define(constructor, factory, prototype) {
+  constructor.prototype = factory.prototype = prototype;
+  prototype.constructor = constructor;
+}
+
+function extend(parent, definition) {
+  var prototype = Object.create(parent.prototype);
+  for (var key in definition) prototype[key] = definition[key];
+  return prototype;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-color/src/color.js
+
+
+function Color() {}
+
+var darker = 0.7;
+var brighter = 1 / darker;
+
+var reI = "\\s*([+-]?\\d+)\\s*",
+    reN = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reHex = /^#([0-9a-f]{3,8})$/,
+    reRgbInteger = new RegExp(`^rgb\\(${reI},${reI},${reI}\\)$`),
+    reRgbPercent = new RegExp(`^rgb\\(${reP},${reP},${reP}\\)$`),
+    reRgbaInteger = new RegExp(`^rgba\\(${reI},${reI},${reI},${reN}\\)$`),
+    reRgbaPercent = new RegExp(`^rgba\\(${reP},${reP},${reP},${reN}\\)$`),
+    reHslPercent = new RegExp(`^hsl\\(${reN},${reP},${reP}\\)$`),
+    reHslaPercent = new RegExp(`^hsla\\(${reN},${reP},${reP},${reN}\\)$`);
+
+var named = {
+  aliceblue: 0xf0f8ff,
+  antiquewhite: 0xfaebd7,
+  aqua: 0x00ffff,
+  aquamarine: 0x7fffd4,
+  azure: 0xf0ffff,
+  beige: 0xf5f5dc,
+  bisque: 0xffe4c4,
+  black: 0x000000,
+  blanchedalmond: 0xffebcd,
+  blue: 0x0000ff,
+  blueviolet: 0x8a2be2,
+  brown: 0xa52a2a,
+  burlywood: 0xdeb887,
+  cadetblue: 0x5f9ea0,
+  chartreuse: 0x7fff00,
+  chocolate: 0xd2691e,
+  coral: 0xff7f50,
+  cornflowerblue: 0x6495ed,
+  cornsilk: 0xfff8dc,
+  crimson: 0xdc143c,
+  cyan: 0x00ffff,
+  darkblue: 0x00008b,
+  darkcyan: 0x008b8b,
+  darkgoldenrod: 0xb8860b,
+  darkgray: 0xa9a9a9,
+  darkgreen: 0x006400,
+  darkgrey: 0xa9a9a9,
+  darkkhaki: 0xbdb76b,
+  darkmagenta: 0x8b008b,
+  darkolivegreen: 0x556b2f,
+  darkorange: 0xff8c00,
+  darkorchid: 0x9932cc,
+  darkred: 0x8b0000,
+  darksalmon: 0xe9967a,
+  darkseagreen: 0x8fbc8f,
+  darkslateblue: 0x483d8b,
+  darkslategray: 0x2f4f4f,
+  darkslategrey: 0x2f4f4f,
+  darkturquoise: 0x00ced1,
+  darkviolet: 0x9400d3,
+  deeppink: 0xff1493,
+  deepskyblue: 0x00bfff,
+  dimgray: 0x696969,
+  dimgrey: 0x696969,
+  dodgerblue: 0x1e90ff,
+  firebrick: 0xb22222,
+  floralwhite: 0xfffaf0,
+  forestgreen: 0x228b22,
+  fuchsia: 0xff00ff,
+  gainsboro: 0xdcdcdc,
+  ghostwhite: 0xf8f8ff,
+  gold: 0xffd700,
+  goldenrod: 0xdaa520,
+  gray: 0x808080,
+  green: 0x008000,
+  greenyellow: 0xadff2f,
+  grey: 0x808080,
+  honeydew: 0xf0fff0,
+  hotpink: 0xff69b4,
+  indianred: 0xcd5c5c,
+  indigo: 0x4b0082,
+  ivory: 0xfffff0,
+  khaki: 0xf0e68c,
+  lavender: 0xe6e6fa,
+  lavenderblush: 0xfff0f5,
+  lawngreen: 0x7cfc00,
+  lemonchiffon: 0xfffacd,
+  lightblue: 0xadd8e6,
+  lightcoral: 0xf08080,
+  lightcyan: 0xe0ffff,
+  lightgoldenrodyellow: 0xfafad2,
+  lightgray: 0xd3d3d3,
+  lightgreen: 0x90ee90,
+  lightgrey: 0xd3d3d3,
+  lightpink: 0xffb6c1,
+  lightsalmon: 0xffa07a,
+  lightseagreen: 0x20b2aa,
+  lightskyblue: 0x87cefa,
+  lightslategray: 0x778899,
+  lightslategrey: 0x778899,
+  lightsteelblue: 0xb0c4de,
+  lightyellow: 0xffffe0,
+  lime: 0x00ff00,
+  limegreen: 0x32cd32,
+  linen: 0xfaf0e6,
+  magenta: 0xff00ff,
+  maroon: 0x800000,
+  mediumaquamarine: 0x66cdaa,
+  mediumblue: 0x0000cd,
+  mediumorchid: 0xba55d3,
+  mediumpurple: 0x9370db,
+  mediumseagreen: 0x3cb371,
+  mediumslateblue: 0x7b68ee,
+  mediumspringgreen: 0x00fa9a,
+  mediumturquoise: 0x48d1cc,
+  mediumvioletred: 0xc71585,
+  midnightblue: 0x191970,
+  mintcream: 0xf5fffa,
+  mistyrose: 0xffe4e1,
+  moccasin: 0xffe4b5,
+  navajowhite: 0xffdead,
+  navy: 0x000080,
+  oldlace: 0xfdf5e6,
+  olive: 0x808000,
+  olivedrab: 0x6b8e23,
+  orange: 0xffa500,
+  orangered: 0xff4500,
+  orchid: 0xda70d6,
+  palegoldenrod: 0xeee8aa,
+  palegreen: 0x98fb98,
+  paleturquoise: 0xafeeee,
+  palevioletred: 0xdb7093,
+  papayawhip: 0xffefd5,
+  peachpuff: 0xffdab9,
+  peru: 0xcd853f,
+  pink: 0xffc0cb,
+  plum: 0xdda0dd,
+  powderblue: 0xb0e0e6,
+  purple: 0x800080,
+  rebeccapurple: 0x663399,
+  red: 0xff0000,
+  rosybrown: 0xbc8f8f,
+  royalblue: 0x4169e1,
+  saddlebrown: 0x8b4513,
+  salmon: 0xfa8072,
+  sandybrown: 0xf4a460,
+  seagreen: 0x2e8b57,
+  seashell: 0xfff5ee,
+  sienna: 0xa0522d,
+  silver: 0xc0c0c0,
+  skyblue: 0x87ceeb,
+  slateblue: 0x6a5acd,
+  slategray: 0x708090,
+  slategrey: 0x708090,
+  snow: 0xfffafa,
+  springgreen: 0x00ff7f,
+  steelblue: 0x4682b4,
+  tan: 0xd2b48c,
+  teal: 0x008080,
+  thistle: 0xd8bfd8,
+  tomato: 0xff6347,
+  turquoise: 0x40e0d0,
+  violet: 0xee82ee,
+  wheat: 0xf5deb3,
+  white: 0xffffff,
+  whitesmoke: 0xf5f5f5,
+  yellow: 0xffff00,
+  yellowgreen: 0x9acd32
+};
+
+src_define(Color, color, {
+  copy(channels) {
+    return Object.assign(new this.constructor, this, channels);
+  },
+  displayable() {
+    return this.rgb().displayable();
+  },
+  hex: color_formatHex, // Deprecated! Use color.formatHex.
+  formatHex: color_formatHex,
+  formatHex8: color_formatHex8,
+  formatHsl: color_formatHsl,
+  formatRgb: color_formatRgb,
+  toString: color_formatRgb
+});
+
+function color_formatHex() {
+  return this.rgb().formatHex();
+}
+
+function color_formatHex8() {
+  return this.rgb().formatHex8();
+}
+
+function color_formatHsl() {
+  return hslConvert(this).formatHsl();
+}
+
+function color_formatRgb() {
+  return this.rgb().formatRgb();
+}
+
+function color(format) {
+  var m, l;
+  format = (format + "").trim().toLowerCase();
+  return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
+      : l === 3 ? new Rgb((m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1) // #f00
+      : l === 8 ? rgba(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+      : l === 4 ? rgba((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
+      : null) // invalid hex
+      : (m = reRgbInteger.exec(format)) ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+      : (m = reRgbPercent.exec(format)) ? new Rgb(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
+      : (m = reRgbaInteger.exec(format)) ? rgba(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
+      : (m = reRgbaPercent.exec(format)) ? rgba(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
+      : (m = reHslPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
+      : (m = reHslaPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
+      : named.hasOwnProperty(format) ? rgbn(named[format]) // eslint-disable-line no-prototype-builtins
+      : format === "transparent" ? new Rgb(NaN, NaN, NaN, 0)
+      : null;
+}
+
+function rgbn(n) {
+  return new Rgb(n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff, 1);
+}
+
+function rgba(r, g, b, a) {
+  if (a <= 0) r = g = b = NaN;
+  return new Rgb(r, g, b, a);
+}
+
+function rgbConvert(o) {
+  if (!(o instanceof Color)) o = color(o);
+  if (!o) return new Rgb;
+  o = o.rgb();
+  return new Rgb(o.r, o.g, o.b, o.opacity);
+}
+
+function color_rgb(r, g, b, opacity) {
+  return arguments.length === 1 ? rgbConvert(r) : new Rgb(r, g, b, opacity == null ? 1 : opacity);
+}
+
+function Rgb(r, g, b, opacity) {
+  this.r = +r;
+  this.g = +g;
+  this.b = +b;
+  this.opacity = +opacity;
+}
+
+src_define(Rgb, color_rgb, extend(Color, {
+  brighter(k) {
+    k = k == null ? brighter : Math.pow(brighter, k);
+    return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
+  },
+  darker(k) {
+    k = k == null ? darker : Math.pow(darker, k);
+    return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
+  },
+  rgb() {
+    return this;
+  },
+  clamp() {
+    return new Rgb(clampi(this.r), clampi(this.g), clampi(this.b), clampa(this.opacity));
+  },
+  displayable() {
+    return (-0.5 <= this.r && this.r < 255.5)
+        && (-0.5 <= this.g && this.g < 255.5)
+        && (-0.5 <= this.b && this.b < 255.5)
+        && (0 <= this.opacity && this.opacity <= 1);
+  },
+  hex: rgb_formatHex, // Deprecated! Use color.formatHex.
+  formatHex: rgb_formatHex,
+  formatHex8: rgb_formatHex8,
+  formatRgb: rgb_formatRgb,
+  toString: rgb_formatRgb
+}));
+
+function rgb_formatHex() {
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}`;
+}
+
+function rgb_formatHex8() {
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex((isNaN(this.opacity) ? 1 : this.opacity) * 255)}`;
+}
+
+function rgb_formatRgb() {
+  const a = clampa(this.opacity);
+  return `${a === 1 ? "rgb(" : "rgba("}${clampi(this.r)}, ${clampi(this.g)}, ${clampi(this.b)}${a === 1 ? ")" : `, ${a})`}`;
+}
+
+function clampa(opacity) {
+  return isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity));
+}
+
+function clampi(value) {
+  return Math.max(0, Math.min(255, Math.round(value) || 0));
+}
+
+function hex(value) {
+  value = clampi(value);
+  return (value < 16 ? "0" : "") + value.toString(16);
+}
+
+function hsla(h, s, l, a) {
+  if (a <= 0) h = s = l = NaN;
+  else if (l <= 0 || l >= 1) h = s = NaN;
+  else if (s <= 0) h = NaN;
+  return new Hsl(h, s, l, a);
+}
+
+function hslConvert(o) {
+  if (o instanceof Hsl) return new Hsl(o.h, o.s, o.l, o.opacity);
+  if (!(o instanceof Color)) o = color(o);
+  if (!o) return new Hsl;
+  if (o instanceof Hsl) return o;
+  o = o.rgb();
+  var r = o.r / 255,
+      g = o.g / 255,
+      b = o.b / 255,
+      min = Math.min(r, g, b),
+      max = Math.max(r, g, b),
+      h = NaN,
+      s = max - min,
+      l = (max + min) / 2;
+  if (s) {
+    if (r === max) h = (g - b) / s + (g < b) * 6;
+    else if (g === max) h = (b - r) / s + 2;
+    else h = (r - g) / s + 4;
+    s /= l < 0.5 ? max + min : 2 - max - min;
+    h *= 60;
+  } else {
+    s = l > 0 && l < 1 ? 0 : h;
+  }
+  return new Hsl(h, s, l, o.opacity);
+}
+
+function hsl(h, s, l, opacity) {
+  return arguments.length === 1 ? hslConvert(h) : new Hsl(h, s, l, opacity == null ? 1 : opacity);
+}
+
+function Hsl(h, s, l, opacity) {
+  this.h = +h;
+  this.s = +s;
+  this.l = +l;
+  this.opacity = +opacity;
+}
+
+src_define(Hsl, hsl, extend(Color, {
+  brighter(k) {
+    k = k == null ? brighter : Math.pow(brighter, k);
+    return new Hsl(this.h, this.s, this.l * k, this.opacity);
+  },
+  darker(k) {
+    k = k == null ? darker : Math.pow(darker, k);
+    return new Hsl(this.h, this.s, this.l * k, this.opacity);
+  },
+  rgb() {
+    var h = this.h % 360 + (this.h < 0) * 360,
+        s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
+        l = this.l,
+        m2 = l + (l < 0.5 ? l : 1 - l) * s,
+        m1 = 2 * l - m2;
+    return new Rgb(
+      hsl2rgb(h >= 240 ? h - 240 : h + 120, m1, m2),
+      hsl2rgb(h, m1, m2),
+      hsl2rgb(h < 120 ? h + 240 : h - 120, m1, m2),
+      this.opacity
+    );
+  },
+  clamp() {
+    return new Hsl(clamph(this.h), clampt(this.s), clampt(this.l), clampa(this.opacity));
+  },
+  displayable() {
+    return (0 <= this.s && this.s <= 1 || isNaN(this.s))
+        && (0 <= this.l && this.l <= 1)
+        && (0 <= this.opacity && this.opacity <= 1);
+  },
+  formatHsl() {
+    const a = clampa(this.opacity);
+    return `${a === 1 ? "hsl(" : "hsla("}${clamph(this.h)}, ${clampt(this.s) * 100}%, ${clampt(this.l) * 100}%${a === 1 ? ")" : `, ${a})`}`;
+  }
+}));
+
+function clamph(value) {
+  value = (value || 0) % 360;
+  return value < 0 ? value + 360 : value;
+}
+
+function clampt(value) {
+  return Math.max(0, Math.min(1, value || 0));
+}
+
+/* From FvD 13.37, CSS Color Module Level 3 */
+function hsl2rgb(h, m1, m2) {
+  return (h < 60 ? m1 + (m2 - m1) * h / 60
+      : h < 180 ? m2
+      : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60
+      : m1) * 255;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basis.js
+function basis(t1, v0, v1, v2, v3) {
+  var t2 = t1 * t1, t3 = t2 * t1;
+  return ((1 - 3 * t1 + 3 * t2 - t3) * v0
+      + (4 - 6 * t2 + 3 * t3) * v1
+      + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2
+      + t3 * v3) / 6;
+}
+
+/* harmony default export */ function src_basis(values) {
+  var n = values.length - 1;
+  return function(t) {
+    var i = t <= 0 ? (t = 0) : t >= 1 ? (t = 1, n - 1) : Math.floor(t * n),
+        v1 = values[i],
+        v2 = values[i + 1],
+        v0 = i > 0 ? values[i - 1] : 2 * v1 - v2,
+        v3 = i < n - 1 ? values[i + 2] : 2 * v2 - v1;
+    return basis((t - i / n) * n, v0, v1, v2, v3);
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basisClosed.js
+
+
+/* harmony default export */ function basisClosed(values) {
+  var n = values.length;
+  return function(t) {
+    var i = Math.floor(((t %= 1) < 0 ? ++t : t) * n),
+        v0 = values[(i + n - 1) % n],
+        v1 = values[i % n],
+        v2 = values[(i + 1) % n],
+        v3 = values[(i + 2) % n];
+    return basis((t - i / n) * n, v0, v1, v2, v3);
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/constant.js
+/* harmony default export */ const src_constant = (x => () => x);
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/color.js
+
+
+function linear(a, d) {
+  return function(t) {
+    return a + t * d;
+  };
+}
+
+function exponential(a, b, y) {
+  return a = Math.pow(a, y), b = Math.pow(b, y) - a, y = 1 / y, function(t) {
+    return Math.pow(a + t * b, y);
+  };
+}
+
+function hue(a, b) {
+  var d = b - a;
+  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant(isNaN(a) ? b : a);
+}
+
+function gamma(y) {
+  return (y = +y) === 1 ? nogamma : function(a, b) {
+    return b - a ? exponential(a, b, y) : src_constant(isNaN(a) ? b : a);
+  };
+}
+
+function nogamma(a, b) {
+  var d = b - a;
+  return d ? linear(a, d) : src_constant(isNaN(a) ? b : a);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/rgb.js
+
+
+
+
+
+/* harmony default export */ const rgb = ((function rgbGamma(y) {
+  var color = gamma(y);
+
+  function rgb(start, end) {
+    var r = color((start = color_rgb(start)).r, (end = color_rgb(end)).r),
+        g = color(start.g, end.g),
+        b = color(start.b, end.b),
+        opacity = nogamma(start.opacity, end.opacity);
+    return function(t) {
+      start.r = r(t);
+      start.g = g(t);
+      start.b = b(t);
+      start.opacity = opacity(t);
+      return start + "";
+    };
+  }
+
+  rgb.gamma = rgbGamma;
+
+  return rgb;
+})(1));
+
+function rgbSpline(spline) {
+  return function(colors) {
+    var n = colors.length,
+        r = new Array(n),
+        g = new Array(n),
+        b = new Array(n),
+        i, color;
+    for (i = 0; i < n; ++i) {
+      color = color_rgb(colors[i]);
+      r[i] = color.r || 0;
+      g[i] = color.g || 0;
+      b[i] = color.b || 0;
+    }
+    r = spline(r);
+    g = spline(g);
+    b = spline(b);
+    color.opacity = 1;
+    return function(t) {
+      color.r = r(t);
+      color.g = g(t);
+      color.b = b(t);
+      return color + "";
+    };
+  };
+}
+
+var rgbBasis = rgbSpline(src_basis);
+var rgbBasisClosed = rgbSpline(basisClosed);
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/array.js
+
+
+
+/* harmony default export */ function array(a, b) {
+  return (isNumberArray(b) ? numberArray : genericArray)(a, b);
+}
+
+function genericArray(a, b) {
+  var nb = b ? b.length : 0,
+      na = a ? Math.min(nb, a.length) : 0,
+      x = new Array(na),
+      c = new Array(nb),
+      i;
+
+  for (i = 0; i < na; ++i) x[i] = value(a[i], b[i]);
+  for (; i < nb; ++i) c[i] = b[i];
+
+  return function(t) {
+    for (i = 0; i < na; ++i) c[i] = x[i](t);
+    return c;
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/date.js
+/* harmony default export */ function date(a, b) {
+  var d = new Date;
+  return a = +a, b = +b, function(t) {
+    return d.setTime(a * (1 - t) + b * t), d;
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/number.js
+/* harmony default export */ function src_number(a, b) {
+  return a = +a, b = +b, function(t) {
+    return a * (1 - t) + b * t;
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/object.js
+
+
+/* harmony default export */ function object(a, b) {
+  var i = {},
+      c = {},
+      k;
+
+  if (a === null || typeof a !== "object") a = {};
+  if (b === null || typeof b !== "object") b = {};
+
+  for (k in b) {
+    if (k in a) {
+      i[k] = value(a[k], b[k]);
+    } else {
+      c[k] = b[k];
+    }
+  }
+
+  return function(t) {
+    for (k in i) c[k] = i[k](t);
+    return c;
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/string.js
+
+
+var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+    reB = new RegExp(reA.source, "g");
+
+function string_zero(b) {
+  return function() {
+    return b;
+  };
+}
+
+function one(b) {
+  return function(t) {
+    return b(t) + "";
+  };
+}
+
+/* harmony default export */ function string(a, b) {
+  var bi = reA.lastIndex = reB.lastIndex = 0, // scan index for next number in b
+      am, // current match in a
+      bm, // current match in b
+      bs, // string preceding current number in b, if any
+      i = -1, // index in s
+      s = [], // string constants and placeholders
+      q = []; // number interpolators
+
+  // Coerce inputs to strings.
+  a = a + "", b = b + "";
+
+  // Interpolate pairs of numbers in a & b.
+  while ((am = reA.exec(a))
+      && (bm = reB.exec(b))) {
+    if ((bs = bm.index) > bi) { // a string precedes the next number in b
+      bs = b.slice(bi, bs);
+      if (s[i]) s[i] += bs; // coalesce with previous string
+      else s[++i] = bs;
+    }
+    if ((am = am[0]) === (bm = bm[0])) { // numbers in a & b match
+      if (s[i]) s[i] += bm; // coalesce with previous string
+      else s[++i] = bm;
+    } else { // interpolate non-matching numbers
+      s[++i] = null;
+      q.push({i: i, x: src_number(am, bm)});
+    }
+    bi = reB.lastIndex;
+  }
+
+  // Add remains of b.
+  if (bi < b.length) {
+    bs = b.slice(bi);
+    if (s[i]) s[i] += bs; // coalesce with previous string
+    else s[++i] = bs;
+  }
+
+  // Special optimization for only a single match.
+  // Otherwise, interpolate each of the numbers and rejoin the string.
+  return s.length < 2 ? (q[0]
+      ? one(q[0].x)
+      : string_zero(b))
+      : (b = q.length, function(t) {
+          for (var i = 0, o; i < b; ++i) s[(o = q[i]).i] = o.x(t);
+          return s.join("");
+        });
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/numberArray.js
+/* harmony default export */ function src_numberArray(a, b) {
+  if (!b) b = [];
+  var n = a ? Math.min(b.length, a.length) : 0,
+      c = b.slice(),
+      i;
+  return function(t) {
+    for (i = 0; i < n; ++i) c[i] = a[i] * (1 - t) + b[i] * t;
+    return c;
+  };
+}
+
+function numberArray_isNumberArray(x) {
+  return ArrayBuffer.isView(x) && !(x instanceof DataView);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/value.js
+
+
+
+
+
+
+
+
+
+
+/* harmony default export */ function value(a, b) {
+  var t = typeof b, c;
+  return b == null || t === "boolean" ? src_constant(b)
+      : (t === "number" ? src_number
+      : t === "string" ? ((c = color(b)) ? (b = c, rgb) : string)
+      : b instanceof color ? rgb
+      : b instanceof Date ? date
+      : numberArray_isNumberArray(b) ? src_numberArray
+      : Array.isArray(b) ? genericArray
+      : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
+      : src_number)(a, b);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/round.js
+/* harmony default export */ function round(a, b) {
+  return a = +a, b = +b, function(t) {
+    return Math.round(a * (1 - t) + b * t);
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/constant.js
+function constants(x) {
+  return function() {
+    return x;
+  };
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/number.js
+function number_number(x) {
+  return +x;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/continuous.js
+
+
+
+
+
+var unit = [0, 1];
+
+function continuous_identity(x) {
+  return x;
+}
+
+function normalize(a, b) {
+  return (b -= (a = +a))
+      ? function(x) { return (x - a) / b; }
+      : constants(isNaN(b) ? NaN : 0.5);
+}
+
+function clamper(a, b) {
+  var t;
+  if (a > b) t = a, a = b, b = t;
+  return function(x) { return Math.max(a, Math.min(b, x)); };
+}
+
+// normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+// interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
+function bimap(domain, range, interpolate) {
+  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  if (d1 < d0) d0 = normalize(d1, d0), r0 = interpolate(r1, r0);
+  else d0 = normalize(d0, d1), r0 = interpolate(r0, r1);
+  return function(x) { return r0(d0(x)); };
+}
+
+function polymap(domain, range, interpolate) {
+  var j = Math.min(domain.length, range.length) - 1,
+      d = new Array(j),
+      r = new Array(j),
+      i = -1;
+
+  // Reverse descending domains.
+  if (domain[j] < domain[0]) {
+    domain = domain.slice().reverse();
+    range = range.slice().reverse();
+  }
+
+  while (++i < j) {
+    d[i] = normalize(domain[i], domain[i + 1]);
+    r[i] = interpolate(range[i], range[i + 1]);
+  }
+
+  return function(x) {
+    var i = bisect(domain, x, 1, j) - 1;
+    return r[i](d[i](x));
+  };
+}
+
+function copy(source, target) {
+  return target
+      .domain(source.domain())
+      .range(source.range())
+      .interpolate(source.interpolate())
+      .clamp(source.clamp())
+      .unknown(source.unknown());
+}
+
+function transformer() {
+  var domain = unit,
+      range = unit,
+      interpolate = value,
+      transform,
+      untransform,
+      unknown,
+      clamp = continuous_identity,
+      piecewise,
+      output,
+      input;
+
+  function rescale() {
+    var n = Math.min(domain.length, range.length);
+    if (clamp !== continuous_identity) clamp = clamper(domain[0], domain[n - 1]);
+    piecewise = n > 2 ? polymap : bimap;
+    output = input = null;
+    return scale;
+  }
+
+  function scale(x) {
+    return x == null || isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
+  }
+
+  scale.invert = function(y) {
+    return clamp(untransform((input || (input = piecewise(range, domain.map(transform), src_number)))(y)));
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = Array.from(_, number_number), rescale()) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = Array.from(_), rescale()) : range.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range = Array.from(_), interpolate = round, rescale();
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = _ ? true : continuous_identity, rescale()) : clamp !== continuous_identity;
+  };
+
+  scale.interpolate = function(_) {
+    return arguments.length ? (interpolate = _, rescale()) : interpolate;
+  };
+
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  return function(t, u) {
+    transform = t, untransform = u;
+    return rescale();
+  };
+}
+
+function continuous() {
+  return transformer()(continuous_identity, continuous_identity);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/init.js
+function initRange(domain, range) {
+  switch (arguments.length) {
+    case 0: break;
+    case 1: this.range(domain); break;
+    default: this.range(range).domain(domain); break;
+  }
+  return this;
+}
+
+function initInterpolator(domain, interpolator) {
+  switch (arguments.length) {
+    case 0: break;
+    case 1: {
+      if (typeof domain === "function") this.interpolator(domain);
+      else this.range(domain);
+      break;
+    }
+    default: {
+      this.domain(domain);
+      if (typeof interpolator === "function") this.interpolator(interpolator);
+      else this.range(interpolator);
+      break;
+    }
+  }
+  return this;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionPrefix.js
+
+
+/* harmony default export */ function precisionPrefix(step, value) {
+  return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionRound.js
+
+
+/* harmony default export */ function precisionRound(step, max) {
+  step = Math.abs(step), max = Math.abs(max) - step;
+  return Math.max(0, exponent(max) - exponent(step)) + 1;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionFixed.js
+
+
+/* harmony default export */ function precisionFixed(step) {
+  return Math.max(0, -exponent(Math.abs(step)));
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/tickFormat.js
+
+
+
+function tickFormat(start, stop, count, specifier) {
+  var step = tickStep(start, stop, count),
+      precision;
+  specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+  switch (specifier.type) {
+    case "s": {
+      var value = Math.max(Math.abs(start), Math.abs(stop));
+      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
+      return formatPrefix(specifier, value);
+    }
+    case "":
+    case "e":
+    case "g":
+    case "p":
+    case "r": {
+      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
+      break;
+    }
+    case "f":
+    case "%": {
+      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
+      break;
+    }
+  }
+  return format(specifier);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/linear.js
+
+
+
+
+
+function linearish(scale) {
+  var domain = scale.domain;
+
+  scale.ticks = function(count) {
+    var d = domain();
+    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    var d = domain();
+    return tickFormat(d[0], d[d.length - 1], count == null ? 10 : count, specifier);
+  };
+
+  scale.nice = function(count) {
+    if (count == null) count = 10;
+
+    var d = domain();
+    var i0 = 0;
+    var i1 = d.length - 1;
+    var start = d[i0];
+    var stop = d[i1];
+    var prestep;
+    var step;
+    var maxIter = 10;
+
+    if (stop < start) {
+      step = start, start = stop, stop = step;
+      step = i0, i0 = i1, i1 = step;
+    }
+    
+    while (maxIter-- > 0) {
+      step = tickIncrement(start, stop, count);
+      if (step === prestep) {
+        d[i0] = start
+        d[i1] = stop
+        return domain(d);
+      } else if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+      } else {
+        break;
+      }
+      prestep = step;
+    }
+
+    return scale;
+  };
+
+  return scale;
+}
+
+function linear_linear() {
+  var scale = continuous();
+
+  scale.copy = function() {
+    return copy(scale, linear_linear());
+  };
+
+  initRange.apply(scale, arguments);
+
+  return linearish(scale);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/identity.js
+
+
+
+function identity_identity(domain) {
+  var unknown;
+
+  function scale(x) {
+    return x == null || isNaN(x = +x) ? unknown : x;
+  }
+
+  scale.invert = scale;
+
+  scale.domain = scale.range = function(_) {
+    return arguments.length ? (domain = Array.from(_, number_number), scale) : domain.slice();
+  };
+
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  scale.copy = function() {
+    return identity_identity(domain).unknown(unknown);
+  };
+
+  domain = arguments.length ? Array.from(domain, number_number) : [0, 1];
+
+  return linearish(scale);
+}
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/createReboundMethod.js
+/* harmony default export */ const createReboundMethod = ((target, source, name) => {
+    const method = source[name];
+    if (typeof method !== 'function') {
+        throw new Error(`Attempt to rebind ${name} which isn't a function on the source object`);
+    }
+    return (...args) => {
+        var value = method.apply(source, args);
+        return value === source ? target : value;
+    };
+});
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/rebindAll.js
+
+
+const createTransform = (transforms) =>
+    (name) => transforms.reduce(
+        (name, fn) => name && fn(name),
+        name
+    );
+
+/* harmony default export */ const rebindAll = ((target, source, ...transforms) => {
+    const transform = createTransform(transforms);
+    for (const name of Object.keys(source)) {
+        const result = transform(name);
+        if (result) {
+            target[result] = createReboundMethod(target, source, name);
+        }
+    }
+    return target;
+});
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/transform/regexify.js
+/* harmony default export */ const regexify = ((strsOrRegexes) =>
+    strsOrRegexes.map((strOrRegex) =>
+        typeof strOrRegex === 'string' ? new RegExp(`^${strOrRegex}$`) : strOrRegex
+    ));
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/transform/include.js
+
+
+/* harmony default export */ const include = ((...inclusions) => {
+    inclusions = regexify(inclusions);
+    return (name) =>
+      inclusions.some((inclusion) => inclusion.test(name)) && name;
+});
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/identity.js
+/* harmony default export */ function discontinuity_identity() {
+
+    var identity = {};
+
+    identity.distance = function(start, end) {
+        return end - start;
+    };
+
+    identity.offset = function(start, offset) {
+        return (start instanceof Date)
+            ? new Date(start.getTime() + offset)
+            : start + offset;
+    };
+
+    identity.clampUp = d => d;
+
+    identity.clampDown = d => d;
+
+    identity.copy = () => identity;
+
+    return identity;
+}
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/tickFilter.js
+function tickFilter(ticks, discontinuityProvider) {
+    const discontinuousTicks = ticks.map(discontinuityProvider.clampUp);
+    if (
+        discontinuousTicks.length !==
+        new Set(discontinuousTicks.map(d => d?.valueOf())).size
+    ) {
+        console.warn(
+            'There are multiple ticks that fall within a discontinuity, which has led to them being rendered on top of each other. Consider using scale.ticks to explicitly specify the ticks for the scale.'
+        );
+    }
+    return discontinuousTicks;
+}
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuous.js
+
+
+
+
+
+function discontinuous(adaptedScale) {
+
+    if (!arguments.length) {
+        adaptedScale = identity_identity();
+    }
+
+    var discontinuityProvider = discontinuity_identity();
+
+    const scale = value => {
+        var domain = adaptedScale.domain();
+        var range = adaptedScale.range();
+
+        // The discontinuityProvider is responsible for determine the distance between two points
+        // along a scale that has discontinuities (i.e. sections that have been removed).
+        // the scale for the given point 'x' is calculated as the ratio of the discontinuous distance
+        // over the domain of this axis, versus the discontinuous distance to 'x'
+        var totalDomainDistance = discontinuityProvider.distance(domain[0], domain[1]);
+        var distanceToX = discontinuityProvider.distance(domain[0], value);
+        var ratioToX = distanceToX / totalDomainDistance;
+        var scaledByRange = ratioToX * (range[1] - range[0]) + range[0];
+        return scaledByRange;
+    };
+
+    scale.invert = x => {
+        var domain = adaptedScale.domain();
+        var range = adaptedScale.range();
+
+        var ratioToX = (x - range[0]) / (range[1] - range[0]);
+        var totalDomainDistance = discontinuityProvider.distance(domain[0], domain[1]);
+        var distanceToX = ratioToX * totalDomainDistance;
+        return discontinuityProvider.offset(domain[0], distanceToX);
+    };
+
+    scale.domain = (...args) => {
+        if (!args.length) {
+            return adaptedScale.domain();
+        }
+        const newDomain = args[0];
+
+        // clamp the upper and lower domain values to ensure they
+        // do not fall within a discontinuity
+        var domainLower = discontinuityProvider.clampUp(newDomain[0]);
+        var domainUpper = discontinuityProvider.clampDown(newDomain[1]);
+        adaptedScale.domain([domainLower, domainUpper]);
+        return scale;
+    };
+
+    scale.nice = () => {
+        adaptedScale.nice();
+        var domain = adaptedScale.domain();
+        var domainLower = discontinuityProvider.clampUp(domain[0]);
+        var domainUpper = discontinuityProvider.clampDown(domain[1]);
+        adaptedScale.domain([domainLower, domainUpper]);
+        return scale;
+    };
+
+    scale.ticks = (...args) => {
+        var ticks = adaptedScale.ticks.apply(this, args);
+        return tickFilter(ticks, discontinuityProvider);
+    };
+
+    scale.copy = () =>
+        discontinuous(adaptedScale.copy())
+          .discontinuityProvider(discontinuityProvider.copy());
+
+    scale.discontinuityProvider = (...args) => {
+        if (!args.length) {
+            return discontinuityProvider;
+        }
+        discontinuityProvider = args[0];
+        return scale;
+    };
+
+    rebindAll(scale, adaptedScale, include('range', 'rangeRound', 'interpolate', 'clamp', 'tickFormat'));
+
+    return scale;
+}
+
+/* harmony default export */ const src_discontinuous = (discontinuous);
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/range.js
+const provider = (...ranges) => {
+
+    const inRange = (number, range) =>
+        number > range[0] && number < range[1];
+
+    const surroundsRange = (inner, outer) =>
+        inner[0] >= outer[0] &&  inner[1] <= outer[1];
+
+    var identity = {};
+
+    identity.distance = (start, end) => {
+        start = identity.clampUp(start);
+        end = identity.clampDown(end);
+
+        const surroundedRanges = ranges.filter(r => surroundsRange(r, [start, end]));
+        const rangeSizes = surroundedRanges.map(r => r[1] - r[0]);
+
+        return end - start - rangeSizes.reduce((total, current) => total + current, 0);
+    };
+
+    const add = (value, offset) =>
+        (value instanceof Date) ? new Date(value.getTime() + offset) : value + offset;
+
+    identity.offset = (location, offset) => {
+        if (offset > 0) {
+            let currentLocation = identity.clampUp(location);
+            let offsetRemaining = offset;
+            while (offsetRemaining > 0) {
+                const futureRanges = ranges.filter(r => r[0] > currentLocation)
+                    .sort((a, b) => a[0] - b[0]);
+                if (futureRanges.length) {
+                    const nextRange = futureRanges[0];
+                    const delta = nextRange[0] - currentLocation;
+                    if (delta > offsetRemaining) {
+                        currentLocation = add(currentLocation, offsetRemaining);
+                        offsetRemaining = 0;
+                    } else {
+                        currentLocation = nextRange[1];
+                        offsetRemaining -= delta;
+                    }
+                } else {
+                    currentLocation = add(currentLocation, offsetRemaining);
+                    offsetRemaining = 0;
+                }
+            }
+            return currentLocation;
+        } else {
+            let currentLocation = identity.clampDown(location);
+            let offsetRemaining = offset;
+            while (offsetRemaining < 0) {
+                const futureRanges = ranges.filter(r => r[1] < currentLocation)
+                    .sort((a, b) => b[0] - a[0]);
+                if (futureRanges.length) {
+                    const nextRange = futureRanges[0];
+                    const delta = nextRange[1] - currentLocation;
+                    if (delta < offsetRemaining) {
+                        currentLocation = add(currentLocation, offsetRemaining);
+                        offsetRemaining = 0;
+                    } else {
+                        currentLocation = nextRange[0];
+                        offsetRemaining -= delta;
+                    }
+                } else {
+                    currentLocation = add(currentLocation, offsetRemaining);
+                    offsetRemaining = 0;
+                }
+            }
+            return currentLocation;
+        }
+    };
+
+    identity.clampUp = d =>
+        ranges.reduce((value, range) => inRange(value, range) ? range[1] : value, d);
+
+    identity.clampDown = d =>
+        ranges.reduce((value, range) => inRange(value, range) ? range[0] : value, d);
+
+    identity.copy = () => identity;
+
+    return identity;
+};
+
+/* harmony default export */ const range = (provider);
+
+;// CONCATENATED MODULE: ./node_modules/d3-time/src/interval.js
+const t0 = new Date, t1 = new Date;
+
+function timeInterval(floori, offseti, count, field) {
+
+  function interval(date) {
+    return floori(date = arguments.length === 0 ? new Date : new Date(+date)), date;
+  }
+
+  interval.floor = (date) => {
+    return floori(date = new Date(+date)), date;
+  };
+
+  interval.ceil = (date) => {
+    return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
+  };
+
+  interval.round = (date) => {
+    const d0 = interval(date), d1 = interval.ceil(date);
+    return date - d0 < d1 - date ? d0 : d1;
+  };
+
+  interval.offset = (date, step) => {
+    return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
+  };
+
+  interval.range = (start, stop, step) => {
+    const range = [];
+    start = interval.ceil(start);
+    step = step == null ? 1 : Math.floor(step);
+    if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
+    let previous;
+    do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
+    while (previous < start && start < stop);
+    return range;
+  };
+
+  interval.filter = (test) => {
+    return timeInterval((date) => {
+      if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
+    }, (date, step) => {
+      if (date >= date) {
+        if (step < 0) while (++step <= 0) {
+          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+        } else while (--step >= 0) {
+          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+        }
+      }
+    });
+  };
+
+  if (count) {
+    interval.count = (start, end) => {
+      t0.setTime(+start), t1.setTime(+end);
+      floori(t0), floori(t1);
+      return Math.floor(count(t0, t1));
+    };
+
+    interval.every = (step) => {
+      step = Math.floor(step);
+      return !isFinite(step) || !(step > 0) ? null
+          : !(step > 1) ? interval
+          : interval.filter(field
+              ? (d) => field(d) % step === 0
+              : (d) => interval.count(0, d) % step === 0);
+    };
+  }
+
+  return interval;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-time/src/duration.js
+const durationSecond = 1000;
+const durationMinute = durationSecond * 60;
+const durationHour = durationMinute * 60;
+const durationDay = durationHour * 24;
+const durationWeek = durationDay * 7;
+const durationMonth = durationDay * 30;
+const durationYear = durationDay * 365;
+
+;// CONCATENATED MODULE: ./node_modules/d3-time/src/day.js
+
+
+
+const timeDay = timeInterval(
+  date => date.setHours(0, 0, 0, 0),
+  (date, step) => date.setDate(date.getDate() + step),
+  (start, end) => (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay,
+  date => date.getDate() - 1
+);
+
+const timeDays = timeDay.range;
+
+const utcDay = timeInterval((date) => {
+  date.setUTCHours(0, 0, 0, 0);
+}, (date, step) => {
+  date.setUTCDate(date.getUTCDate() + step);
+}, (start, end) => {
+  return (end - start) / durationDay;
+}, (date) => {
+  return date.getUTCDate() - 1;
+});
+
+const utcDays = utcDay.range;
+
+const unixDay = timeInterval((date) => {
+  date.setUTCHours(0, 0, 0, 0);
+}, (date, step) => {
+  date.setUTCDate(date.getUTCDate() + step);
+}, (start, end) => {
+  return (end - start) / durationDay;
+}, (date) => {
+  return Math.floor(date / durationDay);
+});
+
+const unixDays = unixDay.range;
+
+;// CONCATENATED MODULE: ./node_modules/d3-time/src/millisecond.js
+
+
+const millisecond = timeInterval(() => {
+  // noop
+}, (date, step) => {
+  date.setTime(+date + step);
+}, (start, end) => {
+  return end - start;
+});
+
+// An optimized implementation for this simple case.
+millisecond.every = (k) => {
+  k = Math.floor(k);
+  if (!isFinite(k) || !(k > 0)) return null;
+  if (!(k > 1)) return millisecond;
+  return timeInterval((date) => {
+    date.setTime(Math.floor(date / k) * k);
+  }, (date, step) => {
+    date.setTime(+date + step * k);
+  }, (start, end) => {
+    return (end - start) / k;
+  });
+};
+
+const milliseconds = millisecond.range;
+
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern/dateTimeUtility.js
+/**
+ * Object that helps with working with time strings and dates
+ * @typedef { Object } DateTimeUtility
+ * @property { function(Date): string } getTimeString - get's the time string for date as 'hh:mm:ss.fff'
+ * @property { function(Date , string, number): Date } setTime - set the time  for date as
+ * @property { function(Date): Date } getStartOfNextDay - returns the start of the next day i.e. 00:00:00.000
+ * @property { function(Date): Date } getEndOfPreviousDay - returns the 'End' of the previous day i.e. one ms before midnight
+ */
+
+/**
+ * 
+ * @param {function(Date, number, number, number, number): Date } setTimeForDate - sets a time on a Date object given hh, mm, ss & ms time compononets
+ * @param {function(Date): number } getDay 
+ * @param {function(Date): number[] } getTimeComponentArray 
+ * @param {function} dayInterval - d3-time timeDay or utcDay
+ * @param {function} msInterval - d3-time timeMillisecond or utcMillisecond
+  * @returns {DateTimeUtility}
+ */
+const dateTimeUtility = (setTimeForDate, getDay, getTimeComponentArray, dayInterval, msInterval) => {
+    const utility = {};
+    utility.getTimeComponentArrayFromString = (timeString) => [timeString.slice(0, 2), timeString.slice(3, 5), timeString.slice(6, 8), timeString.slice(9, 12)];
+    /**
+        * Returns the local time part of a given Date instance as 'hh:mm:ss.fff'
+        * @param {Date} date - Data instance
+        * @returns {string} time string.
+        */
+    utility.getTimeString = date => {
+        const [hh, mm, ss, ms] = getTimeComponentArray(date).map(x => x.toString(10).padStart(2, '0'));
+        return `${hh}:${mm}:${ss}.${ms.padStart(3, '0')}`;
+    };
+
+    /**
+     * Returns the combined local date and time string
+     * @param {Date} date - Data instance
+     * @param {string} timeString - string as 'hh:mm:ss.fff'
+     * @param {number} offsetInmilliSeconds - additional offset in millisends. Default = 0; e.g. -1 is one millisecond before time specified by timeString;
+     * @returns {Date} - combined date and time.
+     */
+    utility.setTime = (date, timeString, offsetInmilliSeconds = 0) => {
+        const [hh, mm, ss, ms] = utility.getTimeComponentArrayFromString(timeString);
+        return msInterval.offset(setTimeForDate(date, hh, mm, ss, ms), offsetInmilliSeconds);
+    };
+
+    /**
+     * Returns the start of the next day i.e. 00:00:00.000
+     * @param {Date} date - Data instance
+     * @returns {Date}.
+     */
+    utility.getStartOfNextDay = (date) => dayInterval.offset(dayInterval.floor(date), 1);
+
+    /**
+     * Returns the end of the previous day (1ms before midnight) i.e.  23:59:59.999
+     * @param {Date} date - Data instance
+     * @returns {Date}.
+     */
+    utility.getEndOfPreviousDay = (date) => msInterval.offset(dayInterval.floor(date), -1);
+
+    utility.dayInterval = dayInterval;
+    utility.msInterval = msInterval;
+    utility.getDay = getDay;
+
+    return utility;
+};
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern.js
+
+
+
+
+
+const localDateTimeUtility = dateTimeUtility(
+    (date, hh, mm, ss, ms) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), hh, mm, ss, ms),
+    date => date.getDay(),
+    date => [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()],
+    timeDay,
+    millisecond
+);
+
+/**
+ * Discontinuity provider implemenation that works with 'non-trading' periods during a trading day
+ * @typedef { Object } WeeklyPatternDiscontinuityProvider
+ * @property { function(Date): Date } clampUp - When given a value, if it falls within a discontinuity (i.e. an excluded domain range) it should be shifted forwards to the discontinuity boundary. Otherwise, it should be returned unchanged.
+ * @property { function(Date): Date } clampDown - When given a value, if it falls within a discontinuity it should be shifted backwards to the discontinuity boundary. Otherwise, it should be returned unchanged.
+ * @property { function(Date, Date): number } distance - When given a pair of values, this function returns the distance between the, in domain units, minus any discontinuities. discontinuities.
+ * @property { function(Date, number): Date } offset - When given a value and an offset, the value should be advanced by the offset value, skipping any discontinuities, to return the final value.
+ * @property { function(): WeeklyPatternDiscontinuityProvider } copy - Creates a copy of the discontinuity provider.
+  */
+
+/**
+ * Creates WeeklyPatternDiscontinuityProvider
+ * @param {Object} nonTradingPattern - contains raw 'non-trading' time ranges for each day of the week
+ * @param {DateTimeUtility} dateTimeUtility - uses local or utc dates
+ * @returns { WeeklyPatternDiscontinuityProvider } WeeklyPatternDiscontinuityProvider
+ */
+const skipWeeklyPattern_base = (nonTradingPattern, dateTimeUtility) => {
+
+    const getDayPatternOrDefault = (day) => nonTradingPattern[day] === undefined ? [] : nonTradingPattern[day];
+
+    const tradingDays = [
+        tradingDay(getDayPatternOrDefault('Sunday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Monday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Tuesday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Wednesday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Thursday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Friday'), dateTimeUtility),
+        tradingDay(getDayPatternOrDefault('Saturday'), dateTimeUtility)];
+
+    const totalTradingWeekMilliseconds = tradingDays.reduce((total, tradingDay) => total + tradingDay.totalTradingTimeInMiliseconds, 0);
+
+    if (totalTradingWeekMilliseconds === 0) {
+        throw 'Trading pattern must yield at least 1 ms of trading time';
+    }
+
+    const instance = { tradingDays, totalTradingWeekMilliseconds };
+
+    /**
+     * When given a value falls within a discontinuity (i.e. an excluded domain range) it should be shifted forwards to the discontinuity boundary. 
+     * Otherwise, it should be returns unchanged.
+     * @param {Date} date - date to clamp up
+     * @returns {Date}
+     */
+    instance.clampUp = (date) => {
+        const tradingDay = tradingDays[dateTimeUtility.getDay(date)];
+
+        for (const range of tradingDay.nonTradingTimeRanges) {
+            if (range.isInRange(date)) {
+
+                return range.endTime === dayBoundary
+                    ? instance.clampUp(dateTimeUtility.getStartOfNextDay(date))
+                    : dateTimeUtility.setTime(date, range.endTime);
+            }
+        }
+
+        return date;
+    };
+
+    /** 
+     * When given a value, if it falls within a discontinuity it should be shifted backwards to the discontinuity boundary. Otherwise, it should be returned unchanged.
+     * @param {Date} date - date to clamp down
+     * @returns {Date}
+    */
+    instance.clampDown = (date) => {
+        const tradingDay = tradingDays[dateTimeUtility.getDay(date)];
+
+        for (const range of tradingDay.nonTradingTimeRanges) {
+            if (range.isInRange(date)) {
+
+                return range.startTime === dayBoundary
+                    ? instance.clampDown(dateTimeUtility.getEndOfPreviousDay(date))
+                    : dateTimeUtility.setTime(date, range.startTime, -1);
+            }
+        }
+        return date;
+    };
+
+    /**
+     * When given a pair of values, this function returns the distance between the, in domain units, minus any discontinuities. discontinuities.
+     * @param {Date} startDate 
+     * @param {Date} endDate 
+     * @returns {number} - the number of milliseconds between the dates
+     */
+    instance.distance = (startDate, endDate) => {
+
+        if (startDate.getTime() === endDate.getTime()) {
+            return 0;
+        }
+
+        let [start, end, factor] = startDate <= endDate
+            ? [startDate, endDate, 1]
+            : [endDate, startDate, -1];
+
+        // same day distance
+        if (dateTimeUtility.dayInterval(start).getTime() === dateTimeUtility.dayInterval(end).getTime()) {
+            return instance.tradingDays[dateTimeUtility.getDay(start)].totalTradingMillisecondsBetween(start, end);
+        }
+
+        // combine any trading time left in the day after startDate 
+        // and any trading time from midnight up until the endDate
+        let total = instance.tradingDays[dateTimeUtility.getDay(start)].totalTradingMillisecondsBetween(start, dateTimeUtility.dayInterval.offset(dateTimeUtility.dayInterval(start), 1)) +
+            instance.tradingDays[dateTimeUtility.getDay(end)].totalTradingMillisecondsBetween(dateTimeUtility.dayInterval(end), end);
+
+        // startDate and endDate are consecutive days    
+        if (dateTimeUtility.dayInterval.count(start, end) === 1) {
+            return total;
+        }
+
+        // move the start date to following day
+        start = dateTimeUtility.dayInterval.offset(dateTimeUtility.dayInterval(start), 1);
+        // floor endDate to remove 'time component'
+        end = dateTimeUtility.dayInterval(end);
+
+        return factor * dateTimeUtility.dayInterval.range(start, end)
+            .reduce((runningTotal, currentDay, currentIndex, arr) => {
+
+                const nextDay = currentIndex < arr.length - 1
+                    ? arr[currentIndex + 1]
+                    : dateTimeUtility.dayInterval.offset(currentDay, 1);
+                const isDstBoundary = (nextDay - currentDay) !== millisPerDay;
+                const tradingDay = instance.tradingDays[dateTimeUtility.getDay(currentDay)];
+                return runningTotal += isDstBoundary
+                    ? tradingDay.totalTradingMillisecondsBetween(currentDay, nextDay)
+                    : tradingDay.totalTradingTimeInMiliseconds;
+
+            }, total);
+    };
+
+    /**
+     * When given a value and an offset in milliseconds, the value should be advanced by the offset value, skipping any discontinuities, to return the final value.
+     * @param {Date} date 
+     * @param {number} ms 
+     */
+    instance.offset = (date, ms) => {
+        date = ms >= 0
+            ? instance.clampUp(date)
+            : instance.clampDown(date);
+
+        const isDstBoundary = (d) => (dateTimeUtility.dayInterval.offset(d) - dateTimeUtility.dayInterval(d)) !== millisPerDay;
+
+        const moveToDayBoundary = (tradingDay, date, ms) => {
+
+            if (ms < 0) {
+                const dateFloor = dateTimeUtility.dayInterval(date);
+                const distanceToStartOfDay = tradingDay.totalTradingMillisecondsBetween(dateFloor, date);
+
+                return Math.abs(ms) <= distanceToStartOfDay
+                    ? tradingDay.offset(date, ms)
+                    : [instance.clampDown(dateTimeUtility.msInterval.offset(dateFloor, -1)), ms + distanceToStartOfDay + 1];
+
+            } else {
+                const nextDate = dateTimeUtility.getStartOfNextDay(date);
+                const distanceToDayBoundary = tradingDay.totalTradingMillisecondsBetween(date, nextDate);
+
+                return ms < distanceToDayBoundary
+                    ? tradingDay.offset(date, ms)
+                    : [instance.clampUp(nextDate), ms - distanceToDayBoundary];
+            }
+        };
+
+        if (ms === 0)
+            return date;
+
+        const moveDateDelegate = ms < 0
+            ? (date, remainingMs, tradingDayMs) => [instance.clampDown(dateTimeUtility.dayInterval.offset(date, -1)), remainingMs + tradingDayMs]
+            : (date, remainingMs, tradingDayMs) => [instance.clampUp(dateTimeUtility.dayInterval.offset(date)), remainingMs - tradingDayMs];
+
+        let tradingDay = instance.tradingDays[dateTimeUtility.getDay(date)];
+        [date, ms] = moveToDayBoundary(tradingDay, date, ms);
+        while (ms !== 0) {
+            tradingDay = instance.tradingDays[dateTimeUtility.getDay(date)];
+            if (isDstBoundary(date)) {
+                [date, ms] = moveToDayBoundary(tradingDay, date, ms);
+            } else {
+                [date, ms] = Math.abs(ms) >= tradingDay.totalTradingTimeInMiliseconds
+                    ? moveDateDelegate(date, ms, tradingDay.totalTradingTimeInMiliseconds)
+                    : moveToDayBoundary(tradingDay, date, ms);
+            }
+        }
+
+        return date;
+    };
+
+    instance.copy = () => instance;
+
+    return instance;
+};
+
+/* harmony default export */ const skipWeeklyPattern = ((nonTradingHoursPattern) => skipWeeklyPattern_base(nonTradingHoursPattern, localDateTimeUtility));
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipUtcWeeklyPattern.js
+
+
+
+
+const utcDateTimeUtility = dateTimeUtility(
+    (date, hh, mm, ss, ms) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hh, mm, ss, ms)),
+    date => date.getUTCDay(),
+    date => [date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds()],
+    utcDay,
+    millisecond
+);
+
+/* harmony default export */ const skipUtcWeeklyPattern = ((nonTradingUtcHoursPattern) => base(nonTradingUtcHoursPattern, utcDateTimeUtility));
+;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/index.js
+
+
+
+
+
+
+
+
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/max.js
+function max(values, valueof) {
+  let max;
+  if (valueof === undefined) {
+    for (const value of values) {
+      if (value != null
+          && (max < value || (max === undefined && value >= value))) {
+        max = value;
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null
+          && (max < value || (max === undefined && value >= value))) {
+        max = value;
+      }
+    }
+  }
+  return max;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/permute.js
+function permute(source, keys) {
+  return Array.from(keys, key => source[key]);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/sort.js
+
+
+
+function sort(values, ...F) {
+  if (typeof values[Symbol.iterator] !== "function") throw new TypeError("values is not iterable");
+  values = Array.from(values);
+  let [f] = F;
+  if ((f && f.length !== 2) || F.length > 1) {
+    const index = Uint32Array.from(values, (d, i) => i);
+    if (F.length > 1) {
+      F = F.map(f => values.map(f));
+      index.sort((i, j) => {
+        for (const f of F) {
+          const c = ascendingDefined(f[i], f[j]);
+          if (c) return c;
+        }
+      });
+    } else {
+      f = values.map(f);
+      index.sort((i, j) => ascendingDefined(f[i], f[j]));
+    }
+    return permute(values, index);
+  }
+  return values.sort(compareDefined(f));
+}
+
+function compareDefined(compare = ascending) {
+  if (compare === ascending) return ascendingDefined;
+  if (typeof compare !== "function") throw new TypeError("compare is not a function");
+  return (a, b) => {
+    const x = compare(a, b);
+    if (x || x === 0) return x;
+    return (compare(b, b) === 0) - (compare(a, a) === 0);
+  };
+}
+
+function ascendingDefined(a, b) {
+  return (a == null || !(a >= a)) - (b == null || !(b >= b)) || (a < b ? -1 : a > b ? 1 : 0);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // Deprecated; use bin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // Deprecated; use leastIndex.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;// CONCATENATED MODULE: ./node_modules/d3-axis/src/identity.js
+/* harmony default export */ function src_identity(x) {
+  return x;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-axis/src/axis.js
+
+
+var axis_top = 1,
+    right = 2,
+    bottom = 3,
+    left = 4,
+    epsilon = 1e-6;
+
+function translateX(x) {
+  return "translate(" + x + ",0)";
+}
+
+function translateY(y) {
+  return "translate(0," + y + ")";
+}
+
+function axis_number(scale) {
+  return d => +scale(d);
+}
+
+function center(scale, offset) {
+  offset = Math.max(0, scale.bandwidth() - offset * 2) / 2;
+  if (scale.round()) offset = Math.round(offset);
+  return d => +scale(d) + offset;
+}
+
+function entering() {
+  return !this.__axis;
+}
+
+function axis(orient, scale) {
+  var tickArguments = [],
+      tickValues = null,
+      tickFormat = null,
+      tickSizeInner = 6,
+      tickSizeOuter = 6,
+      tickPadding = 3,
+      offset = typeof window !== "undefined" && window.devicePixelRatio > 1 ? 0 : 0.5,
+      k = orient === axis_top || orient === left ? -1 : 1,
+      x = orient === left || orient === right ? "x" : "y",
+      transform = orient === axis_top || orient === bottom ? translateX : translateY;
+
+  function axis(context) {
+    var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
+        format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : src_identity) : tickFormat,
+        spacing = Math.max(tickSizeInner, 0) + tickPadding,
+        range = scale.range(),
+        range0 = +range[0] + offset,
+        range1 = +range[range.length - 1] + offset,
+        position = (scale.bandwidth ? center : axis_number)(scale.copy(), offset),
+        selection = context.selection ? context.selection() : context,
+        path = selection.selectAll(".domain").data([null]),
+        tick = selection.selectAll(".tick").data(values, scale).order(),
+        tickExit = tick.exit(),
+        tickEnter = tick.enter().append("g").attr("class", "tick"),
+        line = tick.select("line"),
+        text = tick.select("text");
+
+    path = path.merge(path.enter().insert("path", ".tick")
+        .attr("class", "domain")
+        .attr("stroke", "currentColor"));
+
+    tick = tick.merge(tickEnter);
+
+    line = line.merge(tickEnter.append("line")
+        .attr("stroke", "currentColor")
+        .attr(x + "2", k * tickSizeInner));
+
+    text = text.merge(tickEnter.append("text")
+        .attr("fill", "currentColor")
+        .attr(x, k * spacing)
+        .attr("dy", orient === axis_top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
+
+    if (context !== selection) {
+      path = path.transition(context);
+      tick = tick.transition(context);
+      line = line.transition(context);
+      text = text.transition(context);
+
+      tickExit = tickExit.transition(context)
+          .attr("opacity", epsilon)
+          .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
+
+      tickEnter
+          .attr("opacity", epsilon)
+          .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
+    }
+
+    tickExit.remove();
+
+    path
+        .attr("d", orient === left || orient === right
+            ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H" + offset + "V" + range1 + "H" + k * tickSizeOuter : "M" + offset + "," + range0 + "V" + range1)
+            : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V" + offset + "H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + "," + offset + "H" + range1));
+
+    tick
+        .attr("opacity", 1)
+        .attr("transform", function(d) { return transform(position(d) + offset); });
+
+    line
+        .attr(x + "2", k * tickSizeInner);
+
+    text
+        .attr(x, k * spacing)
+        .text(format);
+
+    selection.filter(entering)
+        .attr("fill", "none")
+        .attr("font-size", 10)
+        .attr("font-family", "sans-serif")
+        .attr("text-anchor", orient === right ? "start" : orient === left ? "end" : "middle");
+
+    selection
+        .each(function() { this.__axis = position; });
+  }
+
+  axis.scale = function(_) {
+    return arguments.length ? (scale = _, axis) : scale;
+  };
+
+  axis.ticks = function() {
+    return tickArguments = Array.from(arguments), axis;
+  };
+
+  axis.tickArguments = function(_) {
+    return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis) : tickArguments.slice();
+  };
+
+  axis.tickValues = function(_) {
+    return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis) : tickValues && tickValues.slice();
+  };
+
+  axis.tickFormat = function(_) {
+    return arguments.length ? (tickFormat = _, axis) : tickFormat;
+  };
+
+  axis.tickSize = function(_) {
+    return arguments.length ? (tickSizeInner = tickSizeOuter = +_, axis) : tickSizeInner;
+  };
+
+  axis.tickSizeInner = function(_) {
+    return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
+  };
+
+  axis.tickSizeOuter = function(_) {
+    return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
+  };
+
+  axis.tickPadding = function(_) {
+    return arguments.length ? (tickPadding = +_, axis) : tickPadding;
+  };
+
+  axis.offset = function(_) {
+    return arguments.length ? (offset = +_, axis) : offset;
+  };
+
+  return axis;
+}
+
+function axisTop(scale) {
+  return axis(axis_top, scale);
+}
+
+function axisRight(scale) {
+  return axis(right, scale);
+}
+
+function axisBottom(scale) {
+  return axis(bottom, scale);
+}
+
+function axisLeft(scale) {
+  return axis(left, scale);
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-axis/src/index.js
+
+
 ;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selector.js
 function none() {}
 
@@ -416,7 +2626,7 @@ function none() {}
 // selection; we don’t ever want to create a selection backed by a live
 // HTMLCollection or NodeList. However, note that selection.selectAll will use a
 // static NodeList as a group, since it safely derived from querySelectorAll.
-function array(x) {
+function array_array(x) {
   return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
 }
 
@@ -438,7 +2648,7 @@ function empty() {
 
 function arrayAll(select) {
   return function() {
-    return array(select.apply(this, arguments));
+    return array_array(select.apply(this, arguments));
   };
 }
 
@@ -560,7 +2770,7 @@ EnterNode.prototype = {
 };
 
 ;// CONCATENATED MODULE: ./node_modules/d3-selection/src/constant.js
-/* harmony default export */ function src_constant(x) {
+/* harmony default export */ function d3_selection_src_constant(x) {
   return function() {
     return x;
   };
@@ -652,7 +2862,7 @@ function datum(node) {
       parents = this._parents,
       groups = this._groups;
 
-  if (typeof value !== "function") value = src_constant(value);
+  if (typeof value !== "function") value = d3_selection_src_constant(value);
 
   for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
     var parent = parents[j],
@@ -760,8 +2970,8 @@ function arraylike(data) {
 ;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/sort.js
 
 
-/* harmony default export */ function sort(compare) {
-  if (!compare) compare = ascending;
+/* harmony default export */ function selection_sort(compare) {
+  if (!compare) compare = sort_ascending;
 
   function compareNode(a, b) {
     return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -779,7 +2989,7 @@ function arraylike(data) {
   return new Selection(sortgroups, this._parents).order();
 }
 
-function ascending(a, b) {
+function sort_ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
@@ -1399,7 +3609,7 @@ Selection.prototype = selection.prototype = {
   merge: merge,
   selection: selection_selection,
   order: order,
-  sort: sort,
+  sort: selection_sort,
   call: call,
   nodes: nodes,
   node: node,
@@ -1827,13 +4037,6 @@ function create(node, id, self) {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/number.js
-/* harmony default export */ function number(a, b) {
-  return a = +a, b = +b, function(t) {
-    return a * (1 - t) + b * t;
-  };
-}
-
 ;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/transform/decompose.js
 var decompose_degrees = 180 / Math.PI;
 
@@ -1895,7 +4098,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function translate(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push("translate(", null, pxComma, null, pxParen);
-      q.push({i: i - 4, x: number(xa, xb)}, {i: i - 2, x: number(ya, yb)});
+      q.push({i: i - 4, x: src_number(xa, xb)}, {i: i - 2, x: src_number(ya, yb)});
     } else if (xb || yb) {
       s.push("translate(" + xb + pxComma + yb + pxParen);
     }
@@ -1904,7 +4107,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function rotate(a, b, s, q) {
     if (a !== b) {
       if (a - b > 180) b += 360; else if (b - a > 180) a += 360; // shortest path
-      q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: number(a, b)});
+      q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: src_number(a, b)});
     } else if (b) {
       s.push(pop(s) + "rotate(" + b + degParen);
     }
@@ -1912,7 +4115,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 
   function skewX(a, b, s, q) {
     if (a !== b) {
-      q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: number(a, b)});
+      q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: src_number(a, b)});
     } else if (b) {
       s.push(pop(s) + "skewX(" + b + degParen);
     }
@@ -1921,7 +4124,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function scale(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-      q.push({i: i - 4, x: number(xa, xb)}, {i: i - 2, x: number(ya, yb)});
+      q.push({i: i - 4, x: src_number(xa, xb)}, {i: i - 2, x: src_number(ya, yb)});
     } else if (xb !== 1 || yb !== 1) {
       s.push(pop(s) + "scale(" + xb + "," + yb + ")");
     }
@@ -2030,616 +4233,13 @@ function tweenValue(transition, name, value) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-color/src/define.js
-/* harmony default export */ function src_define(constructor, factory, prototype) {
-  constructor.prototype = factory.prototype = prototype;
-  prototype.constructor = constructor;
-}
-
-function extend(parent, definition) {
-  var prototype = Object.create(parent.prototype);
-  for (var key in definition) prototype[key] = definition[key];
-  return prototype;
-}
-
-;// CONCATENATED MODULE: ./node_modules/d3-color/src/color.js
-
-
-function Color() {}
-
-var darker = 0.7;
-var brighter = 1 / darker;
-
-var reI = "\\s*([+-]?\\d+)\\s*",
-    reN = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)\\s*",
-    reP = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
-    reHex = /^#([0-9a-f]{3,8})$/,
-    reRgbInteger = new RegExp(`^rgb\\(${reI},${reI},${reI}\\)$`),
-    reRgbPercent = new RegExp(`^rgb\\(${reP},${reP},${reP}\\)$`),
-    reRgbaInteger = new RegExp(`^rgba\\(${reI},${reI},${reI},${reN}\\)$`),
-    reRgbaPercent = new RegExp(`^rgba\\(${reP},${reP},${reP},${reN}\\)$`),
-    reHslPercent = new RegExp(`^hsl\\(${reN},${reP},${reP}\\)$`),
-    reHslaPercent = new RegExp(`^hsla\\(${reN},${reP},${reP},${reN}\\)$`);
-
-var named = {
-  aliceblue: 0xf0f8ff,
-  antiquewhite: 0xfaebd7,
-  aqua: 0x00ffff,
-  aquamarine: 0x7fffd4,
-  azure: 0xf0ffff,
-  beige: 0xf5f5dc,
-  bisque: 0xffe4c4,
-  black: 0x000000,
-  blanchedalmond: 0xffebcd,
-  blue: 0x0000ff,
-  blueviolet: 0x8a2be2,
-  brown: 0xa52a2a,
-  burlywood: 0xdeb887,
-  cadetblue: 0x5f9ea0,
-  chartreuse: 0x7fff00,
-  chocolate: 0xd2691e,
-  coral: 0xff7f50,
-  cornflowerblue: 0x6495ed,
-  cornsilk: 0xfff8dc,
-  crimson: 0xdc143c,
-  cyan: 0x00ffff,
-  darkblue: 0x00008b,
-  darkcyan: 0x008b8b,
-  darkgoldenrod: 0xb8860b,
-  darkgray: 0xa9a9a9,
-  darkgreen: 0x006400,
-  darkgrey: 0xa9a9a9,
-  darkkhaki: 0xbdb76b,
-  darkmagenta: 0x8b008b,
-  darkolivegreen: 0x556b2f,
-  darkorange: 0xff8c00,
-  darkorchid: 0x9932cc,
-  darkred: 0x8b0000,
-  darksalmon: 0xe9967a,
-  darkseagreen: 0x8fbc8f,
-  darkslateblue: 0x483d8b,
-  darkslategray: 0x2f4f4f,
-  darkslategrey: 0x2f4f4f,
-  darkturquoise: 0x00ced1,
-  darkviolet: 0x9400d3,
-  deeppink: 0xff1493,
-  deepskyblue: 0x00bfff,
-  dimgray: 0x696969,
-  dimgrey: 0x696969,
-  dodgerblue: 0x1e90ff,
-  firebrick: 0xb22222,
-  floralwhite: 0xfffaf0,
-  forestgreen: 0x228b22,
-  fuchsia: 0xff00ff,
-  gainsboro: 0xdcdcdc,
-  ghostwhite: 0xf8f8ff,
-  gold: 0xffd700,
-  goldenrod: 0xdaa520,
-  gray: 0x808080,
-  green: 0x008000,
-  greenyellow: 0xadff2f,
-  grey: 0x808080,
-  honeydew: 0xf0fff0,
-  hotpink: 0xff69b4,
-  indianred: 0xcd5c5c,
-  indigo: 0x4b0082,
-  ivory: 0xfffff0,
-  khaki: 0xf0e68c,
-  lavender: 0xe6e6fa,
-  lavenderblush: 0xfff0f5,
-  lawngreen: 0x7cfc00,
-  lemonchiffon: 0xfffacd,
-  lightblue: 0xadd8e6,
-  lightcoral: 0xf08080,
-  lightcyan: 0xe0ffff,
-  lightgoldenrodyellow: 0xfafad2,
-  lightgray: 0xd3d3d3,
-  lightgreen: 0x90ee90,
-  lightgrey: 0xd3d3d3,
-  lightpink: 0xffb6c1,
-  lightsalmon: 0xffa07a,
-  lightseagreen: 0x20b2aa,
-  lightskyblue: 0x87cefa,
-  lightslategray: 0x778899,
-  lightslategrey: 0x778899,
-  lightsteelblue: 0xb0c4de,
-  lightyellow: 0xffffe0,
-  lime: 0x00ff00,
-  limegreen: 0x32cd32,
-  linen: 0xfaf0e6,
-  magenta: 0xff00ff,
-  maroon: 0x800000,
-  mediumaquamarine: 0x66cdaa,
-  mediumblue: 0x0000cd,
-  mediumorchid: 0xba55d3,
-  mediumpurple: 0x9370db,
-  mediumseagreen: 0x3cb371,
-  mediumslateblue: 0x7b68ee,
-  mediumspringgreen: 0x00fa9a,
-  mediumturquoise: 0x48d1cc,
-  mediumvioletred: 0xc71585,
-  midnightblue: 0x191970,
-  mintcream: 0xf5fffa,
-  mistyrose: 0xffe4e1,
-  moccasin: 0xffe4b5,
-  navajowhite: 0xffdead,
-  navy: 0x000080,
-  oldlace: 0xfdf5e6,
-  olive: 0x808000,
-  olivedrab: 0x6b8e23,
-  orange: 0xffa500,
-  orangered: 0xff4500,
-  orchid: 0xda70d6,
-  palegoldenrod: 0xeee8aa,
-  palegreen: 0x98fb98,
-  paleturquoise: 0xafeeee,
-  palevioletred: 0xdb7093,
-  papayawhip: 0xffefd5,
-  peachpuff: 0xffdab9,
-  peru: 0xcd853f,
-  pink: 0xffc0cb,
-  plum: 0xdda0dd,
-  powderblue: 0xb0e0e6,
-  purple: 0x800080,
-  rebeccapurple: 0x663399,
-  red: 0xff0000,
-  rosybrown: 0xbc8f8f,
-  royalblue: 0x4169e1,
-  saddlebrown: 0x8b4513,
-  salmon: 0xfa8072,
-  sandybrown: 0xf4a460,
-  seagreen: 0x2e8b57,
-  seashell: 0xfff5ee,
-  sienna: 0xa0522d,
-  silver: 0xc0c0c0,
-  skyblue: 0x87ceeb,
-  slateblue: 0x6a5acd,
-  slategray: 0x708090,
-  slategrey: 0x708090,
-  snow: 0xfffafa,
-  springgreen: 0x00ff7f,
-  steelblue: 0x4682b4,
-  tan: 0xd2b48c,
-  teal: 0x008080,
-  thistle: 0xd8bfd8,
-  tomato: 0xff6347,
-  turquoise: 0x40e0d0,
-  violet: 0xee82ee,
-  wheat: 0xf5deb3,
-  white: 0xffffff,
-  whitesmoke: 0xf5f5f5,
-  yellow: 0xffff00,
-  yellowgreen: 0x9acd32
-};
-
-src_define(Color, color, {
-  copy(channels) {
-    return Object.assign(new this.constructor, this, channels);
-  },
-  displayable() {
-    return this.rgb().displayable();
-  },
-  hex: color_formatHex, // Deprecated! Use color.formatHex.
-  formatHex: color_formatHex,
-  formatHex8: color_formatHex8,
-  formatHsl: color_formatHsl,
-  formatRgb: color_formatRgb,
-  toString: color_formatRgb
-});
-
-function color_formatHex() {
-  return this.rgb().formatHex();
-}
-
-function color_formatHex8() {
-  return this.rgb().formatHex8();
-}
-
-function color_formatHsl() {
-  return hslConvert(this).formatHsl();
-}
-
-function color_formatRgb() {
-  return this.rgb().formatRgb();
-}
-
-function color(format) {
-  var m, l;
-  format = (format + "").trim().toLowerCase();
-  return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
-      : l === 3 ? new Rgb((m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1) // #f00
-      : l === 8 ? rgba(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-      : l === 4 ? rgba((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
-      : null) // invalid hex
-      : (m = reRgbInteger.exec(format)) ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
-      : (m = reRgbPercent.exec(format)) ? new Rgb(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
-      : (m = reRgbaInteger.exec(format)) ? rgba(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
-      : (m = reRgbaPercent.exec(format)) ? rgba(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
-      : (m = reHslPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
-      : (m = reHslaPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-      : named.hasOwnProperty(format) ? rgbn(named[format]) // eslint-disable-line no-prototype-builtins
-      : format === "transparent" ? new Rgb(NaN, NaN, NaN, 0)
-      : null;
-}
-
-function rgbn(n) {
-  return new Rgb(n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff, 1);
-}
-
-function rgba(r, g, b, a) {
-  if (a <= 0) r = g = b = NaN;
-  return new Rgb(r, g, b, a);
-}
-
-function rgbConvert(o) {
-  if (!(o instanceof Color)) o = color(o);
-  if (!o) return new Rgb;
-  o = o.rgb();
-  return new Rgb(o.r, o.g, o.b, o.opacity);
-}
-
-function color_rgb(r, g, b, opacity) {
-  return arguments.length === 1 ? rgbConvert(r) : new Rgb(r, g, b, opacity == null ? 1 : opacity);
-}
-
-function Rgb(r, g, b, opacity) {
-  this.r = +r;
-  this.g = +g;
-  this.b = +b;
-  this.opacity = +opacity;
-}
-
-src_define(Rgb, color_rgb, extend(Color, {
-  brighter(k) {
-    k = k == null ? brighter : Math.pow(brighter, k);
-    return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
-  },
-  darker(k) {
-    k = k == null ? darker : Math.pow(darker, k);
-    return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
-  },
-  rgb() {
-    return this;
-  },
-  clamp() {
-    return new Rgb(clampi(this.r), clampi(this.g), clampi(this.b), clampa(this.opacity));
-  },
-  displayable() {
-    return (-0.5 <= this.r && this.r < 255.5)
-        && (-0.5 <= this.g && this.g < 255.5)
-        && (-0.5 <= this.b && this.b < 255.5)
-        && (0 <= this.opacity && this.opacity <= 1);
-  },
-  hex: rgb_formatHex, // Deprecated! Use color.formatHex.
-  formatHex: rgb_formatHex,
-  formatHex8: rgb_formatHex8,
-  formatRgb: rgb_formatRgb,
-  toString: rgb_formatRgb
-}));
-
-function rgb_formatHex() {
-  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}`;
-}
-
-function rgb_formatHex8() {
-  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex((isNaN(this.opacity) ? 1 : this.opacity) * 255)}`;
-}
-
-function rgb_formatRgb() {
-  const a = clampa(this.opacity);
-  return `${a === 1 ? "rgb(" : "rgba("}${clampi(this.r)}, ${clampi(this.g)}, ${clampi(this.b)}${a === 1 ? ")" : `, ${a})`}`;
-}
-
-function clampa(opacity) {
-  return isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity));
-}
-
-function clampi(value) {
-  return Math.max(0, Math.min(255, Math.round(value) || 0));
-}
-
-function hex(value) {
-  value = clampi(value);
-  return (value < 16 ? "0" : "") + value.toString(16);
-}
-
-function hsla(h, s, l, a) {
-  if (a <= 0) h = s = l = NaN;
-  else if (l <= 0 || l >= 1) h = s = NaN;
-  else if (s <= 0) h = NaN;
-  return new Hsl(h, s, l, a);
-}
-
-function hslConvert(o) {
-  if (o instanceof Hsl) return new Hsl(o.h, o.s, o.l, o.opacity);
-  if (!(o instanceof Color)) o = color(o);
-  if (!o) return new Hsl;
-  if (o instanceof Hsl) return o;
-  o = o.rgb();
-  var r = o.r / 255,
-      g = o.g / 255,
-      b = o.b / 255,
-      min = Math.min(r, g, b),
-      max = Math.max(r, g, b),
-      h = NaN,
-      s = max - min,
-      l = (max + min) / 2;
-  if (s) {
-    if (r === max) h = (g - b) / s + (g < b) * 6;
-    else if (g === max) h = (b - r) / s + 2;
-    else h = (r - g) / s + 4;
-    s /= l < 0.5 ? max + min : 2 - max - min;
-    h *= 60;
-  } else {
-    s = l > 0 && l < 1 ? 0 : h;
-  }
-  return new Hsl(h, s, l, o.opacity);
-}
-
-function hsl(h, s, l, opacity) {
-  return arguments.length === 1 ? hslConvert(h) : new Hsl(h, s, l, opacity == null ? 1 : opacity);
-}
-
-function Hsl(h, s, l, opacity) {
-  this.h = +h;
-  this.s = +s;
-  this.l = +l;
-  this.opacity = +opacity;
-}
-
-src_define(Hsl, hsl, extend(Color, {
-  brighter(k) {
-    k = k == null ? brighter : Math.pow(brighter, k);
-    return new Hsl(this.h, this.s, this.l * k, this.opacity);
-  },
-  darker(k) {
-    k = k == null ? darker : Math.pow(darker, k);
-    return new Hsl(this.h, this.s, this.l * k, this.opacity);
-  },
-  rgb() {
-    var h = this.h % 360 + (this.h < 0) * 360,
-        s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
-        l = this.l,
-        m2 = l + (l < 0.5 ? l : 1 - l) * s,
-        m1 = 2 * l - m2;
-    return new Rgb(
-      hsl2rgb(h >= 240 ? h - 240 : h + 120, m1, m2),
-      hsl2rgb(h, m1, m2),
-      hsl2rgb(h < 120 ? h + 240 : h - 120, m1, m2),
-      this.opacity
-    );
-  },
-  clamp() {
-    return new Hsl(clamph(this.h), clampt(this.s), clampt(this.l), clampa(this.opacity));
-  },
-  displayable() {
-    return (0 <= this.s && this.s <= 1 || isNaN(this.s))
-        && (0 <= this.l && this.l <= 1)
-        && (0 <= this.opacity && this.opacity <= 1);
-  },
-  formatHsl() {
-    const a = clampa(this.opacity);
-    return `${a === 1 ? "hsl(" : "hsla("}${clamph(this.h)}, ${clampt(this.s) * 100}%, ${clampt(this.l) * 100}%${a === 1 ? ")" : `, ${a})`}`;
-  }
-}));
-
-function clamph(value) {
-  value = (value || 0) % 360;
-  return value < 0 ? value + 360 : value;
-}
-
-function clampt(value) {
-  return Math.max(0, Math.min(1, value || 0));
-}
-
-/* From FvD 13.37, CSS Color Module Level 3 */
-function hsl2rgb(h, m1, m2) {
-  return (h < 60 ? m1 + (m2 - m1) * h / 60
-      : h < 180 ? m2
-      : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60
-      : m1) * 255;
-}
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basis.js
-function basis(t1, v0, v1, v2, v3) {
-  var t2 = t1 * t1, t3 = t2 * t1;
-  return ((1 - 3 * t1 + 3 * t2 - t3) * v0
-      + (4 - 6 * t2 + 3 * t3) * v1
-      + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2
-      + t3 * v3) / 6;
-}
-
-/* harmony default export */ function src_basis(values) {
-  var n = values.length - 1;
-  return function(t) {
-    var i = t <= 0 ? (t = 0) : t >= 1 ? (t = 1, n - 1) : Math.floor(t * n),
-        v1 = values[i],
-        v2 = values[i + 1],
-        v0 = i > 0 ? values[i - 1] : 2 * v1 - v2,
-        v3 = i < n - 1 ? values[i + 2] : 2 * v2 - v1;
-    return basis((t - i / n) * n, v0, v1, v2, v3);
-  };
-}
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basisClosed.js
-
-
-/* harmony default export */ function basisClosed(values) {
-  var n = values.length;
-  return function(t) {
-    var i = Math.floor(((t %= 1) < 0 ? ++t : t) * n),
-        v0 = values[(i + n - 1) % n],
-        v1 = values[i % n],
-        v2 = values[(i + 1) % n],
-        v3 = values[(i + 2) % n];
-    return basis((t - i / n) * n, v0, v1, v2, v3);
-  };
-}
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/constant.js
-/* harmony default export */ const d3_interpolate_src_constant = (x => () => x);
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/color.js
-
-
-function linear(a, d) {
-  return function(t) {
-    return a + t * d;
-  };
-}
-
-function exponential(a, b, y) {
-  return a = Math.pow(a, y), b = Math.pow(b, y) - a, y = 1 / y, function(t) {
-    return Math.pow(a + t * b, y);
-  };
-}
-
-function hue(a, b) {
-  var d = b - a;
-  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant(isNaN(a) ? b : a);
-}
-
-function gamma(y) {
-  return (y = +y) === 1 ? nogamma : function(a, b) {
-    return b - a ? exponential(a, b, y) : d3_interpolate_src_constant(isNaN(a) ? b : a);
-  };
-}
-
-function nogamma(a, b) {
-  var d = b - a;
-  return d ? linear(a, d) : d3_interpolate_src_constant(isNaN(a) ? b : a);
-}
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/rgb.js
-
-
-
-
-
-/* harmony default export */ const rgb = ((function rgbGamma(y) {
-  var color = gamma(y);
-
-  function rgb(start, end) {
-    var r = color((start = color_rgb(start)).r, (end = color_rgb(end)).r),
-        g = color(start.g, end.g),
-        b = color(start.b, end.b),
-        opacity = nogamma(start.opacity, end.opacity);
-    return function(t) {
-      start.r = r(t);
-      start.g = g(t);
-      start.b = b(t);
-      start.opacity = opacity(t);
-      return start + "";
-    };
-  }
-
-  rgb.gamma = rgbGamma;
-
-  return rgb;
-})(1));
-
-function rgbSpline(spline) {
-  return function(colors) {
-    var n = colors.length,
-        r = new Array(n),
-        g = new Array(n),
-        b = new Array(n),
-        i, color;
-    for (i = 0; i < n; ++i) {
-      color = color_rgb(colors[i]);
-      r[i] = color.r || 0;
-      g[i] = color.g || 0;
-      b[i] = color.b || 0;
-    }
-    r = spline(r);
-    g = spline(g);
-    b = spline(b);
-    color.opacity = 1;
-    return function(t) {
-      color.r = r(t);
-      color.g = g(t);
-      color.b = b(t);
-      return color + "";
-    };
-  };
-}
-
-var rgbBasis = rgbSpline(src_basis);
-var rgbBasisClosed = rgbSpline(basisClosed);
-
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/string.js
-
-
-var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
-    reB = new RegExp(reA.source, "g");
-
-function zero(b) {
-  return function() {
-    return b;
-  };
-}
-
-function one(b) {
-  return function(t) {
-    return b(t) + "";
-  };
-}
-
-/* harmony default export */ function string(a, b) {
-  var bi = reA.lastIndex = reB.lastIndex = 0, // scan index for next number in b
-      am, // current match in a
-      bm, // current match in b
-      bs, // string preceding current number in b, if any
-      i = -1, // index in s
-      s = [], // string constants and placeholders
-      q = []; // number interpolators
-
-  // Coerce inputs to strings.
-  a = a + "", b = b + "";
-
-  // Interpolate pairs of numbers in a & b.
-  while ((am = reA.exec(a))
-      && (bm = reB.exec(b))) {
-    if ((bs = bm.index) > bi) { // a string precedes the next number in b
-      bs = b.slice(bi, bs);
-      if (s[i]) s[i] += bs; // coalesce with previous string
-      else s[++i] = bs;
-    }
-    if ((am = am[0]) === (bm = bm[0])) { // numbers in a & b match
-      if (s[i]) s[i] += bm; // coalesce with previous string
-      else s[++i] = bm;
-    } else { // interpolate non-matching numbers
-      s[++i] = null;
-      q.push({i: i, x: number(am, bm)});
-    }
-    bi = reB.lastIndex;
-  }
-
-  // Add remains of b.
-  if (bi < b.length) {
-    bs = b.slice(bi);
-    if (s[i]) s[i] += bs; // coalesce with previous string
-    else s[++i] = bs;
-  }
-
-  // Special optimization for only a single match.
-  // Otherwise, interpolate each of the numbers and rejoin the string.
-  return s.length < 2 ? (q[0]
-      ? one(q[0].x)
-      : zero(b))
-      : (b = q.length, function(t) {
-          for (var i = 0, o; i < b; ++i) s[(o = q[i]).i] = o.x(t);
-          return s.join("");
-        });
-}
-
 ;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/interpolate.js
 
 
 
 /* harmony default export */ function transition_interpolate(a, b) {
   var c;
-  return (typeof b === "number" ? number
+  return (typeof b === "number" ? src_number
       : b instanceof color ? rgb
       : (c = color(b)) ? (b = c, rgb)
       : string)(a, b);
@@ -3376,7 +4976,7 @@ var MODE_DRAG = {name: "drag"},
     MODE_HANDLE = {name: "handle"},
     MODE_CENTER = {name: "center"};
 
-const {abs, max, min} = Math;
+const {abs, max: brush_max, min} = Math;
 
 function number1(e) {
   return [+e[0], +e[1]];
@@ -3735,8 +5335,8 @@ function brush_brush(dim) {
           w0 = dim === Y ? W : min(pts[0][0], pts[1][0]),
           n0 = dim === X ? N : min(pts[0][1], pts[1][1])
         ], [
-          e0 = dim === Y ? E : max(pts[0][0], pts[1][0]),
-          s0 = dim === X ? S : max(pts[0][1], pts[1][1])
+          e0 = dim === Y ? E : brush_max(pts[0][0], pts[1][0]),
+          s0 = dim === X ? S : brush_max(pts[0][1], pts[1][1])
         ]];
       if (points.length > 1) move(event);
     } else {
@@ -3803,25 +5403,25 @@ function brush_brush(dim) {
       switch (mode) {
         case MODE_SPACE:
         case MODE_DRAG: {
-          if (signX) dx = max(W - w0, min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx;
-          if (signY) dy = max(N - n0, min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy;
+          if (signX) dx = brush_max(W - w0, min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx;
+          if (signY) dy = brush_max(N - n0, min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy;
           break;
         }
         case MODE_HANDLE: {
           if (points[1]) {
-            if (signX) w1 = max(W, min(E, points[0][0])), e1 = max(W, min(E, points[1][0])), signX = 1;
-            if (signY) n1 = max(N, min(S, points[0][1])), s1 = max(N, min(S, points[1][1])), signY = 1;
+            if (signX) w1 = brush_max(W, min(E, points[0][0])), e1 = brush_max(W, min(E, points[1][0])), signX = 1;
+            if (signY) n1 = brush_max(N, min(S, points[0][1])), s1 = brush_max(N, min(S, points[1][1])), signY = 1;
           } else {
-            if (signX < 0) dx = max(W - w0, min(E - w0, dx)), w1 = w0 + dx, e1 = e0;
-            else if (signX > 0) dx = max(W - e0, min(E - e0, dx)), w1 = w0, e1 = e0 + dx;
-            if (signY < 0) dy = max(N - n0, min(S - n0, dy)), n1 = n0 + dy, s1 = s0;
-            else if (signY > 0) dy = max(N - s0, min(S - s0, dy)), n1 = n0, s1 = s0 + dy;
+            if (signX < 0) dx = brush_max(W - w0, min(E - w0, dx)), w1 = w0 + dx, e1 = e0;
+            else if (signX > 0) dx = brush_max(W - e0, min(E - e0, dx)), w1 = w0, e1 = e0 + dx;
+            if (signY < 0) dy = brush_max(N - n0, min(S - n0, dy)), n1 = n0 + dy, s1 = s0;
+            else if (signY > 0) dy = brush_max(N - s0, min(S - s0, dy)), n1 = n0, s1 = s0 + dy;
           }
           break;
         }
         case MODE_CENTER: {
-          if (signX) w1 = max(W, min(E, w0 - dx * signX)), e1 = max(W, min(E, e0 + dx * signX));
-          if (signY) n1 = max(N, min(S, n0 - dy * signY)), s1 = max(N, min(S, s0 + dy * signY));
+          if (signX) w1 = brush_max(W, min(E, w0 - dx * signX)), e1 = brush_max(W, min(E, e0 + dx * signX));
+          if (signY) n1 = brush_max(N, min(S, n0 - dy * signY)), s1 = brush_max(N, min(S, s0 + dy * signY));
           break;
         }
       }
@@ -3987,8 +5587,29 @@ function brush_brush(dim) {
 ;// CONCATENATED MODULE: ./node_modules/d3-brush/src/index.js
 
 
+;// CONCATENATED MODULE: ./node_modules/d3-ease/src/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/identity.js
-/* harmony default export */ const src_identity = (x => x);
+/* harmony default export */ const d3_geo_src_identity = (x => x);
 
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/stream.js
 function streamGeometry(geometry, stream) {
@@ -4133,7 +5754,7 @@ function fcumsum(values, valueof) {
 }
 
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/math.js
-var epsilon = 1e-6;
+var math_epsilon = 1e-6;
 var epsilon2 = 1e-12;
 var pi = Math.PI;
 var halfPi = pi / 2;
@@ -4585,7 +6206,7 @@ function appendRound(digits) {
 
   path.projection = function(_) {
     if (!arguments.length) return projection;
-    projectionStream = _ == null ? (projection = null, src_identity) : (projection = _).stream;
+    projectionStream = _ == null ? (projection = null, d3_geo_src_identity) : (projection = _).stream;
     return path;
   };
 
@@ -4647,7 +6268,7 @@ function appendRound(digits) {
 
 
 /* harmony default export */ function pointEqual(a, b) {
-  return math_abs(a[0] - b[0]) < epsilon && math_abs(a[1] - b[1]) < epsilon;
+  return math_abs(a[0] - b[0]) < math_epsilon && math_abs(a[1] - b[1]) < math_epsilon;
 }
 
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/rejoin.js
@@ -4684,7 +6305,7 @@ function Intersection(point, points, other, entry) {
         return;
       }
       // handle degenerate cases by moving the point
-      p1[0] += 2 * epsilon;
+      p1[0] += 2 * math_epsilon;
     }
 
     subject.push(x = new Intersection(p0, segment, null, true));
@@ -4809,8 +6430,8 @@ function longitude(point) {
 
   var sum = new Adder();
 
-  if (sinPhi === 1) phi = halfPi + epsilon;
-  else if (sinPhi === -1) phi = -halfPi - epsilon;
+  if (sinPhi === 1) phi = halfPi + math_epsilon;
+  else if (sinPhi === -1) phi = -halfPi - math_epsilon;
 
   for (var i = 0, n = polygon.length; i < n; ++i) {
     if (!(m = (ring = polygon[i]).length)) continue;
@@ -4863,7 +6484,7 @@ function longitude(point) {
   // from the point to the South pole.  If it is zero, then the point is the
   // same side as the South pole.
 
-  return (angle < -epsilon || angle < epsilon && sum < -epsilon2) ^ (winding & 1);
+  return (angle < -math_epsilon || angle < math_epsilon && sum < -epsilon2) ^ (winding & 1);
 }
 
 ;// CONCATENATED MODULE: ./node_modules/d3-array/src/merge.js
@@ -5006,8 +6627,8 @@ function validSegment(segment) {
 // Intersections are sorted along the clip edge. For both antimeridian cutting
 // and circle clipping, the same comparison is used.
 function compareIntersection(a, b) {
-  return ((a = a.x)[0] < 0 ? a[1] - halfPi - epsilon : halfPi - a[1])
-       - ((b = b.x)[0] < 0 ? b[1] - halfPi - epsilon : halfPi - b[1]);
+  return ((a = a.x)[0] < 0 ? a[1] - halfPi - math_epsilon : halfPi - a[1])
+       - ((b = b.x)[0] < 0 ? b[1] - halfPi - math_epsilon : halfPi - b[1]);
 }
 
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/antimeridian.js
@@ -5038,7 +6659,7 @@ function clipAntimeridianLine(stream) {
     point: function(lambda1, phi1) {
       var sign1 = lambda1 > 0 ? pi : -pi,
           delta = math_abs(lambda1 - lambda0);
-      if (math_abs(delta - pi) < epsilon) { // line crosses a pole
+      if (math_abs(delta - pi) < math_epsilon) { // line crosses a pole
         stream.point(lambda0, phi0 = (phi0 + phi1) / 2 > 0 ? halfPi : -halfPi);
         stream.point(sign0, phi0);
         stream.lineEnd();
@@ -5047,8 +6668,8 @@ function clipAntimeridianLine(stream) {
         stream.point(lambda1, phi0);
         clean = 0;
       } else if (sign0 !== sign1 && delta >= pi) { // line crosses antimeridian
-        if (math_abs(lambda0 - sign0) < epsilon) lambda0 -= sign0 * epsilon; // handle degeneracies
-        if (math_abs(lambda1 - sign1) < epsilon) lambda1 -= sign1 * epsilon;
+        if (math_abs(lambda0 - sign0) < math_epsilon) lambda0 -= sign0 * math_epsilon; // handle degeneracies
+        if (math_abs(lambda1 - sign1) < math_epsilon) lambda1 -= sign1 * math_epsilon;
         phi0 = clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1);
         stream.point(sign0, phi0);
         stream.lineEnd();
@@ -5073,7 +6694,7 @@ function clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1) {
   var cosPhi0,
       cosPhi1,
       sinLambda0Lambda1 = sin(lambda0 - lambda1);
-  return math_abs(sinLambda0Lambda1) > epsilon
+  return math_abs(sinLambda0Lambda1) > math_epsilon
       ? atan((sin(phi0) * (cosPhi1 = cos(phi1)) * sin(lambda1)
           - sin(phi1) * (cosPhi0 = cos(phi0)) * sin(lambda0))
           / (cosPhi0 * cosPhi1 * sinLambda0Lambda1))
@@ -5093,7 +6714,7 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
     stream.point(-pi, -phi);
     stream.point(-pi, 0);
     stream.point(-pi, phi);
-  } else if (math_abs(from[0] - to[0]) > epsilon) {
+  } else if (math_abs(from[0] - to[0]) > math_epsilon) {
     var lambda = from[0] < to[0] ? pi : -pi;
     phi = direction * lambda / 2;
     stream.point(-lambda, phi);
@@ -5135,7 +6756,7 @@ function circleRadius(cosRadius, point) {
   point = cartesian(point), point[0] -= cosRadius;
   cartesianNormalizeInPlace(point);
   var radius = acos(-point[1]);
-  return ((-point[2] < 0 ? -radius : radius) + tau - epsilon) % tau;
+  return ((-point[2] < 0 ? -radius : radius) + tau - math_epsilon) % tau;
 }
 
 /* harmony default export */ function circle() {
@@ -5189,7 +6810,7 @@ function circleRadius(cosRadius, point) {
   var cr = cos(radius),
       delta = 2 * math_radians,
       smallRadius = cr > 0,
-      notHemisphere = math_abs(cr) > epsilon; // TODO optimise for this common case
+      notHemisphere = math_abs(cr) > math_epsilon; // TODO optimise for this common case
 
   function interpolate(from, to, direction, stream) {
     circleStream(stream, radius, delta, direction, from, to);
@@ -5325,15 +6946,15 @@ function circleRadius(cosRadius, point) {
     if (lambda1 < lambda0) z = lambda0, lambda0 = lambda1, lambda1 = z;
 
     var delta = lambda1 - lambda0,
-        polar = math_abs(delta - pi) < epsilon,
-        meridian = polar || delta < epsilon;
+        polar = math_abs(delta - pi) < math_epsilon,
+        meridian = polar || delta < math_epsilon;
 
     if (!polar && phi1 < phi0) z = phi0, phi0 = phi1, phi1 = z;
 
     // Check that the first point is between a and b.
     if (meridian
         ? polar
-          ? phi0 + phi1 > 0 ^ q[1] < (math_abs(q[0] - lambda0) < epsilon ? phi0 : phi1)
+          ? phi0 + phi1 > 0 ^ q[1] < (math_abs(q[0] - lambda0) < math_epsilon ? phi0 : phi1)
           : phi0 <= q[1] && q[1] <= phi1
         : delta > pi ^ (lambda0 <= q[0] && q[0] <= lambda1)) {
       var q1 = cartesianScale(u, (-w + t) / uu);
@@ -5449,9 +7070,9 @@ function clipRectangle(x0, y0, x1, y1) {
   }
 
   function corner(p, direction) {
-    return math_abs(p[0] - x0) < epsilon ? direction > 0 ? 0 : 3
-        : math_abs(p[0] - x1) < epsilon ? direction > 0 ? 2 : 1
-        : math_abs(p[1] - y0) < epsilon ? direction > 0 ? 1 : 0
+    return math_abs(p[0] - x0) < math_epsilon ? direction > 0 ? 0 : 3
+        : math_abs(p[0] - x1) < math_epsilon ? direction > 0 ? 2 : 1
+        : math_abs(p[1] - y0) < math_epsilon ? direction > 0 ? 1 : 0
         : direction > 0 ? 3 : 2; // abs(p[1] - y1) < epsilon
   }
 
@@ -5686,11 +7307,11 @@ function rotationPhiGamma(deltaPhi, deltaGamma) {
 ;// CONCATENATED MODULE: ./node_modules/d3-geo/src/transform.js
 /* harmony default export */ function transform(methods) {
   return {
-    stream: transformer(methods)
+    stream: transform_transformer(methods)
   };
 }
 
-function transformer(methods) {
+function transform_transformer(methods) {
   return function(stream) {
     var s = new TransformStream;
     for (var key in methods) s[key] = methods[key];
@@ -5773,7 +7394,7 @@ var maxDepth = 16, // maximum depth of subdivision
 }
 
 function resampleNone(project) {
-  return transformer({
+  return transform_transformer({
     point: function(x, y) {
       x = project(x, y);
       this.stream.point(x[0], x[1]);
@@ -5793,7 +7414,7 @@ function resample_resample(project, delta2) {
           c = c0 + c1,
           m = sqrt(a * a + b * b + c * c),
           phi2 = asin(c /= m),
-          lambda2 = math_abs(math_abs(c) - 1) < epsilon || math_abs(lambda0 - lambda1) < epsilon ? (lambda0 + lambda1) / 2 : atan2(b, a),
+          lambda2 = math_abs(math_abs(c) - 1) < math_epsilon || math_abs(lambda0 - lambda1) < math_epsilon ? (lambda0 + lambda1) / 2 : atan2(b, a),
           p = project(lambda2, phi2),
           x2 = p[0],
           y2 = p[1],
@@ -5876,14 +7497,14 @@ function resample_resample(project, delta2) {
 
 
 
-var transformRadians = transformer({
+var transformRadians = transform_transformer({
   point: function(x, y) {
     this.stream.point(x * math_radians, y * math_radians);
   }
 });
 
 function transformRotate(rotate) {
-  return transformer({
+  return transform_transformer({
     point: function(x, y) {
       var r = rotate(x, y);
       return this.stream.point(r[0], r[1]);
@@ -5936,7 +7557,7 @@ function projectionMutator(projectAt) {
       sx = 1, // reflectX
       sy = 1, // reflectX
       theta = null, preclip = antimeridian, // pre-clip angle
-      x0 = null, y0, x1, y1, postclip = src_identity, // post-clip extent
+      x0 = null, y0, x1, y1, postclip = d3_geo_src_identity, // post-clip extent
       delta2 = 0.5, // precision
       projectResample,
       projectTransform,
@@ -5970,7 +7591,7 @@ function projectionMutator(projectAt) {
   };
 
   projection.clipExtent = function(_) {
-    return arguments.length ? (postclip = _ == null ? (x0 = y0 = x1 = y1 = null, src_identity) : clipRectangle(x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reset()) : x0 == null ? null : [[x0, y0], [x1, y1]];
+    return arguments.length ? (postclip = _ == null ? (x0 = y0 = x1 = y1 = null, d3_geo_src_identity) : clipRectangle(x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reset()) : x0 == null ? null : [[x0, y0], [x1, y1]];
   };
 
   projection.scale = function(_) {
@@ -6086,7 +7707,7 @@ function conicEqualAreaRaw(y0, y1) {
   var sy0 = sin(y0), n = (sy0 + sin(y1)) / 2;
 
   // Are the parallels symmetrical around the Equator?
-  if (math_abs(n) < epsilon) return cylindricalEqualAreaRaw(y0);
+  if (math_abs(n) < math_epsilon) return cylindricalEqualAreaRaw(y0);
 
   var c = 1 + sy0 * (2 * n - sy0), r0 = sqrt(c) / n;
 
@@ -6202,12 +7823,12 @@ function multiplex(streams) {
 
     alaskaPoint = alaska
         .translate([x - 0.307 * k, y + 0.201 * k])
-        .clipExtent([[x - 0.425 * k + epsilon, y + 0.120 * k + epsilon], [x - 0.214 * k - epsilon, y + 0.234 * k - epsilon]])
+        .clipExtent([[x - 0.425 * k + math_epsilon, y + 0.120 * k + math_epsilon], [x - 0.214 * k - math_epsilon, y + 0.234 * k - math_epsilon]])
         .stream(pointStream);
 
     hawaiiPoint = hawaii
         .translate([x - 0.205 * k, y + 0.212 * k])
-        .clipExtent([[x - 0.214 * k + epsilon, y + 0.166 * k + epsilon], [x - 0.115 * k - epsilon, y + 0.234 * k - epsilon]])
+        .clipExtent([[x - 0.214 * k + math_epsilon, y + 0.166 * k + math_epsilon], [x - 0.115 * k - math_epsilon, y + 0.234 * k - math_epsilon]])
         .stream(pointStream);
 
     return reset();
@@ -6273,6 +7894,270 @@ function multiplex(streams) {
 
 
 
+;// CONCATENATED MODULE: ./node_modules/d3-array/src/range.js
+function range_range(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
+
+;// CONCATENATED MODULE: ./node_modules/internmap/src/index.js
+class InternMap extends Map {
+  constructor(entries, key = keyof) {
+    super();
+    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
+    if (entries != null) for (const [key, value] of entries) this.set(key, value);
+  }
+  get(key) {
+    return super.get(intern_get(this, key));
+  }
+  has(key) {
+    return super.has(intern_get(this, key));
+  }
+  set(key, value) {
+    return super.set(intern_set(this, key), value);
+  }
+  delete(key) {
+    return super.delete(intern_delete(this, key));
+  }
+}
+
+class InternSet extends Set {
+  constructor(values, key = keyof) {
+    super();
+    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
+    if (values != null) for (const value of values) this.add(value);
+  }
+  has(value) {
+    return super.has(intern_get(this, value));
+  }
+  add(value) {
+    return super.add(intern_set(this, value));
+  }
+  delete(value) {
+    return super.delete(intern_delete(this, value));
+  }
+}
+
+function intern_get({_intern, _key}, value) {
+  const key = _key(value);
+  return _intern.has(key) ? _intern.get(key) : value;
+}
+
+function intern_set({_intern, _key}, value) {
+  const key = _key(value);
+  if (_intern.has(key)) return _intern.get(key);
+  _intern.set(key, value);
+  return value;
+}
+
+function intern_delete({_intern, _key}, value) {
+  const key = _key(value);
+  if (_intern.has(key)) {
+    value = _intern.get(key);
+    _intern.delete(key);
+  }
+  return value;
+}
+
+function keyof(value) {
+  return value !== null && typeof value === "object" ? value.valueOf() : value;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/ordinal.js
+
+
+
+const implicit = Symbol("implicit");
+
+function ordinal() {
+  var index = new InternMap(),
+      domain = [],
+      range = [],
+      unknown = implicit;
+
+  function scale(d) {
+    let i = index.get(d);
+    if (i === undefined) {
+      if (unknown !== implicit) return unknown;
+      index.set(d, i = domain.push(d) - 1);
+    }
+    return range[i % range.length];
+  }
+
+  scale.domain = function(_) {
+    if (!arguments.length) return domain.slice();
+    domain = [], index = new InternMap();
+    for (const value of _) {
+      if (index.has(value)) continue;
+      index.set(value, domain.push(value) - 1);
+    }
+    return scale;
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = Array.from(_), scale) : range.slice();
+  };
+
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  scale.copy = function() {
+    return ordinal(domain, range).unknown(unknown);
+  };
+
+  initRange.apply(scale, arguments);
+
+  return scale;
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/band.js
+
+
+
+
+function band() {
+  var scale = ordinal().unknown(undefined),
+      domain = scale.domain,
+      ordinalRange = scale.range,
+      r0 = 0,
+      r1 = 1,
+      step,
+      bandwidth,
+      round = false,
+      paddingInner = 0,
+      paddingOuter = 0,
+      align = 0.5;
+
+  delete scale.unknown;
+
+  function rescale() {
+    var n = domain().length,
+        reverse = r1 < r0,
+        start = reverse ? r1 : r0,
+        stop = reverse ? r0 : r1;
+    step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
+    if (round) step = Math.floor(step);
+    start += (stop - start - step * (n - paddingInner)) * align;
+    bandwidth = step * (1 - paddingInner);
+    if (round) start = Math.round(start), bandwidth = Math.round(bandwidth);
+    var values = range_range(n).map(function(i) { return start + step * i; });
+    return ordinalRange(reverse ? values.reverse() : values);
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? ([r0, r1] = _, r0 = +r0, r1 = +r1, rescale()) : [r0, r1];
+  };
+
+  scale.rangeRound = function(_) {
+    return [r0, r1] = _, r0 = +r0, r1 = +r1, round = true, rescale();
+  };
+
+  scale.bandwidth = function() {
+    return bandwidth;
+  };
+
+  scale.step = function() {
+    return step;
+  };
+
+  scale.round = function(_) {
+    return arguments.length ? (round = !!_, rescale()) : round;
+  };
+
+  scale.padding = function(_) {
+    return arguments.length ? (paddingInner = Math.min(1, paddingOuter = +_), rescale()) : paddingInner;
+  };
+
+  scale.paddingInner = function(_) {
+    return arguments.length ? (paddingInner = Math.min(1, _), rescale()) : paddingInner;
+  };
+
+  scale.paddingOuter = function(_) {
+    return arguments.length ? (paddingOuter = +_, rescale()) : paddingOuter;
+  };
+
+  scale.align = function(_) {
+    return arguments.length ? (align = Math.max(0, Math.min(1, _)), rescale()) : align;
+  };
+
+  scale.copy = function() {
+    return band(domain(), [r0, r1])
+        .round(round)
+        .paddingInner(paddingInner)
+        .paddingOuter(paddingOuter)
+        .align(align);
+  };
+
+  return initRange.apply(rescale(), arguments);
+}
+
+function pointish(scale) {
+  var copy = scale.copy;
+
+  scale.padding = scale.paddingOuter;
+  delete scale.paddingInner;
+  delete scale.paddingOuter;
+
+  scale.copy = function() {
+    return pointish(copy());
+  };
+
+  return scale;
+}
+
+function point() {
+  return pointish(band.apply(null, arguments).paddingInner(1));
+}
+
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;// CONCATENATED MODULE: ./node_modules/d3-selection/src/select.js
 
 
@@ -6297,7 +8182,7 @@ function multiplex(streams) {
 /* harmony default export */ function src_selectAll(selector) {
   return typeof selector === "string"
       ? new Selection([document.querySelectorAll(selector)], [document.documentElement])
-      : new Selection([array(selector)], root);
+      : new Selection([array_array(selector)], root);
 }
 
 ;// CONCATENATED MODULE: ./node_modules/d3-selection/src/index.js
@@ -7035,6 +8920,7 @@ function defaultConstrain(transform, extent, translateExtent) {
 /* eslint-disable import/prefer-default-export */
 
 
+
 const _format = format;
 const _select = src_select;
 const _selectAll = src_selectAll;
@@ -7043,13 +8929,33 @@ const _create = src_create;
 const _zoom = zoom;
 const _geoAlbersUsa = albersUsa;
 const _zoomIdentity = transform_identity;
+const _axisBottom = axisBottom;
+const _axisLeft = axisLeft;
+const _scaleLinear = linear_linear;
+const _scaleBand = band;
+const _scaleOrdinal = ordinal;
+const _scaleDiscontinuous = src_discontinuous;
+const _discontinuityRange = range;
+const _easeCubicInOut = cubicInOut;
+const _sort = sort;
+const _max = max;
 
+var __webpack_exports__axisBottom = __webpack_exports__.l7;
+var __webpack_exports__axisLeft = __webpack_exports__.V4;
 var __webpack_exports__create = __webpack_exports__.vt;
+var __webpack_exports__discontinuityRange = __webpack_exports__.Od;
+var __webpack_exports__easeCubicInOut = __webpack_exports__.oR;
 var __webpack_exports__format = __webpack_exports__.GP;
 var __webpack_exports__geoAlbersUsa = __webpack_exports__.Ut;
 var __webpack_exports__geoPath = __webpack_exports__.zF;
+var __webpack_exports__max = __webpack_exports__.T9;
+var __webpack_exports__scaleBand = __webpack_exports__.WH;
+var __webpack_exports__scaleDiscontinuous = __webpack_exports__.op;
+var __webpack_exports__scaleLinear = __webpack_exports__.m4;
+var __webpack_exports__scaleOrdinal = __webpack_exports__.UM;
 var __webpack_exports__select = __webpack_exports__.Lt;
 var __webpack_exports__selectAll = __webpack_exports__.Ub;
+var __webpack_exports__sort = __webpack_exports__.di;
 var __webpack_exports__zoom = __webpack_exports__.s_;
 var __webpack_exports__zoomIdentity = __webpack_exports__.GS;
-export { __webpack_exports__create as create, __webpack_exports__format as format, __webpack_exports__geoAlbersUsa as geoAlbersUsa, __webpack_exports__geoPath as geoPath, __webpack_exports__select as select, __webpack_exports__selectAll as selectAll, __webpack_exports__zoom as zoom, __webpack_exports__zoomIdentity as zoomIdentity };
+export { __webpack_exports__axisBottom as axisBottom, __webpack_exports__axisLeft as axisLeft, __webpack_exports__create as create, __webpack_exports__discontinuityRange as discontinuityRange, __webpack_exports__easeCubicInOut as easeCubicInOut, __webpack_exports__format as format, __webpack_exports__geoAlbersUsa as geoAlbersUsa, __webpack_exports__geoPath as geoPath, __webpack_exports__max as max, __webpack_exports__scaleBand as scaleBand, __webpack_exports__scaleDiscontinuous as scaleDiscontinuous, __webpack_exports__scaleLinear as scaleLinear, __webpack_exports__scaleOrdinal as scaleOrdinal, __webpack_exports__select as select, __webpack_exports__selectAll as selectAll, __webpack_exports__sort as sort, __webpack_exports__zoom as zoom, __webpack_exports__zoomIdentity as zoomIdentity };

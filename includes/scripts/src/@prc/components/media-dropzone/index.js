@@ -163,7 +163,7 @@ function MediaDropZone({
 	return (
 		<MediaUploadCheck fallback={fallbackInstructions}>
 			<MediaUpload
-				title={__(`${singularLabel} Upload`, 'prc-block-library')}
+				title={`${singularLabel.charAt(0).toUpperCase() + singularLabel.slice(1)} Upload`}
 				onSelect={onMediaUpdate}
 				allowedTypes={allowedMediaTypes}
 				value={id}

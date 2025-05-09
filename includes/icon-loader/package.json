@@ -1,12 +1,14 @@
 {
-	"name": "@pewresearch/prc-icons",
+	"name": "@prc/icons",
 	"description": "PRC Platform Icons Loader",
 	"license": "GPL-2.0-or-later",
+	"main": "src/index.js",
 	"devDependencies": {
-		"@wordpress/scripts": "^30.13.0",
+		"@wordpress/scripts": "^30.15.0",
 		"babel-plugin-macros": "^3.1.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build src/index.js"
+		"build": "node bin/build-index.js && wp-scripts build src/index.js",
+		"build:index": "node bin/build-index.js"
 	}
 }

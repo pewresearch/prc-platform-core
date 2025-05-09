@@ -69,9 +69,137 @@ class WP_Admin {
 			$loader->add_filter( 'update_footer', $this, 'output_platform_version_in_wp_admin', 100 );
 			$loader->add_filter( 'dashboard_recent_posts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
 			$loader->add_filter( 'dashboard_recent_drafts_query_args', $this, 'show_all_post_types_in_dashboard', 15 );
+			$loader->add_filter( 'the_password_form', $this, 'modify_the_password_form', 10, 3 );
 
 			new Admin_Columns( $loader );
 		}
+	}
+
+	/**
+	 * Password protect embargo styling.
+	 */
+	public function password_protect_embargo_styling() {
+		ob_start();
+		?>
+		<style>
+		.post-password-form {
+			position: fixed;
+			z-index: 1000;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			padding: 1em;
+			color: #000000;
+			background: #ff00002e;
+			backdrop-filter: blur(5px);
+			border: none;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+		.post-password-form input[type="submit"] {
+			appearance: none;
+			border: none;
+			background: red;
+			color: white;
+			padding: 1em;
+			cursor: pointer;
+		}
+		.post-password-form input {
+			border: none;
+			padding: 1em;
+		}
+
+		.post-password-form * {
+			max-width: 680px;
+		}
+		.post-password-form h1 {
+			font-family: var(--wp--preset--font-family--sans-serif);
+			font-size: 2rem;
+			font-weight: 700;
+			margin-bottom: 1rem;
+			text-transform: uppercase;
+		}
+		.post-password-form .ical-download {
+			display: inline-block;
+			font-size: 1rem;
+			font-weight: 700;
+			text-decoration: none;
+			color: #000;
+			background: #000;
+			color: #fff;
+			padding: 0.5rem 1rem;
+			border-radius: 0.25rem;
+		}
+		.post-password-form p {
+			font-family: var(--wp--preset--font-family--sans-serif);
+			font-size: 1.25rem;
+			font-weight: 400;
+			margin-bottom: 1rem;
+			text-transform: uppercase;
+		}
+		</style>
+		<script>
+			document.addEventListener( 'DOMContentLoaded', function() {
+				// move the form.post-password-form to the start of the body
+				document.body.insertBefore( document.querySelector( '.post-password-form' ), document.body.firstChild );
+			} );
+		</script>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Modify the password form language.
+	 *
+	 * @param int $post_id The post ID.
+	 * @return string The modified output.
+	 */
+	public function password_protect_embargo_language( $post_id ) {
+		// Check if the post status is scheduled.
+		$post_status = get_post_status( $post_id );
+		if ( 'future' === $post_status ) {
+			$post_publish_date_time = get_post_field( 'post_date_gmt', $post_id );
+			$embargo_end_date       = ' UNTIL ' . wp_date( 'g:i A T', strtotime( $post_publish_date_time ) ) . ' ON ' . wp_date( 'F j, Y', strtotime( $post_publish_date_time ) );
+		} else {
+			$embargo_end_date = '';
+		}
+		return wp_sprintf(
+			'<h1>Embargoed</h1><p><strong>Not for release or publication%s.</strong></p>',
+			$embargo_end_date
+		);
+	}
+
+	/**
+	 * Modify the password form to account for Post Public Preview.
+	 *
+	 * @hook the_password_form
+	 *
+	 * @param string  $output The output.
+	 * @param WP_Post $post The post.
+	 * @param bool    $invalid_password Whether the password is invalid.
+	 * @return string The modified output.
+	 */
+	public function modify_the_password_form( $output, $post, $invalid_password ) {
+		$tag_processor = new \WP_HTML_Tag_Processor( $output );
+		while ( $tag_processor->next_tag(
+			array(
+				'tag_name' => 'input',
+			)
+		) ) {
+			$type = $tag_processor->get_attribute( 'type' );
+			$name = $tag_processor->get_attribute( 'name' );
+			if ( 'hidden' === $type && 'redirect_to' === $name ) {
+				$target_url = \PRC\Platform\get_current_url();
+				$tag_processor->set_attribute( 'value', $target_url );
+			}
+		}
+		$updated = $tag_processor->get_updated_html() . $this->password_protect_embargo_styling();
+		// Updated embargo language.
+		$updated = str_replace( '<p>This content is password protected. To view it please enter your password below:</p>', $this->password_protect_embargo_language( $post->ID ), $updated );
+		return $updated;
 	}
 
 	/**
