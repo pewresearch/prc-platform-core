@@ -7,6 +7,7 @@
  */
 import { List, arrayMove, arrayRemove } from 'react-movable';
 import styled from '@emotion/styled';
+import { plus } from '@wordpress/icons';
 /**
  * Wordpress Dependencies
  */
@@ -18,6 +19,10 @@ import {
 	DropZone,
 	PanelRow,
 	Popover,
+	KeyboardShortcuts,
+	Flex,
+	FlexItem,
+	FlexBlock,
 } from '@wordpress/components';
 
 import { Icon } from '@prc/icons';
@@ -74,6 +79,36 @@ function Sorter({
 			});
 		}
 	};
+
+	const handleAddNewOption = () => {
+		if (!inputValue) {
+			return;
+		}
+		const formattedValue = inputValue
+			.toLowerCase()
+			.replace(/\s/g, '-')
+			.replace(/[^a-zA-Z0-9-]/g, '');
+		const newItems = [
+			...items,
+			{ label: inputValue, value: formattedValue },
+		];
+		setItems(newItems);
+		if (typeof onChange === 'function') {
+			onChange(newItems);
+		} else if (typeof setAttributes === 'function') {
+			setAttributes({
+				[attribute]: newItems.map((i) => ({
+					label: i.label,
+					value: i.value,
+					isActive: i.isActive || false,
+					disabled: i.disabled || false,
+				})),
+			});
+		}
+		setTimeout(() => {
+			setInputValue('');
+		}, 100);
+	}
 
 	return (
 		<Fragment>
@@ -269,57 +304,46 @@ function Sorter({
 				/>
 			</PanelRow>
 			<PanelRow>
-				{/*
-			@TODO: InputControl doesn't yet have an onEnter event.
-			Ideally keying enter on your keyboard should update the
-			list of options.
-			*/}
-				<InputControl
-					style={{ width: '100%' }}
-					value={inputValue}
-					placeholder="A new option ..."
-					isPressEnterToChange
-					onChange={(val) => {
-						setInputValue(val);
-					}}
-				/>
-			</PanelRow>
-			<PanelRow>
-				<Button
-					style={{ width: '100%', marginBottom: '24px' }}
-					type="button"
-					variant="secondary"
-					onClick={() => {
-						const formattedValue = inputValue
-							.toLowerCase()
-							.replace(/\s/g, '-')
-							.replace(/[^a-zA-Z0-9-]/g, '');
-						const newItems = [
-							...items,
-							{ label: inputValue, value: formattedValue },
-						];
-						setItems(newItems);
-						if (typeof onChange === 'function') {
-							onChange(newItems);
-						} else if (typeof setAttributes === 'function') {
-							setAttributes({
-								[attribute]: newItems.map((i) => ({
-									label: i.label,
-									value: i.value,
-								})),
-							});
-						}
-						setInputValue('');
-					}}
-				>
-					Add New Option
-				</Button>
-			</PanelRow>
+				<div style={{ width: '100%' }}>
+					<KeyboardShortcuts
+						bindGlobal
+						shortcuts={{
+							'enter': () => {
+								handleAddNewOption();
+							},
+						}}
+					>
+						<Flex style={{ width: '100%' }}>
+							<FlexBlock>
+								<InputControl
+									value={inputValue}
+									placeholder="A new option ..."
+									isPressEnterToChange
+									onChange={(val) => {
+										setInputValue(val);
+									}}
+								/>
+							</FlexBlock>
 
+							<FlexItem>
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() => {
+										handleAddNewOption();
+									}}
+									icon={plus}
+									label="Add New Option"
+								/>
+							</FlexItem>
+						</Flex>
+					</KeyboardShortcuts>
+				</div>
+			</PanelRow>
 			<PanelRow>
 				<PanelDescription>
 					Generating a select's options via CSV will take the first
-					column of a CSV and generate them as the labels for their
+					column of a CSV and generate them as the labenpmls for their
 					respsective options.
 				</PanelDescription>
 			</PanelRow>

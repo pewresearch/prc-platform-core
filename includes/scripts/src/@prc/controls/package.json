@@ -9,6 +9,7 @@
 	},
 	"dependencies": {
 		"@emotion/styled": "^11.14.0",
+		"@wordpress/icons": "^10.24.0",
 		"react-movable": "^3.0.4"
 	}
 }

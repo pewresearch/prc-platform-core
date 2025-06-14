@@ -175,7 +175,7 @@ class Research_Teams extends Taxonomies {
 				} elseif ( 'feature' === $post_type ) {
 					$new_rules[ $term_name . '/feature/([^/]+)/?$' ] = 'index.php?post_type=feature&name=$matches[1]';
 					// Add attachment rule, very, very specific. This will only hit for attachment names that are 5 or more characters long.
-					$new_rules[ $term_name . '/feature/[^/]+/([^/]{5,})/?$' ] = 'index.php?attachment=$matches[1]';
+					$new_rules[ $term_name . '/feature/(?!news-media-tracker)[^/]+/([^/]{5,})/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'dataset' === $post_type ) {
 					$new_rules[ $term_name . '/datasets' ]           = 'index.php?post_type=dataset';
 					$new_rules[ $term_name . '/dataset/([^/]+)/?$' ] = 'index.php?datasets=$matches[1]';

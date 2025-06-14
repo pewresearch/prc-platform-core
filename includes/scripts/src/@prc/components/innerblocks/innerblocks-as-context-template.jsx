@@ -33,9 +33,10 @@ function InnerBlocksTemplateBlocks({
 		'core/paragraph',
 	],
 	template,
+	wrapperProps = {},
 }) {
 	const innerBlocksProps = useInnerBlocksProps(
-		{},
+		wrapperProps,
 		{
 			allowedBlocks,
 			template,
@@ -113,6 +114,7 @@ export function InnerBlocksAsContextTemplate({
 	blockContexts,
 	isResolving = true,
 	loadingLabel = 'Loading...',
+	wrapperProps = {},
 }) {
 	const [activeBlockContextId, setActiveBlockContextId] = useState(null);
 
@@ -152,34 +154,36 @@ export function InnerBlocksAsContextTemplate({
 	// This ensures that when it is displayed again, the cached rendering of the
 	// block preview is used, instead of having to re-render the preview from scratch.
 	return (
-		blockContexts &&
-		blockContexts.map((blockContext, index) => {
-			const contextId = md5(JSON.stringify(blockContext));
-			const isVisible =
-				contextId ===
-				(activeBlockContextId || md5(JSON.stringify(blockContexts[0])));
+		<div {...wrapperProps}>
+			{blockContexts &&
+			blockContexts.map((blockContext, index) => {
+				const contextId = md5(JSON.stringify(blockContext));
+				const isVisible =
+					contextId ===
+					(activeBlockContextId || md5(JSON.stringify(blockContexts[0])));
 
-			return (
-				<BlockContextProvider
-					key={`context-key--${index}`}
-					value={blockContext}
-				>
-					{activeBlockContextId === null || isVisible ? (
-						<InnerBlocksTemplateBlocks
-							{...{
-								allowedBlocks,
-								template,
-							}}
+				return (
+					<BlockContextProvider
+						key={`context-key--${index}`}
+						value={blockContext}
+					>
+						{activeBlockContextId === null || isVisible ? (
+							<InnerBlocksTemplateBlocks
+								{...{
+									allowedBlocks,
+									template,
+								}}
+							/>
+						) : null}
+						<MemoziedInnerBlocksTemplatePreview
+							blocks={blocks}
+							blockContextId={contextId}
+							setActiveBlockContextId={setActiveBlockContextId}
+							isHidden={isVisible}
 						/>
-					) : null}
-					<MemoziedInnerBlocksTemplatePreview
-						blocks={blocks}
-						blockContextId={contextId}
-						setActiveBlockContextId={setActiveBlockContextId}
-						isHidden={isVisible}
-					/>
-				</BlockContextProvider>
-			);
-		})
+					</BlockContextProvider>
+				);
+			})}
+		</div>
 	);
 }

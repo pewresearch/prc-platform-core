@@ -16,9 +16,10 @@ function loadFirebaseConfig() {
 	const el = document.getElementById('wp-script-module-data-@prc/firebase');
 	try {
 		const config = JSON.parse(el.textContent);
+		console.log('loadFirebaseConfig...', config);
 		return config;
 	} catch (err) {
-		console.error(err);
+		console.error('loadFirebaseConfig error:', err);
 		return {};
 	}
 }

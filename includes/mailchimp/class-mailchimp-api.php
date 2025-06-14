@@ -1,8 +1,16 @@
 <?php
+/**
+ * Mailchimp API Integration
+ *
+ * Handles all Mailchimp API interactions including newsletter subscriptions and list management.
+ *
+ * @package PRC\Platform
+ */
+
 namespace PRC\Platform;
 
 use WP_Error;
-use DrewM\MailChimp\MailChimp;
+use MailchimpMarketing\ApiClient;
 
 /**
  * We send all mail through Mailchimp's Mandrill service and we use Mailchimp to register newsletter subscriptions. This class handles both.
@@ -10,10 +18,40 @@ use DrewM\MailChimp\MailChimp;
  * @package PRC\Platform
  */
 class Mailchimp_API {
-	private $email;
-	private $api_key;
-	private $list_id;
+	/**
+	 * The email address to operate on.
+	 *
+	 * @var string
+	 */
+	public $email;
 
+	/**
+	 * The Mailchimp API key to use.
+	 *
+	 * @var string
+	 */
+	public $api_key;
+
+	/**
+	 * The Mailchimp list ID to operate on.
+	 *
+	 * @var string
+	 */
+	public $list_id;
+
+	/**
+	 * The Mailchimp API client instance.
+	 *
+	 * @var ApiClient
+	 */
+	public $mailchimp;
+
+	/**
+	 * Gets the appropriate API key based on the provided key type.
+	 *
+	 * @param string $key The type of API key to retrieve.
+	 * @return string|void The API key if found, void otherwise.
+	 */
 	protected function get_matching_api_key( $key ) {
 		if ( ! defined( 'PRC_PLATFORM_MAILCHIMP_KEY' ) ) {
 			return;
@@ -34,25 +72,44 @@ class Mailchimp_API {
 		return PRC_PLATFORM_MAILCHIMP_KEY;
 	}
 
+	/**
+	 * Constructor for the Mailchimp API class.
+	 *
+	 * @param string $email_address The email address to operate on.
+	 * @param array  $args          Additional arguments.
+	 *                              - api_key: The API key to use.
+	 *                              - list_id: The list ID to operate on.
+	 */
 	public function __construct($email_address, $args = array(
 		'api_key' => false,
 		'list_id' => null,
 	)) {
-		if ( ! class_exists( 'DrewM\MailChimp\MailChimp' ) ) {
+		if ( ! class_exists( 'MailchimpMarketing\ApiClient' ) ) {
 			return new WP_Error( 'no-mailchimp-class', __( 'No Mailchimp class found', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 		$this->email   = is_email( $email_address );
 		$this->api_key = $this->get_matching_api_key( $args['api_key'] );
 		$this->list_id = $args['list_id'];
+
+		$this->mailchimp = new ApiClient();
+		$config          = array(
+			'apiKey' => $this->api_key,
+			'server' => substr( $this->api_key, -3 ), // Extract server prefix from API key.
+		);
+		$this->mailchimp->setConfig( $config );
 	}
 
+	/**
+	 * Gets the segment IDs for the current list.
+	 *
+	 * @return array|WP_Error The segment IDs or an error.
+	 */
 	public function get_segment_ids() {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
 		$cache_key = 'prc-mailchimp-segments';
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
@@ -62,47 +119,46 @@ class Mailchimp_API {
 			return $cached;
 		}
 
-		$response = $mailchimp->get(
-			"lists/$list_id/segments",
-			array( 'count' => 30 )
-		);
+		try {
+			$response = $this->mailchimp->lists->listSegments( $list_id );
+			$segments = $response->segments;
 
-		$tmp = print_r( $response, true );
-
-		if ( $mailchimp->success() ) {
-			$segments = $response['segments'];
 			$segments = array_map(
 				function ( $segment ) {
-					if ( isset( $segment['options']['conditions'][0]['value'][0] ) ) {
-						$interest_id = $segment['options']['conditions'][0]['value'][0];
+					if ( isset( $segment->options->conditions[0]->value[0] ) ) {
+						$interest_id = $segment->options->conditions[0]->value[0];
 					} else {
-						// Handle the case where the value does not exist
-						$interest_id = null; // or any default value
+						$interest_id = null;
 					}
 					if ( null === $interest_id || strlen( $interest_id ) < 2 ) {
 						return null;
 					}
 					return array(
-						'id'           => $segment['id'],
-						'name'         => str_replace( 'Receives ', '', $segment['name'] ),
-						'member_count' => $segment['member_count'],
+						'id'           => $segment->id,
+						'name'         => str_replace( 'Receives ', '', $segment->name ),
+						'member_count' => $segment->member_count,
 						'interest_id'  => $interest_id,
 					);
 				},
 				$segments
 			);
-			// clean segments of any null values
-			$segments = array_filter( $segments );
 
+			$segments = array_filter( $segments );
 			wp_cache_set( $cache_key, $segments, '', 1 * DAY_IN_SECONDS );
 
 			return rest_ensure_response( $segments );
-		} else {
-			$error = new WP_Error( 'get-segments-error', __( $list_id . ' - segments - ' . $api_key, 'prc-mailchimp-api' ), array( 'status' => $response['status'] ) );
+		} catch ( \Exception $e ) {
+			$error = new WP_Error( 'get-segments-error', __( 'Failed to get segments', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 			return rest_ensure_response( $error );
 		}
 	}
 
+	/**
+	 * Constructs the interests array for API calls.
+	 *
+	 * @param array $interests The interests to construct.
+	 * @return array The constructed interests array.
+	 */
 	private function construct_interests( $interests = array() ) {
 		$return = array();
 		foreach ( $interests as $interest_id ) {
@@ -112,112 +168,116 @@ class Mailchimp_API {
 	}
 
 	/**
-	 * The first thing to know is that at PRC the way we use Segments is they are "interest" groups in a members profile that determines what auto segment they get assigned to. So in reality what we're doing is adding an "interest" to a member.
+	 * Adds interests to a member's profile.
 	 *
-	 * @param [type] $email   [description]
-	 * @param [type] $interest_id [description]
-	 * @param [type] $list_id [description]
+	 * @param array $interests The interests to add.
+	 * @return array|WP_Error The result or an error.
 	 */
 	private function add_interest( $interests = array() ) {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
 		$email = $this->email;
 		if ( ! $email ) {
-			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-email-provided', __( 'No email provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
-		$subscriber_hash = $mailchimp->subscriberHash( $email );
-		$result          = $mailchimp->patch(
-			"lists/$list_id/members/$subscriber_hash",
-			array(
-				'interests' => $interests,
-			)
-		);
+		$subscriber_hash = md5( strtolower( $email ) );
 
-		if ( $mailchimp->success() ) {
+		try {
+			$result = $this->mailchimp->lists->updateListMember(
+				$list_id,
+				$subscriber_hash,
+				array(
+					'interests' => $interests,
+				)
+			);
+
 			return array(
 				'success'   => true,
-				'status'    => $result['status'],
-				'interests' => $result['interests'],
-				'id'        => $result['id'],
+				'status'    => $result->status,
+				'interests' => $result->interests,
+				'id'        => $result->id,
 			);
-		} else {
-			return new WP_Error( 'add-interest-to-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'add-interest-to-member-error', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
+	/**
+	 * Updates a member's interests.
+	 *
+	 * @param array $interests The interests to update.
+	 * @return array|WP_Error The result or an error.
+	 */
 	public function update_interests( $interests = array() ) {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
 		if ( empty( $interests ) ) {
-			return new WP_Error( 'no-interests-provided', __( 'No interests provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-interests-provided', __( 'No interests provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
 		$email = $this->email;
 		if ( ! $email ) {
-			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-email-provided', __( 'No email provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
-		$subscriber_hash = $mailchimp->subscriberHash( $email );
-		$result          = $mailchimp->patch(
-			"lists/$list_id/members/$subscriber_hash",
-			array(
-				'interests' => $interests,
-			)
-		);
+		$subscriber_hash = md5( strtolower( $email ) );
 
-		if ( $mailchimp->success() ) {
+		try {
+			$result = $this->mailchimp->lists->updateListMember(
+				$list_id,
+				$subscriber_hash,
+				array(
+					'interests' => $interests,
+				)
+			);
+
 			return array(
 				'success'   => true,
-				'status'    => $result['status'],
-				'interests' => $result['interests'],
-				'id'        => $result['id'],
+				'status'    => $result->status,
+				'interests' => $result->interests,
+				'id'        => $result->id,
 			);
-		} else {
-			return new WP_Error( 'update-newsletter-preferences', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'update-newsletter-preferences', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
 	/**
-	 * Add given email to the given list.
+	 * Subscribes an email to the list.
 	 *
-	 * @param mixed $email
-	 * @param array $name
-	 * @param array $interests
-	 * @return array|WP_Error
+	 * @param array  $name        The name array containing first and last name.
+	 * @param array  $interests   The interests to set.
+	 * @param string $origin_url  The origin URL of the subscription.
+	 * @return array|WP_Error The result or an error.
 	 */
 	public function subscribe_to_list( $name = array(), $interests = array(), $origin_url = false ) {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
 		$email = $this->email;
 		if ( ! $email ) {
-			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-email-provided', __( 'No email provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
 		$payload = array(
 			'email_address' => $email,
 			'status'        => 'subscribed',
 		);
-
-		// We may want to check $interests and if there are none then stop.
 
 		if ( is_array( $interests ) && ! empty( $interests ) ) {
 			$payload['interests'] = $this->construct_interests( $interests );
@@ -229,98 +289,95 @@ class Mailchimp_API {
 				'LNAME' => $name[1],
 			);
 		}
-		// If origin url is not empty and is a valid url then add it to the payload.
+
 		if ( ! empty( $origin_url ) && ! filter_var( $origin_url, FILTER_VALIDATE_URL ) === false ) {
 			$payload['merge_fields']['ORIGINURL'] = esc_url( $origin_url );
 		}
 
-		$result = $mailchimp->post( "lists/$list_id/members", $payload );
+		try {
+			$result = $this->mailchimp->lists->addListMember( $list_id, $payload );
 
-		if ( $mailchimp->success() ) {
 			return array(
 				'success'   => true,
-				'status'    => $result['status'],
-				'interests' => $result['interests'],
-				'id'        => $result['id'],
+				'status'    => $result->status,
+				'interests' => $result->interests,
+				'id'        => $result->id,
 			);
-		} elseif ( 'Member Exists' === $result['title'] ) {
-				// Check if the member's status on the list is subscribed or not. If not, then re-add them.
-				$subscriber_hash = $mailchimp->subscriberHash( $email );
+		} catch ( \Exception $e ) {
+			if ( strpos( $e->getMessage(), 'Member Exists' ) !== false ) {
+				$subscriber_hash = md5( strtolower( $email ) );
 
-				$mailchimp->patch(
-					"lists/$list_id/members/$subscriber_hash",
-					array(
-						'status' => 'subscribed',
-					)
-				);
-				// If member is already part of list then proceed to add interest to member, just a patch.
-				return $this->add_interest( $this->construct_interests( $interests ), $api_key );
-		} else {
-				$subscriber_hash = $mailchimp->subscriberHash( $email );
-				return new WP_Error( 'add-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
+				try {
+					$this->mailchimp->lists->updateListMember(
+						$list_id,
+						$subscriber_hash,
+						array(
+							'status' => 'subscribed',
+						)
+					);
+
+					return $this->add_interest( $this->construct_interests( $interests ) );
+				} catch ( \Exception $update_error ) {
+					return new WP_Error( 'update-member-error', $update_error->getMessage(), array( 'status' => 400 ) );
+				}
+			}
+			return new WP_Error( 'add-member-error', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
 	/**
-	 * [remove_member_from_list description]
+	 * Unsubscribes an email from the list.
 	 *
-	 * @param  [type] $email       [description]
-	 * @param  [type] $list_id     [description]
-	 * @return [type]              [description]
+	 * @return array|WP_Error The result or an error.
 	 */
 	public function unsubscribe_from_list() {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
 		$email = $this->email;
 		if ( ! $email ) {
-			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-email-provided', __( 'No email provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
-		$subscriber_hash = $mailchimp->subscriberHash( $email );
+		$subscriber_hash = md5( strtolower( $email ) );
 
-		$result = $mailchimp->delete( "lists/$list_id/members/$subscriber_hash" );
-
-		if ( $mailchimp->success() ) {
+		try {
+			$result = $this->mailchimp->lists->deleteListMember( $list_id, $subscriber_hash );
 			return $result;
-		} else {
-			return new WP_Error( 'remover-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'remove-member-error', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 
 	/**
-	 * Returns a list of segments someone is in, based off of email address.
+	 * Gets a member's information.
 	 *
-	 * @param  [type] $email [description]
-	 * @return [type]                [description]
+	 * @return array|WP_Error The member information or an error.
 	 */
 	public function get_member() {
 		$api_key = $this->api_key;
 		if ( is_wp_error( $api_key ) ) {
 			return $api_key;
 		}
-		$mailchimp = new MailChimp( $api_key );
 
 		$list_id = $this->list_id;
 
 		$email = $this->email;
 		if ( ! $email ) {
-			return new WP_Error( 'no-email-provided', __( 'No email provided', 'my_textdomain' ), array( 'status' => 400 ) );
+			return new WP_Error( 'no-email-provided', __( 'No email provided', 'prc-mailchimp-api' ), array( 'status' => 400 ) );
 		}
 
-		$subscriber_hash = $mailchimp->subscriberHash( $email );
+		$subscriber_hash = md5( strtolower( $email ) );
 
-		$result = $mailchimp->get( "lists/$list_id/members/$subscriber_hash" );
-		// If subscriber found in this list.
-		if ( $mailchimp->success() ) {
+		try {
+			$result = $this->mailchimp->lists->getListMember( $list_id, $subscriber_hash );
 			return $result;
-		} else {
-			return new WP_Error( 'get-member-error', esc_textarea( $result['detail'] ), array( 'status' => $result['status'] ) );
+		} catch ( \Exception $e ) {
+			return new WP_Error( 'get-member-error', $e->getMessage(), array( 'status' => 400 ) );
 		}
 	}
 }

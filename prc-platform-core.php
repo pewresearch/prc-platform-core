@@ -21,6 +21,16 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+if ( ! defined( 'PRC_PRIMARY_SITE_ID' ) ) {
+	define( 'PRC_PRIMARY_SITE_ID', 1 );
+}
+if ( ! defined( 'DEFAULT_TECHNICAL_CONTACT' ) ) {
+	define( 'DEFAULT_TECHNICAL_CONTACT', 'webdev@pewresearch.org' );
+}
+if ( ! defined( 'TAXONOMY_TECHNICAL_CONTACT' ) ) {
+	define( 'TAXONOMY_TECHNICAL_CONTACT', 'webdev@pewresearch.org' );
+}
+
 define( 'PRC_PLATFORM_CORE_DIR', plugin_dir_path( __DIR__ ) );
 
 /**

@@ -2,6 +2,7 @@
 	"name": "@pewresearch/prc-platform-firebase",
 	"description": "Google Firebase functionality for PRC Platform",
 	"license": "GPL-2.0-or-later",
+	"entry": "src/index.js",
 	"devDependencies": {
 		"@wordpress/scripts": "^30.10.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^6.3.0",

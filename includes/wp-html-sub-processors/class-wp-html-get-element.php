@@ -199,4 +199,12 @@ class WP_HTML_Get_Element extends WP_HTML_Tag_Processor {
 			}
 		}
 	}
+
+	/**
+	 * Remove the element with the matching id.
+	 *
+	 * @return void
+	 */
+	public function remove() {
+	}
 }

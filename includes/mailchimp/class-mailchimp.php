@@ -426,6 +426,14 @@ class Mailchimp {
 			$interests = null;
 		}
 
+		error_log( '🐵 Mailchimp subscribe_to_list_restfully' );
+		error_log( '🐵 email: ' . $email );
+		error_log( '🐵 name: ' . print_r( $name, true ) );
+		error_log( '🐵 interests: ' . print_r( $interests, true ) );
+		error_log( '🐵 api_key: ' . $api_key );
+		error_log( '🐵 list_id: ' . $this->default_list_id );
+		error_log( '🐵 origin_url: ' . $origin_url );
+
 		$mailchimp_api = new Mailchimp_API(
 			$email,
 			array(

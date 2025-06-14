@@ -23,6 +23,8 @@ import {
 	sort,
 	max,
 	easeCubicInOut,
+	arc,
+	pie,
 } from 'd3';
 
 const _format = format;
@@ -43,6 +45,8 @@ const _discontinuityRange = discontinuityRange;
 const _easeCubicInOut = easeCubicInOut;
 const _sort = sort;
 const _max = max;
+const _arc = arc;
+const _pie = pie;
 
 export {
 	_format as format,
@@ -63,4 +67,6 @@ export {
 	_easeCubicInOut as easeCubicInOut,
 	_sort as sort,
 	_max as max,
+	_arc as arc,
+	_pie as pie,
 };

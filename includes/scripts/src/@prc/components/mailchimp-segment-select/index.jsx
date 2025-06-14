@@ -14,7 +14,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 
 export default function MailchimpSegmentSelect({
-	label = 'Select a Mailchipm Segment',
+	label = 'Select a MailChimp Segment',
 	className,
 	value,
 	onChange,
@@ -40,14 +40,16 @@ export default function MailchimpSegmentSelect({
 	}, [currentValue]);
 
 	const memoizedOptions = useMemo(() => {
-		console.log("MEMOIZING OPTIONS", records);
 		if (!records) {
 			return [];
 		}
-		return Object.keys(records).map(key => ({
-			label: records[key].name,
-			value: records[key].interest_id,
-		}));
+		return [
+			{ label: 'Loading MailChimp segments...', value: '' },
+			...Object.keys(records).map(key => ({
+				label: records[key].name,
+				value: records[key].interest_id,
+			}))
+		];
 	}, [records]);
 
 	const hasOptions = memoizedOptions ? 0 < memoizedOptions.length : false;

@@ -150,7 +150,7 @@ class User_Permissions {
 	}
 
 	/**
-	 * Generate PRC WP BOT user, who will have editor capabilities. This bot will generate documentation, etc.
+	 * Generate a PRC WP BOT user with editor capabilities. This bot will create documentation and more.
 	 * This function is called on plugin activation.
 	 *
 	 * @hook init

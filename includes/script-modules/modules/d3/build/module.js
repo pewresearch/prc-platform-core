@@ -1,50 +1,5 @@
-/******/ // The require scope
-/******/ var __webpack_require__ = {};
-/******/ 
-/************************************************************************/
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__webpack_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/************************************************************************/
-var __webpack_exports__ = {};
 
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  l7: () => (/* binding */ _axisBottom),
-  V4: () => (/* binding */ _axisLeft),
-  vt: () => (/* binding */ _create),
-  Od: () => (/* binding */ _discontinuityRange),
-  oR: () => (/* binding */ _easeCubicInOut),
-  GP: () => (/* binding */ _format),
-  Ut: () => (/* binding */ _geoAlbersUsa),
-  zF: () => (/* binding */ _geoPath),
-  T9: () => (/* binding */ _max),
-  WH: () => (/* binding */ _scaleBand),
-  op: () => (/* binding */ _scaleDiscontinuous),
-  m4: () => (/* binding */ _scaleLinear),
-  UM: () => (/* binding */ _scaleOrdinal),
-  Lt: () => (/* binding */ _select),
-  Ub: () => (/* binding */ _selectAll),
-  di: () => (/* binding */ _sort),
-  s_: () => (/* binding */ _zoom),
-  GS: () => (/* binding */ _zoomIdentity)
-});
-
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatDecimal.js
+;// ./node_modules/d3-format/src/formatDecimal.js
 /* harmony default export */ function formatDecimal(x) {
   return Math.abs(x = Math.round(x)) >= 1e21
       ? x.toLocaleString("en").replace(/,/g, "")
@@ -66,14 +21,14 @@ function formatDecimalParts(x, p) {
   ];
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/exponent.js
+;// ./node_modules/d3-format/src/exponent.js
 
 
 /* harmony default export */ function exponent(x) {
   return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatGroup.js
+;// ./node_modules/d3-format/src/formatGroup.js
 /* harmony default export */ function formatGroup(grouping, thousands) {
   return function(value, width) {
     var i = value.length,
@@ -93,7 +48,7 @@ function formatDecimalParts(x, p) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatNumerals.js
+;// ./node_modules/d3-format/src/formatNumerals.js
 /* harmony default export */ function formatNumerals(numerals) {
   return function(value) {
     return value.replace(/[0-9]/g, function(i) {
@@ -102,7 +57,7 @@ function formatDecimalParts(x, p) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatSpecifier.js
+;// ./node_modules/d3-format/src/formatSpecifier.js
 // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
 var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
@@ -151,7 +106,7 @@ FormatSpecifier.prototype.toString = function() {
       + this.type;
 };
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatTrim.js
+;// ./node_modules/d3-format/src/formatTrim.js
 // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
 /* harmony default export */ function formatTrim(s) {
   out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
@@ -164,7 +119,7 @@ FormatSpecifier.prototype.toString = function() {
   return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatPrefixAuto.js
+;// ./node_modules/d3-format/src/formatPrefixAuto.js
 
 
 var prefixExponent;
@@ -182,7 +137,7 @@ var prefixExponent;
       : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatRounded.js
+;// ./node_modules/d3-format/src/formatRounded.js
 
 
 /* harmony default export */ function formatRounded(x, p) {
@@ -195,7 +150,7 @@ var prefixExponent;
       : coefficient + new Array(exponent - coefficient.length + 2).join("0");
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/formatTypes.js
+;// ./node_modules/d3-format/src/formatTypes.js
 
 
 
@@ -216,12 +171,12 @@ var prefixExponent;
   "x": (x) => Math.round(x).toString(16)
 });
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/identity.js
+;// ./node_modules/d3-format/src/identity.js
 /* harmony default export */ function identity(x) {
   return x;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/locale.js
+;// ./node_modules/d3-format/src/locale.js
 
 
 
@@ -371,7 +326,7 @@ var map = Array.prototype.map,
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/defaultLocale.js
+;// ./node_modules/d3-format/src/defaultLocale.js
 
 
 var defaultLocale_locale;
@@ -391,7 +346,7 @@ function defaultLocale(definition) {
   return defaultLocale_locale;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/ticks.js
+;// ./node_modules/d3-array/src/ticks.js
 const e10 = Math.sqrt(50),
     e5 = Math.sqrt(10),
     e2 = Math.sqrt(2);
@@ -448,12 +403,12 @@ function tickStep(start, stop, count) {
   return (reverse ? -1 : 1) * (inc < 0 ? 1 / -inc : inc);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/ascending.js
+;// ./node_modules/d3-array/src/ascending.js
 function ascending(a, b) {
   return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/descending.js
+;// ./node_modules/d3-array/src/descending.js
 function descending(a, b) {
   return a == null || b == null ? NaN
     : b < a ? -1
@@ -462,7 +417,7 @@ function descending(a, b) {
     : NaN;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/bisector.js
+;// ./node_modules/d3-array/src/bisector.js
 
 
 
@@ -520,7 +475,7 @@ function zero() {
   return 0;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/number.js
+;// ./node_modules/d3-array/src/number.js
 function number(x) {
   return x === null ? NaN : +x;
 }
@@ -542,7 +497,7 @@ function* numbers(values, valueof) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/bisect.js
+;// ./node_modules/d3-array/src/bisect.js
 
 
 
@@ -553,7 +508,7 @@ const bisectLeft = ascendingBisect.left;
 const bisectCenter = bisector(number).center;
 /* harmony default export */ const bisect = (bisectRight);
 
-;// CONCATENATED MODULE: ./node_modules/d3-color/src/define.js
+;// ./node_modules/d3-color/src/define.js
 /* harmony default export */ function src_define(constructor, factory, prototype) {
   constructor.prototype = factory.prototype = prototype;
   prototype.constructor = constructor;
@@ -565,7 +520,7 @@ function extend(parent, definition) {
   return prototype;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-color/src/color.js
+;// ./node_modules/d3-color/src/color.js
 
 
 function Color() {}
@@ -963,7 +918,7 @@ function hsl2rgb(h, m1, m2) {
       : m1) * 255;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basis.js
+;// ./node_modules/d3-interpolate/src/basis.js
 function basis(t1, v0, v1, v2, v3) {
   var t2 = t1 * t1, t3 = t2 * t1;
   return ((1 - 3 * t1 + 3 * t2 - t3) * v0
@@ -984,7 +939,7 @@ function basis(t1, v0, v1, v2, v3) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/basisClosed.js
+;// ./node_modules/d3-interpolate/src/basisClosed.js
 
 
 /* harmony default export */ function basisClosed(values) {
@@ -999,10 +954,10 @@ function basis(t1, v0, v1, v2, v3) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/constant.js
+;// ./node_modules/d3-interpolate/src/constant.js
 /* harmony default export */ const src_constant = (x => () => x);
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/color.js
+;// ./node_modules/d3-interpolate/src/color.js
 
 
 function linear(a, d) {
@@ -1033,7 +988,7 @@ function nogamma(a, b) {
   return d ? linear(a, d) : src_constant(isNaN(a) ? b : a);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/rgb.js
+;// ./node_modules/d3-interpolate/src/rgb.js
 
 
 
@@ -1090,7 +1045,7 @@ function rgbSpline(spline) {
 var rgbBasis = rgbSpline(src_basis);
 var rgbBasisClosed = rgbSpline(basisClosed);
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/array.js
+;// ./node_modules/d3-interpolate/src/array.js
 
 
 
@@ -1114,7 +1069,7 @@ function genericArray(a, b) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/date.js
+;// ./node_modules/d3-interpolate/src/date.js
 /* harmony default export */ function date(a, b) {
   var d = new Date;
   return a = +a, b = +b, function(t) {
@@ -1122,14 +1077,14 @@ function genericArray(a, b) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/number.js
+;// ./node_modules/d3-interpolate/src/number.js
 /* harmony default export */ function src_number(a, b) {
   return a = +a, b = +b, function(t) {
     return a * (1 - t) + b * t;
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/object.js
+;// ./node_modules/d3-interpolate/src/object.js
 
 
 /* harmony default export */ function object(a, b) {
@@ -1154,7 +1109,7 @@ function genericArray(a, b) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/string.js
+;// ./node_modules/d3-interpolate/src/string.js
 
 
 var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
@@ -1220,7 +1175,7 @@ function one(b) {
         });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/numberArray.js
+;// ./node_modules/d3-interpolate/src/numberArray.js
 /* harmony default export */ function src_numberArray(a, b) {
   if (!b) b = [];
   var n = a ? Math.min(b.length, a.length) : 0,
@@ -1236,7 +1191,7 @@ function numberArray_isNumberArray(x) {
   return ArrayBuffer.isView(x) && !(x instanceof DataView);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/value.js
+;// ./node_modules/d3-interpolate/src/value.js
 
 
 
@@ -1260,26 +1215,26 @@ function numberArray_isNumberArray(x) {
       : src_number)(a, b);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/round.js
+;// ./node_modules/d3-interpolate/src/round.js
 /* harmony default export */ function round(a, b) {
   return a = +a, b = +b, function(t) {
     return Math.round(a * (1 - t) + b * t);
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/constant.js
+;// ./node_modules/d3-scale/src/constant.js
 function constants(x) {
   return function() {
     return x;
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/number.js
+;// ./node_modules/d3-scale/src/number.js
 function number_number(x) {
   return +x;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/continuous.js
+;// ./node_modules/d3-scale/src/continuous.js
 
 
 
@@ -1406,7 +1361,7 @@ function continuous() {
   return transformer()(continuous_identity, continuous_identity);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/init.js
+;// ./node_modules/d3-scale/src/init.js
 function initRange(domain, range) {
   switch (arguments.length) {
     case 0: break;
@@ -1434,14 +1389,14 @@ function initInterpolator(domain, interpolator) {
   return this;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionPrefix.js
+;// ./node_modules/d3-format/src/precisionPrefix.js
 
 
 /* harmony default export */ function precisionPrefix(step, value) {
   return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionRound.js
+;// ./node_modules/d3-format/src/precisionRound.js
 
 
 /* harmony default export */ function precisionRound(step, max) {
@@ -1449,14 +1404,14 @@ function initInterpolator(domain, interpolator) {
   return Math.max(0, exponent(max) - exponent(step)) + 1;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-format/src/precisionFixed.js
+;// ./node_modules/d3-format/src/precisionFixed.js
 
 
 /* harmony default export */ function precisionFixed(step) {
   return Math.max(0, -exponent(Math.abs(step)));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/tickFormat.js
+;// ./node_modules/d3-scale/src/tickFormat.js
 
 
 
@@ -1487,7 +1442,7 @@ function tickFormat(start, stop, count, specifier) {
   return format(specifier);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/linear.js
+;// ./node_modules/d3-scale/src/linear.js
 
 
 
@@ -1559,7 +1514,7 @@ function linear_linear() {
   return linearish(scale);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/identity.js
+;// ./node_modules/d3-scale/src/identity.js
 
 
 
@@ -1589,7 +1544,7 @@ function identity_identity(domain) {
   return linearish(scale);
 }
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/createReboundMethod.js
+;// ./node_modules/@d3fc/d3fc-rebind/src/createReboundMethod.js
 /* harmony default export */ const createReboundMethod = ((target, source, name) => {
     const method = source[name];
     if (typeof method !== 'function') {
@@ -1601,7 +1556,7 @@ function identity_identity(domain) {
     };
 });
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/rebindAll.js
+;// ./node_modules/@d3fc/d3fc-rebind/src/rebindAll.js
 
 
 const createTransform = (transforms) =>
@@ -1621,13 +1576,13 @@ const createTransform = (transforms) =>
     return target;
 });
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/transform/regexify.js
+;// ./node_modules/@d3fc/d3fc-rebind/src/transform/regexify.js
 /* harmony default export */ const regexify = ((strsOrRegexes) =>
     strsOrRegexes.map((strOrRegex) =>
         typeof strOrRegex === 'string' ? new RegExp(`^${strOrRegex}$`) : strOrRegex
     ));
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-rebind/src/transform/include.js
+;// ./node_modules/@d3fc/d3fc-rebind/src/transform/include.js
 
 
 /* harmony default export */ const include = ((...inclusions) => {
@@ -1636,7 +1591,7 @@ const createTransform = (transforms) =>
       inclusions.some((inclusion) => inclusion.test(name)) && name;
 });
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/identity.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/identity.js
 /* harmony default export */ function discontinuity_identity() {
 
     var identity = {};
@@ -1660,7 +1615,7 @@ const createTransform = (transforms) =>
     return identity;
 }
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/tickFilter.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/tickFilter.js
 function tickFilter(ticks, discontinuityProvider) {
     const discontinuousTicks = ticks.map(discontinuityProvider.clampUp);
     if (
@@ -1674,7 +1629,7 @@ function tickFilter(ticks, discontinuityProvider) {
     return discontinuousTicks;
 }
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuous.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuous.js
 
 
 
@@ -1760,7 +1715,7 @@ function discontinuous(adaptedScale) {
 
 /* harmony default export */ const src_discontinuous = (discontinuous);
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/range.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/range.js
 const provider = (...ranges) => {
 
     const inRange = (number, range) =>
@@ -1845,7 +1800,7 @@ const provider = (...ranges) => {
 
 /* harmony default export */ const range = (provider);
 
-;// CONCATENATED MODULE: ./node_modules/d3-time/src/interval.js
+;// ./node_modules/d3-time/src/interval.js
 const t0 = new Date, t1 = new Date;
 
 function timeInterval(floori, offseti, count, field) {
@@ -1916,7 +1871,7 @@ function timeInterval(floori, offseti, count, field) {
   return interval;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-time/src/duration.js
+;// ./node_modules/d3-time/src/duration.js
 const durationSecond = 1000;
 const durationMinute = durationSecond * 60;
 const durationHour = durationMinute * 60;
@@ -1925,7 +1880,7 @@ const durationWeek = durationDay * 7;
 const durationMonth = durationDay * 30;
 const durationYear = durationDay * 365;
 
-;// CONCATENATED MODULE: ./node_modules/d3-time/src/day.js
+;// ./node_modules/d3-time/src/day.js
 
 
 
@@ -1962,7 +1917,7 @@ const unixDay = timeInterval((date) => {
 
 const unixDays = unixDay.range;
 
-;// CONCATENATED MODULE: ./node_modules/d3-time/src/millisecond.js
+;// ./node_modules/d3-time/src/millisecond.js
 
 
 const millisecond = timeInterval(() => {
@@ -1989,7 +1944,7 @@ millisecond.every = (k) => {
 
 const milliseconds = millisecond.range;
 
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern/dateTimeUtility.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern/dateTimeUtility.js
 /**
  * Object that helps with working with time strings and dates
  * @typedef { Object } DateTimeUtility
@@ -2053,7 +2008,7 @@ const dateTimeUtility = (setTimeForDate, getDay, getTimeComponentArray, dayInter
 
     return utility;
 };
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipWeeklyPattern.js
 
 
 
@@ -2256,7 +2211,7 @@ const skipWeeklyPattern_base = (nonTradingPattern, dateTimeUtility) => {
 };
 
 /* harmony default export */ const skipWeeklyPattern = ((nonTradingHoursPattern) => skipWeeklyPattern_base(nonTradingHoursPattern, localDateTimeUtility));
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipUtcWeeklyPattern.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/src/discontinuity/skipUtcWeeklyPattern.js
 
 
 
@@ -2270,7 +2225,7 @@ const utcDateTimeUtility = dateTimeUtility(
 );
 
 /* harmony default export */ const skipUtcWeeklyPattern = ((nonTradingUtcHoursPattern) => base(nonTradingUtcHoursPattern, utcDateTimeUtility));
-;// CONCATENATED MODULE: ./node_modules/@d3fc/d3fc-discontinuous-scale/index.js
+;// ./node_modules/@d3fc/d3fc-discontinuous-scale/index.js
 
 
 
@@ -2280,7 +2235,7 @@ const utcDateTimeUtility = dateTimeUtility(
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/max.js
+;// ./node_modules/d3-array/src/max.js
 function max(values, valueof) {
   let max;
   if (valueof === undefined) {
@@ -2302,12 +2257,12 @@ function max(values, valueof) {
   return max;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/permute.js
+;// ./node_modules/d3-array/src/permute.js
 function permute(source, keys) {
   return Array.from(keys, key => source[key]);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/sort.js
+;// ./node_modules/d3-array/src/sort.js
 
 
 
@@ -2348,7 +2303,7 @@ function ascendingDefined(a, b) {
   return (a == null || !(a >= a)) - (b == null || !(b >= b)) || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/index.js
+;// ./node_modules/d3-array/src/index.js
 
 
 
@@ -2407,12 +2362,12 @@ function ascendingDefined(a, b) {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-axis/src/identity.js
+;// ./node_modules/d3-axis/src/identity.js
 /* harmony default export */ function src_identity(x) {
   return x;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-axis/src/axis.js
+;// ./node_modules/d3-axis/src/axis.js
 
 
 var axis_top = 1,
@@ -2588,10 +2543,10 @@ function axisLeft(scale) {
   return axis(left, scale);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-axis/src/index.js
+;// ./node_modules/d3-axis/src/index.js
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selector.js
+;// ./node_modules/d3-selection/src/selector.js
 function none() {}
 
 /* harmony default export */ function selector(selector) {
@@ -2600,7 +2555,7 @@ function none() {}
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/select.js
+;// ./node_modules/d3-selection/src/selection/select.js
 
 
 
@@ -2619,7 +2574,7 @@ function none() {}
   return new Selection(subgroups, this._parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/array.js
+;// ./node_modules/d3-selection/src/array.js
 // Given something array like (or null), returns something that is strictly an
 // array. This is used to ensure that array-like objects passed to d3.selectAll
 // or selection.selectAll are converted into proper arrays when creating a
@@ -2630,7 +2585,7 @@ function array_array(x) {
   return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selectorAll.js
+;// ./node_modules/d3-selection/src/selectorAll.js
 function empty() {
   return [];
 }
@@ -2641,7 +2596,7 @@ function empty() {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/selectAll.js
+;// ./node_modules/d3-selection/src/selection/selectAll.js
 
 
 
@@ -2668,7 +2623,7 @@ function arrayAll(select) {
   return new Selection(subgroups, parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/matcher.js
+;// ./node_modules/d3-selection/src/matcher.js
 /* harmony default export */ function matcher(selector) {
   return function() {
     return this.matches(selector);
@@ -2682,7 +2637,7 @@ function childMatcher(selector) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/selectChild.js
+;// ./node_modules/d3-selection/src/selection/selectChild.js
 
 
 var find = Array.prototype.find;
@@ -2702,7 +2657,7 @@ function childFirst() {
       : childFind(typeof match === "function" ? match : childMatcher(match)));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/selectChildren.js
+;// ./node_modules/d3-selection/src/selection/selectChildren.js
 
 
 var filter = Array.prototype.filter;
@@ -2722,7 +2677,7 @@ function childrenFilter(match) {
       : childrenFilter(typeof match === "function" ? match : childMatcher(match)));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/filter.js
+;// ./node_modules/d3-selection/src/selection/filter.js
 
 
 
@@ -2740,12 +2695,12 @@ function childrenFilter(match) {
   return new Selection(subgroups, this._parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/sparse.js
+;// ./node_modules/d3-selection/src/selection/sparse.js
 /* harmony default export */ function sparse(update) {
   return new Array(update.length);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/enter.js
+;// ./node_modules/d3-selection/src/selection/enter.js
 
 
 
@@ -2769,14 +2724,14 @@ EnterNode.prototype = {
   querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 };
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/constant.js
+;// ./node_modules/d3-selection/src/constant.js
 /* harmony default export */ function d3_selection_src_constant(x) {
   return function() {
     return x;
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/data.js
+;// ./node_modules/d3-selection/src/selection/data.js
 
 
 
@@ -2906,7 +2861,7 @@ function arraylike(data) {
     : Array.from(data); // Map, Set, iterable, string, or anything else
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/exit.js
+;// ./node_modules/d3-selection/src/selection/exit.js
 
 
 
@@ -2914,7 +2869,7 @@ function arraylike(data) {
   return new Selection(this._exit || this._groups.map(sparse), this._parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/join.js
+;// ./node_modules/d3-selection/src/selection/join.js
 /* harmony default export */ function join(onenter, onupdate, onexit) {
   var enter = this.enter(), update = this, exit = this.exit();
   if (typeof onenter === "function") {
@@ -2931,7 +2886,7 @@ function arraylike(data) {
   return enter && update ? enter.merge(update).order() : update;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/merge.js
+;// ./node_modules/d3-selection/src/selection/merge.js
 
 
 /* harmony default export */ function merge(context) {
@@ -2952,7 +2907,7 @@ function arraylike(data) {
   return new Selection(merges, this._parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/order.js
+;// ./node_modules/d3-selection/src/selection/order.js
 /* harmony default export */ function order() {
 
   for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
@@ -2967,7 +2922,7 @@ function arraylike(data) {
   return this;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/sort.js
+;// ./node_modules/d3-selection/src/selection/sort.js
 
 
 /* harmony default export */ function selection_sort(compare) {
@@ -2993,7 +2948,7 @@ function sort_ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/call.js
+;// ./node_modules/d3-selection/src/selection/call.js
 /* harmony default export */ function call() {
   var callback = arguments[0];
   arguments[0] = this;
@@ -3001,12 +2956,12 @@ function sort_ascending(a, b) {
   return this;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/nodes.js
+;// ./node_modules/d3-selection/src/selection/nodes.js
 /* harmony default export */ function nodes() {
   return Array.from(this);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/node.js
+;// ./node_modules/d3-selection/src/selection/node.js
 /* harmony default export */ function node() {
 
   for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
@@ -3019,19 +2974,19 @@ function sort_ascending(a, b) {
   return null;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/size.js
+;// ./node_modules/d3-selection/src/selection/size.js
 /* harmony default export */ function size() {
   let size = 0;
   for (const node of this) ++size; // eslint-disable-line no-unused-vars
   return size;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/empty.js
+;// ./node_modules/d3-selection/src/selection/empty.js
 /* harmony default export */ function selection_empty() {
   return !this.node();
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/each.js
+;// ./node_modules/d3-selection/src/selection/each.js
 /* harmony default export */ function each(callback) {
 
   for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
@@ -3043,7 +2998,7 @@ function sort_ascending(a, b) {
   return this;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/namespaces.js
+;// ./node_modules/d3-selection/src/namespaces.js
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 /* harmony default export */ const namespaces = ({
@@ -3054,7 +3009,7 @@ var xhtml = "http://www.w3.org/1999/xhtml";
   xmlns: "http://www.w3.org/2000/xmlns/"
 });
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/namespace.js
+;// ./node_modules/d3-selection/src/namespace.js
 
 
 /* harmony default export */ function namespace(name) {
@@ -3063,7 +3018,7 @@ var xhtml = "http://www.w3.org/1999/xhtml";
   return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name; // eslint-disable-line no-prototype-builtins
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/attr.js
+;// ./node_modules/d3-selection/src/selection/attr.js
 
 
 function attrRemove(name) {
@@ -3122,14 +3077,14 @@ function attrFunctionNS(fullname, value) {
       : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/window.js
+;// ./node_modules/d3-selection/src/window.js
 /* harmony default export */ function src_window(node) {
   return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
       || (node.document && node) // node is a Window
       || node.defaultView; // node is a Document
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/style.js
+;// ./node_modules/d3-selection/src/selection/style.js
 
 
 function styleRemove(name) {
@@ -3166,7 +3121,7 @@ function styleValue(node, name) {
       || src_window(node).getComputedStyle(node, null).getPropertyValue(name);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/property.js
+;// ./node_modules/d3-selection/src/selection/property.js
 function propertyRemove(name) {
   return function() {
     delete this[name];
@@ -3196,7 +3151,7 @@ function propertyFunction(name, value) {
       : this.node()[name];
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/classed.js
+;// ./node_modules/d3-selection/src/selection/classed.js
 function classArray(string) {
   return string.trim().split(/^|\s+/);
 }
@@ -3273,7 +3228,7 @@ function classedFunction(names, value) {
       : classedFalse)(names, value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/text.js
+;// ./node_modules/d3-selection/src/selection/text.js
 function textRemove() {
   this.textContent = "";
 }
@@ -3300,7 +3255,7 @@ function textFunction(value) {
       : this.node().textContent;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/html.js
+;// ./node_modules/d3-selection/src/selection/html.js
 function htmlRemove() {
   this.innerHTML = "";
 }
@@ -3327,7 +3282,7 @@ function htmlFunction(value) {
       : this.node().innerHTML;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/raise.js
+;// ./node_modules/d3-selection/src/selection/raise.js
 function raise() {
   if (this.nextSibling) this.parentNode.appendChild(this);
 }
@@ -3336,7 +3291,7 @@ function raise() {
   return this.each(raise);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/lower.js
+;// ./node_modules/d3-selection/src/selection/lower.js
 function lower() {
   if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
 }
@@ -3345,7 +3300,7 @@ function lower() {
   return this.each(lower);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/creator.js
+;// ./node_modules/d3-selection/src/creator.js
 
 
 
@@ -3372,7 +3327,7 @@ function creatorFixed(fullname) {
       : creatorInherit)(fullname);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/append.js
+;// ./node_modules/d3-selection/src/selection/append.js
 
 
 /* harmony default export */ function append(name) {
@@ -3382,7 +3337,7 @@ function creatorFixed(fullname) {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/insert.js
+;// ./node_modules/d3-selection/src/selection/insert.js
 
 
 
@@ -3398,7 +3353,7 @@ function constantNull() {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/remove.js
+;// ./node_modules/d3-selection/src/selection/remove.js
 function remove() {
   var parent = this.parentNode;
   if (parent) parent.removeChild(this);
@@ -3408,7 +3363,7 @@ function remove() {
   return this.each(remove);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/clone.js
+;// ./node_modules/d3-selection/src/selection/clone.js
 function selection_cloneShallow() {
   var clone = this.cloneNode(false), parent = this.parentNode;
   return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
@@ -3423,14 +3378,14 @@ function selection_cloneDeep() {
   return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/datum.js
+;// ./node_modules/d3-selection/src/selection/datum.js
 /* harmony default export */ function selection_datum(value) {
   return arguments.length
       ? this.property("__data__", value)
       : this.node().__data__;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/on.js
+;// ./node_modules/d3-selection/src/selection/on.js
 function contextListener(listener) {
   return function(event) {
     listener.call(this, event, this.__data__);
@@ -3499,7 +3454,7 @@ function onAdd(typename, value, options) {
   return this;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/dispatch.js
+;// ./node_modules/d3-selection/src/selection/dispatch.js
 
 
 function dispatchEvent(node, type, params) {
@@ -3535,7 +3490,7 @@ function dispatchFunction(type, params) {
       : dispatchConstant)(type, params));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/iterator.js
+;// ./node_modules/d3-selection/src/selection/iterator.js
 /* harmony default export */ function* iterator() {
   for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
     for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -3544,7 +3499,7 @@ function dispatchFunction(type, params) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selection/index.js
+;// ./node_modules/d3-selection/src/selection/index.js
 
 
 
@@ -3636,7 +3591,7 @@ Selection.prototype = selection.prototype = {
 
 /* harmony default export */ const src_selection = (selection);
 
-;// CONCATENATED MODULE: ./node_modules/d3-dispatch/src/dispatch.js
+;// ./node_modules/d3-dispatch/src/dispatch.js
 var noop = {value: () => {}};
 
 function dispatch_dispatch() {
@@ -3722,7 +3677,7 @@ function set(type, name, callback) {
 
 /* harmony default export */ const src_dispatch = (dispatch_dispatch);
 
-;// CONCATENATED MODULE: ./node_modules/d3-timer/src/timer.js
+;// ./node_modules/d3-timer/src/timer.js
 var timer_frame = 0, // is an animation frame pending?
     timeout = 0, // is a timeout pending?
     interval = 0, // are any timers active?
@@ -3834,7 +3789,7 @@ function sleep(time) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-timer/src/timeout.js
+;// ./node_modules/d3-timer/src/timeout.js
 
 
 /* harmony default export */ function src_timeout(callback, delay, time) {
@@ -3847,7 +3802,7 @@ function sleep(time) {
   return t;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/schedule.js
+;// ./node_modules/d3-transition/src/transition/schedule.js
 
 
 
@@ -4002,7 +3957,7 @@ function create(node, id, self) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/interrupt.js
+;// ./node_modules/d3-transition/src/interrupt.js
 
 
 /* harmony default export */ function src_interrupt(node, name) {
@@ -4028,7 +3983,7 @@ function create(node, id, self) {
   if (empty) delete node.__transition;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/selection/interrupt.js
+;// ./node_modules/d3-transition/src/selection/interrupt.js
 
 
 /* harmony default export */ function selection_interrupt(name) {
@@ -4037,7 +3992,7 @@ function create(node, id, self) {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/transform/decompose.js
+;// ./node_modules/d3-interpolate/src/transform/decompose.js
 var decompose_degrees = 180 / Math.PI;
 
 var decompose_identity = {
@@ -4065,7 +4020,7 @@ var decompose_identity = {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/transform/parse.js
+;// ./node_modules/d3-interpolate/src/transform/parse.js
 
 
 var svgNode;
@@ -4085,7 +4040,7 @@ function parseSvg(value) {
   return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/transform/index.js
+;// ./node_modules/d3-interpolate/src/transform/index.js
 
 
 
@@ -4150,7 +4105,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
 var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/tween.js
+;// ./node_modules/d3-transition/src/transition/tween.js
 
 
 function tweenRemove(id, name) {
@@ -4233,7 +4188,7 @@ function tweenValue(transition, name, value) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/interpolate.js
+;// ./node_modules/d3-transition/src/transition/interpolate.js
 
 
 
@@ -4245,7 +4200,7 @@ function tweenValue(transition, name, value) {
       : string)(a, b);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/attr.js
+;// ./node_modules/d3-transition/src/transition/attr.js
 
 
 
@@ -4325,7 +4280,7 @@ function attr_attrFunctionNS(fullname, interpolate, value) {
       : (fullname.local ? attr_attrConstantNS : attr_attrConstant)(fullname, i, value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/attrTween.js
+;// ./node_modules/d3-transition/src/transition/attrTween.js
 
 
 function attrInterpolate(name, i) {
@@ -4371,7 +4326,7 @@ function attrTween(name, value) {
   return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/delay.js
+;// ./node_modules/d3-transition/src/transition/delay.js
 
 
 function delayFunction(id, value) {
@@ -4396,7 +4351,7 @@ function delayConstant(id, value) {
       : schedule_get(this.node(), id).delay;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/duration.js
+;// ./node_modules/d3-transition/src/transition/duration.js
 
 
 function durationFunction(id, value) {
@@ -4421,7 +4376,7 @@ function durationConstant(id, value) {
       : schedule_get(this.node(), id).duration;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/ease.js
+;// ./node_modules/d3-transition/src/transition/ease.js
 
 
 function easeConstant(id, value) {
@@ -4439,7 +4394,7 @@ function easeConstant(id, value) {
       : schedule_get(this.node(), id).ease;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/easeVarying.js
+;// ./node_modules/d3-transition/src/transition/easeVarying.js
 
 
 function easeVarying(id, value) {
@@ -4455,7 +4410,7 @@ function easeVarying(id, value) {
   return this.each(easeVarying(this._id, value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/filter.js
+;// ./node_modules/d3-transition/src/transition/filter.js
 
 
 
@@ -4473,7 +4428,7 @@ function easeVarying(id, value) {
   return new Transition(subgroups, this._parents, this._name, this._id);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/merge.js
+;// ./node_modules/d3-transition/src/transition/merge.js
 
 
 /* harmony default export */ function transition_merge(transition) {
@@ -4494,7 +4449,7 @@ function easeVarying(id, value) {
   return new Transition(merges, this._parents, this._name, this._id);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/on.js
+;// ./node_modules/d3-transition/src/transition/on.js
 
 
 function start(name) {
@@ -4528,7 +4483,7 @@ function onFunction(id, name, listener) {
       : this.each(onFunction(id, name, listener));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/remove.js
+;// ./node_modules/d3-transition/src/transition/remove.js
 function removeFunction(id) {
   return function() {
     var parent = this.parentNode;
@@ -4541,7 +4496,7 @@ function removeFunction(id) {
   return this.on("end.remove", removeFunction(this._id));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/select.js
+;// ./node_modules/d3-transition/src/transition/select.js
 
 
 
@@ -4565,7 +4520,7 @@ function removeFunction(id) {
   return new Transition(subgroups, this._parents, name, id);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/selectAll.js
+;// ./node_modules/d3-transition/src/transition/selectAll.js
 
 
 
@@ -4593,7 +4548,7 @@ function removeFunction(id) {
   return new Transition(subgroups, parents, name, id);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/selection.js
+;// ./node_modules/d3-transition/src/transition/selection.js
 
 
 var selection_Selection = src_selection.prototype.constructor;
@@ -4602,7 +4557,7 @@ var selection_Selection = src_selection.prototype.constructor;
   return new selection_Selection(this._groups, this._parents);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/style.js
+;// ./node_modules/d3-transition/src/transition/style.js
 
 
 
@@ -4684,7 +4639,7 @@ function styleMaybeRemove(id, name) {
       .on("end.style." + name, null);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/styleTween.js
+;// ./node_modules/d3-transition/src/transition/styleTween.js
 function styleInterpolate(name, i, priority) {
   return function(t) {
     this.style.setProperty(name, i.call(this, t), priority);
@@ -4710,7 +4665,7 @@ function styleTween(name, value, priority) {
   return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/text.js
+;// ./node_modules/d3-transition/src/transition/text.js
 
 
 function text_textConstant(value) {
@@ -4732,7 +4687,7 @@ function text_textFunction(value) {
       : text_textConstant(value == null ? "" : value + ""));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/textTween.js
+;// ./node_modules/d3-transition/src/transition/textTween.js
 function textInterpolate(i) {
   return function(t) {
     this.textContent = i.call(this, t);
@@ -4758,7 +4713,7 @@ function textTween(value) {
   return this.tween(key, textTween(value));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/transition.js
+;// ./node_modules/d3-transition/src/transition/transition.js
 
 
 
@@ -4784,7 +4739,7 @@ function textTween(value) {
   return new Transition(groups, this._parents, name, id1);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/end.js
+;// ./node_modules/d3-transition/src/transition/end.js
 
 
 /* harmony default export */ function end() {
@@ -4815,7 +4770,7 @@ function textTween(value) {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/transition/index.js
+;// ./node_modules/d3-transition/src/transition/index.js
 
 
 
@@ -4890,7 +4845,7 @@ Transition.prototype = transition_transition.prototype = {
   [Symbol.iterator]: selection_prototype[Symbol.iterator]
 };
 
-;// CONCATENATED MODULE: ./node_modules/d3-ease/src/cubic.js
+;// ./node_modules/d3-ease/src/cubic.js
 function cubicIn(t) {
   return t * t * t;
 }
@@ -4903,7 +4858,7 @@ function cubicInOut(t) {
   return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/selection/transition.js
+;// ./node_modules/d3-transition/src/selection/transition.js
 
 
 
@@ -4947,7 +4902,7 @@ function inherit(node, id) {
   return new Transition(groups, this._parents, name, id);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/selection/index.js
+;// ./node_modules/d3-transition/src/selection/index.js
 
 
 
@@ -4955,13 +4910,13 @@ function inherit(node, id) {
 src_selection.prototype.interrupt = selection_interrupt;
 src_selection.prototype.transition = selection_transition;
 
-;// CONCATENATED MODULE: ./node_modules/d3-transition/src/index.js
+;// ./node_modules/d3-transition/src/index.js
 
 
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-brush/src/brush.js
+;// ./node_modules/d3-brush/src/brush.js
 
 
 
@@ -5584,13 +5539,10 @@ function brush_brush(dim) {
   return brush;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-brush/src/index.js
+;// ./node_modules/d3-brush/src/index.js
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-ease/src/index.js
-
-
-
+;// ./node_modules/d3-ease/src/index.js
 
 
 
@@ -5608,10 +5560,13 @@ function brush_brush(dim) {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/identity.js
+
+
+
+;// ./node_modules/d3-geo/src/identity.js
 /* harmony default export */ const d3_geo_src_identity = (x => x);
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/stream.js
+;// ./node_modules/d3-geo/src/stream.js
 function streamGeometry(geometry, stream) {
   if (geometry && streamGeometryType.hasOwnProperty(geometry.type)) {
     streamGeometryType[geometry.type](geometry, stream);
@@ -5682,7 +5637,7 @@ function streamPolygon(coordinates, stream) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/fsum.js
+;// ./node_modules/d3-array/src/fsum.js
 // https://github.com/python/cpython/blob/a74eea238f5baba15797e2e8b570d153bc8690a7/Modules/mathmodule.c#L1423
 class Adder {
   constructor() {
@@ -5753,7 +5708,7 @@ function fcumsum(values, valueof) {
   );
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/math.js
+;// ./node_modules/d3-geo/src/math.js
 var math_epsilon = 1e-6;
 var epsilon2 = 1e-12;
 var pi = Math.PI;
@@ -5791,10 +5746,10 @@ function haversin(x) {
   return (x = sin(x / 2)) * x;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/noop.js
+;// ./node_modules/d3-geo/src/noop.js
 function noop_noop() {}
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/area.js
+;// ./node_modules/d3-geo/src/path/area.js
 
 
 
@@ -5846,7 +5801,7 @@ function areaRingEnd() {
 
 /* harmony default export */ const path_area = (areaStream);
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/bounds.js
+;// ./node_modules/d3-geo/src/path/bounds.js
 
 
 var bounds_x0 = Infinity,
@@ -5876,7 +5831,7 @@ function boundsPoint(x, y) {
 
 /* harmony default export */ const bounds = (boundsStream);
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/centroid.js
+;// ./node_modules/d3-geo/src/path/centroid.js
 
 
 // TODO Enforce positive area for exterior, negative area for interior?
@@ -5978,7 +5933,7 @@ function centroidPointRing(x, y) {
 
 /* harmony default export */ const centroid = (centroidStream);
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/context.js
+;// ./node_modules/d3-geo/src/path/context.js
 
 
 
@@ -6025,7 +5980,7 @@ PathContext.prototype = {
   result: noop_noop
 };
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/measure.js
+;// ./node_modules/d3-geo/src/path/measure.js
 
 
 
@@ -6072,7 +6027,7 @@ function lengthPoint(x, y) {
 
 /* harmony default export */ const measure = (lengthStream);
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/string.js
+;// ./node_modules/d3-geo/src/path/string.js
 // Simple caching for constant-radius points.
 let cacheDigits, cacheAppend, cacheRadius, cacheCircle;
 
@@ -6160,7 +6115,7 @@ function appendRound(digits) {
   return cacheAppend;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/path/index.js
+;// ./node_modules/d3-geo/src/path/index.js
 
 
 
@@ -6238,7 +6193,7 @@ function appendRound(digits) {
   return path.projection(projection).digits(digits).context(context);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/buffer.js
+;// ./node_modules/d3-geo/src/clip/buffer.js
 
 
 /* harmony default export */ function buffer() {
@@ -6264,14 +6219,14 @@ function appendRound(digits) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/pointEqual.js
+;// ./node_modules/d3-geo/src/pointEqual.js
 
 
 /* harmony default export */ function pointEqual(a, b) {
   return math_abs(a[0] - b[0]) < math_epsilon && math_abs(a[1] - b[1]) < math_epsilon;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/rejoin.js
+;// ./node_modules/d3-geo/src/clip/rejoin.js
 
 
 
@@ -6376,7 +6331,7 @@ function rejoin_link(array) {
   b.p = a;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/cartesian.js
+;// ./node_modules/d3-geo/src/cartesian.js
 
 
 function spherical(cartesian) {
@@ -6411,7 +6366,7 @@ function cartesianNormalizeInPlace(d) {
   d[0] /= l, d[1] /= l, d[2] /= l;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/polygonContains.js
+;// ./node_modules/d3-geo/src/polygonContains.js
 
 
 
@@ -6487,7 +6442,7 @@ function longitude(point) {
   return (angle < -math_epsilon || angle < math_epsilon && sum < -epsilon2) ^ (winding & 1);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/merge.js
+;// ./node_modules/d3-array/src/merge.js
 function* flatten(arrays) {
   for (const array of arrays) {
     yield* array;
@@ -6498,7 +6453,7 @@ function merge_merge(arrays) {
   return Array.from(flatten(arrays));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/index.js
+;// ./node_modules/d3-geo/src/clip/index.js
 
 
 
@@ -6631,7 +6586,7 @@ function compareIntersection(a, b) {
        - ((b = b.x)[0] < 0 ? b[1] - halfPi - math_epsilon : halfPi - b[1]);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/antimeridian.js
+;// ./node_modules/d3-geo/src/clip/antimeridian.js
 
 
 
@@ -6725,7 +6680,7 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/circle.js
+;// ./node_modules/d3-geo/src/circle.js
 
 
 
@@ -6799,7 +6754,7 @@ function circleRadius(cosRadius, point) {
   return circle;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/circle.js
+;// ./node_modules/d3-geo/src/clip/circle.js
 
 
 
@@ -6978,7 +6933,7 @@ function circleRadius(cosRadius, point) {
   return clip(visible, clipLine, interpolate, smallRadius ? [0, -radius] : [-pi, radius - pi]);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/line.js
+;// ./node_modules/d3-geo/src/clip/line.js
 /* harmony default export */ function line(a, b, x0, y0, x1, y1) {
   var ax = a[0],
       ay = a[1],
@@ -7039,7 +6994,7 @@ function circleRadius(cosRadius, point) {
   return true;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/clip/rectangle.js
+;// ./node_modules/d3-geo/src/clip/rectangle.js
 
 
 
@@ -7209,7 +7164,7 @@ function clipRectangle(x0, y0, x1, y1) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/compose.js
+;// ./node_modules/d3-geo/src/compose.js
 /* harmony default export */ function compose(a, b) {
 
   function compose(x, y) {
@@ -7223,7 +7178,7 @@ function clipRectangle(x0, y0, x1, y1) {
   return compose;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/rotation.js
+;// ./node_modules/d3-geo/src/rotation.js
 
 
 
@@ -7304,7 +7259,7 @@ function rotationPhiGamma(deltaPhi, deltaGamma) {
   return forward;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/transform.js
+;// ./node_modules/d3-geo/src/transform.js
 /* harmony default export */ function transform(methods) {
   return {
     stream: transform_transformer(methods)
@@ -7332,7 +7287,7 @@ TransformStream.prototype = {
   polygonEnd: function() { this.stream.polygonEnd(); }
 };
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/fit.js
+;// ./node_modules/d3-geo/src/projection/fit.js
 
 
 
@@ -7381,7 +7336,7 @@ function fitHeight(projection, height, object) {
   }, object);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/resample.js
+;// ./node_modules/d3-geo/src/projection/resample.js
 
 
 
@@ -7485,7 +7440,7 @@ function resample_resample(project, delta2) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/index.js
+;// ./node_modules/d3-geo/src/projection/index.js
 
 
 
@@ -7664,7 +7619,7 @@ function projectionMutator(projectAt) {
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/conic.js
+;// ./node_modules/d3-geo/src/projection/conic.js
 
 
 
@@ -7681,7 +7636,7 @@ function conicProjection(projectAt) {
   return p;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/cylindricalEqualArea.js
+;// ./node_modules/d3-geo/src/projection/cylindricalEqualArea.js
 
 
 function cylindricalEqualAreaRaw(phi0) {
@@ -7698,7 +7653,7 @@ function cylindricalEqualAreaRaw(phi0) {
   return forward;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/conicEqualArea.js
+;// ./node_modules/d3-geo/src/projection/conicEqualArea.js
 
 
 
@@ -7733,7 +7688,7 @@ function conicEqualAreaRaw(y0, y1) {
       .center([0, 33.6442]);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/albers.js
+;// ./node_modules/d3-geo/src/projection/albers.js
 
 
 /* harmony default export */ function albers() {
@@ -7745,7 +7700,7 @@ function conicEqualAreaRaw(y0, y1) {
       .center([-0.6, 38.7]);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/projection/albersUsa.js
+;// ./node_modules/d3-geo/src/projection/albersUsa.js
 
 
 
@@ -7858,7 +7813,7 @@ function multiplex(streams) {
   return albersUsa.scale(1070);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-geo/src/index.js
+;// ./node_modules/d3-geo/src/index.js
 
 
 
@@ -7894,7 +7849,7 @@ function multiplex(streams) {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-array/src/range.js
+;// ./node_modules/d3-array/src/range.js
 function range_range(start, stop, step) {
   start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
@@ -7909,7 +7864,7 @@ function range_range(start, stop, step) {
   return range;
 }
 
-;// CONCATENATED MODULE: ./node_modules/internmap/src/index.js
+;// ./node_modules/internmap/src/index.js
 class InternMap extends Map {
   constructor(entries, key = keyof) {
     super();
@@ -7972,7 +7927,7 @@ function keyof(value) {
   return value !== null && typeof value === "object" ? value.valueOf() : value;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/ordinal.js
+;// ./node_modules/d3-scale/src/ordinal.js
 
 
 
@@ -8020,7 +7975,7 @@ function ordinal() {
   return scale;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/band.js
+;// ./node_modules/d3-scale/src/band.js
 
 
 
@@ -8123,7 +8078,7 @@ function point() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-scale/src/index.js
+;// ./node_modules/d3-scale/src/index.js
 
 
 
@@ -8158,7 +8113,7 @@ function point() {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/select.js
+;// ./node_modules/d3-selection/src/select.js
 
 
 /* harmony default export */ function src_select(selector) {
@@ -8167,7 +8122,7 @@ function point() {
       : new Selection([[selector]], root);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/create.js
+;// ./node_modules/d3-selection/src/create.js
 
 
 
@@ -8175,7 +8130,7 @@ function point() {
   return src_select(creator(name).call(document.documentElement));
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/selectAll.js
+;// ./node_modules/d3-selection/src/selectAll.js
 
 
 
@@ -8185,7 +8140,7 @@ function point() {
       : new Selection([array_array(selector)], root);
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/index.js
+;// ./node_modules/d3-selection/src/index.js
 
 
 
@@ -8202,7 +8157,641 @@ function point() {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3-drag/src/noevent.js
+;// ./node_modules/d3-shape/src/constant.js
+/* harmony default export */ function d3_shape_src_constant(x) {
+  return function constant() {
+    return x;
+  };
+}
+
+;// ./node_modules/d3-shape/src/math.js
+const src_math_abs = Math.abs;
+const math_atan2 = Math.atan2;
+const math_cos = Math.cos;
+const math_max = Math.max;
+const math_min = Math.min;
+const math_sin = Math.sin;
+const math_sqrt = Math.sqrt;
+
+const src_math_epsilon = 1e-12;
+const math_pi = Math.PI;
+const math_halfPi = math_pi / 2;
+const math_tau = 2 * math_pi;
+
+function math_acos(x) {
+  return x > 1 ? 0 : x < -1 ? math_pi : Math.acos(x);
+}
+
+function math_asin(x) {
+  return x >= 1 ? math_halfPi : x <= -1 ? -math_halfPi : Math.asin(x);
+}
+
+;// ./node_modules/d3-path/src/path.js
+const path_pi = Math.PI,
+    path_tau = 2 * path_pi,
+    path_epsilon = 1e-6,
+    tauEpsilon = path_tau - path_epsilon;
+
+function path_append(strings) {
+  this._ += strings[0];
+  for (let i = 1, n = strings.length; i < n; ++i) {
+    this._ += arguments[i] + strings[i];
+  }
+}
+
+function path_appendRound(digits) {
+  let d = Math.floor(digits);
+  if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
+  if (d > 15) return path_append;
+  const k = 10 ** d;
+  return function(strings) {
+    this._ += strings[0];
+    for (let i = 1, n = strings.length; i < n; ++i) {
+      this._ += Math.round(arguments[i] * k) / k + strings[i];
+    }
+  };
+}
+
+class Path {
+  constructor(digits) {
+    this._x0 = this._y0 = // start of current subpath
+    this._x1 = this._y1 = null; // end of current subpath
+    this._ = "";
+    this._append = digits == null ? path_append : path_appendRound(digits);
+  }
+  moveTo(x, y) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
+  }
+  closePath() {
+    if (this._x1 !== null) {
+      this._x1 = this._x0, this._y1 = this._y0;
+      this._append`Z`;
+    }
+  }
+  lineTo(x, y) {
+    this._append`L${this._x1 = +x},${this._y1 = +y}`;
+  }
+  quadraticCurveTo(x1, y1, x, y) {
+    this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  bezierCurveTo(x1, y1, x2, y2, x, y) {
+    this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
+  }
+  arcTo(x1, y1, x2, y2, r) {
+    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let x0 = this._x1,
+        y0 = this._y1,
+        x21 = x2 - x1,
+        y21 = y2 - y1,
+        x01 = x0 - x1,
+        y01 = y0 - y1,
+        l01_2 = x01 * x01 + y01 * y01;
+
+    // Is this path empty? Move to (x1,y1).
+    if (this._x1 === null) {
+      this._append`M${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    else if (!(l01_2 > path_epsilon));
+
+    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+    // Equivalently, is (x1,y1) coincident with (x2,y2)?
+    // Or, is the radius zero? Line to (x1,y1).
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > path_epsilon) || !r) {
+      this._append`L${this._x1 = x1},${this._y1 = y1}`;
+    }
+
+    // Otherwise, draw an arc!
+    else {
+      let x20 = x2 - x0,
+          y20 = y2 - y0,
+          l21_2 = x21 * x21 + y21 * y21,
+          l20_2 = x20 * x20 + y20 * y20,
+          l21 = Math.sqrt(l21_2),
+          l01 = Math.sqrt(l01_2),
+          l = r * Math.tan((path_pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+          t01 = l / l01,
+          t21 = l / l21;
+
+      // If the start tangent is not coincident with (x0,y0), line to.
+      if (Math.abs(t01 - 1) > path_epsilon) {
+        this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
+      }
+
+      this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
+    }
+  }
+  arc(x, y, r, a0, a1, ccw) {
+    x = +x, y = +y, r = +r, ccw = !!ccw;
+
+    // Is the radius negative? Error.
+    if (r < 0) throw new Error(`negative radius: ${r}`);
+
+    let dx = r * Math.cos(a0),
+        dy = r * Math.sin(a0),
+        x0 = x + dx,
+        y0 = y + dy,
+        cw = 1 ^ ccw,
+        da = ccw ? a0 - a1 : a1 - a0;
+
+    // Is this path empty? Move to (x0,y0).
+    if (this._x1 === null) {
+      this._append`M${x0},${y0}`;
+    }
+
+    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+    else if (Math.abs(this._x1 - x0) > path_epsilon || Math.abs(this._y1 - y0) > path_epsilon) {
+      this._append`L${x0},${y0}`;
+    }
+
+    // Is this arc empty? We’re done.
+    if (!r) return;
+
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) da = da % path_tau + path_tau;
+
+    // Is this a complete circle? Draw two arcs to complete the circle.
+    if (da > tauEpsilon) {
+      this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
+    }
+
+    // Is this arc non-empty? Draw an arc!
+    else if (da > path_epsilon) {
+      this._append`A${r},${r},0,${+(da >= path_pi)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
+    }
+  }
+  rect(x, y, w, h) {
+    this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
+  }
+  toString() {
+    return this._;
+  }
+}
+
+function path_path() {
+  return new Path;
+}
+
+// Allow instanceof d3.path
+path_path.prototype = Path.prototype;
+
+function pathRound(digits = 3) {
+  return new Path(+digits);
+}
+
+;// ./node_modules/d3-shape/src/path.js
+
+
+function withPath(shape) {
+  let digits = 3;
+
+  shape.digits = function(_) {
+    if (!arguments.length) return digits;
+    if (_ == null) {
+      digits = null;
+    } else {
+      const d = Math.floor(_);
+      if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
+      digits = d;
+    }
+    return shape;
+  };
+
+  return () => new Path(digits);
+}
+
+;// ./node_modules/d3-shape/src/arc.js
+
+
+
+
+function arcInnerRadius(d) {
+  return d.innerRadius;
+}
+
+function arcOuterRadius(d) {
+  return d.outerRadius;
+}
+
+function arcStartAngle(d) {
+  return d.startAngle;
+}
+
+function arcEndAngle(d) {
+  return d.endAngle;
+}
+
+function arcPadAngle(d) {
+  return d && d.padAngle; // Note: optional!
+}
+
+function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
+  var x10 = x1 - x0, y10 = y1 - y0,
+      x32 = x3 - x2, y32 = y3 - y2,
+      t = y32 * x10 - x32 * y10;
+  if (t * t < src_math_epsilon) return;
+  t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / t;
+  return [x0 + t * x10, y0 + t * y10];
+}
+
+// Compute perpendicular offset line of length rc.
+// http://mathworld.wolfram.com/Circle-LineIntersection.html
+function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
+  var x01 = x0 - x1,
+      y01 = y0 - y1,
+      lo = (cw ? rc : -rc) / math_sqrt(x01 * x01 + y01 * y01),
+      ox = lo * y01,
+      oy = -lo * x01,
+      x11 = x0 + ox,
+      y11 = y0 + oy,
+      x10 = x1 + ox,
+      y10 = y1 + oy,
+      x00 = (x11 + x10) / 2,
+      y00 = (y11 + y10) / 2,
+      dx = x10 - x11,
+      dy = y10 - y11,
+      d2 = dx * dx + dy * dy,
+      r = r1 - rc,
+      D = x11 * y10 - x10 * y11,
+      d = (dy < 0 ? -1 : 1) * math_sqrt(math_max(0, r * r * d2 - D * D)),
+      cx0 = (D * dy - dx * d) / d2,
+      cy0 = (-D * dx - dy * d) / d2,
+      cx1 = (D * dy + dx * d) / d2,
+      cy1 = (-D * dx + dy * d) / d2,
+      dx0 = cx0 - x00,
+      dy0 = cy0 - y00,
+      dx1 = cx1 - x00,
+      dy1 = cy1 - y00;
+
+  // Pick the closer of the two intersection points.
+  // TODO Is there a faster way to determine which intersection to use?
+  if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) cx0 = cx1, cy0 = cy1;
+
+  return {
+    cx: cx0,
+    cy: cy0,
+    x01: -ox,
+    y01: -oy,
+    x11: cx0 * (r1 / r - 1),
+    y11: cy0 * (r1 / r - 1)
+  };
+}
+
+/* harmony default export */ function arc() {
+  var innerRadius = arcInnerRadius,
+      outerRadius = arcOuterRadius,
+      cornerRadius = d3_shape_src_constant(0),
+      padRadius = null,
+      startAngle = arcStartAngle,
+      endAngle = arcEndAngle,
+      padAngle = arcPadAngle,
+      context = null,
+      path = withPath(arc);
+
+  function arc() {
+    var buffer,
+        r,
+        r0 = +innerRadius.apply(this, arguments),
+        r1 = +outerRadius.apply(this, arguments),
+        a0 = startAngle.apply(this, arguments) - math_halfPi,
+        a1 = endAngle.apply(this, arguments) - math_halfPi,
+        da = src_math_abs(a1 - a0),
+        cw = a1 > a0;
+
+    if (!context) context = buffer = path();
+
+    // Ensure that the outer radius is always larger than the inner radius.
+    if (r1 < r0) r = r1, r1 = r0, r0 = r;
+
+    // Is it a point?
+    if (!(r1 > src_math_epsilon)) context.moveTo(0, 0);
+
+    // Or is it a circle or annulus?
+    else if (da > math_tau - src_math_epsilon) {
+      context.moveTo(r1 * math_cos(a0), r1 * math_sin(a0));
+      context.arc(0, 0, r1, a0, a1, !cw);
+      if (r0 > src_math_epsilon) {
+        context.moveTo(r0 * math_cos(a1), r0 * math_sin(a1));
+        context.arc(0, 0, r0, a1, a0, cw);
+      }
+    }
+
+    // Or is it a circular or annular sector?
+    else {
+      var a01 = a0,
+          a11 = a1,
+          a00 = a0,
+          a10 = a1,
+          da0 = da,
+          da1 = da,
+          ap = padAngle.apply(this, arguments) / 2,
+          rp = (ap > src_math_epsilon) && (padRadius ? +padRadius.apply(this, arguments) : math_sqrt(r0 * r0 + r1 * r1)),
+          rc = math_min(src_math_abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
+          rc0 = rc,
+          rc1 = rc,
+          t0,
+          t1;
+
+      // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
+      if (rp > src_math_epsilon) {
+        var p0 = math_asin(rp / r0 * math_sin(ap)),
+            p1 = math_asin(rp / r1 * math_sin(ap));
+        if ((da0 -= p0 * 2) > src_math_epsilon) p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0;
+        else da0 = 0, a00 = a10 = (a0 + a1) / 2;
+        if ((da1 -= p1 * 2) > src_math_epsilon) p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1;
+        else da1 = 0, a01 = a11 = (a0 + a1) / 2;
+      }
+
+      var x01 = r1 * math_cos(a01),
+          y01 = r1 * math_sin(a01),
+          x10 = r0 * math_cos(a10),
+          y10 = r0 * math_sin(a10);
+
+      // Apply rounded corners?
+      if (rc > src_math_epsilon) {
+        var x11 = r1 * math_cos(a11),
+            y11 = r1 * math_sin(a11),
+            x00 = r0 * math_cos(a00),
+            y00 = r0 * math_sin(a00),
+            oc;
+
+        // Restrict the corner radius according to the sector angle. If this
+        // intersection fails, it’s probably because the arc is too small, so
+        // disable the corner radius entirely.
+        if (da < math_pi) {
+          if (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10)) {
+            var ax = x01 - oc[0],
+                ay = y01 - oc[1],
+                bx = x11 - oc[0],
+                by = y11 - oc[1],
+                kc = 1 / math_sin(math_acos((ax * bx + ay * by) / (math_sqrt(ax * ax + ay * ay) * math_sqrt(bx * bx + by * by))) / 2),
+                lc = math_sqrt(oc[0] * oc[0] + oc[1] * oc[1]);
+            rc0 = math_min(rc, (r0 - lc) / (kc - 1));
+            rc1 = math_min(rc, (r1 - lc) / (kc + 1));
+          } else {
+            rc0 = rc1 = 0;
+          }
+        }
+      }
+
+      // Is the sector collapsed to a line?
+      if (!(da1 > src_math_epsilon)) context.moveTo(x01, y01);
+
+      // Does the sector’s outer ring have rounded corners?
+      else if (rc1 > src_math_epsilon) {
+        t0 = cornerTangents(x00, y00, x01, y01, r1, rc1, cw);
+        t1 = cornerTangents(x11, y11, x10, y10, r1, rc1, cw);
+
+        context.moveTo(t0.cx + t0.x01, t0.cy + t0.y01);
+
+        // Have the corners merged?
+        if (rc1 < rc) context.arc(t0.cx, t0.cy, rc1, math_atan2(t0.y01, t0.x01), math_atan2(t1.y01, t1.x01), !cw);
+
+        // Otherwise, draw the two corners and the ring.
+        else {
+          context.arc(t0.cx, t0.cy, rc1, math_atan2(t0.y01, t0.x01), math_atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r1, math_atan2(t0.cy + t0.y11, t0.cx + t0.x11), math_atan2(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
+          context.arc(t1.cx, t1.cy, rc1, math_atan2(t1.y11, t1.x11), math_atan2(t1.y01, t1.x01), !cw);
+        }
+      }
+
+      // Or is the outer ring just a circular arc?
+      else context.moveTo(x01, y01), context.arc(0, 0, r1, a01, a11, !cw);
+
+      // Is there no inner ring, and it’s a circular sector?
+      // Or perhaps it’s an annular sector collapsed due to padding?
+      if (!(r0 > src_math_epsilon) || !(da0 > src_math_epsilon)) context.lineTo(x10, y10);
+
+      // Does the sector’s inner ring (or point) have rounded corners?
+      else if (rc0 > src_math_epsilon) {
+        t0 = cornerTangents(x10, y10, x11, y11, r0, -rc0, cw);
+        t1 = cornerTangents(x01, y01, x00, y00, r0, -rc0, cw);
+
+        context.lineTo(t0.cx + t0.x01, t0.cy + t0.y01);
+
+        // Have the corners merged?
+        if (rc0 < rc) context.arc(t0.cx, t0.cy, rc0, math_atan2(t0.y01, t0.x01), math_atan2(t1.y01, t1.x01), !cw);
+
+        // Otherwise, draw the two corners and the ring.
+        else {
+          context.arc(t0.cx, t0.cy, rc0, math_atan2(t0.y01, t0.x01), math_atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r0, math_atan2(t0.cy + t0.y11, t0.cx + t0.x11), math_atan2(t1.cy + t1.y11, t1.cx + t1.x11), cw);
+          context.arc(t1.cx, t1.cy, rc0, math_atan2(t1.y11, t1.x11), math_atan2(t1.y01, t1.x01), !cw);
+        }
+      }
+
+      // Or is the inner ring just a circular arc?
+      else context.arc(0, 0, r0, a10, a00, cw);
+    }
+
+    context.closePath();
+
+    if (buffer) return context = null, buffer + "" || null;
+  }
+
+  arc.centroid = function() {
+    var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
+        a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - math_pi / 2;
+    return [math_cos(a) * r, math_sin(a) * r];
+  };
+
+  arc.innerRadius = function(_) {
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : innerRadius;
+  };
+
+  arc.outerRadius = function(_) {
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : outerRadius;
+  };
+
+  arc.cornerRadius = function(_) {
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : cornerRadius;
+  };
+
+  arc.padRadius = function(_) {
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : padRadius;
+  };
+
+  arc.startAngle = function(_) {
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : startAngle;
+  };
+
+  arc.endAngle = function(_) {
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : endAngle;
+  };
+
+  arc.padAngle = function(_) {
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), arc) : padAngle;
+  };
+
+  arc.context = function(_) {
+    return arguments.length ? ((context = _ == null ? null : _), arc) : context;
+  };
+
+  return arc;
+}
+
+;// ./node_modules/d3-shape/src/array.js
+var slice = Array.prototype.slice;
+
+/* harmony default export */ function src_array(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
+}
+
+;// ./node_modules/d3-shape/src/descending.js
+/* harmony default export */ function src_descending(a, b) {
+  return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
+}
+
+;// ./node_modules/d3-shape/src/identity.js
+/* harmony default export */ function d3_shape_src_identity(d) {
+  return d;
+}
+
+;// ./node_modules/d3-shape/src/pie.js
+
+
+
+
+
+
+/* harmony default export */ function pie() {
+  var value = d3_shape_src_identity,
+      sortValues = src_descending,
+      sort = null,
+      startAngle = d3_shape_src_constant(0),
+      endAngle = d3_shape_src_constant(math_tau),
+      padAngle = d3_shape_src_constant(0);
+
+  function pie(data) {
+    var i,
+        n = (data = src_array(data)).length,
+        j,
+        k,
+        sum = 0,
+        index = new Array(n),
+        arcs = new Array(n),
+        a0 = +startAngle.apply(this, arguments),
+        da = Math.min(math_tau, Math.max(-math_tau, endAngle.apply(this, arguments) - a0)),
+        a1,
+        p = Math.min(Math.abs(da) / n, padAngle.apply(this, arguments)),
+        pa = p * (da < 0 ? -1 : 1),
+        v;
+
+    for (i = 0; i < n; ++i) {
+      if ((v = arcs[index[i] = i] = +value(data[i], i, data)) > 0) {
+        sum += v;
+      }
+    }
+
+    // Optionally sort the arcs by previously-computed values or by data.
+    if (sortValues != null) index.sort(function(i, j) { return sortValues(arcs[i], arcs[j]); });
+    else if (sort != null) index.sort(function(i, j) { return sort(data[i], data[j]); });
+
+    // Compute the arcs! They are stored in the original data's order.
+    for (i = 0, k = sum ? (da - n * pa) / sum : 0; i < n; ++i, a0 = a1) {
+      j = index[i], v = arcs[j], a1 = a0 + (v > 0 ? v * k : 0) + pa, arcs[j] = {
+        data: data[j],
+        index: i,
+        value: v,
+        startAngle: a0,
+        endAngle: a1,
+        padAngle: p
+      };
+    }
+
+    return arcs;
+  }
+
+  pie.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : d3_shape_src_constant(+_), pie) : value;
+  };
+
+  pie.sortValues = function(_) {
+    return arguments.length ? (sortValues = _, sort = null, pie) : sortValues;
+  };
+
+  pie.sort = function(_) {
+    return arguments.length ? (sort = _, sortValues = null, pie) : sort;
+  };
+
+  pie.startAngle = function(_) {
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), pie) : startAngle;
+  };
+
+  pie.endAngle = function(_) {
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), pie) : endAngle;
+  };
+
+  pie.padAngle = function(_) {
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : d3_shape_src_constant(+_), pie) : padAngle;
+  };
+
+  return pie;
+}
+
+;// ./node_modules/d3-shape/src/index.js
+
+
+
+
+ // Note: radialArea is deprecated!
+ // Note: radialLine is deprecated!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;// ./node_modules/d3-drag/src/noevent.js
 // These are typically used in conjunction with noevent to ensure that we can
 // preventDefault on the event.
 const nonpassive = {passive: false};
@@ -8217,7 +8806,7 @@ function noevent_nopropagation(event) {
   event.stopImmediatePropagation();
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-drag/src/nodrag.js
+;// ./node_modules/d3-drag/src/nodrag.js
 
 
 
@@ -8247,7 +8836,7 @@ function yesdrag(view, noclick) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-interpolate/src/zoom.js
+;// ./node_modules/d3-interpolate/src/zoom.js
 var zoom_epsilon2 = 1e-12;
 
 function cosh(x) {
@@ -8320,14 +8909,14 @@ function tanh(x) {
   return zoom;
 })(Math.SQRT2, 2, 4));
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/sourceEvent.js
+;// ./node_modules/d3-selection/src/sourceEvent.js
 /* harmony default export */ function sourceEvent(event) {
   let sourceEvent;
   while (sourceEvent = event.sourceEvent) event = sourceEvent;
   return event;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-selection/src/pointer.js
+;// ./node_modules/d3-selection/src/pointer.js
 
 
 /* harmony default export */ function src_pointer(event, node) {
@@ -8349,10 +8938,10 @@ function tanh(x) {
   return [event.pageX, event.pageY];
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/constant.js
+;// ./node_modules/d3-zoom/src/constant.js
 /* harmony default export */ const d3_zoom_src_constant = (x => () => x);
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/event.js
+;// ./node_modules/d3-zoom/src/event.js
 function ZoomEvent(type, {
   sourceEvent,
   target,
@@ -8368,7 +8957,7 @@ function ZoomEvent(type, {
   });
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/transform.js
+;// ./node_modules/d3-zoom/src/transform.js
 function Transform(k, x, y) {
   this.k = k;
   this.x = x;
@@ -8421,7 +9010,7 @@ function transform_transform(node) {
   return node.__zoom;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/noevent.js
+;// ./node_modules/d3-zoom/src/noevent.js
 function src_noevent_nopropagation(event) {
   event.stopImmediatePropagation();
 }
@@ -8431,7 +9020,7 @@ function src_noevent_nopropagation(event) {
   event.stopImmediatePropagation();
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/zoom.js
+;// ./node_modules/d3-zoom/src/zoom.js
 
 
 
@@ -8880,15 +9469,11 @@ function defaultConstrain(transform, extent, translateExtent) {
   return zoom;
 }
 
-;// CONCATENATED MODULE: ./node_modules/d3-zoom/src/index.js
+;// ./node_modules/d3-zoom/src/index.js
 
 
 
-;// CONCATENATED MODULE: ./node_modules/d3/src/index.js
-
-
-
-
+;// ./node_modules/d3/src/index.js
 
 
 
@@ -8916,9 +9501,15 @@ function defaultConstrain(transform, extent, translateExtent) {
 
 
 
-;// CONCATENATED MODULE: ./src/index.js
+
+
+
+
+;// ./src/index.js
 /* eslint-disable import/prefer-default-export */
 
+
+// For more info on discontinuous scale: https://www.npmjs.com/package/@d3fc/d3fc-discontinuous-scale#discontinuityRange
 
 
 const _format = format;
@@ -8939,23 +9530,7 @@ const _discontinuityRange = range;
 const _easeCubicInOut = cubicInOut;
 const _sort = sort;
 const _max = max;
+const _arc = arc;
+const _pie = pie;
 
-var __webpack_exports__axisBottom = __webpack_exports__.l7;
-var __webpack_exports__axisLeft = __webpack_exports__.V4;
-var __webpack_exports__create = __webpack_exports__.vt;
-var __webpack_exports__discontinuityRange = __webpack_exports__.Od;
-var __webpack_exports__easeCubicInOut = __webpack_exports__.oR;
-var __webpack_exports__format = __webpack_exports__.GP;
-var __webpack_exports__geoAlbersUsa = __webpack_exports__.Ut;
-var __webpack_exports__geoPath = __webpack_exports__.zF;
-var __webpack_exports__max = __webpack_exports__.T9;
-var __webpack_exports__scaleBand = __webpack_exports__.WH;
-var __webpack_exports__scaleDiscontinuous = __webpack_exports__.op;
-var __webpack_exports__scaleLinear = __webpack_exports__.m4;
-var __webpack_exports__scaleOrdinal = __webpack_exports__.UM;
-var __webpack_exports__select = __webpack_exports__.Lt;
-var __webpack_exports__selectAll = __webpack_exports__.Ub;
-var __webpack_exports__sort = __webpack_exports__.di;
-var __webpack_exports__zoom = __webpack_exports__.s_;
-var __webpack_exports__zoomIdentity = __webpack_exports__.GS;
-export { __webpack_exports__axisBottom as axisBottom, __webpack_exports__axisLeft as axisLeft, __webpack_exports__create as create, __webpack_exports__discontinuityRange as discontinuityRange, __webpack_exports__easeCubicInOut as easeCubicInOut, __webpack_exports__format as format, __webpack_exports__geoAlbersUsa as geoAlbersUsa, __webpack_exports__geoPath as geoPath, __webpack_exports__max as max, __webpack_exports__scaleBand as scaleBand, __webpack_exports__scaleDiscontinuous as scaleDiscontinuous, __webpack_exports__scaleLinear as scaleLinear, __webpack_exports__scaleOrdinal as scaleOrdinal, __webpack_exports__select as select, __webpack_exports__selectAll as selectAll, __webpack_exports__sort as sort, __webpack_exports__zoom as zoom, __webpack_exports__zoomIdentity as zoomIdentity };
+export { _arc as arc, _axisBottom as axisBottom, _axisLeft as axisLeft, _create as create, _discontinuityRange as discontinuityRange, _easeCubicInOut as easeCubicInOut, _format as format, _geoAlbersUsa as geoAlbersUsa, _geoPath as geoPath, _max as max, _pie as pie, _scaleBand as scaleBand, _scaleDiscontinuous as scaleDiscontinuous, _scaleLinear as scaleLinear, _scaleOrdinal as scaleOrdinal, _select as select, _selectAll as selectAll, _sort as sort, _zoom as zoom, _zoomIdentity as zoomIdentity };

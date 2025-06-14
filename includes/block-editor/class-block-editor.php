@@ -47,23 +47,29 @@ class Block_Editor {
 	 * Enforce the block categories.
 	 *
 	 * @hook block_categories_all
-	 * @param array $block_categories The block categories.
-	 * @param array $block_editor_context The block editor context.
+	 * @param array                   $block_categories The block categories.
+	 * @param WP_Block_Editor_Context $block_editor_context The block editor context.
 	 * @return array
 	 */
 	public function enforce_block_categories( $block_categories, $block_editor_context ) {
 		$post_type = get_post_type( $block_editor_context->post );
-		
+
 		// Newsletter Glue is spilling over into other post types. We need to filter it out.
 		if ( 'newsletterglue' !== $post_type ) {
-			$updated = array_filter(
+			return array_filter(
 				$block_categories,
-				function ( $category ) {
-					return $category['slug'] !== 'newsletterglue-blocks' && $category['slug'] !== 'newsletterglue-legacy';
+				function ( $category_slug ) {
+					return ! in_array(
+						$category_slug,
+						array(
+							'newsletterglue-blocks',
+							'newsletterglue-legacy',
+						)
+					);
 				}
 			);
-			return $updated;
 		}
+
 		return $block_categories;
 	}
 
