@@ -325,7 +325,8 @@ class Publication_Listing {
 	 */
 	public function hook_pub_listing_args_into__wp_query( $query ) {
 		if ( true === $query->get( 'isPubListingQuery' ) ) {
-			$args = self::get_filtered_query_args( array(), $query );
+			$query_args = $query->query_vars;
+			$args       = self::get_filtered_query_args( $query_args, $query );
 			// loop through the filtered $args and set the args on the query.
 			foreach ( $args as $key => $value ) {
 				$query->set( $key, $value );
