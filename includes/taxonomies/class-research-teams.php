@@ -162,14 +162,18 @@ class Research_Teams extends Taxonomies {
 					$new_rules[ $term_name . '/fact-sheet/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'quiz' === $post_type ) {
 					// Add /quiz rules.
-					$new_rules[ $term_name . '/quiz/([^/]+)/?$' ] = 'index.php?post_type=quiz&name=$matches[1]';
-					// Add /results rules.
-					$new_rules[ $term_name . '/quiz/([^/]+)/results/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1';
+					$new_rules[ $term_name . '/quiz/([^/]+)/?$' ] = 'index.php?quiz=$matches[1]';
 					// A new, cacheable, results archetype rule.
-					$new_rules[ $term_name . '/quiz/([^/]+)/results/([^/]+)/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&showResults=1&archetype=$matches[2]';
+					$new_rules[ $term_name . '/quiz/([^/]+)/results/([a-zA-Z0-9-]+)/?$' ] = 'index.php?quiz=$matches[1]&quizArchetype=$matches[2]&quizShowResults=true';
+					// Add group rules.
+					$new_rules[ $term_name . '/quiz/([^/]+)/group/([a-zA-Z0-9-]+)/?$' ]                         = 'index.php?quiz=$matches[1]&quizGroup=$matches[2]';
+					$new_rules[ $term_name . '/quiz/([^/]+)/group/([a-zA-Z0-9-]+)/results/?$' ]                 = 'index.php?quiz=$matches[1]&quizGroup=$matches[2]&quizShowResults=true';
+					$new_rules[ $term_name . '/quiz/([^/]+)/group/([a-zA-Z0-9-]+)/results/([a-zA-Z0-9-]+)/?$' ] = 'index.php?quiz=$matches[1]&quizGroup=$matches[2]&quizArchetype=$matches[3]&quizShowResults=true';
+					$new_rules[ $term_name . '/quiz/([^/]+)/group/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/results/?$' ] = 'index.php?quiz=$matches[1]&quizGroup=$matches[2]&quizGroupDomain=$matches[3]&quizShowResults=true';
+
 					// Add iframe and embed rules.
-					$new_rules[ $term_name . '/quiz/([^/]+)/embed/?$' ]  = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
-					$new_rules[ $term_name . '/quiz/([^/]+)/iframe/?$' ] = 'index.php?post_type=quiz&name=$matches[1]&iframe=true';
+					$new_rules[ $term_name . '/quiz/([^/]+)/embed/?$' ]  = 'index.php?quiz=$matches[1]&iframe=true';
+					$new_rules[ $term_name . '/quiz/([^/]+)/iframe/?$' ] = 'index.php?quiz=$matches[1]&iframe=true';
 					// Add attachment rule.
 					$new_rules[ $term_name . '/quiz/[^/]+/([^/]+)/?$' ] = 'index.php?attachment=$matches[1]';
 				} elseif ( 'feature' === $post_type ) {

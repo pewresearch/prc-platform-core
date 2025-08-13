@@ -120,19 +120,46 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id       = $this->presentation->model->object_id;
 		if ( null !== $object_id && 'post' === $object_type ) {
-			$category_tags = wp_get_post_terms( $object_id, 'category' );
-			if ( ! $category_tags ) {
-				return '';
+			$is_child           = has_post_parent( $object_id );
+			$parent_id          = $is_child ? get_post_field( 'post_parent', $object_id ) : $object_id;
+			$category_tags      = wp_get_post_terms( $parent_id, 'category' );
+			$research_team_tags = wp_get_post_terms( $parent_id, 'research-team' );
+			$format_tags        = wp_get_post_terms( $parent_id, 'formats' );
+			$meta_tags          = array(
+				'post__' . $object_id,
+			);
+			if ( $is_child ) {
+				$meta_tags[] = 'parent__' . $parent_id;
 			}
 
-			$category_tags = array_map(
-				function ( $category ) {
-					return $category->name;
-				},
-				$category_tags
-			);
+			$category_tags = ( is_array( $category_tags ) && ! empty( $category_tags ) && property_exists( $category_tags[0], 'name' ) )
+				? array_map(
+					function ( $category ) {
+						return property_exists( $category, 'name' ) ? $category->name : null;
+					},
+					$category_tags
+				)
+				: array();
 
-			return implode( ',', $category_tags );
+			$research_team_tags = ( is_array( $research_team_tags ) && ! empty( $research_team_tags ) && property_exists( $research_team_tags[0], 'name' ) )
+				? array_map(
+					function ( $research_team ) {
+						return property_exists( $research_team, 'name' ) ? $research_team->name : null;
+					},
+					$research_team_tags
+				)
+				: array();
+
+			$format_tags = ( is_array( $format_tags ) && ! empty( $format_tags ) && property_exists( $format_tags[0], 'name' ) )
+				? array_map(
+					function ( $format ) {
+						return property_exists( $format, 'name' ) ? $format->name : null;
+					},
+					$format_tags
+				)
+				: array();
+
+			return implode( ',', array_merge( $category_tags, $format_tags, $research_team_tags, $meta_tags ) );
 		}
 	}
 }
@@ -158,7 +185,9 @@ class Parsely_Section extends Abstract_Indexable_Tag_Presenter {
 		$object_type     = $this->presentation->model->object_type;
 		$object_sub_type = $this->presentation->model->object_sub_type;
 		$object_id       = $this->presentation->model->object_id;
-		return null !== $object_id && 'post' === $object_type ? get_primary_term_id( 'category', $object_id ) : '';
+		$is_child        = has_post_parent( $object_id );
+		$parent_id       = $is_child ? get_post_field( 'post_parent', $object_id ) : $object_id;
+		return null !== $object_id && 'post' === $object_type ? get_primary_term_id( 'category', $parent_id ) : '';
 	}
 }
 
@@ -257,8 +286,10 @@ class Parsely_Authors extends Abstract_Indexable_Presenter {
 		if ( 'post' !== $object_type ) {
 			return false;
 		}
+		$is_child  = has_post_parent( $object_id );
+		$parent_id = $is_child ? get_post_field( 'post_parent', $object_id ) : $object_id;
 
-		$bylines_data = get_post_meta( $object_id, 'bylines' );
+		$bylines_data = get_post_meta( $parent_id, 'bylines' );
 		if ( ! empty( $bylines_data ) ) {
 			$bylines_data = array_pop( $bylines_data );
 			$to_return    = array();

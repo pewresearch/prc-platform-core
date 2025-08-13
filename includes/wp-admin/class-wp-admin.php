@@ -211,6 +211,9 @@ class WP_Admin {
 	 * @return string
 	 */
 	public function default_admin_color_scheme( $result ) {
+		if ( is_plugin_active( 'wp-admin-redesign-exploration/admin-redesign-exploration.php' ) ) {
+			return 'modern';
+		}
 		if ( 'production' === wp_get_environment_type() ) {
 			$result = 'modern';
 		} else {

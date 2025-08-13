@@ -13,7 +13,7 @@ namespace PRC\Platform\Icons;
 use WP_HTML_Get_Element;
 use WP_HTML_Tag_Processor;
 
-define( 'PRC_PLATFORM_ICONS_CACHE_VERSION', '1.0.0' );
+define( 'PRC_PLATFORM_ICONS_CACHE_VERSION', '1.0.4' );
 define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
 
 /**

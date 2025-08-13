@@ -226,44 +226,53 @@ function get_list_of( $list_of = null ) {
 	} elseif ( 'countries-and-regions' === $list_of ) {
 		// Get array of countries AND our PRC defined regions
 		$list = $country_state->getCountries();
+
+		// Filter out specific countries by code
+		$excluded_countries = array( 'AX', 'BL', 'BV', 'CC', 'CD', 'CW', 'CX', 'HM', 'IO', 'KN', 'LC', 'MF', 'PM', 'PN', 'RE', 'SJ', 'ST', 'TF', 'UM', 'VC', 'XK');
+		$list = array_diff_key( $list, array_flip( $excluded_countries ) );
+
 		$tmp  = array(
+			// array(
+			// 	'label' => 'All',
+			// 	'value' => 'all',
+			// ),
 			array(
-				'label' => 'All',
-				'value' => 'all',
+				'label' => 'Global total',
+				'value' => 'Global total',
 			),
 			array(
-				'label' => 'Global',
-				'value' => 'global',
+				'label' => 'All Asia-Pacific',
+				'value' => 'All Asia-Pacific',
 			),
 			array(
-				'label' => 'Asia-Pacific',
-				'value' => 'asia-pacific',
+				'label' => 'All Europe',
+				'value' => 'All Europe',
 			),
 			array(
-				'label' => 'Europe',
-				'value' => 'europe',
+				'label' => 'All Latin America-Caribbean',
+				'value' => 'All Latin America-Caribbean',
 			),
 			array(
-				'label' => 'Latin America-Caribbean',
-				'value' => 'latin america-caribbean',
+				'label' => 'All Middle East-North Africa',
+				'value' => 'All Middle East-North Africa',
 			),
 			array(
-				'label' => 'Middle East-North Africa',
-				'value' => 'middle east-north africa',
+				'label' => 'All North America',
+				'value' => 'All North America',
 			),
 			array(
-				'label' => 'North America',
-				'value' => 'north america',
+				'label' => 'All sub-Saharan Africa',
+				'value' => 'All sub-Saharan Africa',
 			),
 			array(
-				'label' => 'Sub-Saharan Africa',
-				'value' => 'sub-saharan africa',
+				'label' => 'Democratic Republic of the Congo',
+				'value' => 'DRC',
 			),
 		);
 		foreach ( $list as $value => $label ) {
 			$tmp[] = array(
 				'label' => $label,
-				'value' => $value,
+				'value' => $label,
 			);
 		}
 		return $tmp;
