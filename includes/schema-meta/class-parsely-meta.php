@@ -123,7 +123,7 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 			$is_child           = has_post_parent( $object_id );
 			$parent_id          = $is_child ? get_post_field( 'post_parent', $object_id ) : $object_id;
 			$category_tags      = wp_get_post_terms( $parent_id, 'category' );
-			$research_team_tags = wp_get_post_terms( $parent_id, 'research-team' );
+			$research_team_tags = wp_get_post_terms( $parent_id, 'research-teams' );
 			$format_tags        = wp_get_post_terms( $parent_id, 'formats' );
 			$meta_tags          = array(
 				'post__' . $object_id,
