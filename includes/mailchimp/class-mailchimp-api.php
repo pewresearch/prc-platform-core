@@ -11,6 +11,8 @@ namespace PRC\Platform;
 
 use WP_Error;
 use MailchimpMarketing\ApiClient;
+/** Mailchimp Marketing PHP client: https://github.com/mailchimp/mailchimp-marketing-php/
+ */
 
 /**
  * We send all mail through Mailchimp's Mandrill service and we use Mailchimp to register newsletter subscriptions. This class handles both.
@@ -119,8 +121,8 @@ class Mailchimp_API {
 			return $cached;
 		}
 
-		try {
-			$response = $this->mailchimp->lists->listSegments( $list_id );
+			try {
+			$response = $this->mailchimp->lists->listSegments( $list_id, null, null, '20' );
 			$segments = $response->segments;
 
 			$segments = array_map(
