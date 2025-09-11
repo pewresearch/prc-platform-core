@@ -13,7 +13,6 @@ namespace PRC\Platform\Icons;
 use WP_HTML_Get_Element;
 use WP_HTML_Tag_Processor;
 
-define( 'PRC_PLATFORM_ICONS_CACHE_VERSION', '1.0.4' );
 define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
 
 /**
@@ -23,6 +22,7 @@ define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
  * @param string       $icon_library The library to use. Defaults to 'solid'.
  * @param string       $icon_name The name of the icon to render.
  * @param float|string $size The size of the icon in em units.
+ *
  * @return string|void The rendered icon.
  */
 function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
@@ -57,7 +57,7 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 	}
 
 	$icon_cache_group = 'prc_icons__rendered';
-	$icon_cache_key   = md5( $icon_library . '_' . $icon_name . '_' . $size . '_' . PRC_PLATFORM_ICONS_CACHE_VERSION );
+	$icon_cache_key   = md5( $icon_library . '_' . $icon_name . '_' . $size . '_' . PRC_PLATFORM_VERSION );
 	$icon             = wp_cache_get( $icon_cache_key, $icon_cache_group );
 	if ( false !== $icon ) {
 		return $icon;
@@ -94,6 +94,7 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
  *
  * @param string $library The library to use.
  * @param string $icon The name of the icon.
+ *
  * @return string URL representing the icon.
  */
 function get_icon_as_url( $library, $icon ) {
@@ -110,6 +111,8 @@ function get_icon_as_url( $library, $icon ) {
  *
  * @param string $library The library to use.
  * @param string $icon The name of the icon.
+ * @param string $fill_color The color to use for the fill attribute. Defaults to 'currentColor'.
+ *
  * @return string The icon as an SVG.
  */
 function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
@@ -117,7 +120,7 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
 		return '<!-- Error: PRC_PLATFORM_ICONS_URL is not defined. -->';
 	}
 	$icon_cache_group = 'prc_icons__svg';
-	$icon_cache_key   = md5( $library . '_' . $icon . '_' . $fill_color . '_' . PRC_PLATFORM_ICONS_CACHE_VERSION );
+	$icon_cache_key   = md5( $library . '_' . $icon . '_' . $fill_color . '_' . PRC_PLATFORM_VERSION );
 
 	$cached = wp_cache_get( $icon_cache_key, $icon_cache_group );
 
@@ -153,6 +156,8 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
  *
  * @param string $library The library to use.
  * @param string $icon The name of the icon.
+ * @param string $fill_color The color to use for the fill attribute. Defaults to 'currentColor'.
+ *
  * @return string Encoded data URI representing the icon.
  */
 function get_icon_as_data_uri( $library, $icon, $fill_color = 'currentColor' ) {

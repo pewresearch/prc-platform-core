@@ -47,6 +47,9 @@ class Schema_Meta {
 			$this->loader->add_filter( 'wpseo_frontend_presenters', $this, 'add_parsely_meta' );
 
 			$this->loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_pipe_from_social_titles', 10, 1 );
+			$this->loader->add_filter( 'wpseo_title', $this, 'remove_numeric_prefix_from_child_post_titles', 10, 1 );
+			$this->loader->add_filter( 'wpseo_opengraph_title', $this, 'remove_numeric_prefix_from_child_post_titles', 11, 1 );
+			$this->loader->add_filter( 'wpseo_twitter_title', $this, 'remove_numeric_prefix_from_child_post_titles', 10, 1 );
 			$this->loader->add_filter( 'wpseo_twitter_creator_account', $this, 'yoast_seo_default_twitter' );
 			$this->loader->add_filter( 'wpseo_hide_version', $this, 'yoast_hide_version' );
 			$this->loader->add_filter( 'wpseo_canonical', $this, 'get_attachment_canonical_link_back_to_parent' );
@@ -135,6 +138,27 @@ class Schema_Meta {
 	 */
 	public function remove_pipe_from_social_titles( $title ) {
 		$title = str_replace( '| Pew Research Center', '', $title );
+		return $title;
+	}
+
+	/**
+	 * Remove numeric prefixes (e.g., "3. ") from SEO titles in child posts.
+	 * This affects search results, social media sharing, and link sharing metadata
+	 * but keeps prefixes for on-page display (H1 and TOC).
+	 *
+	 * @hook wpseo_title
+	 * @hook wpseo_opengraph_title
+	 * @hook wpseo_twitter_title
+	 * @param string $title The SEO/social title.
+	 * @return string The title with numeric prefixes removed for child posts.
+	 */
+	public function remove_numeric_prefix_from_child_post_titles( $title ) {
+		// Only modify titles for child posts (posts with a parent)
+		if ( is_singular() && 0 !== wp_get_post_parent_id( get_the_ID() ) ) {
+			// Remove numeric prefixes like "1. ", "2. ", "3. ", etc.
+			// Pattern matches: one or more digits, followed by a period and space
+			$title = preg_replace( '/^\d+\.\s+/', '', $title );
+		}
 		return $title;
 	}
 
