@@ -1,7 +1,21 @@
 <?php
-use DEFAULT_TECHNICAL_CONTACT;
+/**
+ * PRC Platform Activator
+ *
+ * @package PRC\Platform\Core
+ */
 
+/**
+ * PRC Platform Activator
+ *
+ * @package PRC\Platform\Core
+ */
 class PRC_Platform_Activator {
+	/**
+	 * Activate the plugin.
+	 *
+	 * @package PRC\Platform\Core
+	 */
 	public static function activate() {
 
 		wp_mail(

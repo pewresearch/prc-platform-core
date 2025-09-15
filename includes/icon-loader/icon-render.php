@@ -14,6 +14,11 @@ use WP_HTML_Get_Element;
 use WP_HTML_Tag_Processor;
 
 define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
+if ( defined( 'PRC_PLATFORM_VERSION' ) ) {
+	define( 'PRC_PLATFORM_ICONS_CACHE_KEY', PRC_PLATFORM_VERSION . '_ICONS' );
+} else {
+	define( 'PRC_PLATFORM_ICONS_CACHE_KEY', '1.0.0_ICONS' );
+}
 
 /**
  * Render an icon from the library of your choice.
@@ -57,7 +62,7 @@ function render( $icon_library = 'solid', $icon_name = 'question', $size = 1 ) {
 	}
 
 	$icon_cache_group = 'prc_icons__rendered';
-	$icon_cache_key   = md5( $icon_library . '_' . $icon_name . '_' . $size . '_' . PRC_PLATFORM_VERSION );
+	$icon_cache_key   = md5( $icon_library . '_' . $icon_name . '_' . $size . '_' . PRC_PLATFORM_ICONS_CACHE_KEY );
 	$icon             = wp_cache_get( $icon_cache_key, $icon_cache_group );
 	if ( false !== $icon ) {
 		return $icon;
@@ -120,7 +125,7 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
 		return '<!-- Error: PRC_PLATFORM_ICONS_URL is not defined. -->';
 	}
 	$icon_cache_group = 'prc_icons__svg';
-	$icon_cache_key   = md5( $library . '_' . $icon . '_' . $fill_color . '_' . PRC_PLATFORM_VERSION );
+	$icon_cache_key   = md5( $library . '_' . $icon . '_' . $fill_color . '_' . PRC_PLATFORM_ICONS_CACHE_KEY );
 
 	$cached = wp_cache_get( $icon_cache_key, $icon_cache_group );
 
