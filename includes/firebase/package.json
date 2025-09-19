@@ -1,5 +1,5 @@
 {
-	"name": "@pewresearch/prc-platform-firebase",
+	"name": "@prc/firebase-module",
 	"description": "Google Firebase functionality for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"entry": "src/index.js",

@@ -18,7 +18,7 @@ loadScript('firebase', firebase.initializeApp(prcFirebaseConfig));
 loadScript('firebaseDb', firebase.database());
 loadScript('firebaseAuth', firebase.auth());
 
-// Legacy Backport: TO BE REMOVED
+// Legacy Backport. Do not use in new code.
 loadScript(
 	'interactivesDb',
 	firebase.initializeApp(prcFirebaseInteractivesConfig, 'interactivesDb')

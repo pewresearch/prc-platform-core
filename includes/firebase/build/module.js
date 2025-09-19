@@ -1054,7 +1054,7 @@ function jsonEval(str) {
  * @param {*} data JavaScript object to be stringified.
  * @return {string} The JSON contents of the object.
  */
-function index_esm2017_stringify(data) {
+function stringify(data) {
     return JSON.stringify(data);
 }
 
@@ -15441,7 +15441,7 @@ class DOMStorageWrapper {
             this.domStorage_.removeItem(this.prefixedName_(key));
         }
         else {
-            this.domStorage_.setItem(this.prefixedName_(key), index_esm2017_stringify(value));
+            this.domStorage_.setItem(this.prefixedName_(key), stringify(value));
         }
     }
     /**
@@ -15609,7 +15609,7 @@ const buildLogMessage_ = function (...varArgs) {
             message += buildLogMessage_.apply(null, arg);
         }
         else if (typeof arg === 'object') {
-            message += index_esm2017_stringify(arg);
+            message += stringify(arg);
         }
         else {
             message += arg;
@@ -15800,12 +15800,12 @@ const requireKey = function (key, obj) {
         return obj[key];
     }
     else {
-        throw new Error('Missing required key (' + key + ') in object: ' + index_esm2017_stringify(obj));
+        throw new Error('Missing required key (' + key + ') in object: ' + stringify(obj));
     }
 };
 const ObjectToUniqueKey = function (obj) {
     if (typeof obj !== 'object' || obj === null) {
-        return index_esm2017_stringify(obj);
+        return stringify(obj);
     }
     const keys = [];
     // eslint-disable-next-line guard-for-in
@@ -15819,7 +15819,7 @@ const ObjectToUniqueKey = function (obj) {
         if (i !== 0) {
             key += ',';
         }
-        key += index_esm2017_stringify(keys[i]);
+        key += stringify(keys[i]);
         key += ':';
         key += ObjectToUniqueKey(obj[keys[i]]);
     }
@@ -16782,7 +16782,7 @@ class BrowserPollConnection {
      * @param data - The JSON data to transmit.
      */
     send(data) {
-        const dataStr = index_esm2017_stringify(data);
+        const dataStr = stringify(data);
         this.bytesSent += dataStr.length;
         this.stats_.incrementCounter('bytes_sent', dataStr.length);
         //first, lets get the base64-encoded data
@@ -16820,7 +16820,7 @@ class BrowserPollConnection {
      */
     incrementIncomingBytes_(args) {
         // TODO: This is an annoying perf hit just to track the number of incoming bytes.  Maybe it should be opt-in.
-        const bytesReceived = index_esm2017_stringify(args).length;
+        const bytesReceived = stringify(args).length;
         this.bytesReceived += bytesReceived;
         this.stats_.incrementCounter('bytes_received', bytesReceived);
     }
@@ -17386,7 +17386,7 @@ class WebSocketConnection {
      */
     send(data) {
         this.resetKeepAlive();
-        const dataStr = index_esm2017_stringify(data);
+        const dataStr = stringify(data);
         this.bytesSent += dataStr.length;
         this.stats_.incrementCounter('bytes_sent', dataStr.length);
         //We can only fit a certain amount in each websocket frame, so we need to split this request
@@ -18629,7 +18629,7 @@ class PersistentConnection extends ServerActions {
     sendRequest(action, body, onResponse) {
         const curReqNum = ++this.requestNumber_;
         const msg = { r: curReqNum, a: action, b: body };
-        this.log_(index_esm2017_stringify(msg));
+        this.log_(stringify(msg));
         index_esm2017_assert(this.connected_, "sendRequest call when we're not connected not allowed.");
         this.realtime_.sendRequest(msg);
         if (onResponse) {
@@ -18973,7 +18973,7 @@ class PersistentConnection extends ServerActions {
     onDataMessage_(message) {
         if ('r' in message) {
             // this is a response
-            this.log_('from server: ' + index_esm2017_stringify(message));
+            this.log_('from server: ' + stringify(message));
             const reqNum = message['r'];
             const onResponse = this.requestCBHash_[reqNum];
             if (onResponse) {
@@ -19013,7 +19013,7 @@ class PersistentConnection extends ServerActions {
         }
         else {
             error('Unrecognized action received from server: ' +
-                index_esm2017_stringify(action) +
+                stringify(action) +
                 '\nAre you using the latest client?');
         }
     }
@@ -21384,7 +21384,7 @@ class IndexedFilter {
         this.index_ = index_;
     }
     updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
-        assert(snap.isIndexed(this.index_), 'A node must be indexed if only a child is updated');
+        index_esm2017_assert(snap.isIndexed(this.index_), 'A node must be indexed if only a child is updated');
         const oldChild = snap.getImmediateChild(key);
         // Check if anything actually changed.
         if (oldChild.getChild(affectedPath).equals(newChild.getChild(affectedPath))) {
@@ -21404,7 +21404,7 @@ class IndexedFilter {
                     optChangeAccumulator.trackChildChange(changeChildRemoved(key, oldChild));
                 }
                 else {
-                    assert(snap.isLeafNode(), 'A child remove without an old child only makes sense on a leaf node');
+                    index_esm2017_assert(snap.isLeafNode(), 'A child remove without an old child only makes sense on a leaf node');
                 }
             }
             else if (oldChild.isEmpty()) {
@@ -21710,7 +21710,7 @@ class LimitedFilter {
             cmp = this.index_.getCompare();
         }
         const oldEventCache = snap;
-        assert(oldEventCache.numChildren() === this.limit_, '');
+        index_esm2017_assert(oldEventCache.numChildren() === this.limit_, '');
         const newChildNamedNode = new NamedNode(childKey, childSnap);
         const windowBoundary = this.reverse_
             ? oldEventCache.getFirstChild(this.index_)
@@ -22030,23 +22030,23 @@ function queryParamsToRestQueryStringParameters(queryParams) {
         index_esm2017_assert(queryParams.index_ instanceof PathIndex, 'Unrecognized index type!');
         orderBy = queryParams.index_.toString();
     }
-    qs["orderBy" /* REST_QUERY_CONSTANTS.ORDER_BY */] = index_esm2017_stringify(orderBy);
+    qs["orderBy" /* REST_QUERY_CONSTANTS.ORDER_BY */] = stringify(orderBy);
     if (queryParams.startSet_) {
         const startParam = queryParams.startAfterSet_
             ? "startAfter" /* REST_QUERY_CONSTANTS.START_AFTER */
             : "startAt" /* REST_QUERY_CONSTANTS.START_AT */;
-        qs[startParam] = index_esm2017_stringify(queryParams.indexStartValue_);
+        qs[startParam] = stringify(queryParams.indexStartValue_);
         if (queryParams.startNameSet_) {
-            qs[startParam] += ',' + index_esm2017_stringify(queryParams.indexStartName_);
+            qs[startParam] += ',' + stringify(queryParams.indexStartName_);
         }
     }
     if (queryParams.endSet_) {
         const endParam = queryParams.endBeforeSet_
             ? "endBefore" /* REST_QUERY_CONSTANTS.END_BEFORE */
             : "endAt" /* REST_QUERY_CONSTANTS.END_AT */;
-        qs[endParam] = index_esm2017_stringify(queryParams.indexEndValue_);
+        qs[endParam] = stringify(queryParams.indexEndValue_);
         if (queryParams.endNameSet_) {
-            qs[endParam] += ',' + index_esm2017_stringify(queryParams.indexEndName_);
+            qs[endParam] += ',' + stringify(queryParams.indexEndName_);
         }
     }
     if (queryParams.limitSet_) {
@@ -23459,7 +23459,7 @@ function writeTreeAddOverwrite(writeTree, path, snap, writeId, visible) {
  * Record a new merge from user code.
  */
 function writeTreeAddMerge(writeTree, path, changedChildren, writeId) {
-    assert(writeId > writeTree.lastWriteId, 'Stacking an older merge on top of newer ones');
+    index_esm2017_assert(writeId > writeTree.lastWriteId, 'Stacking an older merge on top of newer ones');
     writeTree.allWrites.push({
         path,
         children: changedChildren,
@@ -24545,7 +24545,7 @@ function viewAddEventRegistration(view, eventRegistration) {
 function viewRemoveEventRegistration(view, eventRegistration, cancelError) {
     const cancelEvents = [];
     if (cancelError) {
-        assert(eventRegistration == null, 'A cancel should cancel all event registrations.');
+        index_esm2017_assert(eventRegistration == null, 'A cancel should cancel all event registrations.');
         const path = view.query._path;
         view.eventRegistrations_.forEach(registration => {
             const maybeEvent = registration.createCancelEvent(cancelError, path);
@@ -24655,7 +24655,7 @@ function syncPointSetReferenceConstructor(val) {
     referenceConstructor$1 = val;
 }
 function syncPointGetReferenceConstructor() {
-    assert(referenceConstructor$1, 'Reference.ts has not been loaded');
+    index_esm2017_assert(referenceConstructor$1, 'Reference.ts has not been loaded');
     return referenceConstructor$1;
 }
 function syncPointIsEmpty(syncPoint) {
@@ -24842,7 +24842,7 @@ function syncTreeSetReferenceConstructor(val) {
     referenceConstructor = val;
 }
 function syncTreeGetReferenceConstructor() {
-    assert(referenceConstructor, 'Reference.ts has not been loaded');
+    index_esm2017_assert(referenceConstructor, 'Reference.ts has not been loaded');
     return referenceConstructor;
 }
 /**
@@ -25154,7 +25154,7 @@ function syncTreeAddEventRegistration(syncTree, query, eventRegistration, skipSe
     if (!viewAlreadyExists && !query._queryParams.loadsAllData()) {
         // We need to track a tag for this query
         const queryKey = syncTreeMakeQueryKey_(query);
-        assert(!syncTree.queryToTagMap.has(queryKey), 'View does not exist, but we have a tag');
+        index_esm2017_assert(!syncTree.queryToTagMap.has(queryKey), 'View does not exist, but we have a tag');
         const tag = syncTreeGetNextQueryTag_();
         syncTree.queryToTagMap.set(queryKey, tag);
         syncTree.tagToQueryMap.set(tag, queryKey);
@@ -25426,7 +25426,7 @@ function syncTreeSetupListener_(syncTree, query, view) {
     // The root of this subtree has our query. We're here because we definitely need to send a listen for that, but we
     // may need to shadow other listens as well.
     if (tag) {
-        assert(!syncPointHasCompleteView(subtree.value), "If we're adding a query, it shouldn't be shadowed");
+        index_esm2017_assert(!syncPointHasCompleteView(subtree.value), "If we're adding a query, it shouldn't be shadowed");
     }
     else {
         // Shadow everything at or below this location, this is a default listener.
@@ -25947,7 +25947,7 @@ const validateFirebaseMergeDataArg = function (fnName, data, path, optional) {
     if (optional && data === undefined) {
         return;
     }
-    const errorPrefix$1 = errorPrefix(fnName, 'values');
+    const errorPrefix$1 = index_esm2017_errorPrefix(fnName, 'values');
     if (!(data && typeof data === 'object') || Array.isArray(data)) {
         throw new Error(errorPrefix$1 + ' must be an object containing the children to replace.');
     }
@@ -25991,7 +25991,7 @@ const validateKey = function (fnName, argumentName, key, optional) {
         return;
     }
     if (!index_esm2017_isValidKey(key)) {
-        throw new Error(errorPrefix(fnName, argumentName) +
+        throw new Error(index_esm2017_errorPrefix(fnName, argumentName) +
             'was an invalid key = "' +
             key +
             '".  Firebase keys must be non-empty strings and ' +
@@ -26006,7 +26006,7 @@ const validatePathString = function (fnName, argumentName, pathString, optional)
         return;
     }
     if (!isValidPathString(pathString)) {
-        throw new Error(errorPrefix(fnName, argumentName) +
+        throw new Error(index_esm2017_errorPrefix(fnName, argumentName) +
             'was an invalid path = "' +
             pathString +
             '". Paths must be non-empty strings and ' +
@@ -26236,7 +26236,7 @@ function repoStart(repo, appId, authOverride) {
                 throw new Error('Only objects are supported for option databaseAuthVariableOverride');
             }
             try {
-                index_esm2017_stringify(authOverride);
+                stringify(authOverride);
             }
             catch (e) {
                 throw new Error('Invalid authOverride provided: ' + e);
@@ -27396,7 +27396,7 @@ class CallbackContext {
         this.snapshotCallback.call(null, expDataSnapshot, previousChildName);
     }
     onCancel(error) {
-        assert(this.hasCancelCallback, 'Raising a cancel event on a listener with no cancel callback');
+        index_esm2017_assert(this.hasCancelCallback, 'Raising a cancel event on a listener with no cancel callback');
         return this.cancelCallback.call(null, error);
     }
     get hasCancelCallback() {
@@ -27904,7 +27904,7 @@ class DataSnapshot {
  *   root of the Database.
  */
 function ref(db, path) {
-    db = getModularInstance(db);
+    db = index_esm2017_getModularInstance(db);
     db._checkNotDeleted('ref');
     return path !== undefined ? child(db._root, path) : db._root;
 }
@@ -27954,7 +27954,7 @@ function refFromURL(db, url) {
  * @returns The specified child location.
  */
 function child(parent, path) {
-    parent = getModularInstance(parent);
+    parent = index_esm2017_getModularInstance(parent);
     if (pathGetFront(parent._path) === null) {
         validateRootPathString('child', 'path', path, false);
     }
@@ -27998,7 +27998,7 @@ function onDisconnect(ref) {
  * but can be used immediately as the `Reference` to the child location.
  */
 function push(parent, value) {
-    parent = getModularInstance(parent);
+    parent = index_esm2017_getModularInstance(parent);
     validateWritablePath('push', parent._path);
     validateFirebaseDataArg('push', value, parent._path, true);
     const now = repoServerTime(parent._repo);
@@ -28070,10 +28070,10 @@ function remove(ref) {
  * @returns Resolves when write to server is complete.
  */
 function set(ref, value) {
-    ref = getModularInstance(ref);
+    ref = index_esm2017_getModularInstance(ref);
     validateWritablePath('set', ref._path);
     validateFirebaseDataArg('set', value, ref._path, false);
-    const deferred = new Deferred();
+    const deferred = new index_esm2017_Deferred();
     repoSetWithPriority(ref._repo, ref._path, value, 
     /*priority=*/ null, deferred.wrapCallback(() => { }));
     return deferred.promise;
@@ -28161,7 +28161,7 @@ function setWithPriority(ref, value, priority) {
  */
 function update(ref, values) {
     validateFirebaseMergeDataArg('update', values, ref._path, false);
-    const deferred = new Deferred();
+    const deferred = new index_esm2017_Deferred();
     repoUpdate(ref._repo, ref._path, values, deferred.wrapCallback(() => { }));
     return deferred.promise;
 }
@@ -28174,7 +28174,7 @@ function update(ref, values) {
  * server is unreachable and there is nothing cached).
  */
 function get(query) {
-    query = getModularInstance(query);
+    query = index_esm2017_getModularInstance(query);
     const callbackContext = new CallbackContext(() => { });
     const container = new ValueEventRegistration(callbackContext);
     return repoGetValue(query._repo, query, container).then(node => {
@@ -28250,7 +28250,7 @@ class ChildEventRegistration {
         }
     }
     createEvent(change, query) {
-        assert(change.childName != null, 'Child events should have a childName.');
+        index_esm2017_assert(change.childName != null, 'Child events should have a childName.');
         const childRef = child(new ReferenceImpl(query._repo, query._path), change.childName);
         const index = query._queryParams.getIndex();
         return new DataEvent(change.type, this, new DataSnapshot(change.snapshotNode, childRef, index), change.prevName);
@@ -28792,7 +28792,7 @@ function equalTo(value, key) {
  * existing or new constraints.
  */
 function query(query, ...queryConstraints) {
-    let queryImpl = getModularInstance(query);
+    let queryImpl = index_esm2017_getModularInstance(query);
     for (const constraint of queryConstraints) {
         queryImpl = constraint._apply(queryImpl);
     }
@@ -29384,7 +29384,6 @@ function loadFirebaseConfig() {
   const el = document.getElementById('wp-script-module-data-@prc/firebase');
   try {
     const config = JSON.parse(el.textContent);
-    console.log('loadFirebaseConfig...', config);
     return config;
   } catch (err) {
     console.error('loadFirebaseConfig error:', err);
@@ -29399,6 +29398,25 @@ const _signOut = signOut;
 const _sendPasswordResetEmail = sendPasswordResetEmail;
 const _confirmPasswordReset = confirmPasswordReset;
 const _verifyPasswordResetCode = verifyPasswordResetCode;
-const _db = getDatabase();
+const _db = getDatabase;
+const _ref = ref;
+const _push = push;
+const _set = set;
+const _update = update;
+const _remove = remove;
+const _get = get;
+const _child = child;
+const _query = query;
+const _orderByChild = orderByChild;
+const _orderByKey = orderByKey;
+const _orderByValue = orderByValue;
+const _limitToFirst = limitToFirst;
+const _limitToLast = limitToLast;
+const _startAt = startAt;
+const _endAt = endAt;
+const _equalTo = equalTo;
+const _onValue = onValue;
+const _off = off;
+const _serverTimestamp = serverTimestamp;
 
-export { _app as app, _auth as auth, _confirmPasswordReset as confirmPasswordReset, _db as getDatabase, _onAuthStateChanged as onAuthStateChanged, _sendPasswordResetEmail as sendPasswordResetEmail, _signInWithEmailAndPassword as signInWithEmailAndPassword, _signOut as signOut, _verifyPasswordResetCode as verifyPasswordResetCode };
+export { _app as app, _auth as auth, _child as child, _confirmPasswordReset as confirmPasswordReset, _endAt as endAt, _equalTo as equalTo, _get as get, _db as getDatabase, _limitToFirst as limitToFirst, _limitToLast as limitToLast, _off as off, _onAuthStateChanged as onAuthStateChanged, _onValue as onValue, _orderByChild as orderByChild, _orderByKey as orderByKey, _orderByValue as orderByValue, _push as push, _query as query, _ref as ref, _remove as remove, _sendPasswordResetEmail as sendPasswordResetEmail, _serverTimestamp as serverTimestamp, _set as set, _signInWithEmailAndPassword as signInWithEmailAndPassword, _signOut as signOut, _startAt as startAt, _update as update, _verifyPasswordResetCode as verifyPasswordResetCode };

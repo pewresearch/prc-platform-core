@@ -3,6 +3,7 @@
 	"devDependencies": {
 		"@wordpress/scripts": "^30.13.0"
 	},
+	"main": "exports.js",
 	"scripts": {
 		"build": "wp-scripts build index.js --output-path=../../../build/@prc/hooks"
 	}
