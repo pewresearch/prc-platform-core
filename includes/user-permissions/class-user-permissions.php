@@ -94,10 +94,10 @@ class User_Permissions {
 	public function register_common_user_meta() {
 		register_meta(
 			'user',
-			'prc_copilot_settings',
+			'prc_nexus_settings',
 			array(
 				'type'         => 'object',
-				'description'  => 'Settings for PRC Copilot plugin',
+				'description'  => 'Settings for PRC Nexus plugin',
 				'single'       => true,
 				'show_in_rest' => true,
 			)
@@ -117,7 +117,7 @@ class User_Permissions {
 			'prc_user_beneficiary_id',
 			array(
 				'type'         => 'number',
-				'description'  => 'When a user is deleted this user is the benefeciary of their db records',
+				'description'  => 'When a user is deleted, this user is the beneficiary of their DB records',
 				'single'       => true,
 				'show_in_rest' => true,
 			)
@@ -135,7 +135,7 @@ class User_Permissions {
 		if ( ! $user_id ) {
 			return;
 		}
-		$copilot_defaults = array(
+		$nexus_defaults = array(
 			'allowed'     => true,
 			'tokenBudget' => 1000,
 			'allowances'  => array(
@@ -144,8 +144,12 @@ class User_Permissions {
 				'content' => false,
 			),
 		);
-		if ( ! get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
-			add_user_meta( $user_id, 'prc_copilot_settings', $copilot_defaults, true );
+		// Remove any old namespaced ai settings.
+		if ( get_user_meta( $user_id, 'prc_copilot_settings', true ) ) {
+			delete_user_meta( $user_id, 'prc_copilot_settings' );
+		}
+		if ( ! get_user_meta( $user_id, 'prc_nexus_settings', true ) ) {
+			add_user_meta( $user_id, 'prc_nexus_settings', $nexus_defaults, true );
 		}
 	}
 

@@ -1,0 +1,27 @@
+# WIP - Markdown Converter
+
+- DOCUMENTATION & USAGE:
+- =====================
+-
+- This plugin provides two main functions for developers to manually insert into theme templates:
+-
+-   1. markdown_maker_copy_link( $post_id = null, $text = 'Copy as Markdown', $subtitle = '', $class = '' )
+-   - Outputs a link that copies post content as Markdown to clipboard
+-   - Example: <?php echo markdown_maker_copy_link(); ?>
+-   - Example with custom text: <?php echo markdown_maker_copy_link( get_the_ID(), 'Copy MD', 'For LLM agents', 'btn btn-primary' ); ?>
+-
+-   2. markdown_maker_download_link( $post_id = null, $text = 'Download as Markdown', $subtitle = '', $class = '' )
+-   - Outputs a link that downloads post content as a .md file
+-   - Example: <?php echo markdown_maker_download_link(); ?>
+-   - Example in loop: <?php echo markdown_maker_download_link( get_the_ID(), 'Download MD', 'Save locally', 'download-btn' ); ?>
+-
+- WHERE TO USE:
+-   - In single.php or page.php templates
+-   - In custom post type templates
+-   - In admin areas (with proper permissions checks)
+-   - In custom shortcodes or blocks
+-
+- The Markdown output includes:
+-   - Post metadata (title, author, date, URL)
+-   - Clean content conversion (headings, lists, links, images, etc.)
+-   - Proper attribution and context for LLM consumption
