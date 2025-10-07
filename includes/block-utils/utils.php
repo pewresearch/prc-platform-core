@@ -1,13 +1,42 @@
 <?php
 /**
- * Cross-platform block utility functions.
+ * PRC Platform Shared Block Utilities
  *
  * @package PRC\Platform\Block_Utils
  */
 
 namespace PRC\Platform\Block_Utils;
 
-use WP_HTML_Tag_Processor, WP_Block_Type_Registry;
+use WP_HTML_Tag_Processor, WP_Block_Type_Registry, WP_Error;
+
+/**
+ * Helper utility to include all PRC formatted class-<block-name>.php files from the plugin (or any file path) /src directory.
+ *
+ * @param string|null $root_dir The root directory of the plugin.
+ * @return void|WP_Error Returns WP_Error if a block file is missing.
+ */
+function load_blocks( $root_dir = null ) {
+	if ( null === $root_dir ) {
+		return new WP_Error( 'no-block-root-dir', __( 'No root directory provided.', 'prc' ) );
+	}
+	$block_files = glob( $root_dir . '/src/*', GLOB_ONLYDIR );
+	$errors      = array();
+	foreach ( $block_files as $block ) {
+		$block           = basename( $block );
+		$dir             = 'local' === wp_get_environment_type() ? 'src' : 'build';
+		$block_file_path = '/' . $dir . '/' . $block . '/class-' . $block . '.php';
+		$file            = $root_dir . $block_file_path;
+		if ( file_exists( $file ) ) {
+			require_once $file;
+		} else {
+			$errors[] = new WP_Error( 'block-file-missing', sprintf( __( 'Block file missing: %s', 'prc' ), $file ) );
+		}
+	}
+	if ( ! empty( $errors ) ) {
+		return new WP_Error( 'block-files-missing', __( 'One or more block files are missing.', 'prc' ), $errors );
+	}
+	return true;
+}
 
 /**
  * Finds a block in an array of blocks by its blockName attribute. Recursively searches innerBlocks 5 levels deep.

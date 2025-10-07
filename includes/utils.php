@@ -1,4 +1,10 @@
 <?php
+/**
+ * PRC Platform Core Utilities
+ *
+ * @package prc-platform-core
+ */
+
 namespace PRC\Platform;
 
 use DougSisk\CountryState\CountryState;
@@ -228,13 +234,13 @@ function get_list_of( $list_of = null ) {
 		$list = $country_state->getCountries();
 
 		// Filter out specific countries by code
-		$excluded_countries = array( 'AX', 'BL', 'BV', 'CC', 'CD', 'CW', 'CX', 'HM', 'IO', 'KN', 'LC', 'MF', 'PM', 'PN', 'RE', 'SJ', 'ST', 'TF', 'UM', 'VC', 'XK');
-		$list = array_diff_key( $list, array_flip( $excluded_countries ) );
+		$excluded_countries = array( 'AX', 'BL', 'BV', 'CC', 'CD', 'CW', 'CX', 'HM', 'IO', 'KN', 'LC', 'MF', 'PM', 'PN', 'RE', 'SJ', 'ST', 'TF', 'UM', 'VC', 'XK' );
+		$list               = array_diff_key( $list, array_flip( $excluded_countries ) );
 
-		$tmp  = array(
+		$tmp = array(
 			// array(
-			// 	'label' => 'All',
-			// 	'value' => 'all',
+			// 'label' => 'All',
+			// 'value' => 'all',
 			// ),
 			array(
 				'label' => 'Global total',
