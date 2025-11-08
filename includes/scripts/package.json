@@ -1,10 +1,12 @@
 {
-	"name": "@pewresearch/prc-platform-scripts",
+	"name": "@prc/scripts",
 	"devDependencies": {
-		"@wordpress/scripts": "^30.13.0"
+		"@wordpress/scripts": "^30.25.0"
 	},
 	"scripts": {
-		"build": "bash bin/build.sh",
-		"clean": "bash bin/clean.sh"
+		"build:components": "wp-scripts build --source-path=src/@prc/components --output-path=build/@prc/components",
+		"build:controls": "wp-scripts build --source-path=src/@prc/controls --output-path=build/@prc/controls",
+		"build:functions": "wp-scripts build --source-path=src/@prc/functions --output-path=build/@prc/functions",
+		"build:hooks": "wp-scripts build --source-path=src/@prc/hooks --output-path=build/@prc/hooks"
 	}
 }

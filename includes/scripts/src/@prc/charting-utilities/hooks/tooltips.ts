@@ -2,11 +2,53 @@ import { DataRender } from '../types/dataRender';
 import { Layout } from '../types/layout';
 import { abbreviateNumber } from '../utilities/helpers';
 import { Tooltip } from '../types/tooltip';
+import { Map } from '../types/map';
 import { timeFormat } from 'd3-time-format';
-import { Size } from '../types/windowSize';
-import { useMemo } from 'react';
+import type { FlatData } from '../types/flatData';
+import { localPoint } from '@visx/event';
+import type { EventType } from '@visx/event/lib/types';
+import type { Point } from '@visx/point';
 
 type TooltipData = { [key: string]: string | number };
+
+/**
+ * Get local point coordinates for tooltip positioning.
+ * Calculates coordinates relative to the SVG container element.
+ * Handles iframe contexts (like WordPress editor) where standard methods may fail.
+ *
+ * @param svgElement - The SVG container element
+ * @param event - The mouse/touch event
+ * @returns Point object with x, y coordinates, or null
+ */
+function getLocalPoint(
+	svgElement: Element,
+	event: EventType
+): Point | null {
+	if (!svgElement || !event) {
+		return null;
+	}
+
+	// First try the standard visx approach
+	let point = localPoint(svgElement, event);
+
+	// If localPoint returns null (happens in iframes like WordPress editor),
+	// calculate coordinates manually using getBoundingClientRect
+	if (!point && 'clientX' in event && 'clientY' in event) {
+		const rect = svgElement.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		// Create a Point-compatible object
+		point = {
+			x,
+			y,
+			toArray: () => [x, y],
+			value: () => ({ x, y }),
+		} as Point;
+	}
+
+	return point;
+}
 
 function styleTooltipString(formatString: string, color: string) {
 	// get each substring between {{ }} and replace it with a span
@@ -145,4 +187,62 @@ const getTooltipVisible = (
 	}
 };
 
-export { getTooltipHeaderFormat, getTooltipFormat, getTooltipVisible };
+const getTooltipMapDeemphasisProps = (
+	tooltip: Tooltip,
+	map: Map,
+	id: string | number,
+	tooltipData: FlatData
+) => {
+	const {
+		deemphasizeSiblings,
+		deemphasizeOpacity,
+		emphasizeStrokeActive,
+		emphasizeStrokeColor,
+		emphasizeStrokeWidth,
+	} = tooltip;
+
+	// Base properties
+	const baseProps = {
+		opacity: 1,
+		stroke: map.pathStroke,
+		strokeWidth: map.pathStrokeWidth,
+	};
+
+	// Early return if no valid data
+	if (!id || !tooltipData) {
+		return baseProps;
+	}
+
+	const idMatches = id === tooltipData.id;
+	// Check if this element should be deemphasized
+	const shouldDeemphasize =
+		deemphasizeSiblings && deemphasizeOpacity && !idMatches;
+
+	if (!shouldDeemphasize && !idMatches) {
+		return baseProps;
+	}
+	if (!shouldDeemphasize && idMatches) {
+		if (emphasizeStrokeActive) {
+			return {
+				opacity: baseProps.opacity,
+				stroke: emphasizeStrokeColor,
+				strokeWidth: emphasizeStrokeWidth,
+			};
+		}
+		return baseProps;
+	}
+	// Return deemphasized properties
+	return {
+		opacity: deemphasizeOpacity,
+		stroke: map.pathStroke,
+		strokeWidth: map.pathStrokeWidth,
+	};
+};
+
+export {
+	getLocalPoint,
+	getTooltipHeaderFormat,
+	getTooltipFormat,
+	getTooltipVisible,
+	getTooltipMapDeemphasisProps,
+};

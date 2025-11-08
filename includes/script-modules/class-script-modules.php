@@ -60,7 +60,6 @@ class Script_Modules {
 					$module_src,
 					$asset_file['dependencies'],
 					$asset_file['version'],
-					true
 				);
 				if ( ! is_wp_error( $module ) ) {
 					self::$module_slugs[] = $module_slug;

@@ -8,20 +8,28 @@ function useSize(
 	const [size, setSize] = useState<Size>({
 		width: undefined,
 		height: undefined,
+		windowWidth: undefined,
+		windowHeight: undefined,
 	});
 	useEffect(() => {
 		function handleResize() {
 			const element = svgRef.current?.closest(`.${className}`);
-			// if no class name is passed, return the window size
+			// Always get window dimensions
+			const windowWidth = window.innerWidth;
+			const windowHeight = window.innerHeight;
+
+			// if no class name is passed, return the window size for width/height too
 			if (element) {
 				const { width, height } = element.getBoundingClientRect();
-				setSize({ width, height });
+				setSize({ width, height, windowWidth, windowHeight });
 				return;
 			}
 
 			setSize({
-				width: window.innerWidth,
-				height: window.innerHeight,
+				width: windowWidth,
+				height: windowHeight,
+				windowWidth,
+				windowHeight,
 			});
 		}
 		// Add event listener

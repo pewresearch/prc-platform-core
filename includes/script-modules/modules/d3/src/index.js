@@ -25,6 +25,12 @@ import {
 	easeCubicInOut,
 	arc,
 	pie,
+	stack,
+	union,
+	index,
+	groupSort,
+	sum,
+	brushX,
 } from 'd3';
 
 const _format = format;
@@ -47,6 +53,12 @@ const _sort = sort;
 const _max = max;
 const _arc = arc;
 const _pie = pie;
+const _stack = stack;
+const _union = union;
+const _index = index;
+const _sum = sum;
+const _groupSort = groupSort;
+const _brushX = brushX;
 
 export {
 	_format as format,
@@ -69,4 +81,10 @@ export {
 	_max as max,
 	_arc as arc,
 	_pie as pie,
+	_stack as stack,
+	_union as union,
+	_index as index,
+	_sum as sum,
+	_groupSort as groupSort,
+	_brushX as brushX,
 };

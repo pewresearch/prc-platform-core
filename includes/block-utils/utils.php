@@ -69,6 +69,39 @@ function find_block( $blocks, $pattern = 'prc-block/', $depth = 0 ) {
 }
 
 /**
+ * Finds all blocks in an array of blocks by their blockName attribute. Recursively searches innerBlocks 5 levels deep.
+ *
+ * @param array  $blocks The blocks to search through.
+ * @param string $pattern The pattern to match against block names (e.g., 'prc-block/' or 'core/paragraph').
+ * @param int    $depth Current recursion depth (internal use).
+ * @return array Array of matching blocks, or empty array if none found.
+ */
+function find_blocks( $blocks, $pattern = 'prc-block/', $depth = 0 ) {
+	if ( $depth > 5 ) {
+		return array();
+	}
+
+	$found_blocks = array();
+
+	foreach ( $blocks as $block ) {
+		// Check if the blockName matches the pattern.
+		if ( isset( $block['blockName'] ) && str_starts_with( $block['blockName'], $pattern ) !== false ) {
+			$found_blocks[] = $block;
+		}
+
+		// Recursively search innerBlocks.
+		if ( isset( $block['innerBlocks'] ) && count( $block['innerBlocks'] ) > 0 ) {
+			$inner_blocks = find_blocks( $block['innerBlocks'], $pattern, $depth + 1 );
+			if ( ! empty( $inner_blocks ) ) {
+				$found_blocks = array_merge( $found_blocks, $inner_blocks );
+			}
+		}
+	}
+
+	return $found_blocks;
+}
+
+/**
  * If a inner block is an input element, return its value.
  *
  * @param mixed $content The content.

@@ -7,6 +7,7 @@ type TextAnnotation = {
 	fontSize?: number;
 	fontWeight?: 'normal' | 'bold' | '600' | '700';
 	fontStyle?: 'normal' | 'italic';
+	fontFamily?: string;
 	fill?: string;
 	textAnchor?: 'start' | 'middle' | 'end';
 	verticalAnchor?: 'start' | 'middle' | 'end';
@@ -18,6 +19,7 @@ type TextAnnotation = {
 	opacity?: number;
 	maxWidth?: number;
 	activeOnMobile?: boolean;
+	positioningContext?: 'chart' | 'inner'; // 'chart' = full chart area including padding, 'inner' = data area only
 	onDrag?: (id: string, newX: number, newY: number) => void;
 	onDragStart?: () => void;
 	onDragEnd?: () => void;

@@ -94,7 +94,7 @@ export function getInnerBlocksContextAsQuery(postType, perPage = 10) {
 			return [];
 		}
 		return records?.map((post) => {
-			console.log('POST?', post);
+			// console.log('POST?', post);
 			return {
 				queryId: 0,
 				postId: post.id,

@@ -47,10 +47,6 @@ function TermSelect({ className, onChange, taxonomy, value, maxTerms, label }) {
 		return [];
 	}, [records, hasResolved]);
 
-	useEffect(() => {
-		console.log('Search Term Changed!', searchTerm);
-	}, [searchTerm]);
-
 	return (
 		<TermSelectControl className={className}>
 			<FormTokenField
@@ -60,7 +56,6 @@ function TermSelect({ className, onChange, taxonomy, value, maxTerms, label }) {
 				displayTransform={(token) => decodeEntities(token)}
 				onChange={(e) => {
 					// @TODO: need to build in support for selecting multiple terms.
-					console.log('Changing... <TermSelect/>', e);
 					if (isEmpty(e)) {
 						onChange({});
 						return;

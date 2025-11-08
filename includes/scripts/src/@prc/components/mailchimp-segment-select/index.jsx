@@ -1,8 +1,6 @@
 /**
  * External Dependencies
  */
-import { MultiSelectControl } from '@codeamp/block-components';
-import styled from '@emotion/styled';
 
 /**
  * WordPress Dependencies

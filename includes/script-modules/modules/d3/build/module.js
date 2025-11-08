@@ -172,7 +172,7 @@ var prefixExponent;
 });
 
 ;// ./node_modules/d3-format/src/identity.js
-/* harmony default export */ function identity(x) {
+/* harmony default export */ function src_identity(x) {
   return x;
 }
 
@@ -190,11 +190,11 @@ var map = Array.prototype.map,
     prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 /* harmony default export */ function locale(locale) {
-  var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
+  var group = locale.grouping === undefined || locale.thousands === undefined ? src_identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-      numerals = locale.numerals === undefined ? identity : formatNumerals(map.call(locale.numerals, String)),
+      numerals = locale.numerals === undefined ? src_identity : formatNumerals(map.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
       minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -2235,26 +2235,139 @@ const utcDateTimeUtility = dateTimeUtility(
 
 
 
-;// ./node_modules/d3-array/src/max.js
-function max(values, valueof) {
-  let max;
-  if (valueof === undefined) {
-    for (const value of values) {
-      if (value != null
-          && (max < value || (max === undefined && value >= value))) {
-        max = value;
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null
-          && (max < value || (max === undefined && value >= value))) {
-        max = value;
-      }
-    }
+;// ./node_modules/internmap/src/index.js
+class InternMap extends Map {
+  constructor(entries, key = keyof) {
+    super();
+    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
+    if (entries != null) for (const [key, value] of entries) this.set(key, value);
   }
-  return max;
+  get(key) {
+    return super.get(intern_get(this, key));
+  }
+  has(key) {
+    return super.has(intern_get(this, key));
+  }
+  set(key, value) {
+    return super.set(intern_set(this, key), value);
+  }
+  delete(key) {
+    return super.delete(intern_delete(this, key));
+  }
+}
+
+class InternSet extends Set {
+  constructor(values, key = keyof) {
+    super();
+    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
+    if (values != null) for (const value of values) this.add(value);
+  }
+  has(value) {
+    return super.has(intern_get(this, value));
+  }
+  add(value) {
+    return super.add(intern_set(this, value));
+  }
+  delete(value) {
+    return super.delete(intern_delete(this, value));
+  }
+}
+
+function intern_get({_intern, _key}, value) {
+  const key = _key(value);
+  return _intern.has(key) ? _intern.get(key) : value;
+}
+
+function intern_set({_intern, _key}, value) {
+  const key = _key(value);
+  if (_intern.has(key)) return _intern.get(key);
+  _intern.set(key, value);
+  return value;
+}
+
+function intern_delete({_intern, _key}, value) {
+  const key = _key(value);
+  if (_intern.has(key)) {
+    value = _intern.get(key);
+    _intern.delete(key);
+  }
+  return value;
+}
+
+function keyof(value) {
+  return value !== null && typeof value === "object" ? value.valueOf() : value;
+}
+
+;// ./node_modules/d3-array/src/identity.js
+function src_identity_identity(x) {
+  return x;
+}
+
+;// ./node_modules/d3-array/src/group.js
+
+
+
+function group(values, ...keys) {
+  return nest(values, src_identity_identity, src_identity_identity, keys);
+}
+
+function groups(values, ...keys) {
+  return nest(values, Array.from, identity, keys);
+}
+
+function flatten(groups, keys) {
+  for (let i = 1, n = keys.length; i < n; ++i) {
+    groups = groups.flatMap(g => g.pop().map(([key, value]) => [...g, key, value]));
+  }
+  return groups;
+}
+
+function flatGroup(values, ...keys) {
+  return flatten(groups(values, ...keys), keys);
+}
+
+function flatRollup(values, reduce, ...keys) {
+  return flatten(rollups(values, reduce, ...keys), keys);
+}
+
+function rollup(values, reduce, ...keys) {
+  return nest(values, src_identity_identity, reduce, keys);
+}
+
+function rollups(values, reduce, ...keys) {
+  return nest(values, Array.from, reduce, keys);
+}
+
+function index(values, ...keys) {
+  return nest(values, src_identity_identity, unique, keys);
+}
+
+function indexes(values, ...keys) {
+  return nest(values, Array.from, unique, keys);
+}
+
+function unique(values) {
+  if (values.length !== 1) throw new Error("duplicate key");
+  return values[0];
+}
+
+function nest(values, map, reduce, keys) {
+  return (function regroup(values, i) {
+    if (i >= keys.length) return reduce(values);
+    const groups = new InternMap();
+    const keyof = keys[i++];
+    let index = -1;
+    for (const value of values) {
+      const key = keyof(value, ++index, values);
+      const group = groups.get(key);
+      if (group) group.push(value);
+      else groups.set(key, [value]);
+    }
+    for (const [key, values] of groups) {
+      groups.set(key, regroup(values, i));
+    }
+    return map(groups);
+  })(values, 0);
 }
 
 ;// ./node_modules/d3-array/src/permute.js
@@ -2301,6 +2414,73 @@ function compareDefined(compare = ascending) {
 
 function ascendingDefined(a, b) {
   return (a == null || !(a >= a)) - (b == null || !(b >= b)) || (a < b ? -1 : a > b ? 1 : 0);
+}
+
+;// ./node_modules/d3-array/src/groupSort.js
+
+
+
+
+function groupSort(values, reduce, key) {
+  return (reduce.length !== 2
+    ? sort(rollup(values, reduce, key), (([ak, av], [bk, bv]) => ascending(av, bv) || ascending(ak, bk)))
+    : sort(group(values, key), (([ak, av], [bk, bv]) => reduce(av, bv) || ascending(ak, bk))))
+    .map(([key]) => key);
+}
+
+;// ./node_modules/d3-array/src/max.js
+function max(values, valueof) {
+  let max;
+  if (valueof === undefined) {
+    for (const value of values) {
+      if (value != null
+          && (max < value || (max === undefined && value >= value))) {
+        max = value;
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null
+          && (max < value || (max === undefined && value >= value))) {
+        max = value;
+      }
+    }
+  }
+  return max;
+}
+
+;// ./node_modules/d3-array/src/sum.js
+function sum(values, valueof) {
+  let sum = 0;
+  if (valueof === undefined) {
+    for (let value of values) {
+      if (value = +value) {
+        sum += value;
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if (value = +valueof(value, ++index, values)) {
+        sum += value;
+      }
+    }
+  }
+  return sum;
+}
+
+;// ./node_modules/d3-array/src/union.js
+
+
+function union(...others) {
+  const set = new InternSet();
+  for (const other of others) {
+    for (const o of other) {
+      set.add(o);
+    }
+  }
+  return set;
 }
 
 ;// ./node_modules/d3-array/src/index.js
@@ -2363,7 +2543,7 @@ function ascendingDefined(a, b) {
 
 
 ;// ./node_modules/d3-axis/src/identity.js
-/* harmony default export */ function src_identity(x) {
+/* harmony default export */ function d3_axis_src_identity(x) {
   return x;
 }
 
@@ -2412,7 +2592,7 @@ function axis(orient, scale) {
 
   function axis(context) {
     var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-        format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : src_identity) : tickFormat,
+        format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : d3_axis_src_identity) : tickFormat,
         spacing = Math.max(tickSizeInner, 0) + tickPadding,
         range = scale.range(),
         range0 = +range[0] + offset,
@@ -2545,6 +2725,92 @@ function axisLeft(scale) {
 
 ;// ./node_modules/d3-axis/src/index.js
 
+
+;// ./node_modules/d3-dispatch/src/dispatch.js
+var noop = {value: () => {}};
+
+function dispatch() {
+  for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
+    if (!(t = arguments[i] + "") || (t in _) || /[\s.]/.test(t)) throw new Error("illegal type: " + t);
+    _[t] = [];
+  }
+  return new Dispatch(_);
+}
+
+function Dispatch(_) {
+  this._ = _;
+}
+
+function parseTypenames(typenames, types) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
+    if (t && !types.hasOwnProperty(t)) throw new Error("unknown type: " + t);
+    return {type: t, name: name};
+  });
+}
+
+Dispatch.prototype = dispatch.prototype = {
+  constructor: Dispatch,
+  on: function(typename, callback) {
+    var _ = this._,
+        T = parseTypenames(typename + "", _),
+        t,
+        i = -1,
+        n = T.length;
+
+    // If no callback was specified, return the callback of the given type and name.
+    if (arguments.length < 2) {
+      while (++i < n) if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) return t;
+      return;
+    }
+
+    // If a type was specified, set the callback for the given type and name.
+    // Otherwise, if a null callback was specified, remove callbacks of the given name.
+    if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
+    while (++i < n) {
+      if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
+      else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
+    }
+
+    return this;
+  },
+  copy: function() {
+    var copy = {}, _ = this._;
+    for (var t in _) copy[t] = _[t].slice();
+    return new Dispatch(copy);
+  },
+  call: function(type, that) {
+    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
+    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
+    for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
+  },
+  apply: function(type, that, args) {
+    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
+    for (var t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
+  }
+};
+
+function get(type, name) {
+  for (var i = 0, n = type.length, c; i < n; ++i) {
+    if ((c = type[i]).name === name) {
+      return c.value;
+    }
+  }
+}
+
+function set(type, name, callback) {
+  for (var i = 0, n = type.length; i < n; ++i) {
+    if (type[i].name === name) {
+      type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
+      break;
+    }
+  }
+  if (callback != null) type.push({name: name, value: callback});
+  return type;
+}
+
+/* harmony default export */ const src_dispatch = (dispatch);
 
 ;// ./node_modules/d3-selection/src/selector.js
 function none() {}
@@ -3392,7 +3658,7 @@ function contextListener(listener) {
   };
 }
 
-function parseTypenames(typenames) {
+function on_parseTypenames(typenames) {
   return typenames.trim().split(/^|\s+/).map(function(t) {
     var name = "", i = t.indexOf(".");
     if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -3435,7 +3701,7 @@ function onAdd(typename, value, options) {
 }
 
 /* harmony default export */ function on(typename, value, options) {
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+  var typenames = on_parseTypenames(typename + ""), i, n = typenames.length, t;
 
   if (arguments.length < 2) {
     var on = this.node().__on;
@@ -3591,91 +3857,88 @@ Selection.prototype = selection.prototype = {
 
 /* harmony default export */ const src_selection = (selection);
 
-;// ./node_modules/d3-dispatch/src/dispatch.js
-var noop = {value: () => {}};
+;// ./node_modules/d3-selection/src/select.js
 
-function dispatch_dispatch() {
-  for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
-    if (!(t = arguments[i] + "") || (t in _) || /[\s.]/.test(t)) throw new Error("illegal type: " + t);
-    _[t] = [];
-  }
-  return new Dispatch(_);
+
+/* harmony default export */ function src_select(selector) {
+  return typeof selector === "string"
+      ? new Selection([[document.querySelector(selector)]], [document.documentElement])
+      : new Selection([[selector]], root);
 }
 
-function Dispatch(_) {
-  this._ = _;
+;// ./node_modules/d3-drag/src/noevent.js
+// These are typically used in conjunction with noevent to ensure that we can
+// preventDefault on the event.
+const nonpassive = {passive: false};
+const nonpassivecapture = {capture: true, passive: false};
+
+function nopropagation(event) {
+  event.stopImmediatePropagation();
 }
 
-function dispatch_parseTypenames(typenames, types) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
-    if (t && !types.hasOwnProperty(t)) throw new Error("unknown type: " + t);
-    return {type: t, name: name};
-  });
+/* harmony default export */ function noevent(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
 }
 
-Dispatch.prototype = dispatch_dispatch.prototype = {
-  constructor: Dispatch,
-  on: function(typename, callback) {
-    var _ = this._,
-        T = dispatch_parseTypenames(typename + "", _),
-        t,
-        i = -1,
-        n = T.length;
+;// ./node_modules/d3-drag/src/nodrag.js
 
-    // If no callback was specified, return the callback of the given type and name.
-    if (arguments.length < 2) {
-      while (++i < n) if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) return t;
-      return;
-    }
 
-    // If a type was specified, set the callback for the given type and name.
-    // Otherwise, if a null callback was specified, remove callbacks of the given name.
-    if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
-    while (++i < n) {
-      if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
-      else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
-    }
 
-    return this;
-  },
-  copy: function() {
-    var copy = {}, _ = this._;
-    for (var t in _) copy[t] = _[t].slice();
-    return new Dispatch(copy);
-  },
-  call: function(type, that) {
-    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
-    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
-    for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
-  },
-  apply: function(type, that, args) {
-    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
-    for (var t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
-  }
-};
-
-function get(type, name) {
-  for (var i = 0, n = type.length, c; i < n; ++i) {
-    if ((c = type[i]).name === name) {
-      return c.value;
-    }
+/* harmony default export */ function nodrag(view) {
+  var root = view.document.documentElement,
+      selection = src_select(view).on("dragstart.drag", noevent, nonpassivecapture);
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", noevent, nonpassivecapture);
+  } else {
+    root.__noselect = root.style.MozUserSelect;
+    root.style.MozUserSelect = "none";
   }
 }
 
-function set(type, name, callback) {
-  for (var i = 0, n = type.length; i < n; ++i) {
-    if (type[i].name === name) {
-      type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
-      break;
-    }
+function yesdrag(view, noclick) {
+  var root = view.document.documentElement,
+      selection = src_select(view).on("dragstart.drag", null);
+  if (noclick) {
+    selection.on("click.drag", noevent, nonpassivecapture);
+    setTimeout(function() { selection.on("click.drag", null); }, 0);
   }
-  if (callback != null) type.push({name: name, value: callback});
-  return type;
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", null);
+  } else {
+    root.style.MozUserSelect = root.__noselect;
+    delete root.__noselect;
+  }
 }
 
-/* harmony default export */ const src_dispatch = (dispatch_dispatch);
+;// ./node_modules/d3-selection/src/sourceEvent.js
+/* harmony default export */ function sourceEvent(event) {
+  let sourceEvent;
+  while (sourceEvent = event.sourceEvent) event = sourceEvent;
+  return event;
+}
+
+;// ./node_modules/d3-selection/src/pointer.js
+
+
+/* harmony default export */ function pointer(event, node) {
+  event = sourceEvent(event);
+  if (node === undefined) node = event.currentTarget;
+  if (node) {
+    var svg = node.ownerSVGElement || node;
+    if (svg.createSVGPoint) {
+      var point = svg.createSVGPoint();
+      point.x = event.clientX, point.y = event.clientY;
+      point = point.matrixTransform(node.getScreenCTM().inverse());
+      return [point.x, point.y];
+    }
+    if (node.getBoundingClientRect) {
+      var rect = node.getBoundingClientRect();
+      return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+    }
+  }
+  return [event.pageX, event.pageY];
+}
 
 ;// ./node_modules/d3-timer/src/timer.js
 var timer_frame = 0, // is an animation frame pending?
@@ -3960,7 +4223,7 @@ function create(node, id, self) {
 ;// ./node_modules/d3-transition/src/interrupt.js
 
 
-/* harmony default export */ function src_interrupt(node, name) {
+/* harmony default export */ function interrupt(node, name) {
   var schedules = node.__transition,
       schedule,
       active,
@@ -3988,7 +4251,7 @@ function create(node, id, self) {
 
 /* harmony default export */ function selection_interrupt(name) {
   return this.each(function() {
-    src_interrupt(this, name);
+    interrupt(this, name);
   });
 }
 
@@ -4192,7 +4455,7 @@ function tweenValue(transition, name, value) {
 
 
 
-/* harmony default export */ function transition_interpolate(a, b) {
+/* harmony default export */ function interpolate(a, b) {
   var c;
   return (typeof b === "number" ? src_number
       : b instanceof color ? rgb
@@ -4273,7 +4536,7 @@ function attr_attrFunctionNS(fullname, interpolate, value) {
 }
 
 /* harmony default export */ function transition_attr(name, value) {
-  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : transition_interpolate;
+  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attr_attrFunctionNS : attr_attrFunction)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attr_attrRemoveNS : attr_attrRemove)(fullname)
@@ -4627,7 +4890,7 @@ function styleMaybeRemove(id, name) {
 }
 
 /* harmony default export */ function transition_style(name, value, priority) {
-  var i = (name += "") === "transform" ? interpolateTransformCss : transition_interpolate;
+  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
   return value == null ? this
       .styleTween(name, styleNull(name, i))
       .on("end.style." + name, style_styleRemove(name))
@@ -4916,6 +5179,37 @@ src_selection.prototype.transition = selection_transition;
 
 
 
+;// ./node_modules/d3-brush/src/constant.js
+/* harmony default export */ const d3_brush_src_constant = (x => () => x);
+
+;// ./node_modules/d3-brush/src/event.js
+function BrushEvent(type, {
+  sourceEvent,
+  target,
+  selection,
+  mode,
+  dispatch
+}) {
+  Object.defineProperties(this, {
+    type: {value: type, enumerable: true, configurable: true},
+    sourceEvent: {value: sourceEvent, enumerable: true, configurable: true},
+    target: {value: target, enumerable: true, configurable: true},
+    selection: {value: selection, enumerable: true, configurable: true},
+    mode: {value: mode, enumerable: true, configurable: true},
+    _: {value: dispatch}
+  });
+}
+
+;// ./node_modules/d3-brush/src/noevent.js
+function noevent_nopropagation(event) {
+  event.stopImmediatePropagation();
+}
+
+/* harmony default export */ function src_noevent(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 ;// ./node_modules/d3-brush/src/brush.js
 
 
@@ -5074,7 +5368,7 @@ function brush_brush(dim) {
       filter = defaultFilter,
       touchable = defaultTouchable,
       keys = true,
-      listeners = dispatch("start", "brush", "end"),
+      listeners = src_dispatch("start", "brush", "end"),
       handleSize = 6,
       touchending;
 
@@ -5091,7 +5385,7 @@ function brush_brush(dim) {
       .merge(overlay)
         .each(function() {
           var extent = local(this).extent;
-          select(this)
+          src_select(this)
               .attr("x", extent[0][0])
               .attr("y", extent[0][1])
               .attr("width", extent[1][0] - extent[0][0])
@@ -5141,7 +5435,7 @@ function brush_brush(dim) {
                 emit = emitter(that, arguments),
                 selection0 = state.selection,
                 selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
-                i = interpolate(selection0, selection1);
+                i = value(selection0, selection1);
 
             function tween(t) {
               state.selection = t === 1 && selection1 === null ? null : i(t);
@@ -5173,7 +5467,7 @@ function brush_brush(dim) {
   };
 
   function redraw() {
-    var group = select(this),
+    var group = src_select(this),
         selection = local(this).selection;
 
     if (selection) {
@@ -5234,7 +5528,7 @@ function brush_brush(dim) {
       return this;
     },
     emit: function(type, event, mode) {
-      var d = select(this.that).datum();
+      var d = src_select(this.that).datum();
       listeners.call(
         type,
         this.that,
@@ -5306,7 +5600,7 @@ function brush_brush(dim) {
     e1 = e0;
     s1 = s0;
 
-    var group = select(that)
+    var group = src_select(that)
         .attr("pointer-events", "none");
 
     var overlay = group.selectAll(".overlay")
@@ -5316,14 +5610,14 @@ function brush_brush(dim) {
       emit.moved = moved;
       emit.ended = ended;
     } else {
-      var view = select(event.view)
+      var view = src_select(event.view)
           .on("mousemove.brush", moved, true)
           .on("mouseup.brush", ended, true);
       if (keys) view
           .on("keydown.brush", keydowned, true)
           .on("keyup.brush", keyupped, true)
 
-      dragDisable(event.view);
+      nodrag(event.view);
     }
 
     redraw.call(that);
@@ -5344,7 +5638,7 @@ function brush_brush(dim) {
       for (const point of points)
         if (point.cur) point[0] = point.cur[0], point[1] = point.cur[1];
       moving = true;
-      noevent(event);
+      src_noevent(event);
       move(event);
     }
 
@@ -5410,13 +5704,13 @@ function brush_brush(dim) {
     }
 
     function ended(event) {
-      nopropagation(event);
+      noevent_nopropagation(event);
       if (event.touches) {
         if (event.touches.length) return;
         if (touchending) clearTimeout(touchending);
         touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
       } else {
-        dragEnable(event.view, moving);
+        yesdrag(event.view, moving);
         view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
       }
       group.attr("pointer-events", "all");
@@ -5453,7 +5747,7 @@ function brush_brush(dim) {
         }
         default: return;
       }
-      noevent(event);
+      src_noevent(event);
     }
 
     function keyupped(event) {
@@ -5492,7 +5786,7 @@ function brush_brush(dim) {
         }
         default: return;
       }
-      noevent(event);
+      src_noevent(event);
     }
   }
 
@@ -5512,15 +5806,15 @@ function brush_brush(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant(number2(_)), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : d3_brush_src_constant(number2(_)), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : d3_brush_src_constant(!!_), brush) : filter;
   };
 
   brush.touchable = function(_) {
-    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant(!!_), brush) : touchable;
+    return arguments.length ? (touchable = typeof _ === "function" ? _ : d3_brush_src_constant(!!_), brush) : touchable;
   };
 
   brush.handleSize = function(_) {
@@ -6443,14 +6737,14 @@ function longitude(point) {
 }
 
 ;// ./node_modules/d3-array/src/merge.js
-function* flatten(arrays) {
+function* merge_flatten(arrays) {
   for (const array of arrays) {
     yield* array;
   }
 }
 
 function merge_merge(arrays) {
-  return Array.from(flatten(arrays));
+  return Array.from(merge_flatten(arrays));
 }
 
 ;// ./node_modules/d3-geo/src/clip/index.js
@@ -7864,69 +8158,6 @@ function range_range(start, stop, step) {
   return range;
 }
 
-;// ./node_modules/internmap/src/index.js
-class InternMap extends Map {
-  constructor(entries, key = keyof) {
-    super();
-    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
-    if (entries != null) for (const [key, value] of entries) this.set(key, value);
-  }
-  get(key) {
-    return super.get(intern_get(this, key));
-  }
-  has(key) {
-    return super.has(intern_get(this, key));
-  }
-  set(key, value) {
-    return super.set(intern_set(this, key), value);
-  }
-  delete(key) {
-    return super.delete(intern_delete(this, key));
-  }
-}
-
-class InternSet extends Set {
-  constructor(values, key = keyof) {
-    super();
-    Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
-    if (values != null) for (const value of values) this.add(value);
-  }
-  has(value) {
-    return super.has(intern_get(this, value));
-  }
-  add(value) {
-    return super.add(intern_set(this, value));
-  }
-  delete(value) {
-    return super.delete(intern_delete(this, value));
-  }
-}
-
-function intern_get({_intern, _key}, value) {
-  const key = _key(value);
-  return _intern.has(key) ? _intern.get(key) : value;
-}
-
-function intern_set({_intern, _key}, value) {
-  const key = _key(value);
-  if (_intern.has(key)) return _intern.get(key);
-  _intern.set(key, value);
-  return value;
-}
-
-function intern_delete({_intern, _key}, value) {
-  const key = _key(value);
-  if (_intern.has(key)) {
-    value = _intern.get(key);
-    _intern.delete(key);
-  }
-  return value;
-}
-
-function keyof(value) {
-  return value !== null && typeof value === "object" ? value.valueOf() : value;
-}
-
 ;// ./node_modules/d3-scale/src/ordinal.js
 
 
@@ -8112,15 +8343,6 @@ function point() {
 
 
 
-
-;// ./node_modules/d3-selection/src/select.js
-
-
-/* harmony default export */ function src_select(selector) {
-  return typeof selector === "string"
-      ? new Selection([[document.querySelector(selector)]], [document.documentElement])
-      : new Selection([[selector]], root);
-}
 
 ;// ./node_modules/d3-selection/src/create.js
 
@@ -8736,6 +8958,84 @@ var slice = Array.prototype.slice;
   return pie;
 }
 
+;// ./node_modules/d3-shape/src/offset/none.js
+/* harmony default export */ function offset_none(series, order) {
+  if (!((n = series.length) > 1)) return;
+  for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
+    s0 = s1, s1 = series[order[i]];
+    for (j = 0; j < m; ++j) {
+      s1[j][1] += s1[j][0] = isNaN(s0[j][1]) ? s0[j][0] : s0[j][1];
+    }
+  }
+}
+
+;// ./node_modules/d3-shape/src/order/none.js
+/* harmony default export */ function order_none(series) {
+  var n = series.length, o = new Array(n);
+  while (--n >= 0) o[n] = n;
+  return o;
+}
+
+;// ./node_modules/d3-shape/src/stack.js
+
+
+
+
+
+function stackValue(d, key) {
+  return d[key];
+}
+
+function stackSeries(key) {
+  const series = [];
+  series.key = key;
+  return series;
+}
+
+/* harmony default export */ function stack() {
+  var keys = d3_shape_src_constant([]),
+      order = order_none,
+      offset = offset_none,
+      value = stackValue;
+
+  function stack(data) {
+    var sz = Array.from(keys.apply(this, arguments), stackSeries),
+        i, n = sz.length, j = -1,
+        oz;
+
+    for (const d of data) {
+      for (i = 0, ++j; i < n; ++i) {
+        (sz[i][j] = [0, +value(d, sz[i].key, j, data)]).data = d;
+      }
+    }
+
+    for (i = 0, oz = src_array(order(sz)); i < n; ++i) {
+      sz[oz[i]].index = i;
+    }
+
+    offset(sz, oz);
+    return sz;
+  }
+
+  stack.keys = function(_) {
+    return arguments.length ? (keys = typeof _ === "function" ? _ : d3_shape_src_constant(Array.from(_)), stack) : keys;
+  };
+
+  stack.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : d3_shape_src_constant(+_), stack) : value;
+  };
+
+  stack.order = function(_) {
+    return arguments.length ? (order = _ == null ? order_none : typeof _ === "function" ? _ : d3_shape_src_constant(Array.from(_)), stack) : order;
+  };
+
+  stack.offset = function(_) {
+    return arguments.length ? (offset = _ == null ? offset_none : _, stack) : offset;
+  };
+
+  return stack;
+}
+
 ;// ./node_modules/d3-shape/src/index.js
 
 
@@ -8790,51 +9090,6 @@ var slice = Array.prototype.slice;
 
 
 
-
-;// ./node_modules/d3-drag/src/noevent.js
-// These are typically used in conjunction with noevent to ensure that we can
-// preventDefault on the event.
-const nonpassive = {passive: false};
-const nonpassivecapture = {capture: true, passive: false};
-
-function noevent_nopropagation(event) {
-  event.stopImmediatePropagation();
-}
-
-/* harmony default export */ function src_noevent(event) {
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}
-
-;// ./node_modules/d3-drag/src/nodrag.js
-
-
-
-/* harmony default export */ function nodrag(view) {
-  var root = view.document.documentElement,
-      selection = src_select(view).on("dragstart.drag", src_noevent, nonpassivecapture);
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", src_noevent, nonpassivecapture);
-  } else {
-    root.__noselect = root.style.MozUserSelect;
-    root.style.MozUserSelect = "none";
-  }
-}
-
-function yesdrag(view, noclick) {
-  var root = view.document.documentElement,
-      selection = src_select(view).on("dragstart.drag", null);
-  if (noclick) {
-    selection.on("click.drag", src_noevent, nonpassivecapture);
-    setTimeout(function() { selection.on("click.drag", null); }, 0);
-  }
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", null);
-  } else {
-    root.style.MozUserSelect = root.__noselect;
-    delete root.__noselect;
-  }
-}
 
 ;// ./node_modules/d3-interpolate/src/zoom.js
 var zoom_epsilon2 = 1e-12;
@@ -8908,35 +9163,6 @@ function tanh(x) {
 
   return zoom;
 })(Math.SQRT2, 2, 4));
-
-;// ./node_modules/d3-selection/src/sourceEvent.js
-/* harmony default export */ function sourceEvent(event) {
-  let sourceEvent;
-  while (sourceEvent = event.sourceEvent) event = sourceEvent;
-  return event;
-}
-
-;// ./node_modules/d3-selection/src/pointer.js
-
-
-/* harmony default export */ function src_pointer(event, node) {
-  event = sourceEvent(event);
-  if (node === undefined) node = event.currentTarget;
-  if (node) {
-    var svg = node.ownerSVGElement || node;
-    if (svg.createSVGPoint) {
-      var point = svg.createSVGPoint();
-      point.x = event.clientX, point.y = event.clientY;
-      point = point.matrixTransform(node.getScreenCTM().inverse());
-      return [point.x, point.y];
-    }
-    if (node.getBoundingClientRect) {
-      var rect = node.getBoundingClientRect();
-      return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
-    }
-  }
-  return [event.pageX, event.pageY];
-}
 
 ;// ./node_modules/d3-zoom/src/constant.js
 /* harmony default export */ const d3_zoom_src_constant = (x => () => x);
@@ -9259,7 +9485,7 @@ function defaultConstrain(transform, extent, translateExtent) {
     var g = gesture(this, args).event(event),
         t = this.__zoom,
         k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
-        p = src_pointer(event);
+        p = pointer(event);
 
     // If the mouse is in the same location as before, reuse it.
     // If there were recent wheel events, reset the wheel idle timeout.
@@ -9276,7 +9502,7 @@ function defaultConstrain(transform, extent, translateExtent) {
     // Otherwise, capture the mouse point and location at the start.
     else {
       g.mouse = [p, t.invert(p)];
-      src_interrupt(this);
+      interrupt(this);
       g.start();
     }
 
@@ -9295,14 +9521,14 @@ function defaultConstrain(transform, extent, translateExtent) {
     var currentTarget = event.currentTarget,
         g = gesture(this, args, true).event(event),
         v = src_select(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
-        p = src_pointer(event, currentTarget),
+        p = pointer(event, currentTarget),
         x0 = event.clientX,
         y0 = event.clientY;
 
     nodrag(event.view);
     src_noevent_nopropagation(event);
     g.mouse = [p, this.__zoom.invert(p)];
-    src_interrupt(this);
+    interrupt(this);
     g.start();
 
     function mousemoved(event) {
@@ -9312,7 +9538,7 @@ function defaultConstrain(transform, extent, translateExtent) {
         g.moved = dx * dx + dy * dy > clickDistance2;
       }
       g.event(event)
-       .zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = src_pointer(event, currentTarget), g.mouse[1]), g.extent, translateExtent));
+       .zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = pointer(event, currentTarget), g.mouse[1]), g.extent, translateExtent));
     }
 
     function mouseupped(event) {
@@ -9326,7 +9552,7 @@ function defaultConstrain(transform, extent, translateExtent) {
   function dblclicked(event, ...args) {
     if (!filter.apply(this, arguments)) return;
     var t0 = this.__zoom,
-        p0 = src_pointer(event.changedTouches ? event.changedTouches[0] : event, this),
+        p0 = pointer(event.changedTouches ? event.changedTouches[0] : event, this),
         p1 = t0.invert(p0),
         k1 = t0.k * (event.shiftKey ? 0.5 : 2),
         t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, args), translateExtent);
@@ -9345,7 +9571,7 @@ function defaultConstrain(transform, extent, translateExtent) {
 
     src_noevent_nopropagation(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = src_pointer(t, this);
+      t = touches[i], p = pointer(t, this);
       p = [p, this.__zoom.invert(p), t.identifier];
       if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting;
       else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0;
@@ -9355,7 +9581,7 @@ function defaultConstrain(transform, extent, translateExtent) {
 
     if (started) {
       if (g.taps < 2) touchfirst = p[0], touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
-      src_interrupt(this);
+      interrupt(this);
       g.start();
     }
   }
@@ -9368,7 +9594,7 @@ function defaultConstrain(transform, extent, translateExtent) {
 
     d3_zoom_src_noevent(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = src_pointer(t, this);
+      t = touches[i], p = pointer(t, this);
       if (g.touch0 && g.touch0[2] === t.identifier) g.touch0[0] = p;
       else if (g.touch1 && g.touch1[2] === t.identifier) g.touch1[0] = p;
     }
@@ -9408,7 +9634,7 @@ function defaultConstrain(transform, extent, translateExtent) {
       g.end();
       // If this was a dbltap, reroute to the (optional) dblclick.zoom handler.
       if (g.taps === 2) {
-        t = src_pointer(t, this);
+        t = pointer(t, this);
         if (Math.hypot(touchfirst[0] - t[0], touchfirst[1] - t[1]) < tapDistance) {
           var p = src_select(this).on("dblclick.zoom");
           if (p) p.apply(this, arguments);
@@ -9532,5 +9758,11 @@ const _sort = sort;
 const _max = max;
 const _arc = arc;
 const _pie = pie;
+const _stack = stack;
+const _union = union;
+const _index = index;
+const _sum = sum;
+const _groupSort = groupSort;
+const _brushX = brushX;
 
-export { _arc as arc, _axisBottom as axisBottom, _axisLeft as axisLeft, _create as create, _discontinuityRange as discontinuityRange, _easeCubicInOut as easeCubicInOut, _format as format, _geoAlbersUsa as geoAlbersUsa, _geoPath as geoPath, _max as max, _pie as pie, _scaleBand as scaleBand, _scaleDiscontinuous as scaleDiscontinuous, _scaleLinear as scaleLinear, _scaleOrdinal as scaleOrdinal, _select as select, _selectAll as selectAll, _sort as sort, _zoom as zoom, _zoomIdentity as zoomIdentity };
+export { _arc as arc, _axisBottom as axisBottom, _axisLeft as axisLeft, _brushX as brushX, _create as create, _discontinuityRange as discontinuityRange, _easeCubicInOut as easeCubicInOut, _format as format, _geoAlbersUsa as geoAlbersUsa, _geoPath as geoPath, _groupSort as groupSort, _index as index, _max as max, _pie as pie, _scaleBand as scaleBand, _scaleDiscontinuous as scaleDiscontinuous, _scaleLinear as scaleLinear, _scaleOrdinal as scaleOrdinal, _select as select, _selectAll as selectAll, _sort as sort, _stack as stack, _sum as sum, _union as union, _zoom as zoom, _zoomIdentity as zoomIdentity };

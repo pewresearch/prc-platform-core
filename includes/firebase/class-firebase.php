@@ -163,6 +163,11 @@ class Firebase {
 	 */
 	public function register_assets() {
 		$asset_file = include plugin_dir_path( __FILE__ ) . 'build/module.min.asset.php';
+		// If no asset file found, return early.
+		if ( ! $asset_file ) {
+			return new WP_Error( self::$handle, 'Failed to load asset file for Firebase module' );
+		}
+
 		$asset_slug = self::$handle;
 		$module_src = plugin_dir_url( __FILE__ ) . 'build/module.min.js';
 
@@ -171,7 +176,6 @@ class Firebase {
 			$module_src,
 			$asset_file['dependencies'],
 			$asset_file['version'],
-			true
 		);
 
 		if ( ! $module ) {

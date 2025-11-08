@@ -65,7 +65,7 @@ const getLabelFormat = (
 	const abbreviatedDatum = abbreviateNumber(datum, config.toFixedDecimal);
 
 	// if custom label is not set, check for cutoff
-	if (cutoff === null || Number(fixedDatum) >= cutoff) {
+	if (cutoff === null || Number(fixedDatum) > cutoff) {
 		//if there is a unit specified, add it to the label either at end or start
 
 		if (config.labelUnit) {

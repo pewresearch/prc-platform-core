@@ -18,6 +18,7 @@ class Gutenberg {
 	 * @param object $loader The loader object.
 	 */
 	public function __construct( $loader ) {
+		require_once plugin_dir_path( __FILE__ ) . 'class-edit-template-toolbar.php';
 		$this->init( $loader );
 	}
 
@@ -41,6 +42,8 @@ class Gutenberg {
 				10,
 				1
 			);
+
+			new Edit_Template_Toolbar( $loader );
 		}
 	}
 

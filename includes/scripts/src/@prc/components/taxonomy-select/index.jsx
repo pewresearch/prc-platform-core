@@ -49,7 +49,6 @@ export default function TaxonomySelect({
 	const [tokens, setTokens] = useState([]);
 
 	useEffect(() => {
-		console.log('<TaxonomySelect/>', records, tokens);
 		if (0 < records.length && 0 === tokens.length) {
 			const newTokens = records.map((taxonomy) => ({
 				label: taxonomy.label,
@@ -88,7 +87,6 @@ export default function TaxonomySelect({
 					value={currentValue}
 					options={tokens}
 					onChange={(newValue) => {
-						console.log('Value Changed 1: ', newValue);
 						setCurrentValue(newValue);
 					}}
 					__nextHasNoMarginBottom

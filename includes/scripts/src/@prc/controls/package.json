@@ -1,7 +1,7 @@
 {
 	"name": "@prc/controls",
 	"devDependencies": {
-		"@wordpress/scripts": "^30.13.0"
+		"@wordpress/scripts": "^30.25.0"
 	},
 	"scripts": {
 		"build": "wp-scripts build index.js --output-path=../../../build/@prc/controls",

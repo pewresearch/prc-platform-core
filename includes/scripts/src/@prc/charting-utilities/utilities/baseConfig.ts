@@ -211,6 +211,9 @@ const baseConfig: BaseConfig = {
 		caretPosition: 'bottom',
 		deemphasizeSiblings: false,
 		deemphasizeOpacity: 0.5,
+		emphasizeStrokeActive: false,
+		emphasizeStrokeColor: 'black',
+		emphasizeStrokeWidth: 1,
 		style: {
 			minWidth: 50,
 			maxWidth: 150,
@@ -376,9 +379,19 @@ const baseConfig: BaseConfig = {
 		blockRectSize: 44,
 		pathBackgroundFill: '#f7f7f7',
 		pathStroke: '#d3d3d3',
+		pathStrokeWidth: 0.5,
 		showCountyBoundaries: false,
 		showStateBoundaries: true,
 		zoomActive: false,
+		// Projection controls - defaults result in standard world view
+		projectionPreset: 'default',
+		topologyRegion: 'default', // Which regional topology file to load (independent of projection)
+		centerLongitude: 0,
+		centerLatitude: 0,
+		rotateLambda: 0,
+		rotatePhi: 0,
+		rotateGamma: 0,
+		customScale: 1,
 	},
 	custom: {
 		isCustomChart: false,

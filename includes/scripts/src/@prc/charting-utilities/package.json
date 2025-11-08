@@ -1,6 +1,6 @@
 {
 	"name": "@prc/charting-utilities",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"main": "index.js",
 	"types": "index.d.ts",
 	"description": "Shared utilities for PRC charting and data visualization components",

@@ -42,8 +42,6 @@ function HeadingLevelToolbar({
 	onChange,
 	Icon = HeadingLevelIcon,
 }) {
-	console.log('HeadingLevelToolbar', selectedLevel);
-
 	const MemoizedHeadingLevelIcon = useCallback(
 		() => <Icon level={selectedLevel} isPressed />,
 		[selectedLevel],

@@ -20,6 +20,9 @@ import {
 	__experimentalHStack as HStack,
 	__experimentalVStack as VStack,
 	Modal,
+	Flex,
+	FlexItem,
+	FlexBlock,
 } from '@wordpress/components';
 
 const ModalContent = styled.div`
@@ -43,7 +46,9 @@ const ModalSearch = styled.div`
 `;
 
 /**
- * Uses the useEntityRecords hook to query for a entity.
+ * A custom hook for use with EntityPatternModal.
+ * Utilizes the useEntityRecords hook to query for an entity.
+ *
  * @param {*}       param0
  * @param {string}  param0.entityType - the post type of the entity.
  * @param {boolean} param0.enabled    - whether or not the query should be enabled.
@@ -57,7 +62,7 @@ function useQuery({
 	excludeId = null,
 	args = {},
 }) {
-	const queryArgs = {
+	const defaultArgs = {
 		context: 'view',
 		orderby: 'date',
 		order: 'desc',
@@ -67,7 +72,7 @@ function useQuery({
 	const { hasResolved, isResolving, records, status } = useEntityRecords(
 		'postType',
 		entityType,
-		{ ...queryArgs, ...args },
+		{ ...defaultArgs, ...args },
 		{ enabled }
 	);
 
@@ -104,11 +109,14 @@ export default function EntityPatternModal({
 	instructions,
 	entityType = 'post',
 	entityTypeLabel = 'Post',
+	queryArgs = {},
 	onSelect = () => {},
 	onClose = () => {},
 	selectedId = null,
 	status = 'publish',
 	clientId,
+	afterSearch,
+	afterResults,
 }) {
 	const [searchValue, setSearchValue] = useState(null);
 	const debouncedSearchValue = useDebounce(searchValue, 600);
@@ -121,6 +129,7 @@ export default function EntityPatternModal({
 			per_page: 50,
 			context: 'edit',
 			status,
+			...queryArgs,
 		},
 	});
 
@@ -148,25 +157,25 @@ export default function EntityPatternModal({
 
 	const shownRecords = useAsyncList(filteredRecords);
 
-	const { createSuccessNotice } = useDispatch(noticesStore);
+	// @TODO: Implement per isntance sof on select.
+	// const { createSuccessNotice } = useDispatch(noticesStore);
+	// createSuccessNotice(
+	// 	sprintf(
+	// 		/* translators: %s: template part title. */
+	// 		__('%s "%s" inserted.'),
+	// 		entityTypeLabel,
+	// 		title
+	// 	),
+	// 	{
+	// 		type: 'snackbar',
+	// 	}
+	// );
 
 	const onPatternSelect = (response) => {
 		console.log('onPatternSelect', response);
 		const { title } = response;
 
 		onSelect(response);
-
-		createSuccessNotice(
-			sprintf(
-				/* translators: %s: template part title. */
-				__('%s "%s" inserted.'),
-				entityTypeLabel,
-				title
-			),
-			{
-				type: 'snackbar',
-			}
-		);
 
 		onClose();
 	};
@@ -180,13 +189,18 @@ export default function EntityPatternModal({
 			<ModalContent>
 				<VStack spacing="5">
 					<ModalSearch>
-						<SearchControl
-							__nextHasNoMarginBottom
-							onChange={setSearchValue}
-							value={searchValue}
-							label={`Search for ${entityTypeLabel}`}
-							placeholder={__('Search')}
-						/>
+						<Flex>
+							<FlexBlock>
+								<SearchControl
+									__nextHasNoMarginBottom
+									onChange={setSearchValue}
+									value={searchValue}
+									label={`Search for ${entityTypeLabel}`}
+									placeholder={__('Search')}
+								/>
+							</FlexBlock>
+							{typeof afterSearch === 'function' ? <FlexItem>{afterSearch()}</FlexItem> : afterSearch}
+						</Flex>
 					</ModalSearch>
 
 					{hasRecords && (
@@ -208,6 +222,8 @@ export default function EntityPatternModal({
 							<p>{__('No records found.')}</p>
 						</HStack>
 					)}
+
+					{typeof afterResults === 'function' ? afterResults() : afterResults}
 				</VStack>
 			</ModalContent>
 		</Modal>

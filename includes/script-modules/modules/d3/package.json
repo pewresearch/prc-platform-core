@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@d3fc/d3fc-discontinuous-scale": "^4.1.1",
+		"@observablehq/runtime": "^6.0.0",
 		"d3": "^7.9.0"
 	}
 }

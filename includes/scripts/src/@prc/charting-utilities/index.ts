@@ -55,6 +55,7 @@ export {
 	scaleAxisNumTicks,
 } from './utilities/helpers';
 export { DataContext, DataProvider } from './utilities/DataContext';
+export { createTopologyLoader } from './utilities/loadTopology';
 export * from './utilities/colorPalettes';
 
 // Hooks
@@ -69,9 +70,11 @@ export {
 	getLegendProps,
 	getLineProps,
 	getChartDimensions,
+	getLocalPoint,
 	getTooltipFormat,
 	getTooltipHeaderFormat,
 	getTooltipVisible,
+	getTooltipMapDeemphasisProps,
 	getTextVisible,
 	getVoronoiProps,
 	getFlattenedData,

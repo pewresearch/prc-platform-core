@@ -7,9 +7,11 @@ import { getLegendProps } from './legend';
 import { getLineProps } from './line';
 import { getChartDimensions } from './size';
 import {
+	getLocalPoint,
 	getTooltipFormat,
 	getTooltipHeaderFormat,
 	getTooltipVisible,
+	getTooltipMapDeemphasisProps,
 } from './tooltips';
 import { getVoronoiProps } from './voronoi';
 import type { FlatData } from '../types/flatData';
@@ -116,6 +118,7 @@ export {
 	getLegendProps,
 	getLineProps,
 	getChartDimensions,
+	getLocalPoint,
 	getTooltipFormat,
 	getTooltipHeaderFormat,
 	getTooltipVisible,
@@ -125,4 +128,5 @@ export {
 	getGroupedData,
 	getGroupPositioningHorizontal,
 	getGroupPositioningVertical,
+	getTooltipMapDeemphasisProps,
 };

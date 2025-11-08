@@ -139,7 +139,7 @@ function getBarLabelFill(
 	}
 
 	// Contrast mode: determine based on position and luminosity
-	if (labelPositionBar === 'outside' || barValue <= labelCutoff) {
+	if (labelPositionBar === 'outside' || barValue < labelCutoff) {
 		return theme === 'light' ? 'black' : 'white';
 	}
 	return labelFill(barColor);
