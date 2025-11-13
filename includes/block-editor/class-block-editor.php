@@ -99,7 +99,7 @@ class Block_Editor {
 	}
 
 	/**
-	 * Rather than disabling variations one by one we're going to assume ALL should be disabled and instead these should be whitelisted.
+	 * Rather than disabling variations one by one we're going to assume ALL should be disabled and instead these should be enabled.
 	 *
 	 * @return array
 	 */

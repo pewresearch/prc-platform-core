@@ -96,14 +96,15 @@ class Gutenberg {
 	 */
 	public function unregister_core_block_patterns() {
 		remove_theme_support( 'core-block-patterns' );
-		$registered_patterns = \WP_Block_Patterns_Registry::get_instance()->get_all_registered();
-		if ( $registered_patterns ) {
-			foreach ( $registered_patterns as $pattern_properties ) {
-				// if the registered pattern's name does not include `prc-` in the namespace then unregister it.
-				if ( strpos( $pattern_properties['name'], 'prc-' ) === false ) {
-					unregister_block_pattern( $pattern_properties['name'] );
-				}
-			}
-		}
+		// This code can be used to unregister any non-PRC block patterns, however, this was overkill for now.
+		// $registered_patterns = \WP_Block_Patterns_Registry::get_instance()->get_all_registered();
+		// if ( $registered_patterns ) {
+		// foreach ( $registered_patterns as $pattern_properties ) {
+		// if the registered pattern's name does not include `prc-` in the namespace then unregister it.
+		// if ( strpos( $pattern_properties['name'], 'prc-' ) === false ) {
+		// unregister_block_pattern( $pattern_properties['name'] );
+		// }
+		// }
+		// }
 	}
 }

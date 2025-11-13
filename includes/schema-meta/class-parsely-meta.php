@@ -126,16 +126,16 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 			$research_team_tags = wp_get_post_terms( $parent_id, 'research-teams' );
 			$format_tags        = wp_get_post_terms( $parent_id, 'formats' );
 			$meta_tags          = array(
-				'post__' . $object_id,
+				$object_id . '__post',
 			);
 			if ( $is_child ) {
-				$meta_tags[] = 'parent__' . $parent_id;
+				$meta_tags[] = $parent_id . '__parent';
 			}
 
 			$category_tags = ( is_array( $category_tags ) && ! empty( $category_tags ) && property_exists( $category_tags[0], 'name' ) )
 				? array_map(
 					function ( $category ) {
-						return property_exists( $category, 'name' ) ? $category->name : null;
+						return property_exists( $category, 'name' ) ? 'topic__' . $category->name : null;
 					},
 					$category_tags
 				)
@@ -144,7 +144,7 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 			$research_team_tags = ( is_array( $research_team_tags ) && ! empty( $research_team_tags ) && property_exists( $research_team_tags[0], 'name' ) )
 				? array_map(
 					function ( $research_team ) {
-						return property_exists( $research_team, 'name' ) ? $research_team->name : null;
+						return property_exists( $research_team, 'name' ) ? 'team__' . $research_team->name : null;
 					},
 					$research_team_tags
 				)
@@ -153,7 +153,7 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 			$format_tags = ( is_array( $format_tags ) && ! empty( $format_tags ) && property_exists( $format_tags[0], 'name' ) )
 				? array_map(
 					function ( $format ) {
-						return property_exists( $format, 'name' ) ? $format->name : null;
+						return property_exists( $format, 'name' ) ? 'format__' . $format->name : null;
 					},
 					$format_tags
 				)
