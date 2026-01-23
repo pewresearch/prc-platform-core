@@ -78,17 +78,27 @@ const getGroupedData = (
 		dataRender.groupBreaksCategoryValues &&
 		dataRender.groupBreaksCategoryValues.length > 0
 	) {
+		console.log(
+			'dataRender.groupBreaksCategoryValues',
+			dataRender.groupBreaksCategoryValues
+		);
 		const orderedGroups: GroupedData[] = [];
 		dataRender.groupBreaksCategoryValues.forEach(
 			(groupName: string | number) => {
-				// let's sanitize the groupName for case insensitivity
+				// Convert groupName to string and lowercase for case-insensitive comparison
 				const sanitizedGroupName =
 					typeof groupName === 'string'
 						? groupName.toLowerCase()
-						: groupName;
-				const found = sortedGroups.find(
-					({ group }) => group?.toLowerCase() === sanitizedGroupName
-				);
+						: String(groupName).toLowerCase();
+				const found = sortedGroups.find(({ group }) => {
+					// Convert group to string for comparison (handles both string and number)
+					if (group === null || group === undefined) return false;
+					const groupString =
+						typeof group === 'string'
+							? group.toLowerCase()
+							: String(group).toLowerCase();
+					return groupString === sanitizedGroupName;
+				});
 				if (found) {
 					orderedGroups.push(found);
 				}
@@ -120,6 +130,10 @@ type GroupPositioning = {
 /**
  * Calculate group positioning for horizontal charts
  * (Bars grow vertically, groups stack vertically with dynamic height)
+ * @param groupedData
+ * @param dataRender
+ * @param independentScale
+ * @param innerHeight
  */
 const getGroupPositioningHorizontal = (
 	groupedData: GroupedData[],
@@ -178,6 +192,10 @@ const getGroupPositioningHorizontal = (
 /**
  * Calculate group positioning for vertical charts
  * (Bars grow horizontally, groups stack horizontally with proportional width)
+ * @param groupedData
+ * @param dataRender
+ * @param independentScale
+ * @param innerWidth
  */
 const getGroupPositioningVertical = (
 	groupedData: GroupedData[],

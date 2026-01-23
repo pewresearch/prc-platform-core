@@ -1,6 +1,6 @@
 import { DataRender } from '../types/dataRender';
 import { Layout } from '../types/layout';
-import { abbreviateNumber } from '../utilities/helpers';
+import { abbreviateNumber, decodeHtmlEntities } from '../utilities/helpers';
 import { Tooltip } from '../types/tooltip';
 import { Map } from '../types/map';
 import { timeFormat } from 'd3-time-format';
@@ -17,13 +17,10 @@ type TooltipData = { [key: string]: string | number };
  * Handles iframe contexts (like WordPress editor) where standard methods may fail.
  *
  * @param svgElement - The SVG container element
- * @param event - The mouse/touch event
- * @returns Point object with x, y coordinates, or null
+ * @param event      - The mouse/touch event
+ * @return Point object with x, y coordinates, or null
  */
-function getLocalPoint(
-	svgElement: Element,
-	event: EventType
-): Point | null {
+function getLocalPoint(svgElement: Element, event: EventType): Point | null {
 	if (!svgElement || !event) {
 		return null;
 	}
@@ -77,17 +74,19 @@ function styleTooltipString(formatString: string, color: string) {
 	return formatted;
 }
 
-function formatTooltipString(formatString: string, color: string) {
+function formatTooltipString(formatString: string) {
 	return function (data: TooltipData) {
 		const formatted = formatString
 			.replace(/{{\s*(\w+)\.toLowerCase\(\)\s*}}/g, (match, key) => {
 				const originalKey = key.replace(/\.toLowerCase\(\)$/, '');
 				const value = data[originalKey];
-				return value ? value.toString().toLowerCase() : '';
+				return value
+					? decodeHtmlEntities(value.toString().toLowerCase())
+					: '';
 			})
 			.replace(/{{\s*(\w+)\s*}}/g, (match, key) => {
 				const value = data[key];
-				return value ? value.toString() : '';
+				return value ? decodeHtmlEntities(value.toString()) : '';
 			});
 		return formatted;
 	};
@@ -105,15 +104,17 @@ const getTooltipHeaderFormat = (
 	// do some formatting on the numerical value
 
 	if ('categoryValue' === config.headerValue) {
-		return category;
+		return typeof category === 'string'
+			? decodeHtmlEntities(category)
+			: category;
 	}
-	return x;
+	return typeof x === 'string' ? decodeHtmlEntities(x) : x;
 };
 
 const getTooltipFormat = (
 	d: { x: any; y: any; category: any; color: any },
 	config: Tooltip,
-	DataRender: DataRender | undefined
+	dataRender: DataRender | undefined
 ) => {
 	// if d.x is a date, format it
 	const d3DateFormat = timeFormat(config.dateFormat);
@@ -128,8 +129,11 @@ const getTooltipFormat = (
 	if (config.customFormat) {
 		return config.customFormat(datum);
 	}
+
+	// TODO: extend toolitip formatter to support full data object, so that we can return non-numeric values tied to the data point
+	// eg. {{data.tooltipValue}} would return the value of data.tooltipValue
 	// if there is a dataRender, check is the mapScale is 'ordinal', if so, datum is a string
-	if (DataRender && DataRender.mapScale === 'ordinal') {
+	if (dataRender && dataRender.mapScale === 'ordinal') {
 		datum = d.y;
 		if (config.format && config.format.length > 0) {
 			// quick conversion for strings using sprintf format
@@ -138,12 +142,11 @@ const getTooltipFormat = (
 				.replace(/%2\$s/g, '{{value}}')
 				.replace(/%3\$s/g, '{{row}}');
 			const styledFormat = styleTooltipString(reformat, d.color);
-			const format = formatTooltipString(styledFormat, d.color);
+			const format = formatTooltipString(styledFormat);
 			return format({ column: category, value: datum, row: x });
-		} else {
-			const format = formatTooltipString('{{row}}: {{value}}', d.color);
-			return format({ row: x, value: datum });
 		}
+		const format = formatTooltipString('{{row}}: {{value}}');
+		return format({ row: x, value: datum });
 	}
 	// do some formatting on the numerical value
 	if (config.toFixedDecimal) {
@@ -162,12 +165,12 @@ const getTooltipFormat = (
 			.replace(/%2\$s/g, '{{value}}')
 			.replace(/%3\$s/g, '{{row}}');
 		const styledFormat = styleTooltipString(reformat, d.color);
-		const format = formatTooltipString(styledFormat, d.color);
+		const format = formatTooltipString(styledFormat);
 		return format({ column: category, value: datum, row: x });
-	} else {
-		const format = formatTooltipString('{{row}}: {{value}}', d.color);
-		return format({ row: x, value: datum });
 	}
+	const format = formatTooltipString('{{row}}: {{value}}');
+	return format({ row: x, value: datum });
+
 	// otherwise, return the value with the unit at the start
 };
 

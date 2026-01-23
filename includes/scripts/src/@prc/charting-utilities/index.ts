@@ -53,6 +53,8 @@ export {
 	newDateByFormat,
 	checkContrast,
 	scaleAxisNumTicks,
+	decodeHtmlEntities,
+	getCustomLabel,
 } from './utilities/helpers';
 export { DataContext, DataProvider } from './utilities/DataContext';
 export { createTopologyLoader } from './utilities/loadTopology';

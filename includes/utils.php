@@ -388,3 +388,43 @@ function get_current_device() {
 	$devices = get_devices();
 	return $devices['is_phone'] ? 'mobile' : ( $devices['is_tablet'] ? 'tablet' : 'desktop' );
 }
+
+/**
+ * Get the ISO 3166-1 alpha-2 country code from a country name.
+ *
+ * Uses the DougSisk\CountryState library to look up country codes.
+ * Returns the lowercase two-letter country code for use with flag-icons library.
+ *
+ * @param string $country_name The country name to look up (e.g., "Argentina", "United States").
+ * @return string|null The lowercase ISO 3166-1 alpha-2 code (e.g., "ar", "us"), or null if not found.
+ */
+function get_country_code_from_name( string $country_name ): ?string {
+	$country_state = new CountryState();
+	$countries     = $country_state->getCountries(); // Returns ['US' => 'United States', ...].
+	$normalized    = strtolower( trim( $country_name ) );
+
+	// Handle common abbreviations or short names
+	$abbreviation_map = array(
+		'us'   => 'United States',
+		'u.s.' => 'United States',
+		'u.s'  => 'United States',
+		'usa'  => 'United States',
+		'uk'   => 'United Kingdom',
+		'u.k.' => 'United Kingdom',
+		'u.k'  => 'United Kingdom',
+	);
+
+	// If normalized name is a known abbreviation, map it to the formal country name
+	if ( array_key_exists( $normalized, $abbreviation_map ) ) {
+		$normalized = strtolower( $abbreviation_map[ $normalized ] );
+	}
+
+	// Also check if it's a direct country code (alpha-2), e.g., 'us', 'gb', etc.
+	foreach ( $countries as $code => $name ) {
+		if ( strtolower( $name ) === $normalized || strtolower( $code ) === $normalized ) {
+			return strtolower( $code );
+		}
+	}
+
+	return null;
+}

@@ -1,4 +1,9 @@
-import { abbreviateNumber, checkContrast, newDateByFormat } from '../utilities/helpers';
+import {
+	abbreviateNumber,
+	checkContrast,
+	newDateByFormat,
+	decodeHtmlEntities,
+} from '../utilities/helpers';
 import { timeFormat, timeParse } from 'd3-time-format';
 import { independentAxis, dependentAxis } from '../types/configTypes';
 import { AxisScale, AxisScaleOutput } from '@visx/axis';
@@ -179,7 +184,7 @@ const getAxisProps = (
 	}
 
 	return {
-		scale: scale,
+		scale,
 		hideAxisLine: !config.active,
 		hideTicks: !config.active,
 		stroke: getColor(axis.stroke, theme),
@@ -187,7 +192,7 @@ const getAxisProps = (
 		tickStroke: getColor(axis.stroke, theme),
 		tickLength: ticks.size,
 		hideZero: !config.showZero,
-		label: config.label ? config.label : '',
+		label: config.label ? decodeHtmlEntities(config.label) : '',
 		labelOffset: axisLabel.padding,
 		numTicks: config.tickCount,
 		tickValues:
@@ -206,7 +211,7 @@ const getAxisProps = (
 			width: axisLabel.maxWidth,
 		},
 		tickFormat: (t: any) =>
-			formatTicks(config, t, inputDateFormat),
+			decodeHtmlEntities(formatTicks(config, t, inputDateFormat)),
 		tickLabelProps: () => {
 			return {
 				fill: getColor(tickLabels.fill, theme),

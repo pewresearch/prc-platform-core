@@ -55,7 +55,7 @@ const abbreviateNumber = (num: number, fixed?: number): string => {
 	}
 	num = Number(num);
 	fixed = !fixed || fixed < 0 ? 0 : fixed; // number of decimal places to show
-	var b = num.toPrecision(2).split('e'), // get power
+	const b = num.toPrecision(2).split('e'), // get power
 		k =
 			b.length === 1
 				? 0
@@ -89,7 +89,7 @@ const hexToRgb = (hex: string) => {
 };
 
 function luminance(r: number, g: number, b: number) {
-	var a = [r, g, b].map(function (v) {
+	const a = [r, g, b].map(function (v) {
 		v /= 255;
 		return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 	});
@@ -99,10 +99,10 @@ function luminance(r: number, g: number, b: number) {
 function checkContrast(hex1: string, hex2: string) {
 	const rgb1 = hexToRgb(hex1) as number[];
 	const rgb2 = hexToRgb(hex2) as number[];
-	var lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
-	var lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
-	var brightest = Math.max(lum1, lum2);
-	var darkest = Math.min(lum1, lum2);
+	const lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
+	const lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
+	const brightest = Math.max(lum1, lum2);
+	const darkest = Math.min(lum1, lum2);
 	return (brightest + 0.05) / (darkest + 0.05);
 }
 
@@ -194,6 +194,29 @@ const scaleAxisNumTicks = (
 	return scaledNumTicks;
 };
 
+// Helper function to decode HTML entities for SVG rendering
+const decodeHtmlEntities = (text: string): string => {
+	return text
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.replace(/&#x27;/g, "'")
+		.replace(/&#x2F;/g, '/')
+		.replace(/&#x60;/g, '`')
+		.replace(/&#x3D;/g, '=');
+};
+
+// Helper function to extract and decode custom labels from data
+const getCustomLabel = (
+	dataPoint: Record<string, any>,
+	key: string
+): string => {
+	const label = dataPoint?.__labels?.[key];
+	return label ? decodeHtmlEntities(label) : '';
+};
+
 export {
 	abbreviateNumber,
 	labelFill,
@@ -201,4 +224,6 @@ export {
 	newDateByFormat,
 	checkContrast,
 	scaleAxisNumTicks,
+	decodeHtmlEntities,
+	getCustomLabel,
 };

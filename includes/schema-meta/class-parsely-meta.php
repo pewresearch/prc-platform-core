@@ -1,4 +1,7 @@
-<?php
+<?php // phpcs:disable PSR1.Files.FileName.InvalidClassFileName
+// phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClassesPerFile
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
+
 namespace PRC\Platform;
 
 use Yoast\WP\SEO\Presenters\Abstract_Indexable_Presenter;
@@ -7,8 +10,6 @@ use Yoast\WP\SEO\Presenters\Abstract_Indexable_Tag_Presenter;
 /**
  * Adds a custom parsely-title meta tag.
  */
-
-
 class Parsely_Title extends Abstract_Indexable_Tag_Presenter {
 	/**
 	 * The tag format including placeholders.
@@ -132,28 +133,35 @@ class Parsely_Tags extends Abstract_Indexable_Tag_Presenter {
 				$meta_tags[] = $parent_id . '__parent';
 			}
 
-			$category_tags = ( is_array( $category_tags ) && ! empty( $category_tags ) && property_exists( $category_tags[0], 'name' ) )
+			// Determine if the object is a report package parent or child post and if so add package tag.
+			$report_package_is_chapter = function_exists( '\\PRC\\Platform\\Report_Package\\is_chapter_part_of_report_package' ) && \PRC\Platform\Report_Package\is_chapter_part_of_report_package( $object_id );
+			$report_package_is_report  = function_exists( '\\PRC\\Platform\\Report_Package\\is_report_package' ) && \PRC\Platform\Report_Package\is_report_package( $object_id );
+			if ( $report_package_is_chapter || $report_package_is_report ) {
+				$meta_tags[] = $parent_id . '__report';
+			}
+
+			$category_tags = ( is_array( $category_tags ) && ! empty( $category_tags ) && property_exists( $category_tags[0], 'slug' ) )
 				? array_map(
 					function ( $category ) {
-						return property_exists( $category, 'name' ) ? 'topic__' . $category->name : null;
+						return property_exists( $category, 'slug' ) ? 'category__' . $category->slug : null;
 					},
 					$category_tags
 				)
 				: array();
 
-			$research_team_tags = ( is_array( $research_team_tags ) && ! empty( $research_team_tags ) && property_exists( $research_team_tags[0], 'name' ) )
+			$research_team_tags = ( is_array( $research_team_tags ) && ! empty( $research_team_tags ) && property_exists( $research_team_tags[0], 'slug' ) )
 				? array_map(
 					function ( $research_team ) {
-						return property_exists( $research_team, 'name' ) ? 'team__' . $research_team->name : null;
+						return property_exists( $research_team, 'slug' ) ? 'team__' . $research_team->slug : null;
 					},
 					$research_team_tags
 				)
 				: array();
 
-			$format_tags = ( is_array( $format_tags ) && ! empty( $format_tags ) && property_exists( $format_tags[0], 'name' ) )
+			$format_tags = ( is_array( $format_tags ) && ! empty( $format_tags ) && property_exists( $format_tags[0], 'slug' ) )
 				? array_map(
 					function ( $format ) {
-						return property_exists( $format, 'name' ) ? 'format__' . $format->name : null;
+						return property_exists( $format, 'slug' ) ? 'format__' . $format->slug : null;
 					},
 					$format_tags
 				)

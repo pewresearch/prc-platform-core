@@ -1,4 +1,5 @@
 import { Legend } from '../types/legend';
+import { decodeHtmlEntities } from '../utilities/helpers';
 
 export const getLegendProps = (config: Legend) => {
 	const { orientation, markerStyle, margin } = config;
@@ -20,6 +21,8 @@ export const getLegendProps = (config: Legend) => {
 				lineHeight: 1.1,
 			},
 		},
+		labelFormat: (label: any) =>
+			typeof label === 'string' ? decodeHtmlEntities(label) : label,
 		shapeStyle: () => ({
 			strokeWidth: 3,
 			transform: markerStyle === 'line' ? 'translate(0, 1.5px)' : 'none',

@@ -7,5 +7,7 @@ export {
 	newDateByFormat,
 	checkContrast,
 	scaleAxisNumTicks,
+	decodeHtmlEntities,
+	getCustomLabel,
 } from './helpers';
 export { createTopologyLoader } from './loadTopology';

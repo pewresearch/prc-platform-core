@@ -1,4 +1,4 @@
-import { abbreviateNumber } from '../utilities/helpers';
+import { abbreviateNumber, decodeHtmlEntities } from '../utilities/helpers';
 import { Labels } from '../types/configTypes';
 type BarProps = {
 	x: number;
@@ -47,7 +47,7 @@ const getLabelFormat = (
 
 	//if custom label is set, use it and return
 	if (config.customLabelFormat) {
-		return config.customLabelFormat(datum, category);
+		return decodeHtmlEntities(config.customLabelFormat(datum, category));
 	}
 
 	// running Number() twice will truncate trailing zeros
@@ -72,34 +72,42 @@ const getLabelFormat = (
 			if (config.labelUnitPosition === 'end') {
 				// check if abbreviated values is selected
 				if (config.abbreviateValue) {
-					return `${abbreviatedDatum}${config.labelUnit}`;
+					return decodeHtmlEntities(
+						`${abbreviatedDatum}${config.labelUnit}`
+					);
 				}
 				//if not abbreviated values, check if toLocaleString is selected
 				if (config.toLocaleString) {
-					return `${localizedDatum}${config.labelUnit}`;
+					return decodeHtmlEntities(
+						`${localizedDatum}${config.labelUnit}`
+					);
 				}
 				// if neither selected, return the value with the unit
-				return `${fixedDatum}${config.labelUnit}`;
+				return decodeHtmlEntities(`${fixedDatum}${config.labelUnit}`);
 			}
 			// if position label start and abbreviated values is selected
 			if (config.abbreviateValue) {
-				return `${config.labelUnit}${abbreviatedDatum}`;
+				return decodeHtmlEntities(
+					`${config.labelUnit}${abbreviatedDatum}`
+				);
 			}
 			// if position label start and toLocaleString is selected
 			if (config.toLocaleString) {
-				return `${config.labelUnit}${localizedDatum}`;
+				return decodeHtmlEntities(
+					`${config.labelUnit}${localizedDatum}`
+				);
 			}
 			// otherwise, return the value with the unit at the start
-			return `${config.labelUnit}${fixedDatum}`;
+			return decodeHtmlEntities(`${config.labelUnit}${fixedDatum}`);
 		}
 		if (config.abbreviateValue) {
-			return `${abbreviatedDatum}`;
+			return decodeHtmlEntities(`${abbreviatedDatum}`);
 		}
 		if (config.toLocaleString) {
-			return `${localizedDatum}`;
+			return decodeHtmlEntities(`${localizedDatum}`);
 		}
 		// if none of the above are selected, return the value as is to the specified decimal place
-		return `${fixedDatum}`;
+		return decodeHtmlEntities(`${fixedDatum}`);
 	}
 	return '';
 };

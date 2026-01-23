@@ -96,8 +96,10 @@ class Firebase {
 		if ( ! defined( 'WPCOM_VIP_PRIVATE_DIR' ) ) {
 			return new WP_Error( 'firebase_service_account', 'WPCOM_VIP_PRIVATE_DIR is not defined.' );
 		}
+
 		$environment = wp_get_environment_type();
-		// $environment          = 'production';
+		// $environment = 'production'; // Enable when you need to debug production data.
+
 		$service_account_file = ( 'production' === $environment )
 			? \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json'
 			: \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-staging.json';
@@ -139,8 +141,9 @@ class Firebase {
 		if ( ! defined( 'PRC_PLATFORM_FIREBASE_PROJECT_ID' ) && ! defined( 'PRC_PLATFORM_FIREBASE_PROJECT_ID__DEV' ) ) {
 			return;
 		}
+
 		$environment = wp_get_environment_type();
-		// $environment = 'production';
+		// $environment = 'production'; // Enable when you need to debug production data.
 
 		$api_key     = 'production' === $environment ? \PRC_PLATFORM_FIREBASE_KEY : \PRC_PLATFORM_FIREBASE_KEY__DEV;
 		$auth_domain = 'production' === $environment ? \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN : \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN__DEV;
