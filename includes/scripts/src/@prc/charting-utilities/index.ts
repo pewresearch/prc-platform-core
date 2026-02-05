@@ -26,6 +26,7 @@ export * from './types/metadata';
 export * from './types/nodes';
 export * from './types/pie';
 export * from './types/plotBands';
+export * from './types/shapes';
 export * from './types/regressionLine';
 export * from './types/stack';
 export * from './types/tableData';
@@ -33,6 +34,7 @@ export * from './types/text';
 export * from './types/tooltip';
 export * from './types/voronoi';
 export * from './types/windowSize';
+export * from './types/drawings';
 
 // Utilities
 export { useSize } from './utilities/useSize';
@@ -55,6 +57,9 @@ export {
 	scaleAxisNumTicks,
 	decodeHtmlEntities,
 	getCustomLabel,
+	getCustomLabelText,
+	isLabelVisible,
+	getCustomLabelStyle,
 } from './utilities/helpers';
 export { DataContext, DataProvider } from './utilities/DataContext';
 export { createTopologyLoader } from './utilities/loadTopology';
@@ -83,5 +88,6 @@ export {
 	getGroupedData,
 	getGroupPositioningHorizontal,
 	getGroupPositioningVertical,
+	getGroupPositioningPie,
 } from './hooks';
-export type { GroupedData, GroupPositioning } from './hooks/data';
+export type { GroupedData, GroupPositioning, PieGroupPositioning } from './hooks/data';

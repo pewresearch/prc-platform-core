@@ -209,12 +209,67 @@ const decodeHtmlEntities = (text: string): string => {
 };
 
 // Helper function to extract and decode custom labels from data
+// Note: This reads from __labels (legacy) - for new custom text, use getCustomLabelText
 const getCustomLabel = (
 	dataPoint: Record<string, any>,
 	key: string
 ): string => {
 	const label = dataPoint?.__labels?.[key];
 	return label ? decodeHtmlEntities(label) : '';
+};
+
+/**
+ * Get custom label text for a data point/category combination.
+ * This reads from __labelText which is populated from labels.customLabels.
+ *
+ * @param dataPoint The data point object
+ * @param key       The category key (e.g., 'n1', 'Democrats')
+ * @return Custom label text if set, empty string otherwise
+ */
+const getCustomLabelText = (
+	dataPoint: Record<string, any>,
+	key: string
+): string => {
+	const text = dataPoint?.__labelText?.[key];
+	return text ? decodeHtmlEntities(text) : '';
+};
+
+/**
+ * Check if a label should be visible for a data point/category.
+ * Returns true by default if no visibility override is set.
+ *
+ * @param dataPoint The data point object
+ * @param key       The category key
+ * @return Whether the label should be visible
+ */
+const isLabelVisible = (
+	dataPoint: Record<string, any>,
+	key: string
+): boolean => {
+	const visibility = dataPoint?.__labelVisible?.[key];
+	// Default to true if not explicitly set to false
+	return visibility !== false;
+};
+
+/**
+ * Get custom style overrides for a label.
+ *
+ * @param dataPoint The data point object
+ * @param key       The category key
+ * @return Style override object or null if none set
+ */
+const getCustomLabelStyle = (
+	dataPoint: Record<string, any>,
+	key: string
+): {
+	color?: string;
+	fontWeight?: string | number;
+	fontSize?: number;
+	fontStyle?: 'normal' | 'italic' | 'underline' | 'strikethrough';
+	fontFamily?: string;
+	maxWidth?: number;
+} | null => {
+	return dataPoint?.__labelStyles?.[key] || null;
 };
 
 export {
@@ -226,4 +281,7 @@ export {
 	scaleAxisNumTicks,
 	decodeHtmlEntities,
 	getCustomLabel,
+	getCustomLabelText,
+	isLabelVisible,
+	getCustomLabelStyle,
 };

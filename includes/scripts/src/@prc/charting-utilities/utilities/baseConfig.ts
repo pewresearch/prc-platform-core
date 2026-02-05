@@ -216,8 +216,8 @@ const baseConfig: BaseConfig = {
 		emphasizeStrokeWidth: 1,
 		style: {
 			minWidth: 50,
-			maxWidth: 150,
-			maxHeight: 400,
+			maxWidth: 200,
+			maxHeight: 100,
 			minHeight: 20,
 			width: 'auto',
 			height: 'auto',
@@ -293,6 +293,13 @@ const baseConfig: BaseConfig = {
 		hasPathStroke: true,
 		pathStrokeColor: 'white',
 		pathStrokeWidth: 1,
+		groupGapAngle: 10, // Explode offset in pixels
+		showGroupArcs: false,
+		groupArcStyle: {
+			stroke: '#666666',
+			strokeWidth: 1,
+			strokeDasharray: '4,4',
+		},
 	},
 	nodes: {
 		pointSize: 3,
@@ -323,6 +330,10 @@ const baseConfig: BaseConfig = {
 		labelUnitPosition: 'end',
 		textAnchor: 'middle',
 		customLabelFormat: null, // function({datum}) { return datum; },
+	},
+	shapes: {
+		customStyles: {},
+		segmentStyles: {},
 	},
 	voronoi: {
 		active: false,
@@ -402,6 +413,10 @@ const baseConfig: BaseConfig = {
 	annotations: {
 		active: false,
 		activeOnMobile: false,
+		items: [],
+	},
+	drawings: {
+		active: false,
 		items: [],
 	},
 };

@@ -1,6 +1,7 @@
 // TYPES
 import type { FlatData } from '../types/flatData';
 import type { DataRender } from '../types/dataRender';
+import type { Pie } from '../types/pie';
 import { ascending, descending } from 'd3-array';
 
 const getFlattenedData = (data: any) => {
@@ -259,10 +260,88 @@ const getGroupPositioningVertical = (
 	};
 };
 
+type PieGroupPositioning = {
+	group: string | null;
+	data: FlatData[];
+	startAngle: number; // Start angle for this group (in radians)
+	endAngle: number; // End angle for this group (in radians)
+	explodeOffset: number; // Radial offset to "explode" this group outward from center
+	groupTotal: number; // Sum of values in this group
+};
+
+/**
+ * Calculate group positioning for pie charts with exploded slice effect
+ * Slices maintain their proportional sizes, but groups are offset radially from center
+ * @param groupedData       - Data grouped by category
+ * @param dataRender        - Data render configuration
+ * @param pieConfig         - Pie chart configuration (for groupGapAngle as explode distance)
+ * @param getDependentValue - Function to get the numeric value from a data point
+ */
+const getGroupPositioningPie = (
+	groupedData: GroupedData[],
+	dataRender: DataRender,
+	pieConfig: Pie,
+	getDependentValue: (d: FlatData) => number
+): PieGroupPositioning[] => {
+	const numGroups = groupedData.length;
+
+	// Calculate total value across all groups
+	const groupTotals = groupedData.map(({ data }) =>
+		data.reduce((sum, d) => sum + (getDependentValue(d) || 0), 0)
+	);
+	const grandTotal = groupTotals.reduce((sum, t) => sum + t, 0);
+
+	// If no grouping active or only one group, return simple positioning
+	if (!dataRender.groupBreaksActive || numGroups <= 1) {
+		return groupedData.map(({ group, data }) => ({
+			group,
+			data,
+			startAngle: 0,
+			endAngle: Math.PI * 2,
+			explodeOffset: 0,
+			groupTotal: grandTotal,
+		}));
+	}
+
+	// Get explode offset (reusing groupGapAngle as pixel offset, default 10 pixels)
+	const explodeOffset = pieConfig.groupGapAngle ?? 10;
+
+	// Full circle for slices - no angular reduction
+	const fullAngle = Math.PI * 2;
+
+	// Build positioning for each group
+	let cumulativeAngle = 0;
+	const positioning: PieGroupPositioning[] = groupedData.map(
+		({ group, data }, groupIndex) => {
+			const groupTotal = groupTotals[groupIndex];
+			// Proportional angle based on group's share of total value
+			const groupAngle =
+				grandTotal > 0 ? (groupTotal / grandTotal) * fullAngle : 0;
+
+			const startAngle = cumulativeAngle;
+			const endAngle = cumulativeAngle + groupAngle;
+
+			cumulativeAngle = endAngle;
+
+			return {
+				group,
+				data,
+				startAngle,
+				endAngle,
+				explodeOffset,
+				groupTotal,
+			};
+		}
+	);
+
+	return positioning;
+};
+
 export {
 	getFlattenedData,
 	getGroupedData,
 	getGroupPositioningHorizontal,
 	getGroupPositioningVertical,
+	getGroupPositioningPie,
 };
-export type { GroupedData, GroupPositioning };
+export type { GroupedData, GroupPositioning, PieGroupPositioning };

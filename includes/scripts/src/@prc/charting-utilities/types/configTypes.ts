@@ -15,6 +15,7 @@ import { DivergingBar } from './divergingBar';
 import { Nodes } from './nodes';
 import { Pie } from './pie';
 import { PlotBands } from './plotBands';
+import { Shapes } from './shapes';
 import { Tooltip } from './tooltip';
 import { independentAxis } from './independentAxis';
 import { dependentAxis } from './dependentAxis';
@@ -24,6 +25,7 @@ import { Map } from './map';
 import { Custom } from './custom';
 import { ErrorBars } from './errorBars';
 import { AnnotationsConfig, TextAnnotation, MetadataText } from './text';
+import { DrawingsConfig } from './drawings';
 
 type BaseConfig = {
 	animate: Animate;
@@ -44,6 +46,7 @@ type BaseConfig = {
 	nodes: Nodes;
 	pie: Pie;
 	plotBands: PlotBands;
+	shapes: Shapes;
 	tooltip: Tooltip;
 	independentAxis: independentAxis;
 	dependentAxis: dependentAxis;
@@ -52,6 +55,7 @@ type BaseConfig = {
 	map: Map;
 	custom: Custom;
 	annotations: AnnotationsConfig;
+	drawings: DrawingsConfig;
 };
 
 export type {
@@ -73,6 +77,7 @@ export type {
 	Nodes,
 	Pie,
 	PlotBands,
+	Shapes,
 	Tooltip,
 	independentAxis,
 	dependentAxis,
@@ -84,4 +89,5 @@ export type {
 	AnnotationsConfig,
 	TextAnnotation,
 	MetadataText,
+	DrawingsConfig,
 };

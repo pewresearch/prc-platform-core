@@ -24,6 +24,7 @@ import {
 	getGroupedData,
 	getGroupPositioningHorizontal,
 	getGroupPositioningVertical,
+	getGroupPositioningPie,
 } from './data';
 
 type SharedProps = {
@@ -128,5 +129,6 @@ export {
 	getGroupedData,
 	getGroupPositioningHorizontal,
 	getGroupPositioningVertical,
+	getGroupPositioningPie,
 	getTooltipMapDeemphasisProps,
 };
