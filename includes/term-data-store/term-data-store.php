@@ -45,6 +45,10 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * Then it adds a hook for create_$taxonomy. The callback for the hook is the
 	 * return value from get_create_term_hook().
 	 *
+	 * Optionally, this function can also add hooks to modify post permalinks to point
+	 * to their related term archives. This is controlled by the $enable_permalink_rewrites
+	 * parameter, which defaults to true for backward compatibility.
+	 *
 	 * Finally, this function adds the relationship to the get_relationship static
 	 * variable by providing the post_type as the first argument and the taxonomy as
 	 * the second.
@@ -54,15 +58,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @uses get_relationship()
 	 * @uses add_action() Adds the return of get_save_post_hook() to save_post (2 arguments)
 	 * @uses add_action() Adds the return of get_create_term_hook() to "create_$taxonomy"
+	 * @uses add_filter() Optionally adds permalink modification hooks
 	 *
 	 * @throws Invalid_Input_Exception If either post_type or taxonomy is invalid
 	 *
 	 * @param string $post_type The post type slug
 	 * @param string $taxonomy  The taxonomy slug
+	 * @param bool   $enable_permalink_rewrites Optional. Whether to enable automatic permalink rewrites. Default true.
 	 *
 	 * @return string The relationship
 	 */
-	function add_relationship( $post_type, $taxonomy ) {
+	function add_relationship( $post_type, $taxonomy, $enable_permalink_rewrites = true ) {
 
 		if ( ! get_post_type_object( $post_type ) ) {
 			throw new Invalid_Input_Exception( __FUNCTION__ . '() invalid post_type input.' );
@@ -88,6 +94,12 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		add_action( 'edit_term', get_save_term_hook( $post_type, $taxonomy ) );
 		add_action( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
 		add_action( 'pre_delete_term', get_delete_term_hook( $post_type, $taxonomy ), 10, 2 );
+
+		// Optionally add permalink rewrite hooks to redirect single posts to term archives.
+		if ( $enable_permalink_rewrites ) {
+			add_filter( 'post_link', get_post_link_hook( $post_type, $taxonomy ), 20, 2 );
+			add_filter( 'post_type_link', get_post_type_link_hook( $post_type, $taxonomy ), 20, 2 );
+		}
 
 		$relationship = get_relationship( $post_type, $taxonomy );
 		return $relationship;
@@ -694,6 +706,126 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 
 		$existing_closures[ $md5 ] = $closure;
 
+		return $closure;
+	}
+
+	/**
+	 * Returns a closure to be used as the callback hooked to post_link
+	 *
+	 * This closure modifies the permalink for single posts to point to their
+	 * related term archive instead of the post type single page. This is useful
+	 * when the post type is used as a data store for the taxonomy and the
+	 * taxonomy archive is the primary way to view the content.
+	 *
+	 * The function stores references to the closures in a static variable using the
+	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
+	 * return it instead of creating a new copy.
+	 *
+	 * The closure that this function generates receives two arguments ($url and $post)
+	 * and does the following:
+	 *   If $post->post_type is $post_type and $post->post_status is 'publish':
+	 *     Get the related term using get_related_term() and return the term archive link
+	 *     using get_term_link(). If no term is found or there's an error, return the
+	 *     original URL.
+	 *
+	 * @uses get_related_term()
+	 * @uses get_term_link()
+	 *
+	 * @param string $post_type The post type slug
+	 * @param string $taxonomy  The taxonomy slug
+	 *
+	 * @return \Closure The callback
+	 */
+	function get_post_link_hook( $post_type, $taxonomy ) {
+		static $existing_closures;
+		if ( ! isset( $existing_closures ) ) {
+			$existing_closures = array();
+		}
+
+		$md5 = md5( $post_type . '|' . $taxonomy . '|post_link' );
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
+		}
+
+		$closure = function ( $url, $post ) use ( $post_type, $taxonomy ) {
+			if ( 'publish' !== $post->post_status ) {
+				return $url;
+			}
+
+			if ( $post_type === $post->post_type ) {
+				$term = get_related_term( $post );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$term_link = get_term_link( $term, $taxonomy );
+					if ( ! is_wp_error( $term_link ) ) {
+						return $term_link;
+					}
+				}
+			}
+
+			return $url;
+		};
+
+		$existing_closures[ $md5 ] = $closure;
+		return $closure;
+	}
+
+	/**
+	 * Returns a closure to be used as the callback hooked to post_type_link
+	 *
+	 * This closure modifies the permalink for single posts to point to their
+	 * related term archive instead of the post type single page. This is useful
+	 * when the post type is used as a data store for the taxonomy and the
+	 * taxonomy archive is the primary way to view the content.
+	 *
+	 * The function stores references to the closures in a static variable using the
+	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
+	 * return it instead of creating a new copy.
+	 *
+	 * The closure that this function generates receives two arguments ($url and $post)
+	 * and does the following:
+	 *   If $post->post_type is $post_type and $post->post_status is 'publish':
+	 *     Get the related term using get_related_term() and return the term archive link
+	 *     using get_term_link(). If no term is found or there's an error, return the
+	 *     original URL.
+	 *
+	 * @uses get_related_term()
+	 * @uses get_term_link()
+	 *
+	 * @param string $post_type The post type slug
+	 * @param string $taxonomy  The taxonomy slug
+	 *
+	 * @return \Closure The callback
+	 */
+	function get_post_type_link_hook( $post_type, $taxonomy ) {
+		static $existing_closures;
+		if ( ! isset( $existing_closures ) ) {
+			$existing_closures = array();
+		}
+
+		$md5 = md5( $post_type . '|' . $taxonomy . '|post_type_link' );
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
+		}
+
+		$closure = function ( $url, $post ) use ( $post_type, $taxonomy ) {
+			if ( 'publish' !== $post->post_status ) {
+				return $url;
+			}
+
+			if ( $post_type === $post->post_type ) {
+				$term = get_related_term( $post );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$term_link = get_term_link( $term, $taxonomy );
+					if ( ! is_wp_error( $term_link ) ) {
+						return $term_link;
+					}
+				}
+			}
+
+			return $url;
+		};
+
+		$existing_closures[ $md5 ] = $closure;
 		return $closure;
 	}
 

@@ -1,0 +1,12 @@
+{
+	"name": "@prc/platform-core-ai",
+	"description": "AI module for PRC Platform Core — content guidelines editor sidebar and client-side linting.",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^30.16.0"
+	},
+	"scripts": {
+		"build": "wp-scripts build src/index.js",
+		"start": "wp-scripts start src/index.js"
+	}
+}

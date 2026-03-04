@@ -7,7 +7,7 @@ return array (
     'title' => 'Default View',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1723742833,
+    'updated' => 1770772971,
     'columns' => 
     array (
       'title' => 
@@ -147,6 +147,15 @@ return array (
         'export' => 'on',
         'name' => '64c9bb5bc4dd30',
       ),
+      '1c4764200b020c' => 
+      array (
+        'type' => 'column-PRC_SOCIAL_SCHEDULE_COLUMN',
+        'label' => 'Social Schedule',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'name' => '1c4764200b020c',
+      ),
       '64c9bb6a50a3d8' => 
       array (
         'type' => 'column-Parent_Post_Column',
@@ -192,6 +201,72 @@ return array (
         'search' => 'on',
         'name' => '1cf42c6f960419',
       ),
+      '37d3190556872c' => 
+      array (
+        'type' => 'prc_seo_title',
+        'label' => 'SEO Title',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '37d3190556872c',
+      ),
+      12511041960419 => 
+      array (
+        'type' => 'prc_seo_primary_term',
+        'label' => 'Primary Term',
+        'width' => '',
+        'width_unit' => '%',
+        'primary_taxonomy' => 'category',
+        'export' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => '12511041960419',
+      ),
+      '527726df1374bc' => 
+      array (
+        'type' => 'prc_seo_description',
+        'label' => 'Meta Description',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'search' => 'on',
+        'filter' => 'off',
+        'filter_label' => '',
+        'name' => '527726df1374bc',
+      ),
+      '3369c52b618938' => 
+      array (
+        'type' => 'prc_seo_schema_type',
+        'label' => 'Schema Type',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => '3369c52b618938',
+      ),
+      '32e62a08c7ef9e' => 
+      array (
+        'type' => 'prc_seo_noindex',
+        'label' => 'Is Indexed',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => '32e62a08c7ef9e',
+      ),
     ),
     'settings' => 
     array (
@@ -217,8 +292,6 @@ return array (
       'hide_filter_post_date' => 'off',
       'hide_filter_category' => 'off',
       'hide_filter_post_format' => 'off',
-      'hide_filter_yoast_seo_scores' => 'off',
-      'hide_filter_yoast_readability_score' => 'off',
       'hide_submenu' => 'off',
       'hide_search' => 'off',
       'hide_bulk_actions' => 'off',

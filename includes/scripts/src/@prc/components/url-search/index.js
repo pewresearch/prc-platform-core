@@ -7,7 +7,7 @@ import { useDebounce } from '@prc/hooks';
 /**
  * WordPress Dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Fragment, useState, useMemo, useEffect } from '@wordpress/element';
 import {
 	Button,
@@ -23,7 +23,7 @@ import {
 	ToolbarGroup,
 } from '@wordpress/components';
 import { date as formatDate } from '@wordpress/date';
-import { useEntityRecords, useEntityProp } from '@wordpress/core-data';
+import { useEntityRecords } from '@wordpress/core-data';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -34,6 +34,7 @@ function SearchRecords({
 	disableImage = false,
 }) {
 	return searchRecords.map((item) => (
+		// eslint-disable-next-line react/jsx-key
 		<SearchItem {...{ item, onSelect, imageSize, disableImage }} />
 	));
 }
@@ -132,7 +133,6 @@ export function URLSearchField({
 	url,
 	disableImage = false,
 	onSelect = () => {},
-	onKeyEnter = () => {},
 	onKeyESC = () => {},
 	onUpdateURL = () => {},
 }) {
@@ -188,13 +188,11 @@ export function URLSearchField({
 							context: 'view',
 						}
 					);
-					console.log('postSearchPath', postSearchPath);
 					apiFetch({
 						path: postSearchPath,
 						method: 'GET',
 					})
 						.then((post) => {
-							console.log('GOT THE POST', post);
 							resolve(post);
 						})
 						.catch((err) => reject(err));
@@ -210,8 +208,7 @@ export function URLSearchField({
 					setFoundObject(post);
 					toggleLoading(false);
 				})
-				.catch((err) => {
-					console.error('getPostByUrl error', err);
+				.catch(() => {
 					setFoundObject(null);
 					toggleLoading(false);
 				});
@@ -223,9 +220,7 @@ export function URLSearchField({
 	}, [isResolving]);
 
 	return (
-		<TabbableContainer
-			onNavigate={(index, elm) => console.log('onNavigate:', elm)}
-		>
+		<TabbableContainer>
 			<KeyboardShortcuts
 				shortcuts={{
 					esc: () => {
@@ -257,7 +252,15 @@ export function URLSearchField({
 					tabIndex="0"
 					value={searchInput}
 					onChange={(keyword) => setSearchInput(keyword)}
-					placeholder="Climate Change..."
+					placeholder={sprintf(
+						/* translators: %s: post type */
+						__(
+							'Search for a %s or paste url here',
+							'prc-block-library'
+						),
+						postType,
+						'prc-block-library'
+					)}
 					autoComplete="off"
 				/>
 			</KeyboardShortcuts>
@@ -401,8 +404,13 @@ export function URLSearchToolbar({
 			<ToolbarButton
 				aria-expanded={isModalOpen}
 				aria-haspopup="true"
-				label={__(
-					`Search for a ${postType} or paste url here`,
+				label={sprintf(
+					/* translators: %s: post type */
+					__(
+						'Search for a %s or paste url here',
+						'prc-block-library'
+					),
+					postType,
 					'prc-block-library'
 				)}
 				icon="admin-links"
@@ -411,8 +419,13 @@ export function URLSearchToolbar({
 			/>
 			{true === isModalOpen && (
 				<Modal
-					title={__(
-						`Search for a ${postType} or paste url here`,
+					title={sprintf(
+						/* translators: %s: post type */
+						__(
+							'Search for a %s or paste url here',
+							'prc-block-library'
+						),
+						postType,
 						'prc-block-library'
 					)}
 					onRequestClose={() => setIsModalOpen(false)}

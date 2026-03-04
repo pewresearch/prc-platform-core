@@ -1,4 +1,12 @@
-// See webpack.config.js in repo root for master config. Otherwise, use this:
-const config = require('../../../../../../../webpack.config');
+const defaultConfig = require('../../../../../../../packages');
 
-module.exports = config;
+module.exports = {
+	...defaultConfig,
+	context: __dirname,
+	entry: { index: './exports.js' },
+	output: {
+		...defaultConfig.output,
+		path: __dirname + '/../../../build/@prc/components',
+		library: { name: 'prcComponents', type: 'window' },
+	},
+};

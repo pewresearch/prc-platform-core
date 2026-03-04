@@ -118,6 +118,54 @@ function labelFill(hex = '#000000'): string {
 	return fill;
 }
 
+/**
+ * Parse a light-dark() CSS value into its light and dark components.
+ *
+ * @param value - CSS color value to parse.
+ * @return Light and dark components, or null if not a light-dark() value.
+ */
+function parseLightDark(value: string): { light: string; dark: string } | null {
+	const match = value.match(/^light-dark\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)$/);
+	if (match) {
+		return { light: match[1], dark: match[2] };
+	}
+	return null;
+}
+
+/**
+ * Compute a contrast-appropriate label fill for a bar that may use
+ * a light-dark() color value. Returns a light-dark() string when the
+ * input bar color is itself a light-dark() value; otherwise falls
+ * back to the standard single-value labelFill().
+ *
+ * @param barColor - The bar's fill color, possibly a light-dark() value.
+ * @return A color string suitable for label text on the bar.
+ */
+function contrastLabelFillForLightDark(barColor: string): string {
+	const parsed = parseLightDark(barColor);
+	if (parsed) {
+		const lightLabel = labelFill(parsed.light);
+		const darkLabel = labelFill(parsed.dark);
+		// If both variants need the same label color, return it directly
+		if (lightLabel === darkLabel) {
+			return lightLabel;
+		}
+		// Build a light-dark() for the label fill using the correct
+		// contrast color for each mode variant
+		const lightHex = lightLabel === 'black' ? '#000000' : '#ffffff';
+		const darkHex = darkLabel === 'black' ? '#000000' : '#ffffff';
+		return `light-dark(${lightHex}, ${darkHex})`;
+	}
+	return labelFill(barColor);
+}
+
+/**
+ * UI-black / UI-white as light-dark() values, matching theme.json
+ * ui-white and ui-black definitions.
+ */
+const UI_BLACK = 'light-dark(#000000, #f0f0f0)';
+const UI_WHITE = 'light-dark(#ffffff, #1a1a1a)';
+
 function getBarLabelFill(
 	labelColor: 'contrast' | 'black' | 'white' | 'inherit',
 	labelPositionBar: string,
@@ -127,22 +175,25 @@ function getBarLabelFill(
 	barColor: string,
 	categoryColor: string
 ): string {
-	// Explicit color choices
+	// Explicit color choices — resolve named colors to light-dark()
 	if (labelColor === 'black') {
-		return 'black';
+		return UI_BLACK;
 	}
 	if (labelColor === 'white') {
-		return 'white';
+		return UI_WHITE;
 	}
 	if (labelColor === 'inherit') {
+		// categoryColor is already resolved by getConfig
 		return categoryColor;
 	}
 
 	// Contrast mode: determine based on position and luminosity
 	if (labelPositionBar === 'outside' || barValue < labelCutoff) {
-		return theme === 'light' ? 'black' : 'white';
+		// Outside labels use the base text color
+		return UI_BLACK;
 	}
-	return labelFill(barColor);
+	// Inside labels need contrast against the bar's fill color
+	return contrastLabelFillForLightDark(barColor);
 }
 
 const newDateByFormat = (
@@ -196,6 +247,7 @@ const scaleAxisNumTicks = (
 
 // Helper function to decode HTML entities for SVG rendering
 const decodeHtmlEntities = (text: string): string => {
+	if (!text) return text ?? '';
 	return text
 		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
@@ -268,13 +320,61 @@ const getCustomLabelStyle = (
 	fontStyle?: 'normal' | 'italic' | 'underline' | 'strikethrough';
 	fontFamily?: string;
 	maxWidth?: number;
+	textOutline?: boolean;
 } | null => {
 	return dataPoint?.__labelStyles?.[key] || null;
+};
+
+/**
+ * Get the group value for a data point based on the dataRender configuration.
+ * Returns null if grouping is not active or the data point doesn't have the group property.
+ *
+ * @param dataPoint - The data point (FlatData)
+ * @param dataRender - The dataRender configuration
+ * @returns The group value as a string, or null
+ */
+const getGroupValue = (
+	dataPoint: any,
+	dataRender: { groupBreaksActive?: boolean; groupBreaksCategory?: string }
+): string | null => {
+	if (
+		dataRender?.groupBreaksActive &&
+		dataRender?.groupBreaksCategory &&
+		dataPoint?.[dataRender.groupBreaksCategory] != null
+	) {
+		return String(dataPoint[dataRender.groupBreaksCategory]);
+	}
+	return null;
+};
+
+/**
+ * Generate a group-aware element key for storing/looking up customizations.
+ *
+ * Key formats:
+ * - 2-part (no grouping): "xValue::category"
+ * - 3-part (with grouping): "xValue::category::groupValue"
+ *
+ * @param x - The x value from the data point
+ * @param category - The category/series name
+ * @param groupValue - The group value (from getGroupValue), or null
+ * @returns The element key string
+ */
+const generateElementKey = (
+	x: any,
+	category: string,
+	groupValue: string | null = null
+): string => {
+	const xStr = x instanceof Date ? x.toISOString() : String(x);
+	if (groupValue) {
+		return `${xStr}::${category}::${groupValue}`;
+	}
+	return `${xStr}::${category}`;
 };
 
 export {
 	abbreviateNumber,
 	labelFill,
+	contrastLabelFillForLightDark,
 	getBarLabelFill,
 	newDateByFormat,
 	checkContrast,
@@ -284,4 +384,6 @@ export {
 	getCustomLabelText,
 	isLabelVisible,
 	getCustomLabelStyle,
+	getGroupValue,
+	generateElementKey,
 };

@@ -38,6 +38,7 @@ class Icon_Loader {
 	 */
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
+			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_icon_loader', 10 );
 			$loader->add_action( 'enqueue_block_assets', $this, 'enqueue_icon_loader', 10 );
 		}
 	}

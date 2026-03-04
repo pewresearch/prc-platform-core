@@ -17,7 +17,6 @@ class PRC_Platform_Activator {
 	 * @package PRC\Platform\Core
 	 */
 	public static function activate() {
-
 		wp_mail(
 			DEFAULT_TECHNICAL_CONTACT,
 			'PRC Platform Activated 🚀',

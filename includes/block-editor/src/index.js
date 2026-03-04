@@ -13,6 +13,7 @@ import { removeFilter } from '@wordpress/hooks';
 /**
  * Internal Dependencies:
  */
+import './dark-mode-preview';
 
 function registerPRCBlockCollection() {
 	registerBlockCollection('prc-block', {

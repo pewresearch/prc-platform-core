@@ -1,4 +1,5 @@
 // shared hooks
+import React from 'react';
 import { getAria } from './aria';
 import { getAxisProps } from './axes';
 import { getGridProps } from './grid';
@@ -36,6 +37,8 @@ type SharedProps = {
 	dependentScale?: any;
 	independentScale?: any;
 	actualContentHeight?: number;
+	independentTicksComponent?: (props: any) => React.ReactElement;
+	dependentTicksComponent?: (props: any) => React.ReactElement;
 };
 
 const getSharedProps = ({
@@ -47,6 +50,8 @@ const getSharedProps = ({
 	dependentScale,
 	independentScale,
 	actualContentHeight,
+	independentTicksComponent,
+	dependentTicksComponent,
 }: SharedProps) => {
 	const {
 		dependentAxis,
@@ -79,13 +84,15 @@ const getSharedProps = ({
 			dependentAxis,
 			dependentScale,
 			layout.theme,
-			config.dataRender.yFormat
+			config.dataRender.yFormat,
+			dependentTicksComponent
 		),
 		independentAxisProps: getAxisProps(
 			independentAxis,
 			independentScale,
 			layout.theme,
-			config.dataRender.xFormat
+			config.dataRender.xFormat,
+			independentTicksComponent
 		),
 		dependentGridProps: getGridProps(
 			dependentAxis,

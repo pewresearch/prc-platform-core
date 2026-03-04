@@ -15,7 +15,7 @@ use WP_HTML_Tag_Processor;
 
 define( 'PRC_PLATFORM_ICONS_CACHE_TTL', 7 * DAY_IN_SECONDS );
 if ( defined( 'PRC_PLATFORM_VERSION' ) ) {
-	define( 'PRC_PLATFORM_ICONS_CACHE_KEY', PRC_PLATFORM_VERSION . '_ICONS' );
+	define( 'PRC_PLATFORM_ICONS_CACHE_KEY', PRC_PLATFORM_VERSION . '_ICONS_' );
 } else {
 	define( 'PRC_PLATFORM_ICONS_CACHE_KEY', '1.0.0_ICONS' );
 }
@@ -134,7 +134,11 @@ function get_icon_as_svg( $library, $icon, $fill_color = 'currentColor' ) {
 	}
 
 	$iconset = PRC_PLATFORM_ICONS_URL . $library . '.svg';
-	$iconset = wpcom_vip_file_get_contents( $iconset );
+	if ( function_exists( 'wpcom_vip_file_get_contents' ) ) {
+		$iconset = wpcom_vip_file_get_contents( $iconset );
+	} else {
+		$iconset = file_get_contents( $iconset );
+	}
 
 	$tags = new WP_HTML_Get_Element( $iconset, 'SYMBOL', $icon );
 	$icon = $tags->get_markup( 'outside' );

@@ -83,12 +83,34 @@ class Action_Scheduler {
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			// Register our default schedules.
-			// $loader->add_action('init', $this, 'register_schedules');
+			$loader->add_action( 'init', $this, 'register_schedules' );
 			// Registers WP CLI commands for Action Scheduler.
 			$loader->add_action( 'action_scheduler_pre_init', $this, 'pre_init' );
 			// Change the retention period for Action Scheduler to X days. After that time completed and cancelled actions will be deleted.
 			$loader->add_filter( 'action_scheduler_retention_period', $this, 'modify_retention_period' );
+
+			$this->init_ai_experiment();
 		}
+	}
+
+	/**
+	 * Initialize the Action Scheduler AI experiment.
+	 *
+	 * @return void
+	 */
+	public function init_ai_experiment() {
+		if ( ! class_exists( 'WordPress\AI\Abstracts\Abstract_Experiment' ) ) {
+			return;
+		}
+		require_once __DIR__ . '/class-action-scheduler-ai-experiment.php';
+
+		// Register the AI experiment with the WP AI Experiments plugin.
+		add_action(
+			'ai_experiments_register_experiments',
+			function ( $registry ) {
+				$registry->register_experiment( new Action_Scheduler_AI_Experiment() );
+			}
+		);
 	}
 
 	/**
@@ -110,11 +132,11 @@ class Action_Scheduler {
 	 * @return void
 	 */
 	public function register_schedules() {
+		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+			return;
+		}
 		foreach ( self::$schedules as $hook => $opts ) {
-			/**
-			 * Schedule an action with the hook 'prc_run_at_midnight' to run at midnight each day
-			 * so that our callback is run then.
-			 */
+			// Register the schedule if it is not already registered.
 			if ( false === as_has_scheduled_action( $hook ) ) {
 				$start_time = strtotime( $opts['start_time'] . ' America/New_York' );
 				as_schedule_recurring_action( $start_time, $opts['interval'], $hook, $opts['args'], '', true );

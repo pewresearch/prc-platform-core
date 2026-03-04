@@ -185,3 +185,5 @@ export default function MediaImageSlot({
 		</ImageSlot>
 	);
 }
+
+export { MediaImageSlot, Overlay };

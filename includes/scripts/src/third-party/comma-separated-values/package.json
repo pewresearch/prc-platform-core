@@ -2,7 +2,7 @@
 	"name": "comma-separated-values",
 	"version": "1.0.0",
 	"scripts": {
-		"build": "wp-scripts build index.js --output-path=../../../build/third-party/comma-separated-values"
+		"build": "wp-scripts build"
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^30.13.0"

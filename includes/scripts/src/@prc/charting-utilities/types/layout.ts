@@ -17,8 +17,12 @@ export type Layout = {
 		| 'map-usa'
 		| 'map-usa-counties'
 		| 'map-usa-block'
+		| 'map-usa-hex'
 		| 'map-world'
-		| 'map-europe';
+		| 'map-europe'
+		| 'treemap'
+		| 'sankey'
+		| 'radar';
 	theme: 'light' | 'dark';
 	orientation: 'vertical' | 'horizontal';
 	width: number;

@@ -253,7 +253,7 @@ class Pagination {
 		$page_links = array();
 
 		if ( $this->total <= 1 ) {
-			return array();
+			return '';
 		}
 
 		// If the total number of pages is less than the max number of pages to show, show all the pages.

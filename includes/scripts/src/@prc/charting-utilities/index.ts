@@ -35,6 +35,8 @@ export * from './types/tooltip';
 export * from './types/voronoi';
 export * from './types/windowSize';
 export * from './types/drawings';
+export * from './types/treemap';
+export * from './types/sankey';
 
 // Utilities
 export { useSize } from './utilities/useSize';
@@ -51,6 +53,7 @@ export {
 export {
 	abbreviateNumber,
 	labelFill,
+	contrastLabelFillForLightDark,
 	getBarLabelFill,
 	newDateByFormat,
 	checkContrast,
@@ -60,10 +63,19 @@ export {
 	getCustomLabelText,
 	isLabelVisible,
 	getCustomLabelStyle,
+	getGroupValue,
+	generateElementKey,
 } from './utilities/helpers';
 export { DataContext, DataProvider } from './utilities/DataContext';
 export { createTopologyLoader } from './utilities/loadTopology';
 export * from './utilities/colorPalettes';
+export {
+	REGRESSION_FNS,
+	getRegressionFn,
+	computeRegressionStats,
+} from './utilities/regression';
+export type { RegressionPoint, RegressionStats } from './utilities/regression';
+export { useRegressionLine, useRegressionLines } from './utilities/useRegressionLine';
 
 // Hooks
 export {
@@ -90,4 +102,8 @@ export {
 	getGroupPositioningVertical,
 	getGroupPositioningPie,
 } from './hooks';
-export type { GroupedData, GroupPositioning, PieGroupPositioning } from './hooks/data';
+export type {
+	GroupedData,
+	GroupPositioning,
+	PieGroupPositioning,
+} from './hooks/data';

@@ -26,6 +26,8 @@ import { Custom } from './custom';
 import { ErrorBars } from './errorBars';
 import { AnnotationsConfig, TextAnnotation, MetadataText } from './text';
 import { DrawingsConfig } from './drawings';
+import { Treemap } from './treemap';
+import { Sankey } from './sankey';
 
 type BaseConfig = {
 	animate: Animate;
@@ -56,6 +58,8 @@ type BaseConfig = {
 	custom: Custom;
 	annotations: AnnotationsConfig;
 	drawings: DrawingsConfig;
+	treemap: Treemap;
+	sankey: Sankey;
 };
 
 export type {
@@ -90,4 +94,6 @@ export type {
 	TextAnnotation,
 	MetadataText,
 	DrawingsConfig,
+	Treemap,
+	Sankey,
 };

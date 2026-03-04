@@ -1,5 +1,5 @@
 {
-	"name": "@pewresearch/prc-platform-block-editor",
+	"name": "@prc/block-editor",
 	"description": "Block editor customizations for PRC Platform",
 	"license": "GPL-2.0-or-later",
 	"devDependencies": {

@@ -57,7 +57,7 @@ register_deactivation_hook( __FILE__, 'deactivate_prc_platform' );
 /**
  * The core plugin class that is used to define the hooks that initialize the various platform components.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-platform-bootstrap.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-bootstrap.php';
 
 /**
  * Begins execution of the plugin.
@@ -69,7 +69,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-platform-bootstrap.php';
  * @since    1.0.0
  */
 function run_prc_platform() {
-	$plugin = new \PRC\Platform\Platform_Bootstrap();
+	$plugin = new \PRC\Platform\Bootstrap();
 	$plugin->run();
 }
 run_prc_platform();

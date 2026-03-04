@@ -1,12 +1,13 @@
 /**
- * External Dependencies
- */
-import { useDebounce } from '@prc/hooks';
-/**
  * WordPress Dependencies
  */
-import { useEffect, useState, useMemo } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
+
+/**
+ * Internal Dependencies
+ */
+import useDebounce from './use-debounce';
 
 export default function useMetaStatefully(metaKey, defaultValue = '') {
 	const { editPost } = useDispatch('core/editor');

@@ -1,17 +1,17 @@
 // Path: src/lib/Utilities/colorPalettes.ts
 
 export const general = [
-  '#436983',
-  '#bf3927',
+  '#456A83',
+  '#BF3B27',
   '#756a7e',
   '#ea9e2c',
   '#eeece4',
-  '#bc7b2b',
+  '#BB792A',
 ]
 export const politics = ['#d1a730', '#a55a26', '#949d48']
 export const global = ['#949d48', '#006699', '#a55a26']
-export const religion = ['#0090bf', '#a55a26', '#949d48']
-export const socialTrends = ['#377668', '#d1a730', '#949d48']
+export const religion = ['#0090C0', '#a55a26', '#949d48']
+export const socialTrends = ['#387668', '#d1a730', '#949d48']
 export const journalism = ['#733d47', '#d1a730', '#949d48']
 export const internet = ['#006699', '#949d48', '#d1a730']
 export const hispanic = ['#a55a26', '#d1a730', '#949d48']
@@ -32,7 +32,7 @@ export const globalSpectrum = [
   '#494e24',
 ]
 export const religionSpectrum = [
-  '#0090bf',
+  '#0090C0',
   '#c9deee',
   '#9dc7e1',
   '#71b2d6',
@@ -40,7 +40,7 @@ export const religionSpectrum = [
   '#00557e',
 ]
 export const socialTrendsSpectrum = [
-  '#377668',
+  '#387668',
   '#d1e9e4',
   '#a2d2c8',
   '#64b6aa',
@@ -112,12 +112,12 @@ export const lightBrownSpectrum = [
   '#6a5522',
 ]
 export const redSpectrum = [
-  '#bf3927',
-  '#f2d3d1',
-  '#e6a8a3',
-  '#dc7d75',
-  '#7c2a2a',
-  '#531717',
+  '#BF3B27',
+  '#F5D4CF',
+  '#EBABA2',
+  '#E37F73',
+  '#902D1E',
+  '#5F1D14',
 ]
 export const orangeSpectrum = [
   '#EA9E2C',

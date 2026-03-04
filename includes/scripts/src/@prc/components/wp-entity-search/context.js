@@ -12,6 +12,7 @@ import {
 	useContext,
 	createContext,
 	useMemo,
+	useCallback,
 } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
@@ -48,11 +49,11 @@ const useWPEntitySearchContext = ({
 	const [selectedId, setSelectedId] = useState(entityId);
 	const [records, setRecords] = useState([]);
 
-	const onClear = () => {
+	const onClear = useCallback(() => {
 		setSearchInput('');
 		setSelectedId(null);
 		setRecords([]);
-	};
+	}, [setSearchInput]);
 
 	const _onUpdateURL = () => {
 		// check if onUpdateURL is a function
@@ -63,16 +64,8 @@ const useWPEntitySearchContext = ({
 
 	useEffect(() => {
 		if (!searchString) {
-			console.log('Nothing to search for');
 			setIsLoading(false);
 		} else if (searchString && entityType && entitySubType) {
-			console.log(
-				'Starting search...',
-				searchString,
-				entityType,
-				entitySubType,
-				entityStatus
-			);
 			setIsLoading(true);
 			apiFetch({
 				path: addQueryArgs(REST_ENDPOINT, {
@@ -84,34 +77,30 @@ const useWPEntitySearchContext = ({
 				method: 'GET',
 			})
 				.then((response) => {
-					console.log('Search found...', response);
 					setRecords(response);
 					setIsLoading(false);
 				})
-				.catch((error) => {
-					console.error('wpEntitySearchContext error', error);
+				.catch(() => {
 					setIsLoading(false);
 				});
 		}
-	}, [searchString, entityType, entitySubType]);
+	}, [searchString, entityType, entitySubType, entityStatus]);
 
 	// Once there is a selectedId and records...
 	// This then handles the onSelect callback to pass the selected entity up to the parent component.
 	useEffect(() => {
-		console.log('update selectedId and records', selectedId, records);
 		if (selectedId && records) {
 			const entity = records.find(
 				(record) => record.entityId === selectedId
 			);
 			if (entity) {
-				console.log('Process OnSelect::', entity);
 				onSelect(entity);
 			}
 			if (clearOnSelect) {
 				onClear();
 			}
 		}
-	}, [selectedId, records]);
+	}, [selectedId, records, onSelect, clearOnSelect, onClear]);
 
 	// Check if there are search records
 	const hasSearchRecords = useMemo(() => {

@@ -9,9 +9,7 @@ import { useDebounce } from '@prc/hooks';
  */
 import { useMemo, useState } from 'react';
 import { useEntityRecords } from '@wordpress/core-data';
-import { __, sprintf } from '@wordpress/i18n';
-import { store as noticesStore } from '@wordpress/notices';
-import { useDispatch } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 import { parse } from '@wordpress/blocks';
 import { useAsyncList } from '@wordpress/compose';
 import { __experimentalBlockPatternsList as BlockPatternsList } from '@wordpress/block-editor';
@@ -54,7 +52,7 @@ const ModalSearch = styled.div`
  * @param {boolean} param0.enabled    - whether or not the query should be enabled.
  * @param {number}  param0.excludeId  - the id of the entity to exclude from the query.
  * @param {Object}  param0.args       - the args to pass to the query.
- * @return
+ * @return {Object} The records and the status of the query.
  */
 function useQuery({
 	entityType = 'post',
@@ -69,7 +67,7 @@ function useQuery({
 		per_page: 25,
 	};
 
-	const { hasResolved, isResolving, records, status } = useEntityRecords(
+	const { hasResolved, isResolving, records } = useEntityRecords(
 		'postType',
 		entityType,
 		{ ...defaultArgs, ...args },
@@ -93,7 +91,7 @@ function useQuery({
 
 /**
  * Renders a modal with the <BlockPatternsList /> component to select a entity from a block based entity list. It is important that your entity be of a `post` type and it's contents comprised of blocks.
- * @param {Object}   props
+ * @param {Object}   props                 Component props.
  * @param {string}   props.title           - the title of the modal.
  * @param {string}   props.instructions    - the instructions for the modal.
  * @param {string}   props.entityType      - the post type of the entity.
@@ -101,8 +99,11 @@ function useQuery({
  * @param {Function} props.onSelect        - a function that will be called when the user selects a entity.
  * @param {Function} props.onClose         - a function that will be called when the user closes the modal.
  * @param {number}   props.selectedId      - the id of the selected entity.
- * @param {string}   props.clientId        - the client id of the block.
- * @return {Object} The entity pattern modal component.
+ * @param {Function} props.afterSearch     - a function that will be called after the search value changes.
+ * @param {Function} props.afterResults    - a function that will be called after the results are rendered.
+ * @param {Object}   props.queryArgs       - the args to pass to the query.
+ * @param {string}   props.status          - the status of the entity.
+ * @return {JSX.Element} The entity pattern modal component.
  */
 export default function EntityPatternModal({
 	title,
@@ -114,14 +115,13 @@ export default function EntityPatternModal({
 	onClose = () => {},
 	selectedId = null,
 	status = 'publish',
-	clientId,
 	afterSearch,
 	afterResults,
 }) {
 	const [searchValue, setSearchValue] = useState(null);
 	const debouncedSearchValue = useDebounce(searchValue, 600);
 
-	const { records, isResolving, hasResolved } = useQuery({
+	const { records } = useQuery({
 		entityType,
 		enabled: true,
 		excludeId: selectedId,
@@ -157,30 +157,10 @@ export default function EntityPatternModal({
 
 	const shownRecords = useAsyncList(filteredRecords);
 
-	// @TODO: Implement per isntance sof on select.
-	// const { createSuccessNotice } = useDispatch(noticesStore);
-	// createSuccessNotice(
-	// 	sprintf(
-	// 		/* translators: %s: template part title. */
-	// 		__('%s "%s" inserted.'),
-	// 		entityTypeLabel,
-	// 		title
-	// 	),
-	// 	{
-	// 		type: 'snackbar',
-	// 	}
-	// );
-
 	const onPatternSelect = (response) => {
-		console.log('onPatternSelect', response);
-		const { title } = response;
-
 		onSelect(response);
-
 		onClose();
 	};
-
-	// const createFromBlocks = useCreateTemplatePartFromBlocks(setAttributes);
 
 	const hasRecords = !!filteredRecords.length;
 
@@ -199,7 +179,11 @@ export default function EntityPatternModal({
 									placeholder={__('Search')}
 								/>
 							</FlexBlock>
-							{typeof afterSearch === 'function' ? <FlexItem>{afterSearch()}</FlexItem> : afterSearch}
+							{typeof afterSearch === 'function' ? (
+								<FlexItem>{afterSearch()}</FlexItem>
+							) : (
+								afterSearch
+							)}
 						</Flex>
 					</ModalSearch>
 
@@ -223,7 +207,9 @@ export default function EntityPatternModal({
 						</HStack>
 					)}
 
-					{typeof afterResults === 'function' ? afterResults() : afterResults}
+					{typeof afterResults === 'function'
+						? afterResults()
+						: afterResults}
 				</VStack>
 			</ModalContent>
 		</Modal>

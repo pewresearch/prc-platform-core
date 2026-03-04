@@ -11,19 +11,15 @@ use DougSisk\CountryState\CountryState;
 use Automattic\Jetpack\Device_Detection;
 
 /**
- * Check if a PRC- module is active
+ * Get the primary term id.
  *
- * @param string $module The module to check.
- * @return bool True if the module is active, false otherwise.
+ * @param int    $post_id Post ID.
+ * @param string $taxonomy Taxonomy slug.
+ * @return int|false Term ID if PRC Schema SEO active and primary term found, false otherwise.
  */
-function is_module_active( $module ) {
-	// If module is not prefixed with prc- then error out.
-	if ( strpos( $module, 'prc-' ) !== 0 ) {
-		return new \WP_Error( 'module_not_prefixed', 'Module ' . $module . ' is not prefixed with prc-' );
-	}
-	$plugin_file = $module . '/' . $module . '.php';
-	if ( in_array( $plugin_file, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-		return true;
+function get_primary_term_id( int $post_id, string $taxonomy ): ?int {
+	if ( function_exists( '\PRC\Platform\Schema_SEO\Utils\get_primary_term_id' ) ) {
+		return \PRC\Platform\Schema_SEO\Utils\get_primary_term_id( $post_id, $taxonomy );
 	}
 	return false;
 }

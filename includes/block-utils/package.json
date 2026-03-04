@@ -1,5 +1,5 @@
 {
-	"name": "prc-platform-block-utils",
+	"name": "@prc/block-utils",
 	"version": "1.0.0",
 	"description": "Common PHP and JS utilities for outputting block markup.",
 	"author": "Seth Rubenstein",
@@ -12,6 +12,6 @@
 		"start": "wp-scripts start"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^26.16.0"
+		"@wordpress/scripts": "^31.4.0"
 	}
 }

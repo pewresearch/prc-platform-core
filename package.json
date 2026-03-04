@@ -8,11 +8,13 @@
 		"taffydb": "^2.7.3",
 		"uuid": "^11.1.0",
 		"@playwright/test": "^1.52.0",
-        "@wordpress/e2e-test-utils-playwright": "^1.23.0",
-        "@wordpress/env": "^10.23.0",
-        "@wordpress/scripts": "^30.16.0"
+		"@wordpress/e2e-test-utils-playwright": "^1.23.0",
+		"@wordpress/env": "^10.23.0",
+		"@wordpress/scripts": "^30.16.0"
 	},
 	"scripts": {
+		"build:ai": "npm run build --prefix includes/ai",
+		"start:ai": "npm run start --prefix includes/ai",
 		"docs:build": "node ./.docs/pre-build.js; jsdoc -c ./.docs/config.json -r ./includes",
 		"composer": "wp-env run cli --env-cwd=wp-content/plugins/prc-platform-core composer"
 	}

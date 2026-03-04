@@ -30,6 +30,7 @@ class Gutenberg {
 	public function init( $loader = null ) {
 		if ( null !== $loader ) {
 			$loader->add_filter( 'use_block_editor_for_post', $this, 'load_gutenberg' );
+			$loader->add_filter( 'option_gutenberg-experiments', $this, 'enforce_gutenberg_experiments' );
 			$loader->add_action( 'menu_order', $this, 'group_admin_menus_together', 101 );
 			// Remove the "Block Directory" from the block inserter.
 			remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets' );
@@ -45,6 +46,24 @@ class Gutenberg {
 
 			new Edit_Template_Toolbar( $loader );
 		}
+	}
+
+	/**
+	 * Enforce specific Gutenberg experiments are always enabled,
+	 * regardless of the database setting.
+	 *
+	 * @hook option_gutenberg-experiments
+	 *
+	 * @param mixed $experiments The stored experiments option value.
+	 * @return array
+	 */
+	public function enforce_gutenberg_experiments( $experiments ) {
+		if ( ! is_array( $experiments ) ) {
+			$experiments = array();
+		}
+		$experiments['gutenberg-block-experiments'] = true;
+		$experiments['gutenberg-workflow-palette']  = true;
+		return $experiments;
 	}
 
 	/**

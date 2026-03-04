@@ -55,7 +55,14 @@ class Firebase {
 	 * @param mixed $loader The loader instance for registering hooks.
 	 */
 	public function __construct( $loader = null ) {
-		// Check if the Kreait Firebase library exists.
+		// Sanity check to ensure that the constants are defined. If the primary
+		// Firebase key is not defined, return early.
+		if ( ! defined( 'PRC_PLATFORM_FIREBASE_KEY' ) ) {
+			do_action( 'qm/critical', 'PRC_PLATFORM_FIREBASE_KEY is not defined. Firebase functionality will be disabled.' );
+			return;
+		}
+
+		// Sanity check to ensure that the Kreait Firebase library exists. If it does not, return early.
 		if ( ! class_exists( 'Kreait\Firebase\Factory' ) ) {
 			do_action( 'qm/critical', 'Kreait Firebase library not found. Firebase functionality will be disabled.' );
 			return;

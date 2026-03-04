@@ -4,8 +4,8 @@
 		"@wordpress/scripts": "^30.25.0"
 	},
 	"scripts": {
-		"build": "wp-scripts build index.js --output-path=../../../build/@prc/controls",
-		"start": "wp-scripts start index.js --output-path=../../../build/@prc/controls"
+		"build": "wp-scripts build",
+		"start": "wp-scripts start"
 	},
 	"dependencies": {
 		"@emotion/styled": "^11.14.0",

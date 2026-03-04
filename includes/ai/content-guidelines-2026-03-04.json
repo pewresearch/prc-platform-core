@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-04T19:01:38.245Z",
+  "guidelines": {
+    "version": 1,
+    "brand_context": {
+      "site_description": "Pew Research Center is a nonpartisan fact tank that informs the public about the issues, attitudes, and trends shaping the world. We conduct public opinion polling, demographic research, content analysis, and other data-driven social science research on topics ranging from politics and policy issues to journalism, technology, religion, and global attitudes.",
+      "audience": "ournalists, policymakers, academics, researchers, educators, and the informed public seeking objective, non-advocacy research and data on social issues, demographic trends, and public opinion.",
+      "primary_goal": "inform",
+      "topics": []
+    },
+    "voice_tone": {
+      "description": "Pew Research Center's voice is authoritative yet accessible, objective and non-advocacy. We present data-driven findings in a straightforward manner that respects our audience's intelligence while remaining clear and understandable. Our tone is measured, factual, and neutral, avoiding both sensationalism and academic jargon.",
+      "tone_traits": [
+        "authoritative",
+        "transparent",
+        "accurate",
+        "balanced",
+        "clear",
+        "trustworthy",
+        "methodical",
+        "nonpartisan",
+        "objective"
+      ],
+      "tone_notes": "- Maintain strict neutrality and avoid advocacy language - Present data and findings without drawing policy conclusions - Use precise language when describing research methods and findings - Acknowledge limitations and margins of error in research - Avoid superlatives and emotionally charged language - When presenting contrasting viewpoints or data, give equal weight to all perspectives - Use active voice when possible to improve clarity - Define technical or specialized terms when necessary for general audience understanding",
+      "pov": "third_person",
+      "readability": "general"
+    },
+    "copy_rules": {
+      "dos": [],
+      "donts": [],
+      "formatting": []
+    },
+    "vocabulary": {
+      "prefer": [],
+      "avoid": [],
+      "acronyms": [],
+      "acronym_usage": "expand_first",
+      "custom_dictionary": [],
+      "voice_corrections": []
+    },
+    "heuristics": {
+      "reading_level": "standard",
+      "reading_level_custom": "",
+      "words_per_sentence": 38,
+      "paragraphs_per_section": 6,
+      "max_syllables": 4
+    },
+    "references": {
+      "references": [
+        {
+          "type": "website",
+          "title": "",
+          "url": "",
+          "notes": ""
+        }
+      ],
+      "notes": ""
+    },
+    "images": {
+      "style": "",
+      "alt_text_guidelines": "",
+      "reference_images": [],
+      "dos": [],
+      "donts": [],
+      "text_policy": ""
+    },
+    "notes": "",
+    "blocks": {}
+  }
+}

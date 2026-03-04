@@ -5,6 +5,6 @@
 	},
 	"main": "exports.js",
 	"scripts": {
-		"build": "wp-scripts build index.js --output-path=../../../build/@prc/hooks"
+		"build": "wp-scripts build"
 	}
 }

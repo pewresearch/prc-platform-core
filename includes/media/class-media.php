@@ -2,7 +2,7 @@
 namespace PRC\Platform;
 
 /**
- * The media "manager" for the PRC Platform. Manages image sizes, art direction, attachment downloads, and more.
+ * The media "manager" for the PRC Platform. Manages image sizes, attachment downloads, and more.
  *
  * @package
  */
@@ -21,6 +21,7 @@ class Media {
 	 */
 	public function __construct( $loader ) {
 		// load the media-sizes.json file into the $media_sizes array.
+		// @TODO: Create a json to php array converter so that we can load the php file and save on some server resources.
 		$this->media_sizes = \wp_json_file_decode(
 			plugin_dir_path( __DIR__ ) . 'media/media-sizes.json',
 			array( 'associative' => true )
@@ -120,6 +121,7 @@ class Media {
 		}
 
 		add_theme_support( 'post-thumbnails' );
+
 		foreach ( $this->media_sizes as $name => $size ) {
 			add_image_size( $name, $size['width'], $size['height'], $size['crop'] );
 		}
@@ -205,7 +207,7 @@ class Media {
 
 	/**
 	 * Allow JSON uploads.
-	 * 
+	 *
 	 * @hook upload_mimes
 	 * @param mixed $existing_mimes Existing mimes.
 	 * @return mixed Mimes.

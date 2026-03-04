@@ -6,8 +6,8 @@
 	},
 	"main": "exports.js",
 	"scripts": {
-		"build": "wp-scripts build index.js --output-path=../../../build/@prc/components",
-		"start": "wp-scripts start index.js --output-path=../../../build/@prc/components"
+		"build": "wp-scripts build",
+		"start": "wp-scripts start"
 	},
 	"dependencies": {
 		"@codeamp/block-components": "^0.0.1-beta.14",

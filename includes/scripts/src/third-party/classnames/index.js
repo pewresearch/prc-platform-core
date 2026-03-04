@@ -1,14 +1,4 @@
-/**
- * External Dependencies
- */
-import classnames from 'classnames';
+export { default } from 'classnames';
 
-function loadScript(slug, script) {
-	if (!window[slug]) {
-		window[slug] = script;
-	}
-}
-
-loadScript('classnames', classnames);
-// Alias for classnames
-loadScript('classNames', classnames);
+// Preserve legacy alias
+window.classNames = window.classnames;

@@ -4,11 +4,11 @@
 import { useState, useEffect } from '@wordpress/element';
 
 /**
- * Watches an inputValue and returns a debounced version of it after set delay.
- * Usage: const debouncedValue = useDebounce('a string being typed by a user...', 500);
- * @param {*} inputValue
- * @param {*} delay
- * @returns value after delay
+ * Watches a value and returns a debounced version of it after set delay.
+ * Usage: const debouncedValue = useDebounce('a value being added to a field...', 500);
+ * @param {*}      value
+ * @param {number} delay
+ * @return {*} debounced value
  */
 const useDebounce = (value, delay) => {
 	// State and setters for debounced value
@@ -26,7 +26,7 @@ const useDebounce = (value, delay) => {
 				clearTimeout(handler);
 			};
 		},
-		[value, delay], // Only re-call effect if value or delay changes
+		[value, delay] // Only re-call effect if value or delay changes
 	);
 	return debouncedValue;
 };

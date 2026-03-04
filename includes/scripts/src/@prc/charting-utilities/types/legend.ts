@@ -1,3 +1,7 @@
+export type LegendItemCustomization = {
+	text?: string;
+};
+
 export type Legend = {
 	active: boolean;
 	orientation: 'row' | 'column' | 'row-reverse' | 'column-reverse';
@@ -19,4 +23,6 @@ export type Legend = {
 	labelDelimiter: string;
 	labelLower: string;
 	labelUpper: string;
+	/** Per-item custom label text, keyed by category value */
+	customLabels: Record<string, LegendItemCustomization>;
 };

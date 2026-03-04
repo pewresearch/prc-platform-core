@@ -1,6 +1,6 @@
+import React from 'react';
 import {
 	abbreviateNumber,
-	checkContrast,
 	newDateByFormat,
 	decodeHtmlEntities,
 } from '../utilities/helpers';
@@ -10,8 +10,9 @@ import { AxisScale, AxisScaleOutput } from '@visx/axis';
 
 // sanity check to catch old date formats with single quotes
 const replaceStraightQuotesWithFancy = (dateFormat: string) => {
-	// replace "'%y" with "'%y"
-	// eg. '18 -> '18
+	if (!dateFormat) return dateFormat;
+	// replace "'%y" with "\u2019%y"
+	// eg. '18 -> \u201918
 	return dateFormat.replace("'%y", '\u2019%y');
 };
 
@@ -60,6 +61,25 @@ const formatTicks = (
 	t: number | Date | string,
 	inputDateFormat?: string | null
 ) => {
+	// Per-tick custom labels (from editor popover).
+	// Values may be a plain string (legacy) or a style object { text?, fill?, ... }.
+	const customTickLabels = (config as any).customTickLabels as
+		| Record<string, string | Record<string, any>>
+		| undefined;
+	if (customTickLabels) {
+		const key = String(t);
+		const entry = customTickLabels[key];
+		if (entry !== undefined && entry !== '') {
+			if (typeof entry === 'object' && entry !== null) {
+				// New format — only override the label text if explicitly set
+				if (entry.text && entry.text !== '') return entry.text;
+				// Has a style-only customization; fall through to default formatting
+			} else if (typeof entry === 'string' && entry !== '') {
+				return entry; // legacy string format
+			}
+		}
+	}
+
 	if (
 		config.customTickFormat &&
 		typeof config.customTickFormat === 'function'
@@ -151,22 +171,25 @@ const formatTicks = (
 	return `${t}`;
 };
 
-const getColor = (color: string, theme: string) => {
+/**
+ * Passthrough color handler for axis properties.
+ * Colors are now pre-resolved to light-dark() CSS values by getConfig()
+ * in prc-chart-builder, so this function only needs to handle the
+ * empty/falsy case.
+ */
+const getColor = (color: string, _theme: string) => {
 	if (!color) {
-		// return transparent
 		return 'transparent';
 	}
-	if (theme === 'light') {
-		return color;
-	}
-	return checkContrast(color, '#1e1e1e') > 3 ? color : '#ccc';
+	return color;
 };
 
 const getAxisProps = (
 	config: independentAxis | dependentAxis,
 	scale: AxisScale<AxisScaleOutput>,
 	theme: 'light' | 'dark',
-	inputDateFormat?: string | null
+	inputDateFormat?: string | null,
+	ticksComponent?: (props: any) => React.ReactElement
 ) => {
 	const { axis, ticks, axisLabel, tickLabels } = config;
 
@@ -210,12 +233,25 @@ const getAxisProps = (
 			angle: axisLabel.angle,
 			width: axisLabel.maxWidth,
 		},
-		tickFormat: (t: any) =>
-			decodeHtmlEntities(formatTicks(config, t, inputDateFormat)),
-		tickLabelProps: () => {
+		tickFormat: (t: any) => {
+			if (t === null) return '';
+			const formatted = formatTicks(config, t, inputDateFormat);
+			return formatted !== null ? decodeHtmlEntities(formatted) : '';
+		},
+		ticksComponent,
+		// Function form: visx calls this per-tick so we can apply per-tick style overrides.
+		tickLabelProps: (tick: any) => {
+			const customTickLabels = (config as any).customTickLabels as
+				| Record<string, string | Record<string, any>>
+				| undefined;
+			const entry = customTickLabels?.[String(tick)];
+			const custom =
+				typeof entry === 'object' && entry !== null ? entry : {};
 			return {
-				fill: getColor(tickLabels.fill, theme),
-				fontSize: tickLabels.fontSize,
+				fill: custom.fill ?? getColor(tickLabels.fill, theme),
+				fontSize: custom.fontSize ?? tickLabels.fontSize,
+				fontWeight: custom.fontWeight ?? undefined,
+				fontStyle: custom.fontStyle ?? undefined,
 				textAnchor: tickLabels.textAnchor,
 				dy: tickLabels.dy,
 				dx: tickLabels.dx,

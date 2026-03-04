@@ -50,6 +50,9 @@ class WP_Admin {
 
 			remove_filter( 'display_post_states', array( 'DS_Public_Post_Preview', 'display_preview_state' ), 20 );
 
+			// Enable plugin updates in local development environments.
+			$this->enable_plugin_updates_in_local_env();
+
 			// Actions.
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
 			$loader->add_action( 'login_enqueue_scripts', $this, 'login_logo' );
@@ -73,6 +76,109 @@ class WP_Admin {
 
 			new Admin_Columns( $loader );
 		}
+	}
+
+	/**
+	 * Enable plugin updates in local development environments.
+	 *
+	 * This method re-enables plugin update capabilities when running in a local
+	 * development environment. On WordPress VIP, plugin updates are typically disabled
+	 * through DISALLOW_FILE_MODS constant and capability restrictions. This override
+	 * allows developers to test plugin updates locally.
+	 *
+	 * SECURITY: This code includes multiple safety checks to ensure it NEVER runs on
+	 * production VIP environments:
+	 * 1. Checks that environment type is 'local' or 'development'
+	 * 2. Verifies that WPCOM_IS_VIP_ENV constant is not set or is false
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	private function enable_plugin_updates_in_local_env() {
+		// Get current environment type.
+		$env_type = wp_get_environment_type();
+
+		// Safety check: Only enable in local or development environments.
+		// NEVER enable on production, staging, or any VIP environment.
+		if ( ! in_array( $env_type, array( 'local', 'development' ), true ) ) {
+			return;
+		}
+
+		// Additional safety check: Ensure we're not on a VIP environment.
+		// VIP sets WPCOM_IS_VIP_ENV constant in their mu-plugins.
+		if ( defined( 'WPCOM_IS_VIP_ENV' ) && true === WPCOM_IS_VIP_ENV ) {
+			return;
+		}
+
+		// Enable file modifications at a more granular level using the file_mod_allowed filter.
+		// This filter was introduced in WordPress 4.8 and provides better control.
+		// We check the context to only allow plugin-related operations.
+		add_filter(
+			'file_mod_allowed',
+			function ( $allowed, $context ) {
+				// Only override for plugin-related operations.
+				if ( in_array( $context, array( 'update_plugins', 'install_plugins', 'delete_plugins' ), true ) ) {
+					return true;
+				}
+				return $allowed;
+			},
+			99,
+			2
+		);
+
+		// Re-enable plugin update capabilities by filtering user capabilities.
+		// This overrides any restrictions set by DISALLOW_FILE_MODS or VIP mu-plugins.
+		add_filter(
+			'user_has_cap',
+			function ( $allcaps ) {
+				// Capabilities related to plugin management.
+				$plugin_caps = array(
+					'install_plugins',
+					'update_plugins',
+					'delete_plugins',
+					'activate_plugins',
+					'edit_plugins',
+				);
+
+				// Grant these capabilities if the user is an administrator.
+				if ( isset( $allcaps['manage_options'] ) && $allcaps['manage_options'] ) {
+					foreach ( $plugin_caps as $cap ) {
+						$allcaps[ $cap ] = true;
+					}
+				}
+
+				return $allcaps;
+			},
+			99,
+			1
+		);
+
+		// Override VIP's map_meta_cap filter that restricts update_core capability.
+		// VIP sets 'do_not_allow' for core updates, but we want to allow plugin updates.
+		add_filter(
+			'map_meta_cap',
+			function ( $caps, $cap, $user_id, $args ) {
+				// Allow plugin-related capabilities.
+				$allowed_caps = array(
+					'update_plugins',
+					'install_plugins',
+					'delete_plugins',
+					'activate_plugins',
+					'edit_plugins',
+				);
+
+				if ( in_array( $cap, $allowed_caps, true ) ) {
+					// Grant the capability to users who have manage_options.
+					if ( user_can( $user_id, 'manage_options' ) ) {
+						return array( 'manage_options' );
+					}
+				}
+
+				return $caps;
+			},
+			99,
+			4
+		);
 	}
 
 	/**
@@ -230,7 +336,11 @@ class WP_Admin {
 	 * @return array Modified query arguments.
 	 */
 	public function show_all_post_types_in_dashboard( array $query_args ) {
-		$post_types = Publication_Listing::get_enabled_post_types();
+		// Check if prc-publication-listing is active.
+		if ( ! is_plugin_active( 'prc-publication-listing/prc-publication-listing.php' ) ) {
+			return $query_args;
+		}
+		$post_types = \PRC\Platform\Publication_Listing\Query::get_enabled_post_types();
 
 		if ( is_array( $post_types ) ) {
 			$query_args['post_type'] = $post_types;
