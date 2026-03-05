@@ -130,27 +130,26 @@ class Bootstrap {
 		$this->include( 'action-scheduler/class-action-scheduler-ai-ability.php' );
 		$this->include( 'block-editor/class-block-editor.php' );
 		$this->include( 'block-utils/class-block-utils.php' );
+		$this->include( 'feeds/class-feeds.php' );
 		$this->include( 'firebase/class-firebase.php' );
 		$this->include( 'gutenberg/class-gutenberg.php' );
+		$this->include( 'housekeeping/class-housekeeping.php' );
 		$this->include( 'icon-loader/class-icon-loader.php' );
+		$this->include( 'jetpack/class-jetpack.php' );
 		$this->include( 'mailchimp/class-mailchimp.php' );
 		$this->include( 'media/class-media.php' );
 		$this->include( 'post-publish-pipeline/class-post-publish-pipeline.php' );
+		$this->include( 'rest-api/class-rest-api.php' );
+		$this->include( 'rewrites/class-rewrites.php' );
 		$this->include( 'script-modules/class-script-modules.php' );
 		$this->include( 'scripts/class-scripts.php' );
+		$this->include( 'taxonomies/class-taxonomies.php' );
 		$this->include( 'templates/class-templates.php' );
 		$this->include( 'term-data-store/term-data-store.php' );
+		$this->include( 'url-helper/class-url-helper.php' );
 		$this->include( 'user-permissions/class-user-permissions.php' );
 		$this->include( 'wp-admin/class-wp-admin.php' );
 		$this->include( 'wp-html-sub-processors/index.php' );
-
-		$this->include( 'class-feeds.php' );
-		$this->include( 'class-housekeeping.php' );
-		$this->include( 'class-jetpack.php' );
-		$this->include( 'class-rest-api.php' );
-		$this->include( 'class-rewrites.php' );
-		$this->include( 'class-taxonomies.php' );
-		$this->include( 'class-url-helper.php' );
 
 		// Initialize the loader.
 		$this->loader = new Loader();

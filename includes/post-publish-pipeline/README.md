@@ -1,59 +1,59 @@
 # Post Publish Pipeline
 
-A PHP and Javascript implementation of a post-publish pipeline for the Pew Research Center platform. This provides convenient, stable, and extensible hooks that follow a post object through it's entire lifecycle; from init into the db, to subsequent incremental saves, to publish, to updates after publish, to unpublishing, to trashing, and lastly to untrashing. All hooks are designed with sanity checks so you don't have to worry about things like ajax, autosaving, revisions, etc. These hooks work, exactly when you expect them to and only when you expect them to.
+Provides standardized, lifecycle-aware WordPress hooks for tracking posts through creation, saving, publishing, updating, unpublishing, and trashing.
 
-## Client Side Hooks
+## What it does
 
-All client side hooks received `{edits, postId, postStatus, postType}` properties:
+The pipeline normalizes the chaotic WordPress post status transition hooks into a clean, predictable set of actions. It guards against WP-CLI execution (intentionally — pipeline hooks are for web/REST contexts only).
 
-- `prc-platform.onSiteEdit` Occurs every time an update is applied in the site editor.
-- `prc-platform.onPostInit` Occurs once, when a post transition from non existent to `draft` state.
-- `prc-platform.onIncrementalSave` Occurs often, whenever a post in a `draft` state is updated.
-- `prc-platform.onPublish` Occurs when a post transitions from `draft` to `publish` state.
-- `prc-platform.onUpdate` Occurs when a post is either in `draft` or `publish` state and is updated.
-- `prc-platform.onUnpublish` Occurs when a post transitions from `publish` to `draft` state.
+## Available hooks
 
-### Client Side Example
+| Hook | Fires when |
+|------|-----------|
+| `prc_platform_on_post_init` | A new post is first created |
+| `prc_platform_on_incremental_save` | A post is saved (any status) |
+| `prc_platform_on_publish` | A post transitions to `publish` |
+| `prc_platform_on_update` | An already-published post is updated |
+| `prc_platform_on_unpublish` | A post transitions away from `publish` |
+| `prc_platform_on_trash` | A post is trashed |
+| `prc_platform_on_untrash` | A post is restored from trash |
 
-```js
-import { addAction } from '@wordpress/hooks';
+All hooks pass `WP_Post` as the first argument.
 
-addAction('prc-platform.onPublish', 'my-plugin', ({postId, postStatus, postType}) => {
-  console.log(`A post of type ${postType} with ID ${postId} was published with status ${postStatus}`);
-});
-```
+## Allowed post types
 
-## Server Side Hooks
+By default the pipeline tracks: `post`, `feature`, `quiz`, `fact-sheet`, `short-read`, `events`, `mini-course`, `press-release`, `block_module`, `collections`.
 
-All server side hooks receive `($ref_post, $has_blocks)` properties.
-
-All server side hooks have matching hooks for their post type to target specific post types. For example, `prc_platform_on_publish` has `prc_platform_on_{post_type}_publish` e.g. `prc_platform_on_fact-sheet_publish`.
-
-- `prc_platform_on_post_init` Occurs once, when a post transition from non existent to `draft` state.
-- `prc_platform_on_incremental_save` Occurs often, whenever a post in either `draft` or `publish` state is updated.
-- `prc_platform_on_publish`  Occurs once, when a post transitions from `draft` to `publish` state.
-- `prc_platform_on_update` Occurs often, whenever a post in `publish` state is updated.
-- `prc_platform_on_unpublish` Occurs once, when a post transitions from `publish` to `draft` state.
-- `prc_platform_on_trash` Occurs once, when a post transitions from `publish` to `trash` state.
-- `prc_platform_on_untrash` Occurs once, when a post transitions from `trash` to `publish` state.
-
-### Server Side Example
+Extend via filter:
 
 ```php
-add_action('prc_platform_on_publish', function($ref_post, $has_blocks) {
-  error_log('A post of type ' . $ref_post->post_type . ' with ID ' . $ref_post->ID . ' was published. It does ' . ($has_blocks ? '' : 'not ') . 'have blocks.');
-}, 10, 2);
+add_filter( 'prc_platform_post_publish_pipeline_post_types', function( $types ) {
+    $types[] = 'my-cpt';
+    return $types;
+} );
 ```
 
----
+## WP Post object extension
 
-#### Additional Properties
+Other platform components can attach additional data to the WP post object via the `prc_platform_wp_post_object` filter (priority 1). Use this to scaffold fields early and populate them lazily for performance.
 
-Additionally, the follow properties are added to all post objects either server side in PHP classes or directly on objects in the REST API.
+## Key files
 
-- `label` Is either the Format taxonomy label associated with the post or the Category taxonomy label associated with the post.
-- `post_parent` If this post is a child it'll contain the parent's id. This is normally found in PHP WP_Post class but is missing in the REST API, this adds it back.
-- `word_count` Is a simple word count of the `post_content` stripped of HTML tags.
-- `canonical_url` Is the canonical URL of the post.
-- `visibility` Is our custom post visibility implementation and returns either `null`, 'public', 'hidden_from_search', 'hidden_from_index`.
+| File | Purpose |
+|------|---------|
+| `class-post-publish-pipeline.php` | Pipeline hooks and post type gating |
+| `src/` | Block editor JS pipeline integration |
+| `build/` | Compiled editor assets |
 
+## Hooks
+
+| Hook | Direction | Description |
+|------|-----------|-------------|
+| `enqueue_block_editor_assets` | Action | Enqueues JS pipeline integration |
+| `prc_platform_post_publish_pipeline_post_types` | Filter | Extend tracked post types |
+| `prc_platform_wp_post_object` | Filter | Extend the WP post object shape |
+
+## Notes
+
+- Pipeline hooks do **not** fire in WP-CLI context — this is intentional
+- REST API requests are tracked (`is_rest` is set but does not block execution)
