@@ -163,6 +163,14 @@ class AI {
 		);
 
 		wp_register_ability_category(
+			'media-generation',
+			array(
+				'label'       => __( 'Media Generation', 'prc-platform-core' ),
+				'description' => __( 'PRC AI abilities that generate media.', 'prc-platform-core' ),
+			)
+		);
+
+		wp_register_ability_category(
 			'data-modification',
 			array(
 				'label'       => __( 'Data Modification', 'prc-platform-core' ),

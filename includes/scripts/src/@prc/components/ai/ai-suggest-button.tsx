@@ -7,7 +7,7 @@ import { Icon } from '@prc/icons';
  * WordPress Dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button, Spinner } from '@wordpress/components';
 
 interface AISuggestButtonProps {
 	/** Button label text. Defaults to "Suggest with AI". */
@@ -65,6 +65,7 @@ export default function AISuggestButton({
 			className="prc-ai-suggest-button"
 			variant={variant}
 			size={size}
+			isBusy={isLoading}
 			icon={
 				<span className="prc-ai-suggest-button__icon">
 					<Icon icon="sparkles" />
