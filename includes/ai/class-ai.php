@@ -634,66 +634,70 @@ PROMPT;
 
 		$json_schema = array(
 			'name'   => 'document_analysis',
-			'strict' => false,
+			'strict' => true,
 			'schema' => array(
-				'type'       => 'object',
-				'properties' => array(
+				'type'                 => 'object',
+				'additionalProperties' => false,
+				'properties'           => array(
 					'issues'      => array(
 						'type'  => 'array',
 						'items' => array(
-							'type'       => 'object',
-							'properties' => array(
+							'type'                 => 'object',
+							'additionalProperties' => false,
+							'properties'           => array(
 								'blockClientId'      => array( 'type' => 'string' ),
 								'type'               => array( 'type' => 'string' ),
 								'message'            => array( 'type' => 'string' ),
-								'note'               => array( 'type' => 'string' ),
-								'richTextIdentifier' => array( 'type' => 'string' ),
-								'start'              => array( 'type' => 'integer' ),
-								'end'                => array( 'type' => 'integer' ),
-								'blockLevel'         => array( 'type' => 'boolean' ),
+								'note'               => array( 'type' => array( 'string', 'null' ) ),
+								'richTextIdentifier' => array( 'type' => array( 'string', 'null' ) ),
+								'start'              => array( 'type' => array( 'integer', 'null' ) ),
+								'end'                => array( 'type' => array( 'integer', 'null' ) ),
+								'blockLevel'         => array( 'type' => array( 'boolean', 'null' ) ),
 							),
-							'required'   => array( 'blockClientId', 'type', 'message' ),
+							'required'             => array( 'blockClientId', 'type', 'message', 'note', 'richTextIdentifier', 'start', 'end', 'blockLevel' ),
 						),
 					),
 					'suggestions' => array(
 						'type'  => 'array',
 						'items' => array(
-							'type'       => 'object',
-							'properties' => array(
+							'type'                 => 'object',
+							'additionalProperties' => false,
+							'properties'           => array(
 								'blockClientId' => array( 'type' => 'string' ),
 								'type'          => array( 'type' => 'string' ),
 								'message'       => array( 'type' => 'string' ),
-								'note'          => array( 'type' => 'string' ),
+								'note'          => array( 'type' => array( 'string', 'null' ) ),
 							),
-							'required'   => array( 'blockClientId', 'type', 'message' ),
+							'required'             => array( 'blockClientId', 'type', 'message', 'note' ),
 						),
 					),
 					'stats'       => array(
-						'type'       => 'object',
-						'properties' => array(
+						'type'                 => 'object',
+						'additionalProperties' => false,
+						'properties'           => array(
 							'word_count'             => array( 'type' => 'integer' ),
 							'sentence_count'         => array( 'type' => 'integer' ),
 							'avg_words_per_sentence' => array( 'type' => 'number' ),
 						),
+						'required'             => array( 'word_count', 'sentence_count', 'avg_words_per_sentence' ),
 					),
 				),
-				'required'   => array( 'issues', 'suggestions', 'stats' ),
+				'required'             => array( 'issues', 'suggestions', 'stats' ),
 			),
 		);
-
-		error_log( 'analyze_document system: ' . $system );
-		error_log( 'analyze_document user_prompt: ' . $user_prompt );
-		error_log( 'analyze_document json_schema: ' . wp_json_encode( $json_schema ) );
 
 		try {
 			$response = AI_Client::prompt( $user_prompt )
 				->using_system_instruction( $system )
+				->using_model_preference( array( 'claude-opus-4-6', 'gemini-3-flash-preview' ) )
 				->using_temperature( 0.2 )
 				->as_json_response( $json_schema )
 				->generate_text();
 
 			$parsed = json_decode( $response, true );
 			if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $parsed ) ) {
+				error_log( 'analyze_document: JSON decode failed — ' . json_last_error_msg() );
+				error_log( 'analyze_document: raw response — ' . substr( $response, 0, 500 ) );
 				return null;
 			}
 
@@ -707,6 +711,7 @@ PROMPT;
 
 			return $parsed;
 		} catch ( \Exception $e ) {
+			error_log( 'analyze_document: exception — ' . $e->getMessage() );
 			return null;
 		}
 	}

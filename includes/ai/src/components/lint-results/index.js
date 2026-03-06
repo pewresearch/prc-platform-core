@@ -208,7 +208,24 @@ export default function LintResults({ results, blocks = [], onSelectBlock }) {
 						{suggestions.map((suggestion, index) => (
 							<li
 								key={index}
-								className="prc-ai-lint__item prc-ai-lint__item--suggestion"
+								className="prc-ai-lint__item prc-ai-lint__item--suggestion prc-ai-lint__item--clickable"
+								onClick={() =>
+									suggestion.blockClientId &&
+									handleIssueClick(suggestion.blockClientId)
+								}
+								onKeyDown={(e) => {
+									if (
+										(e.key === 'Enter' || e.key === ' ') &&
+										suggestion.blockClientId
+									) {
+										e.preventDefault();
+										handleIssueClick(
+											suggestion.blockClientId
+										);
+									}
+								}}
+								role="button"
+								tabIndex={0}
 							>
 								<span className="prc-ai-lint__icon">💡</span>
 								<div className="prc-ai-lint__content">

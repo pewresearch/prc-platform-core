@@ -14,9 +14,15 @@ mark.annotation-text-content-guidelines {
 	border-bottom: 2px solid #f0b849;
 }
 
-/* Block-level readability annotation */
-.is-annotated-by-content-guidelines {
+/* Block-level issue highlight */
+.has-content-guidelines-issue {
 	outline: 2px dashed #f0b849;
+	outline-offset: 2px;
+}
+
+/* Block-level suggestion highlight */
+.has-content-guidelines-suggestion {
+	outline: 2px dashed #8c8cf5;
 	outline-offset: 2px;
 }
 

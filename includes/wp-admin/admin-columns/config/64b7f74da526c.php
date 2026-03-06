@@ -14,8 +14,8 @@ return array (
       array (
         'type' => 'title',
         'label' => 'Title',
-        'width' => '',
-        'width_unit' => '%',
+        'width' => '212',
+        'width_unit' => 'px',
         'export' => 'on',
         'sort' => 'on',
         'edit' => 'on',
@@ -24,6 +24,27 @@ return array (
         'filter' => 'off',
         'filter_label' => '',
         'name' => 'title',
+      ),
+      '64c9bb6a50a3d8' => 
+      array (
+        'type' => 'column-Parent_Post_Column',
+        'label' => 'Parent Post',
+        'width' => '124',
+        'width_unit' => 'px',
+        'export' => 'on',
+        'name' => '64c9bb6a50a3d8',
+      ),
+      0 => 
+      array (
+        'type' => 'prc_seo_primary_term',
+        'label' => 'Primary Term',
+        'width' => '',
+        'width_unit' => '%',
+        'primary_taxonomy' => 'category',
+        'export' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => '12511041960419',
       ),
       'date' => 
       array (
@@ -142,28 +163,10 @@ return array (
       array (
         'type' => 'column-PRC_ATTACHMENTS_COLUMN',
         'label' => 'Attachments',
-        'width' => '',
-        'width_unit' => '%',
+        'width' => '190',
+        'width_unit' => 'px',
         'export' => 'on',
         'name' => '64c9bb5bc4dd30',
-      ),
-      '1c4764200b020c' => 
-      array (
-        'type' => 'column-PRC_SOCIAL_SCHEDULE_COLUMN',
-        'label' => 'Social Schedule',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'name' => '1c4764200b020c',
-      ),
-      '64c9bb6a50a3d8' => 
-      array (
-        'type' => 'column-Parent_Post_Column',
-        'label' => 'Parent Post',
-        'width' => '',
-        'width_unit' => '%',
-        'export' => 'on',
-        'name' => '64c9bb6a50a3d8',
       ),
       '482b94d6cc0830' => 
       array (
@@ -183,6 +186,15 @@ return array (
         'filter' => 'on',
         'filter_label' => '',
         'name' => '482b94d6cc0830',
+      ),
+      '1c4764200b020c' => 
+      array (
+        'type' => 'column-PRC_SOCIAL_SCHEDULE_COLUMN',
+        'label' => 'Social Schedule',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'name' => '1c4764200b020c',
       ),
       '1cf42c6f960419' => 
       array (
@@ -215,18 +227,6 @@ return array (
         'filter' => 'off',
         'filter_label' => '',
         'name' => '37d3190556872c',
-      ),
-      12511041960419 => 
-      array (
-        'type' => 'prc_seo_primary_term',
-        'label' => 'Primary Term',
-        'width' => '',
-        'width_unit' => '%',
-        'primary_taxonomy' => 'category',
-        'export' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'name' => '12511041960419',
       ),
       '527726df1374bc' => 
       array (

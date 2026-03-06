@@ -44,6 +44,42 @@ function ContentGuidelinesSidebar() {
 		return () => clearAnnotations();
 	}, []);
 
+	// Apply visual classes to block wrappers for issues/suggestions.
+	useEffect(() => {
+		if (!results) return;
+
+		const issueIds = new Set(
+			(results.issues ?? []).map((i) => i.blockClientId).filter(Boolean)
+		);
+		const suggestionIds = new Set(
+			(results.suggestions ?? [])
+				.map((s) => s.blockClientId)
+				.filter(Boolean)
+		);
+
+		for (const id of issueIds) {
+			const el = document.querySelector(`[data-block="${id}"]`);
+			if (el) el.classList.add('has-content-guidelines-issue');
+		}
+		for (const id of suggestionIds) {
+			const el = document.querySelector(`[data-block="${id}"]`);
+			if (el) el.classList.add('has-content-guidelines-suggestion');
+		}
+
+		return () => {
+			document
+				.querySelectorAll('.has-content-guidelines-issue')
+				.forEach((el) =>
+					el.classList.remove('has-content-guidelines-issue')
+				);
+			document
+				.querySelectorAll('.has-content-guidelines-suggestion')
+				.forEach((el) =>
+					el.classList.remove('has-content-guidelines-suggestion')
+				);
+		};
+	}, [results]);
+
 	const runCheck = async () => {
 		setIsChecking(true);
 		setError(null);
@@ -66,7 +102,14 @@ function ContentGuidelinesSidebar() {
 			}
 
 			setResults(result);
-			applyAnnotations(result?.issues ?? []);
+			const allAnnotatable = [
+				...(result?.issues ?? []),
+				...(result?.suggestions ?? []).map((s) => ({
+					...s,
+					blockLevel: true,
+				})),
+			];
+			applyAnnotations(allAnnotatable);
 		} catch (err) {
 			const message =
 				err instanceof Error
@@ -121,41 +164,37 @@ function ContentGuidelinesSidebar() {
 					)}
 
 					{results && !isChecking && (
-						<div className="prc-ai-sidebar__results">
-							<p className="prc-ai-sidebar__summary">
-								{issueCount === 0
-									? __(
-											'No issues found.',
-											'prc-platform-core'
-										)
-									: `Found ${issueCount} ${
-											issueCount === 1
-												? 'issue'
-												: 'issues'
-										}.`}
-							</p>
-							<LintResults results={results} blocks={blocks} />
-
-							{hasIssues && (
-								<div
-									className="prc-ai-sidebar__fix"
-									style={{ marginTop: 12 }}
-								>
-									<Button
-										variant="secondary"
-										disabled
-										title={__(
-											'Coming soon. AI-powered fixes will be available in a future update.',
-											'prc-platform-core'
-										)}
-									>
-										{__('Fix Issues', 'prc-platform-core')}
-									</Button>
-								</div>
-							)}
-						</div>
+						<p className="prc-ai-sidebar__summary">
+							{issueCount === 0
+								? __('No issues found.', 'prc-platform-core')
+								: `Found ${issueCount} ${
+										issueCount === 1 ? 'issue' : 'issues'
+									}.`}
+						</p>
 					)}
 				</PanelBody>
+
+				{results && !isChecking && (
+					<LintResults results={results} blocks={blocks} />
+				)}
+
+				{results && !isChecking && hasIssues && (
+					<PanelBody
+						title={__('Actions', 'prc-platform-core')}
+						initialOpen={false}
+					>
+						<Button
+							variant="secondary"
+							disabled
+							title={__(
+								'Coming soon. AI-powered fixes will be available in a future update.',
+								'prc-platform-core'
+							)}
+						>
+							{__('Fix Issues', 'prc-platform-core')}
+						</Button>
+					</PanelBody>
+				)}
 			</PluginSidebar>
 		</>
 	);
