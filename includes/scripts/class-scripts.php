@@ -9,6 +9,9 @@ class Scripts {
 		if ( null !== $loader ) {
 			// Initialize component rest endpoints.
 			$loader->add_action( 'init', $this, 'init_component_rest_endpoints' );
+			// Localize the platform info for the react script.
+			$loader->add_action( 'admin_enqueue_scripts', $this, 'localize_platform_info', 0 );
+			$loader->add_action( 'wp_enqueue_scripts', $this, 'localize_platform_info', 0 );
 			// Enqueue scripts in the frontend.
 			$loader->add_action( 'wp_enqueue_scripts', $this, 'init_first_party_scripts', 0 );
 			$loader->add_action( 'wp_enqueue_scripts', $this, 'init_third_party_scripts', 0 );
@@ -18,6 +21,34 @@ class Scripts {
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'init_first_party_scripts', 0 );
 			$loader->add_action( 'admin_enqueue_scripts', $this, 'init_third_party_scripts', 0 );
 		}
+	}
+
+	/**
+	 * Localize the platform info for the react script.
+	 * Makes available everywhere siteUrl base, environment type, version, and release name.
+	 * Accessible via window.prcPlatform.
+	 *
+	 * Example:
+	 * window.prcPlatform.siteUrl = 'https://alpha.pewresearch.org/pewresearch-org'
+	 * window.prcPlatform.envType = 'production' | 'development' | 'local' | 'staging'
+	 * window.prcPlatform.version = '1.0.0'
+	 * window.prcPlatform.releaseName = 'Release Name'
+	 *
+	 * @hook wp_enqueue_scripts
+	 *
+	 * @return void
+	 */
+	public function localize_platform_info(): void {
+		wp_localize_script(
+			'react', // We bind this to react which is effectively enqueued everywhere.
+			'prcPlatform',
+			array(
+				'siteUrl'     => get_site_url(),
+				'envType'     => wp_get_environment_type(),
+				'version'     => PRC_PLATFORM_VERSION,
+				'releaseName' => PRC_PLATFORM_RELEASE_NAME,
+			)
+		);
 	}
 
 	/**

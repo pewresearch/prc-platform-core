@@ -29,4 +29,5 @@ export type Shapes = {
 	segmentStyles?: {
 		[key: string]: SegmentCustomStyle;
 	};
+	segmentsActive?: boolean;
 };

@@ -36,7 +36,8 @@ class JS_Utils_Loader {
 	 */
 	public function init( $loader ) {
 		if ( null !== $loader ) {
-			$loader->add_action( 'enqueue_block_editor_assets', $this, 'register_assets_for_use', 10, 1 );
+			$loader->add_action( 'enqueue_block_editor_assets', $this, 'register_assets_for_use' );
+			$loader->add_action( 'admin_enqueue_scripts', $this, 'register_assets_for_use' );
 		}
 	}
 

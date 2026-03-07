@@ -140,13 +140,6 @@ class Block_Editor {
 	public function enqueue_assets() {
 		$registered = $this->register_assets();
 		if ( is_admin() && ! is_wp_error( $registered ) ) {
-			wp_localize_script(
-				self::$handle,
-				'prcPlatform',
-				array(
-					'siteUrl' => get_site_url(),
-				)
-			);
 			wp_enqueue_script( self::$handle );
 		}
 	}
