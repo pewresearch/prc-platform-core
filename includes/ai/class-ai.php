@@ -43,13 +43,17 @@ class AI {
 	public function __construct( $loader ) {
 		$this->loader = $loader;
 		require_once plugin_dir_path( __FILE__ ) . 'utils.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-filterable-review-notes.php';
 
 		$this->init_mcp();
 		$this->register_pdf_extraction_filters();
 		$this->loader->add_action( 'init', $this, 'register_content_guidelines_filters', 99 );
 		$this->loader->add_action( 'wp_abilities_api_categories_init', $this, 'register_categories' );
 		$this->loader->add_filter( 'wp_register_ability_args', $this, 'enable_core_abilities_mcp_access', 10, 2 );
-		$this->loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_sidebar_assets' );
+		$this->loader->add_filter( 'ai_review_notes_system_instruction', $this, 'inject_review_notes_content_guidelines', 10, 4 );
+
+		// Disabling this experiment for now. Review Notes works better.
+		// $this->loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_sidebar_assets' );
 	}
 
 	/**
@@ -143,6 +147,45 @@ class AI {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Inject content guidelines into Review Notes system instruction.
+	 *
+	 * @hook ai_review_notes_system_instruction
+	 *
+	 * @param string       $system_instruction The system instruction text.
+	 * @param string       $block_type         The block type being reviewed.
+	 * @param list<string> $review_types       The review types requested.
+	 * @param int|null     $post_id            Post ID for content guidelines.
+	 * @return string Modified system instruction with content guidelines appended.
+	 */
+	public function inject_review_notes_content_guidelines( string $system_instruction, string $block_type, array $review_types, $post_id ): string {
+		$packet_text = $this->get_review_notes_content_guidelines( $post_id );
+		if ( '' === $packet_text ) {
+			return $system_instruction;
+		}
+
+		return $system_instruction . "\n\nSITE CONTENT GUIDELINES (treat these as authoritative editorial constraints — all suggestions must conform to them):\n\n" . $packet_text;
+	}
+
+	/**
+	 * Get content guidelines packet text for Review Notes.
+	 *
+	 * @param int|null $post_id Post ID to fetch guidelines for.
+	 * @return string Packet text for LLM, or empty string if unavailable.
+	 */
+	private function get_review_notes_content_guidelines( $post_id ): string {
+		if ( null === $post_id || ! function_exists( 'wp_get_content_guidelines_for_post' ) ) {
+			return '';
+		}
+
+		$result = \wp_get_content_guidelines_for_post( (int) $post_id, array( 'task' => 'writing' ) );
+		if ( empty( $result['packet_text'] ) || ! is_string( $result['packet_text'] ) ) {
+			return '';
+		}
+
+		return trim( $result['packet_text'] );
 	}
 
 	/**

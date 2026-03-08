@@ -17,11 +17,14 @@ use Automattic\Jetpack\Device_Detection;
  * @param string $taxonomy Taxonomy slug.
  * @return int|false Term ID if PRC Schema SEO active and primary term found, false otherwise.
  */
-function get_primary_term_id( int $post_id, string $taxonomy ): ?int {
+function get_primary_term_id( ?int $post_id, string $taxonomy ): ?int {
+	if ( ! $post_id ) {
+		return null;
+	}
 	if ( function_exists( '\PRC\Platform\Schema_SEO\Utils\get_primary_term_id' ) ) {
 		return \PRC\Platform\Schema_SEO\Utils\get_primary_term_id( $post_id, $taxonomy );
 	}
-	return false;
+	return null;
 }
 
 /**
