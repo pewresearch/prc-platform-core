@@ -28,6 +28,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Bail early when the WordPress AI plugin is not active.
+if ( ! class_exists( \WordPress\AI\Abstracts\Abstract_Ability::class ) || ! class_exists( \WordPress\AI\Abstracts\Abstract_Experiment::class ) ) {
+	return;
+}
+
 /**
  * Filterable Review Notes ability.
  *
@@ -204,7 +209,7 @@ class Filterable_Review_Notes_Ability extends Abstract_Ability {
 	/**
 	 * Load system instruction from PRC's review-notes file.
 	 *
-	 * @param string|null   $filename Optional filename.
+	 * @param string|null         $filename Optional filename.
 	 * @param array<string,mixed> $data     Optional data for the template.
 	 * @return string System instruction text.
 	 */
@@ -475,16 +480,20 @@ class Filterable_Review_Notes_Experiment extends Abstract_Experiment {
 }
 
 // Swap the built-in Review Notes experiment for our filterable version.
-if ( class_exists( \WordPress\AI\Abstracts\Abstract_Experiment::class ) ) {
-	add_filter( 'ai_experiments_default_experiment_classes', static function ( array $classes ): array {
+add_filter(
+	'ai_experiments_default_experiment_classes',
+	static function ( array $classes ): array {
 		$classes = array_values(
-			array_filter( $classes, static function ( $class ): bool {
-				return \WordPress\AI\Experiments\Review_Notes\Review_Notes::class !== $class;
-			} )
+			array_filter(
+				$classes,
+				static function ( $class ): bool {
+					return \WordPress\AI\Experiments\Review_Notes\Review_Notes::class !== $class;
+				} 
+			)
 		);
 
 		$classes[] = Filterable_Review_Notes_Experiment::class;
 
 		return $classes;
-	} );
-}
+	} 
+);

@@ -1,5 +1,5 @@
 {
-	"version": "1.4",
+	"version": "1.5",
 	"roles": {
 		"producer": {
 			"name": "Producer",
@@ -14,7 +14,8 @@
 				"wpseo_edit_advanced_metadata": true,
 				"wpseo_bulk_edit": true,
 				"edit_theme_options": true,
-				"unfiltered_html": true
+				"unfiltered_html": true,
+				"srm_manage_redirects": true
 			}
 		},
 		"social-editor": {

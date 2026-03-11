@@ -5836,6 +5836,60 @@ function brush_brush(dim) {
 ;// ./node_modules/d3-brush/src/index.js
 
 
+;// ./node_modules/d3-ease/src/math.js
+// tpmt is two power minus ten times t scaled to [0,1]
+function tpmt(x) {
+  return (Math.pow(2, -10 * x) - 0.0009765625) * 1.0009775171065494;
+}
+
+;// ./node_modules/d3-ease/src/elastic.js
+
+
+var tau = 2 * Math.PI,
+    amplitude = 1,
+    period = 0.3;
+
+var elasticIn = (function custom(a, p) {
+  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
+
+  function elasticIn(t) {
+    return a * tpmt(-(--t)) * Math.sin((s - t) / p);
+  }
+
+  elasticIn.amplitude = function(a) { return custom(a, p * tau); };
+  elasticIn.period = function(p) { return custom(a, p); };
+
+  return elasticIn;
+})(amplitude, period);
+
+var elasticOut = (function custom(a, p) {
+  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
+
+  function elasticOut(t) {
+    return 1 - a * tpmt(t = +t) * Math.sin((t + s) / p);
+  }
+
+  elasticOut.amplitude = function(a) { return custom(a, p * tau); };
+  elasticOut.period = function(p) { return custom(a, p); };
+
+  return elasticOut;
+})(amplitude, period);
+
+var elasticInOut = (function custom(a, p) {
+  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
+
+  function elasticInOut(t) {
+    return ((t = t * 2 - 1) < 0
+        ? a * tpmt(-t) * Math.sin((s - t) / p)
+        : 2 - a * tpmt(t) * Math.sin((s + t) / p)) / 2;
+  }
+
+  elasticInOut.amplitude = function(a) { return custom(a, p * tau); };
+  elasticInOut.period = function(p) { return custom(a, p); };
+
+  return elasticInOut;
+})(amplitude, period);
+
 ;// ./node_modules/d3-ease/src/index.js
 
 
@@ -6008,7 +6062,7 @@ var epsilon2 = 1e-12;
 var pi = Math.PI;
 var halfPi = pi / 2;
 var quarterPi = pi / 4;
-var tau = pi * 2;
+var math_tau = pi * 2;
 
 var math_degrees = 180 / pi;
 var math_radians = pi / 180;
@@ -6266,7 +6320,7 @@ PathContext.prototype = {
       }
       default: {
         this._context.moveTo(x + this._radius, y);
-        this._context.arc(x, y, this._radius, 0, tau);
+        this._context.arc(x, y, this._radius, 0, math_tau);
         break;
       }
     }
@@ -6666,7 +6720,7 @@ function cartesianNormalizeInPlace(d) {
 
 
 function longitude(point) {
-  return math_abs(point[0]) <= pi ? point[0] : sign(point[0]) * ((math_abs(point[0]) + pi) % tau - pi);
+  return math_abs(point[0]) <= pi ? point[0] : sign(point[0]) * ((math_abs(point[0]) + pi) % math_tau - pi);
 }
 
 /* harmony default export */ function polygonContains(polygon, point) {
@@ -6705,7 +6759,7 @@ function longitude(point) {
           k = sinPhi0 * sinPhi1;
 
       sum.add(atan2(k * sign * sin(absDelta), cosPhi0 * cosPhi1 + k * cos(absDelta)));
-      angle += antimeridian ? delta + sign * tau : delta;
+      angle += antimeridian ? delta + sign * math_tau : delta;
 
       // Are the longitudes either side of the point’s meridian (lambda),
       // and are the latitudes smaller than the parallel (phi)?
@@ -6987,12 +7041,12 @@ function circleStream(stream, radius, delta, direction, t0, t1) {
       sinRadius = sin(radius),
       step = direction * delta;
   if (t0 == null) {
-    t0 = radius + direction * tau;
+    t0 = radius + direction * math_tau;
     t1 = radius - step / 2;
   } else {
     t0 = circleRadius(cosRadius, t0);
     t1 = circleRadius(cosRadius, t1);
-    if (direction > 0 ? t0 < t1 : t0 > t1) t0 += direction * tau;
+    if (direction > 0 ? t0 < t1 : t0 > t1) t0 += direction * math_tau;
   }
   for (var point, t = t0; direction > 0 ? t > t1 : t < t1; t -= step) {
     point = spherical([cosRadius, -sinRadius * cos(t), -sinRadius * sin(t)]);
@@ -7005,7 +7059,7 @@ function circleRadius(cosRadius, point) {
   point = cartesian(point), point[0] -= cosRadius;
   cartesianNormalizeInPlace(point);
   var radius = acos(-point[1]);
-  return ((-point[2] < 0 ? -radius : radius) + tau - math_epsilon) % tau;
+  return ((-point[2] < 0 ? -radius : radius) + math_tau - math_epsilon) % math_tau;
 }
 
 /* harmony default export */ function circle() {
@@ -7477,14 +7531,14 @@ function clipRectangle(x0, y0, x1, y1) {
 
 
 function rotationIdentity(lambda, phi) {
-  if (math_abs(lambda) > pi) lambda -= Math.round(lambda / tau) * tau;
+  if (math_abs(lambda) > pi) lambda -= Math.round(lambda / math_tau) * math_tau;
   return [lambda, phi];
 }
 
 rotationIdentity.invert = rotationIdentity;
 
 function rotation_rotateRadians(deltaLambda, deltaPhi, deltaGamma) {
-  return (deltaLambda %= tau) ? (deltaPhi || deltaGamma ? compose(rotationLambda(deltaLambda), rotationPhiGamma(deltaPhi, deltaGamma))
+  return (deltaLambda %= math_tau) ? (deltaPhi || deltaGamma ? compose(rotationLambda(deltaLambda), rotationPhiGamma(deltaPhi, deltaGamma))
     : rotationLambda(deltaLambda))
     : (deltaPhi || deltaGamma ? rotationPhiGamma(deltaPhi, deltaGamma)
     : rotationIdentity);
@@ -7493,7 +7547,7 @@ function rotation_rotateRadians(deltaLambda, deltaPhi, deltaGamma) {
 function forwardRotationLambda(deltaLambda) {
   return function(lambda, phi) {
     lambda += deltaLambda;
-    if (math_abs(lambda) > pi) lambda -= Math.round(lambda / tau) * tau;
+    if (math_abs(lambda) > pi) lambda -= Math.round(lambda / math_tau) * math_tau;
     return [lambda, phi];
   };
 }
@@ -8143,6 +8197,29 @@ function multiplex(streams) {
 
 
 
+;// ./node_modules/d3-interpolate/src/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;// ./node_modules/d3-array/src/range.js
 function range_range(start, stop, step) {
   start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
@@ -8398,7 +8475,7 @@ const math_sqrt = Math.sqrt;
 const src_math_epsilon = 1e-12;
 const math_pi = Math.PI;
 const math_halfPi = math_pi / 2;
-const math_tau = 2 * math_pi;
+const src_math_tau = 2 * math_pi;
 
 function math_acos(x) {
   return x > 1 ? 0 : x < -1 ? math_pi : Math.acos(x);
@@ -8694,7 +8771,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
     if (!(r1 > src_math_epsilon)) context.moveTo(0, 0);
 
     // Or is it a circle or annulus?
-    else if (da > math_tau - src_math_epsilon) {
+    else if (da > src_math_tau - src_math_epsilon) {
       context.moveTo(r1 * math_cos(a0), r1 * math_sin(a0));
       context.arc(0, 0, r1, a0, a1, !cw);
       if (r0 > src_math_epsilon) {
@@ -8888,7 +8965,7 @@ var slice = Array.prototype.slice;
       sortValues = src_descending,
       sort = null,
       startAngle = d3_shape_src_constant(0),
-      endAngle = d3_shape_src_constant(math_tau),
+      endAngle = d3_shape_src_constant(src_math_tau),
       padAngle = d3_shape_src_constant(0);
 
   function pie(data) {
@@ -8900,7 +8977,7 @@ var slice = Array.prototype.slice;
         index = new Array(n),
         arcs = new Array(n),
         a0 = +startAngle.apply(this, arguments),
-        da = Math.min(math_tau, Math.max(-math_tau, endAngle.apply(this, arguments) - a0)),
+        da = Math.min(src_math_tau, Math.max(-src_math_tau, endAngle.apply(this, arguments) - a0)),
         a1,
         p = Math.min(Math.abs(da) / n, padAngle.apply(this, arguments)),
         pa = p * (da < 0 ? -1 : 1),
@@ -9754,6 +9831,7 @@ const _scaleOrdinal = ordinal;
 const _scaleDiscontinuous = src_discontinuous;
 const _discontinuityRange = range;
 const _easeCubicInOut = cubicInOut;
+const _easeElastic = elasticOut;
 const _sort = sort;
 const _max = max;
 const _arc = arc;
@@ -9764,5 +9842,6 @@ const _index = index;
 const _sum = sum;
 const _groupSort = groupSort;
 const _brushX = brushX;
+const _interpolate = value;
 
-export { _arc as arc, _axisBottom as axisBottom, _axisLeft as axisLeft, _brushX as brushX, _create as create, _discontinuityRange as discontinuityRange, _easeCubicInOut as easeCubicInOut, _format as format, _geoAlbersUsa as geoAlbersUsa, _geoPath as geoPath, _groupSort as groupSort, _index as index, _max as max, _pie as pie, _scaleBand as scaleBand, _scaleDiscontinuous as scaleDiscontinuous, _scaleLinear as scaleLinear, _scaleOrdinal as scaleOrdinal, _select as select, _selectAll as selectAll, _sort as sort, _stack as stack, _sum as sum, _union as union, _zoom as zoom, _zoomIdentity as zoomIdentity };
+export { _arc as arc, _axisBottom as axisBottom, _axisLeft as axisLeft, _brushX as brushX, _create as create, _discontinuityRange as discontinuityRange, _easeCubicInOut as easeCubicInOut, _easeElastic as easeElastic, _format as format, _geoAlbersUsa as geoAlbersUsa, _geoPath as geoPath, _groupSort as groupSort, _index as index, _interpolate as interpolate, _max as max, _pie as pie, _scaleBand as scaleBand, _scaleDiscontinuous as scaleDiscontinuous, _scaleLinear as scaleLinear, _scaleOrdinal as scaleOrdinal, _select as select, _selectAll as selectAll, _sort as sort, _stack as stack, _sum as sum, _union as union, _zoom as zoom, _zoomIdentity as zoomIdentity };

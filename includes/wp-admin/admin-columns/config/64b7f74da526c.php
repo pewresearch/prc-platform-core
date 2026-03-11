@@ -7,9 +7,21 @@ return array (
     'title' => 'Default View',
     'type' => 'post',
     'id' => '64b7f74da526c',
-    'updated' => 1770772971,
+    'updated' => 1773196581,
     'columns' => 
     array (
+      0 => 
+      array (
+        'type' => 'prc_seo_primary_term',
+        'label' => 'Primary Term',
+        'width' => '',
+        'width_unit' => '%',
+        'primary_taxonomy' => 'category',
+        'export' => 'on',
+        'edit' => 'on',
+        'bulk_edit' => 'on',
+        'name' => '0',
+      ),
       'title' => 
       array (
         'type' => 'title',
@@ -33,18 +45,6 @@ return array (
         'width_unit' => 'px',
         'export' => 'on',
         'name' => '64c9bb6a50a3d8',
-      ),
-      0 => 
-      array (
-        'type' => 'prc_seo_primary_term',
-        'label' => 'Primary Term',
-        'width' => '',
-        'width_unit' => '%',
-        'primary_taxonomy' => 'category',
-        'export' => 'on',
-        'edit' => 'on',
-        'bulk_edit' => 'on',
-        'name' => '12511041960419',
       ),
       'date' => 
       array (
@@ -255,7 +255,17 @@ return array (
         'bulk_edit' => 'on',
         'name' => '3369c52b618938',
       ),
-      '32e62a08c7ef9e' => 
+      '4ecdbd89e0c49c' => 
+      array (
+        'type' => 'prc_seo_google_index',
+        'label' => 'Google Index',
+        'width' => '',
+        'width_unit' => '%',
+        'export' => 'on',
+        'sort' => 'on',
+        'name' => '4ecdbd89e0c49c',
+      ),
+      '5784017ae9fbe8' => 
       array (
         'type' => 'prc_seo_noindex',
         'label' => 'Is Indexed',
@@ -265,7 +275,7 @@ return array (
         'sort' => 'on',
         'edit' => 'on',
         'bulk_edit' => 'on',
-        'name' => '32e62a08c7ef9e',
+        'name' => '5784017ae9fbe8',
       ),
     ),
     'settings' => 

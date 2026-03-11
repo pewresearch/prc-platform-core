@@ -23,6 +23,7 @@ import {
 	sort,
 	max,
 	easeCubicInOut,
+	easeElastic,
 	arc,
 	pie,
 	stack,
@@ -31,6 +32,7 @@ import {
 	groupSort,
 	sum,
 	brushX,
+	interpolate,
 } from 'd3';
 
 const _format = format;
@@ -49,6 +51,7 @@ const _scaleOrdinal = scaleOrdinal;
 const _scaleDiscontinuous = scaleDiscontinuous;
 const _discontinuityRange = discontinuityRange;
 const _easeCubicInOut = easeCubicInOut;
+const _easeElastic = easeElastic;
 const _sort = sort;
 const _max = max;
 const _arc = arc;
@@ -59,6 +62,7 @@ const _index = index;
 const _sum = sum;
 const _groupSort = groupSort;
 const _brushX = brushX;
+const _interpolate = interpolate;
 
 export {
 	_format as format,
@@ -77,6 +81,7 @@ export {
 	_scaleDiscontinuous as scaleDiscontinuous,
 	_discontinuityRange as discontinuityRange,
 	_easeCubicInOut as easeCubicInOut,
+	_easeElastic as easeElastic,
 	_sort as sort,
 	_max as max,
 	_arc as arc,
@@ -87,4 +92,5 @@ export {
 	_sum as sum,
 	_groupSort as groupSort,
 	_brushX as brushX,
+	_interpolate as interpolate,
 };
