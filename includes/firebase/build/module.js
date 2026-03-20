@@ -2,6 +2,18 @@
 /******/ var __webpack_require__ = {};
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__webpack_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/global */
 /******/ (() => {
 /******/ 	__webpack_require__.g = (function() {
@@ -14,9 +26,15 @@
 /******/ 	})();
 /******/ })();
 /******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
 /************************************************************************/
+var __webpack_exports__ = {};
 
-;// ./node_modules/@firebase/util/dist/index.esm2017.js
+;// ../../../../node_modules/@firebase/util/dist/index.esm2017.js
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -2149,7 +2167,7 @@ function index_esm2017_getModularInstance(service) {
 
 //# sourceMappingURL=index.esm2017.js.map
 
-;// ./node_modules/@firebase/component/dist/esm/index.esm2017.js
+;// ../../../../node_modules/@firebase/component/dist/esm/index.esm2017.js
 
 
 /**
@@ -2560,7 +2578,7 @@ class index_esm2017_ComponentContainer {
 
 //# sourceMappingURL=index.esm2017.js.map
 
-;// ./node_modules/@firebase/logger/dist/esm/index.esm2017.js
+;// ../../../../node_modules/@firebase/logger/dist/esm/index.esm2017.js
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -2781,7 +2799,7 @@ function index_esm2017_setUserLogHandler(logCallback, options) {
 
 //# sourceMappingURL=index.esm2017.js.map
 
-;// ./node_modules/idb/build/wrap-idb-value.js
+;// ../../../../node_modules/idb/build/wrap-idb-value.js
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
 
 let idbProxyableTypes;
@@ -2968,7 +2986,7 @@ const unwrap = (value) => reverseTransformCache.get(value);
 
 
 
-;// ./node_modules/idb/build/index.js
+;// ../../../../node_modules/idb/build/index.js
 
 
 
@@ -3065,7 +3083,7 @@ replaceTraps((oldTraps) => ({
 
 
 
-;// ./node_modules/@firebase/app/dist/esm/index.esm2017.js
+;// ../../../../node_modules/@firebase/app/dist/esm/index.esm2017.js
 
 
 
@@ -4222,7 +4240,7 @@ registerCoreComponents('');
 
 //# sourceMappingURL=index.esm2017.js.map
 
-;// ./node_modules/firebase/app/dist/esm/index.esm.js
+;// ../../../../node_modules/firebase/app/dist/esm/index.esm.js
 
 
 
@@ -4248,7 +4266,7 @@ var index_esm_version = "10.14.1";
 registerVersion(index_esm_name, index_esm_version, 'app');
 //# sourceMappingURL=index.esm.js.map
 
-;// ./node_modules/tslib/tslib.es6.mjs
+;// ../../../../node_modules/tslib/tslib.es6.mjs
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -4651,7 +4669,7 @@ function __rewriteRelativeImportExtension(path, preserveJsx) {
   __rewriteRelativeImportExtension,
 });
 
-;// ./node_modules/firebase/node_modules/@firebase/auth/dist/esm2017/index-68602d24.js
+;// ../../../../node_modules/firebase/node_modules/@firebase/auth/dist/esm2017/index-68602d24.js
 
 
 
@@ -9930,7 +9948,7 @@ function providerIdForResponse(response) {
  */
 async function signInAnonymously(auth) {
     var _a;
-    if (_isFirebaseServerApp(auth.app)) {
+    if (index_esm2017_isFirebaseServerApp(auth.app)) {
         return Promise.reject(_serverAppCurrentUserOperationNotSupportedError(auth));
     }
     const authInternal = _castAuth(auth);
@@ -15350,7 +15368,7 @@ registerAuth("Browser" /* ClientPlatform.BROWSER */);
 
 //# sourceMappingURL=index-68602d24.js.map
 
-;// ./node_modules/firebase/node_modules/@firebase/auth/dist/esm2017/index.js
+;// ../../../../node_modules/firebase/node_modules/@firebase/auth/dist/esm2017/index.js
 
 
 
@@ -15359,11 +15377,11 @@ registerAuth("Browser" /* ClientPlatform.BROWSER */);
 
 //# sourceMappingURL=index.js.map
 
-;// ./node_modules/firebase/auth/dist/esm/index.esm.js
+;// ../../../../node_modules/firebase/auth/dist/esm/index.esm.js
 
 //# sourceMappingURL=index.esm.js.map
 
-;// ./node_modules/@firebase/database/dist/index.esm2017.js
+;// ../../../../node_modules/@firebase/database/dist/index.esm2017.js
 
 
 
@@ -29370,7 +29388,7 @@ registerDatabase();
 
 //# sourceMappingURL=index.esm2017.js.map
 
-;// ./node_modules/firebase/database/dist/esm/index.esm.js
+;// ../../../../node_modules/firebase/database/dist/esm/index.esm.js
 
 //# sourceMappingURL=index.esm.js.map
 
@@ -29398,6 +29416,7 @@ const _signOut = signOut;
 const _sendPasswordResetEmail = sendPasswordResetEmail;
 const _confirmPasswordReset = confirmPasswordReset;
 const _verifyPasswordResetCode = verifyPasswordResetCode;
+const _signInAnonymously = signInAnonymously;
 const _db = getDatabase;
 const _ref = ref;
 const _push = push;
@@ -29418,5 +29437,7 @@ const _equalTo = equalTo;
 const _onValue = onValue;
 const _off = off;
 const _serverTimestamp = serverTimestamp;
+const _onChildAdded = onChildAdded;
+const _onChildRemoved = onChildRemoved;
 
-export { _app as app, _auth as auth, _child as child, _confirmPasswordReset as confirmPasswordReset, _endAt as endAt, _equalTo as equalTo, _get as get, _db as getDatabase, _limitToFirst as limitToFirst, _limitToLast as limitToLast, _off as off, _onAuthStateChanged as onAuthStateChanged, _onValue as onValue, _orderByChild as orderByChild, _orderByKey as orderByKey, _orderByValue as orderByValue, _push as push, _query as query, _ref as ref, _remove as remove, _sendPasswordResetEmail as sendPasswordResetEmail, _serverTimestamp as serverTimestamp, _set as set, _signInWithEmailAndPassword as signInWithEmailAndPassword, _signOut as signOut, _startAt as startAt, _update as update, _verifyPasswordResetCode as verifyPasswordResetCode };
+export { _app as app, _auth as auth, _child as child, _confirmPasswordReset as confirmPasswordReset, _endAt as endAt, _equalTo as equalTo, _get as get, _db as getDatabase, _limitToFirst as limitToFirst, _limitToLast as limitToLast, _off as off, _onAuthStateChanged as onAuthStateChanged, _onChildAdded as onChildAdded, _onChildRemoved as onChildRemoved, _onValue as onValue, _orderByChild as orderByChild, _orderByKey as orderByKey, _orderByValue as orderByValue, _push as push, _query as query, _ref as ref, _remove as remove, _sendPasswordResetEmail as sendPasswordResetEmail, _serverTimestamp as serverTimestamp, _set as set, _signInAnonymously as signInAnonymously, _signInWithEmailAndPassword as signInWithEmailAndPassword, _signOut as signOut, _startAt as startAt, _update as update, _verifyPasswordResetCode as verifyPasswordResetCode };

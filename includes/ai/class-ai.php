@@ -44,6 +44,9 @@ class AI {
 		$this->loader = $loader;
 		require_once plugin_dir_path( __FILE__ ) . 'utils.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-filterable-review-notes.php';
+		require_once plugin_dir_path( __FILE__ ) . 'ai-publication-context.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-filterable-excerpt-generation.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-filterable-title-generation.php';
 
 		$this->init_mcp();
 		$this->register_pdf_extraction_filters();
@@ -51,9 +54,6 @@ class AI {
 		$this->loader->add_action( 'wp_abilities_api_categories_init', $this, 'register_categories' );
 		$this->loader->add_filter( 'wp_register_ability_args', $this, 'enable_core_abilities_mcp_access', 10, 2 );
 		$this->loader->add_filter( 'ai_review_notes_system_instruction', $this, 'inject_review_notes_content_guidelines', 10, 4 );
-
-		// Disabling this experiment for now. Review Notes works better.
-		// $this->loader->add_action( 'enqueue_block_editor_assets', $this, 'enqueue_sidebar_assets' );
 	}
 
 	/**
@@ -77,53 +77,6 @@ class AI {
 
 		// Initialize the MCP adapter.
 		McpAdapter::instance();
-	}
-
-	/**
-	 * Enqueue content guidelines editor sidebar assets.
-	 *
-	 * Loads the sidebar for the block editor (post editor only, not site editor).
-	 *
-	 * @hook enqueue_block_editor_assets
-	 *
-	 * @return void
-	 */
-	public function enqueue_sidebar_assets(): void {
-		global $current_screen;
-
-		if ( ! $current_screen || 'site-editor' === ( $current_screen->base ?? '' ) ) {
-			return;
-		}
-
-		$build_dir  = plugin_dir_path( __FILE__ ) . 'build/';
-		$build_url  = plugin_dir_url( __FILE__ ) . 'build/';
-		$asset_file = $build_dir . 'index.asset.php';
-
-		if ( ! file_exists( $asset_file ) ) {
-			return;
-		}
-
-		$asset          = include $asset_file;
-		$dependencies   = $asset['dependencies'] ?? array();
-		$dependencies[] = 'wp-annotations';
-
-		wp_enqueue_script(
-			self::$sidebar_handle,
-			$build_url . 'index.js',
-			$dependencies,
-			$asset['version'] ?? false,
-			true
-		);
-
-		$style_file = $build_dir . 'style-index.css';
-		if ( file_exists( $style_file ) ) {
-			wp_enqueue_style(
-				self::$sidebar_handle,
-				$build_url . 'style-index.css',
-				array( 'wp-components' ),
-				$asset['version'] ?? false
-			);
-		}
 	}
 
 	/**
@@ -401,7 +354,6 @@ PROMPT;
 		add_filter( 'wp_content_guidelines_has_ai_provider', '__return_true', 20 );
 		add_filter( 'wp_content_guidelines_run_playground_test', array( $this, 'run_content_guidelines_playground_test' ), 10, 2 );
 		add_filter( 'wp_content_guidelines_generate_draft', array( $this, 'generate_content_guidelines_draft' ), 10, 3 );
-		add_filter( 'wp_content_guidelines_analyze_document', array( $this, 'analyze_document' ), 10, 2 );
 	}
 
 	/**
@@ -633,128 +585,6 @@ PROMPT;
 
 			return array_replace_recursive( $defaults, $parsed );
 		} catch ( \Exception $e ) {
-			return null;
-		}
-	}
-
-	/**
-	 * Analyze document blocks against guidelines using AI.
-	 *
-	 * @param array|null $result  Previous filter result (null if unhandled).
-	 * @param array      $request Request with blocks, guidelines, packet_text.
-	 * @return array|null Analysis result with issues, suggestions, stats; or null on failure.
-	 */
-	public function analyze_document( $result, array $request ) {
-		$blocks      = $request['blocks'] ?? array();
-		$packet_text = $request['packet_text'] ?? '';
-
-		if ( empty( $blocks ) ) {
-			return array(
-				'issues'      => array(),
-				'suggestions' => array(),
-				'stats'       => array(
-					'word_count'             => 0,
-					'sentence_count'         => 0,
-					'avg_words_per_sentence' => 0,
-				),
-				'issue_count' => 0,
-			);
-		}
-
-		$blocks_json = wp_json_encode( $blocks );
-
-		$system = $packet_text
-			? $packet_text . "\n\n---\n\nANALYSIS TASK: Analyze the document blocks below against these guidelines. "
-			: 'You are an editorial guidelines checker. Analyze content for vocabulary, tone, readability, and copy rule compliance. ';
-
-		$system .= "Return a JSON object with:\n";
-		$system .= "- issues: array of objects with blockClientId (REQUIRED - copy exactly from input, do NOT modify or abbreviate), type (vocabulary_avoid, tone, readability, copy_rule, pov, formatting), message, optional note, optional start/end character offsets for vocabulary/copy_rule, optional blockLevel:true for tone/readability\n";
-		$system .= "- suggestions: array of { blockClientId, type, message, optional note }\n";
-		$system .= "- stats: { word_count, sentence_count, avg_words_per_sentence }\n";
-		$system .= 'CRITICAL: blockClientId values MUST be copied EXACTLY from the input blocks. Do not invent, truncate, or modify them.';
-
-		$user_prompt = "Analyze these document blocks and return the analysis JSON:\n\n" . $blocks_json;
-
-		$json_schema = array(
-			'name'   => 'document_analysis',
-			'strict' => true,
-			'schema' => array(
-				'type'                 => 'object',
-				'additionalProperties' => false,
-				'properties'           => array(
-					'issues'      => array(
-						'type'  => 'array',
-						'items' => array(
-							'type'                 => 'object',
-							'additionalProperties' => false,
-							'properties'           => array(
-								'blockClientId'      => array( 'type' => 'string' ),
-								'type'               => array( 'type' => 'string' ),
-								'message'            => array( 'type' => 'string' ),
-								'note'               => array( 'type' => array( 'string', 'null' ) ),
-								'richTextIdentifier' => array( 'type' => array( 'string', 'null' ) ),
-								'start'              => array( 'type' => array( 'integer', 'null' ) ),
-								'end'                => array( 'type' => array( 'integer', 'null' ) ),
-								'blockLevel'         => array( 'type' => array( 'boolean', 'null' ) ),
-							),
-							'required'             => array( 'blockClientId', 'type', 'message', 'note', 'richTextIdentifier', 'start', 'end', 'blockLevel' ),
-						),
-					),
-					'suggestions' => array(
-						'type'  => 'array',
-						'items' => array(
-							'type'                 => 'object',
-							'additionalProperties' => false,
-							'properties'           => array(
-								'blockClientId' => array( 'type' => 'string' ),
-								'type'          => array( 'type' => 'string' ),
-								'message'       => array( 'type' => 'string' ),
-								'note'          => array( 'type' => array( 'string', 'null' ) ),
-							),
-							'required'             => array( 'blockClientId', 'type', 'message', 'note' ),
-						),
-					),
-					'stats'       => array(
-						'type'                 => 'object',
-						'additionalProperties' => false,
-						'properties'           => array(
-							'word_count'             => array( 'type' => 'integer' ),
-							'sentence_count'         => array( 'type' => 'integer' ),
-							'avg_words_per_sentence' => array( 'type' => 'number' ),
-						),
-						'required'             => array( 'word_count', 'sentence_count', 'avg_words_per_sentence' ),
-					),
-				),
-				'required'             => array( 'issues', 'suggestions', 'stats' ),
-			),
-		);
-
-		try {
-			$response = AI_Client::prompt( $user_prompt )
-				->using_system_instruction( $system )
-				->using_model_preference( array( 'claude-opus-4-6', 'gemini-3-flash-preview' ) )
-				->using_temperature( 0.2 )
-				->as_json_response( $json_schema )
-				->generate_text();
-
-			$parsed = json_decode( $response, true );
-			if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $parsed ) ) {
-				error_log( 'analyze_document: JSON decode failed — ' . json_last_error_msg() );
-				error_log( 'analyze_document: raw response — ' . substr( $response, 0, 500 ) );
-				return null;
-			}
-
-			$parsed['issues']      = isset( $parsed['issues'] ) ? $parsed['issues'] : array();
-			$parsed['suggestions'] = isset( $parsed['suggestions'] ) ? $parsed['suggestions'] : array();
-			$parsed['stats']       = isset( $parsed['stats'] ) ? $parsed['stats'] : array(
-				'word_count'             => 0,
-				'sentence_count'         => 0,
-				'avg_words_per_sentence' => 0,
-			);
-
-			return $parsed;
-		} catch ( \Exception $e ) {
-			error_log( 'analyze_document: exception — ' . $e->getMessage() );
 			return null;
 		}
 	}

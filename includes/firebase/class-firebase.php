@@ -105,7 +105,7 @@ class Firebase {
 		}
 
 		$environment = wp_get_environment_type();
-		// $environment = 'production'; // Enable when you need to debug production data.
+		$environment = 'production'; // Enable when you need to debug production data.
 
 		$service_account_file = ( 'production' === $environment )
 			? \WPCOM_VIP_PRIVATE_DIR . '/firebase-service-account-prod.json'
@@ -150,7 +150,7 @@ class Firebase {
 		}
 
 		$environment = wp_get_environment_type();
-		// $environment = 'production'; // Enable when you need to debug production data.
+		$environment = 'production'; // Enable when you need to debug production data.
 
 		$api_key     = 'production' === $environment ? \PRC_PLATFORM_FIREBASE_KEY : \PRC_PLATFORM_FIREBASE_KEY__DEV;
 		$auth_domain = 'production' === $environment ? \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN : \PRC_PLATFORM_FIREBASE_AUTH_DOMAIN__DEV;

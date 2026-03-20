@@ -117,3 +117,6 @@ export {
 	AISuggestionPreview,
 	AISuggestionsList,
 } from './ai';
+
+// Browser Chrome
+export { MobileSafariChrome, DesktopSafariChrome } from './browser-chrome';

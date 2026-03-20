@@ -9,6 +9,7 @@ import {
 	sendPasswordResetEmail,
 	confirmPasswordReset,
 	verifyPasswordResetCode,
+	signInAnonymously,
 } from 'firebase/auth';
 import {
 	getDatabase,
@@ -31,6 +32,8 @@ import {
 	onValue,
 	off,
 	serverTimestamp,
+	onChildAdded,
+	onChildRemoved,
 } from 'firebase/database';
 
 function loadFirebaseConfig() {
@@ -52,6 +55,7 @@ const _signOut = signOut;
 const _sendPasswordResetEmail = sendPasswordResetEmail;
 const _confirmPasswordReset = confirmPasswordReset;
 const _verifyPasswordResetCode = verifyPasswordResetCode;
+const _signInAnonymously = signInAnonymously;
 const _db = getDatabase;
 const _ref = ref;
 const _push = push;
@@ -72,7 +76,8 @@ const _equalTo = equalTo;
 const _onValue = onValue;
 const _off = off;
 const _serverTimestamp = serverTimestamp;
-
+const _onChildAdded = onChildAdded;
+const _onChildRemoved = onChildRemoved;
 export {
 	_app as app,
 	_auth as auth,
@@ -82,6 +87,7 @@ export {
 	_sendPasswordResetEmail as sendPasswordResetEmail,
 	_confirmPasswordReset as confirmPasswordReset,
 	_verifyPasswordResetCode as verifyPasswordResetCode,
+	_signInAnonymously as signInAnonymously,
 	_db as getDatabase,
 	_ref as ref,
 	_push as push,
@@ -102,4 +108,6 @@ export {
 	_onValue as onValue,
 	_off as off,
 	_serverTimestamp as serverTimestamp,
+	_onChildAdded as onChildAdded,
+	_onChildRemoved as onChildRemoved,
 };

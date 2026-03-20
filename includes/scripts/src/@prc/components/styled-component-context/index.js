@@ -32,14 +32,14 @@ const StyledComponentContext = (props) => {
 					createCache({
 						key: cacheKey || fallbackKey,
 						container: node,
-					}),
+					})
 				);
 			}
 			return () => {
 				setCache(defaultCache);
 			};
 		},
-		[cacheKey, fallbackKey],
+		[cacheKey, fallbackKey]
 	);
 
 	return (
@@ -54,6 +54,5 @@ StyledComponentContext.propTypes = {
 	children: propTypes.node.isRequired,
 	cacheKey: propTypes.string.isRequired,
 };
-
 
 export default StyledComponentContext;

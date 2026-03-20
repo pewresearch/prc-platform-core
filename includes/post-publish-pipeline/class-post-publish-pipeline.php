@@ -413,7 +413,7 @@ class Post_Publish_Pipeline {
 			}
 			switch ( $current_status ) {
 				case 'publish':
-					if ( 'draft' === $prior_status ) {
+					if ( in_array( $prior_status, array( 'draft', 'future' ), true ) ) {
 						do_action( 'prc_platform_on_publish', $ref_post, has_blocks( $post_obj_now ) );
 						do_action( "prc_platform_on_{$post_obj_now->post_type}_publish", $ref_post, has_blocks( $post_obj_now ) );
 					} elseif ( 'trash' === $prior_status ) {

@@ -2,14 +2,11 @@
  * External Dependencies
  */
 const { join } = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
  * WordPress Dependencies
  */
 const DependencyExtractionWebpackPlugin = require('@wordpress/dependency-extraction-webpack-plugin');
-
-const webpack = require('webpack');
 
 /**
  * Internal Dependencies
@@ -33,7 +30,7 @@ module.exports = {
 		library: {
 			type: 'module',
 		},
-		path: join(__dirname, '..', '..'),
+		path: join(__dirname, 'build'),
 		environment: { module: true },
 		module: true,
 		chunkFormat: 'module',
@@ -68,25 +65,8 @@ module.exports = {
 	},
 	plugins: [
 		...plugins,
-		// WordPress Interactivity API uses Preact, not React; so here we're providing
-		// Preact instead of React through a preact/compat alias.
-		new webpack.ProvidePlugin({
-			React: 'preact/compat',
-			react: 'preact/compat',
-			'react-dom': 'preact/compat',
-		}),
-		new CopyWebpackPlugin({
-			patterns: [
-				{
-					from: './node_modules/es-module-shims/dist/es-module-shims.wasm.js',
-					to: './importmap-polyfill.min.js',
-				},
-			],
-		}),
 		new DependencyExtractionWebpackPlugin({
-			requestToExternalModule: (request) => {
-				return null; // Do not externalize any dependencies, bundle them.
-			},
+			requestToExternalModule: () => null,
 		}),
 	],
 	watchOptions: {

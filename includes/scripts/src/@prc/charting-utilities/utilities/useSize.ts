@@ -14,11 +14,9 @@ function useSize(
 	useEffect(() => {
 		function handleResize() {
 			const element = svgRef.current?.closest(`.${className}`);
-			// Always get window dimensions
 			const windowWidth = window.innerWidth;
 			const windowHeight = window.innerHeight;
 
-			// if no class name is passed, return the window size for width/height too
 			if (element) {
 				const { width, height } = element.getBoundingClientRect();
 				setSize({ width, height, windowWidth, windowHeight });
@@ -32,30 +30,45 @@ function useSize(
 				windowHeight,
 			});
 		}
-		// Add event listener
+
+		// Tracks window-level dimension changes for windowWidth/windowHeight
+		// (used by consumers for mobile breakpoint checks). The container may
+		// not resize when the window does if it has a fixed max-width.
 		window.addEventListener('resize', handleResize);
-		// check if there are PRC blocks on the page, and wait for special listener
-		if (document.querySelector('.wp-block-prc-block-tabs')) {
+
+		// ResizeObserver on the container element detects size changes from any
+		// source: tab visibility toggles, accordion reveals, CSS transitions, etc.
+		// Also fires once on initial observation, handling the first-paint sizing.
+		let resizeObserver: ResizeObserver | undefined;
+		const element = svgRef.current?.closest(`.${className}`);
+		if (element) {
+			resizeObserver = new ResizeObserver(() => {
+				handleResize();
+			});
+			resizeObserver.observe(element);
+		}
+
+		if (
+			document.querySelector('.wp-block-prc-block-tabs') ||
+			document.querySelector('.wp-block-tabs')
+		) {
 			window.addEventListener('tabsReady', handleResize);
-			// likewise, if there are any dialogs on the page, wait for them to finish animating to resize
 		} else if (document.querySelector('.wp-block-prc-block-dialog')) {
 			window.addEventListener('wpDialogAnimationEnd', handleResize);
-			// otherwise, wait for window to load
 		} else {
 			window.addEventListener('load', handleResize);
-		} // set initial size on timeout.
+		}
 
-		// This is needed to get the correct size of the svg
-		// when adding charts in the WP editor
 		setTimeout(() => {
 			handleResize();
 		}, 0);
-		// Remove event listener on cleanup
+
 		return () => {
 			window.removeEventListener('load', handleResize);
 			window.removeEventListener('resize', handleResize);
 			window.removeEventListener('tabsReady', handleResize);
 			window.removeEventListener('wpDialogAnimationEnd', handleResize);
+			resizeObserver?.disconnect();
 		};
 	}, [className, svgRef]);
 	return size;
